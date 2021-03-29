@@ -1,7 +1,7 @@
 # coding: utf-8
 
 # import models into model package
-from openapi_server.models.creds_user_pass import CredsUserPass
+from openapi_server.models.creds import Creds
 from openapi_server.models.inline_object import InlineObject
 from openapi_server.models.inline_response200 import InlineResponse200
 from openapi_server.models.inline_response2001 import InlineResponse2001
@@ -16,5 +16,4 @@ from openapi_server.models.je_pl_jenkinsfile_stages import JePLJenkinsfileStages
 from openapi_server.models.je_pl_jenkinsfile_when import JePLJenkinsfileWhen
 from openapi_server.models.pipeline import Pipeline
 from openapi_server.models.tox import Tox
-from openapi_server.models.tox_tox import ToxTox
 from openapi_server.models.upstream_error import UpstreamError

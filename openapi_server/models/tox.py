@@ -5,7 +5,6 @@ from datetime import date, datetime
 from typing import List, Dict, Type
 
 from openapi_server.models.base_model_ import Model
-from openapi_server.models.tox_tox import ToxTox
 from openapi_server import util
 
 
@@ -15,20 +14,24 @@ class Tox(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, tox: ToxTox=None):
+    def __init__(self, testenv: List[str]=None, tox_file: str='tox.ini'):
         """Tox - a model defined in OpenAPI
 
-        :param tox: The tox of this Tox.
+        :param testenv: The testenv of this Tox.
+        :param tox_file: The tox_file of this Tox.
         """
         self.openapi_types = {
-            'tox': ToxTox
+            'testenv': List[str],
+            'tox_file': str
         }
 
         self.attribute_map = {
-            'tox': 'tox'
+            'testenv': 'testenv',
+            'tox_file': 'tox_file'
         }
 
-        self._tox = tox
+        self._testenv = testenv
+        self._tox_file = tox_file
 
     @classmethod
     def from_dict(cls, dikt: dict) -> 'Tox':
@@ -40,22 +43,45 @@ class Tox(Model):
         return util.deserialize_model(dikt, cls)
 
     @property
-    def tox(self):
-        """Gets the tox of this Tox.
+    def testenv(self):
+        """Gets the testenv of this Tox.
 
 
-        :return: The tox of this Tox.
-        :rtype: ToxTox
+        :return: The testenv of this Tox.
+        :rtype: List[str]
         """
-        return self._tox
+        return self._testenv
 
-    @tox.setter
-    def tox(self, tox):
-        """Sets the tox of this Tox.
+    @testenv.setter
+    def testenv(self, testenv):
+        """Sets the testenv of this Tox.
 
 
-        :param tox: The tox of this Tox.
-        :type tox: ToxTox
+        :param testenv: The testenv of this Tox.
+        :type testenv: List[str]
+        """
+        if testenv is None:
+            raise ValueError("Invalid value for `testenv`, must not be `None`")
+
+        self._testenv = testenv
+
+    @property
+    def tox_file(self):
+        """Gets the tox_file of this Tox.
+
+
+        :return: The tox_file of this Tox.
+        :rtype: str
+        """
+        return self._tox_file
+
+    @tox_file.setter
+    def tox_file(self, tox_file):
+        """Sets the tox_file of this Tox.
+
+
+        :param tox_file: The tox_file of this Tox.
+        :type tox_file: str
         """
 
-        self._tox = tox
+        self._tox_file = tox_file
