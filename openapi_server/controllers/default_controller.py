@@ -592,7 +592,10 @@ async def create_pull_request(request: web.Request, pipeline_id, body) -> web.Re
         logger.error(_reason)
         return web.Response(status=422, reason=_reason)
     target_repo_name = url_parsed.path
+    # Format target_repo_name
     target_repo_name = target_repo_name.lstrip('/')
+    target_repo_name = target_repo_name.rsplit('.git')[0]
+    logger.debug('Target repository (base) formatted. Resultant name: %s' % target_repo_name)
     target_repo = gh_utils.get_repository(
         target_repo_name, raise_exception=True)
 
