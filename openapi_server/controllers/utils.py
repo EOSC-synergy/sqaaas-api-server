@@ -9,6 +9,7 @@ import yaml
 
 from aiohttp import web
 from urllib.parse import urlparse
+from urllib.parse import ParseResult
 
 from openapi_server import config
 from openapi_server.controllers import db
@@ -411,6 +412,23 @@ def has_this_repo(config_data_list):
             if 'this_repo' in criterion_data['repos']:
                 this_repo = True
     return this_repo
+
+
+def format_git_url(repo_url):
+    """Formats git URL to avoid asking for password when repos do not exist.
+
+    :param repo_url: URL of the git repository
+    """
+    repo_url_parsed = urlparse(repo_url)
+    repo_url_final = ParseResult(
+        scheme=repo_url_parsed.scheme,
+        netloc=':@'+repo_url_parsed.netloc,
+        path=repo_url_parsed.path,
+        params=repo_url_parsed.params,
+        query=repo_url_parsed.query,
+        fragment=repo_url_parsed.fragment
+    )
+    return repo_url_final.geturl()
 
 
 # NOTE (workaround) Back to the old criteria codes from JePL 2.1.0

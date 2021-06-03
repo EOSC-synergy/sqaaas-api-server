@@ -385,9 +385,11 @@ async def run_pipeline(request: web.Request, pipeline_id, issue_badge=False, rep
         logger.debug('Creating pipeline repository in %s organization: %s' % (GITHUB_ORG, pipeline_repo_url))
         gh_utils.create_org_repository(pipeline_repo)
         logger.debug('Cloning locally the source repository <%s> & Pushing to target repository: %s' % (repo_url, pipeline_repo_url))
+        _repo_url = ctls_utils.format_git_url(repo_url)
+        logger.debug('Formatting source repository URL to avoid git askpass when repo does not exist: %s' % _repo_url)
         try:
             pipeline_repo_branch = git_utils.clone_and_push(
-                repo_url, pipeline_repo_url, source_repo_branch=repo_branch)[-1]
+                _repo_url, pipeline_repo_url, source_repo_branch=repo_branch)[-1]
         except SQAaaSAPIException as e:
             logger.error(e.message)
             return web.Response(status=e.http_code, reason=e.message)
