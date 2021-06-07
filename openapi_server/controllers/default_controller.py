@@ -392,8 +392,7 @@ async def run_pipeline(request: web.Request, pipeline_id, issue_badge=False, rep
                 _repo_url, pipeline_repo_url, source_repo_branch=repo_branch)[-1]
         except SQAaaSAPIException as e:
             logger.error(e.message)
-            # Avoid multiple lines in response's reason
-            _reason = ' '.join(e.message.stderr.split())
+            _reason = 'Could not access to repository: %s (branch: %s)' % (_repo_url, repo_branch)
             return web.Response(status=e.http_code, reason=_reason)
         else:
             logger.info(('Pipeline repository updated with the content from source: %s (branch: %s)' % (pipeline_repo, pipeline_repo_branch)))
