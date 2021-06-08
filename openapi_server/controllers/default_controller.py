@@ -671,6 +671,7 @@ async def get_compressed_files(request: web.Request, pipeline_id) -> web.Respons
     config_data_list = pipeline_data['data']['config']
     composer_data = pipeline_data['data']['composer']
     jenkinsfile = pipeline_data['data']['jenkinsfile']
+    commands_scripts = pipeline_data['data']['commands_scripts']
 
     config_yml_list = [
         (data['file_name'], data['data_yml'])
@@ -683,10 +684,15 @@ async def get_compressed_files(request: web.Request, pipeline_id) -> web.Respons
     jenkinsfile = [(
         'Jenkinsfile', jenkinsfile
     )]
+    if commands_scripts:
+        commands_scripts = [(
+            (data['file_name'], data['content'])
+                for data in commands_scripts
+        )]
 
     binary_stream = io.BytesIO()
     with ZipFile(binary_stream, 'w') as zfile:
-        for t in config_yml_list + composer_yml + jenkinsfile:
+        for t in config_yml_list + composer_yml + jenkinsfile + commands_scripts:
             zinfo = ZipInfo(t[0])
             zfile.writestr(zinfo, t[1].encode('UTF-8'))
 
