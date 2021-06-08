@@ -51,7 +51,8 @@ class JenkinsUtils(object):
         job_info = {}
         try:
             job_info = self.server.get_job_info(name, depth=depth)
-            self.logger.debug('Information job <%s> obtained from Jenkins' % name)
+            self.logger.debug('Information for job <%s> obtained from Jenkins: %s' % (
+                name, job_info))
         except jenkins.JenkinsException:
             self.logger.error('No info could be fetched for Jenkins job <%s>' % name)
         return job_info
