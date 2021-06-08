@@ -506,12 +506,13 @@ async def get_pipeline_status(request: web.Request, pipeline_id) -> web.Response
             build_status = 'WAITING_SCAN_ORG'
 
     if not build_no:
-        build_data = jk_utils.get_queue_item(build_item_no)
-        if build_data:
-            build_no = build_data['number']
-            build_url = build_data['url']
-            build_status = 'EXECUTING'
-            logger.info('Jenkins job build URL obtained for repository <%s>: %s' % (pipeline_repo, build_url))
+        if build_item_no:
+            build_data = jk_utils.get_queue_item(build_item_no)
+            if build_data:
+                build_no = build_data['number']
+                build_url = build_data['url']
+                build_status = 'EXECUTING'
+                logger.info('Jenkins job build URL obtained for repository <%s>: %s' % (pipeline_repo, build_url))
     else:
         _status = jk_utils.get_build_info(
             jk_job_name,
