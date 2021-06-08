@@ -88,9 +88,10 @@ class JenkinsUtils(object):
             self.logger.debug('Waiting for job to start. Queue item: %s' % queue_data['url'])
         else:
             executable_data = queue_data['executable']
-            self.logger.debug('Job started the execution (url: %s, number: %s)' % (
-                executable_data['url'], executable_data['number']
-            ))
+            if executable_data:
+                self.logger.debug('Job started the execution (url: %s, number: %s)' % (
+                    executable_data['url'], executable_data['number']
+                ))
         return executable_data
 
     def get_build_info(self, full_job_name, build_no, depth=0):
