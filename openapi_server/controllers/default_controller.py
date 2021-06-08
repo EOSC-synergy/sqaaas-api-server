@@ -376,7 +376,7 @@ async def run_pipeline(request: web.Request, pipeline_id, issue_badge=False, rep
         if not ctls_utils.has_this_repo(config_data_list):
             _reason = 'No criteria has been associated with the repository where the pipeline is meant to be added (aka \'this_repo\')'
             logger.error(_reason)
-            return web.Response(status=422, reason=_reason)
+            return web.Response(status=422, reason=_reason, text=_reason)
         _branch_msg = '(default branch)'
         if repo_branch:
             pipeline_repo_branch = repo_branch
@@ -393,7 +393,7 @@ async def run_pipeline(request: web.Request, pipeline_id, issue_badge=False, rep
         except SQAaaSAPIException as e:
             logger.error(e.message)
             _reason = 'Could not access to repository: %s (branch: %s)' % (_repo_url, repo_branch)
-            return web.Response(status=e.http_code, reason=_reason)
+            return web.Response(status=e.http_code, reason=_reason, text=_reason)
         else:
             logger.info(('Pipeline repository updated with the content from source: %s (branch: %s)' % (pipeline_repo, pipeline_repo_branch)))
     else:
@@ -457,7 +457,7 @@ async def run_pipeline(request: web.Request, pipeline_id, issue_badge=False, rep
         issue_badge=issue_badge
     )
 
-    return web.Response(status=204, reason=reason)
+    return web.Response(status=204, reason=reason, text=reason)
 
 
 @ctls_utils.debug_request
@@ -477,7 +477,7 @@ async def get_pipeline_status(request: web.Request, pipeline_id) -> web.Response
     if 'jenkins' not in pipeline_data.keys():
         _reason = 'Could not retrieve Jenkins job information: Pipeline has not yet ran'
         logger.error(_reason)
-        return web.Response(status=422, reason=_reason)
+        return web.Response(status=422, reason=_reason, text=_reason)
 
     jenkins_info = pipeline_data['jenkins']
     build_info = jenkins_info['build_info']
@@ -538,7 +538,7 @@ async def get_pipeline_status(request: web.Request, pipeline_id) -> web.Response
             if e.http_code == 422:
                 logger.warning(e.message)
             else:
-                return web.Response(status=e.http_code, reason=e.message)
+                return web.Response(status=e.http_code, reason=e.message, text=e.message)
 
     # Add build status to DB
     db.update_jenkins(
@@ -591,7 +591,7 @@ async def create_pull_request(request: web.Request, pipeline_id, body) -> web.Re
                        url_parsed.netloc,
                        SUPPORTED_PLATFORMS.keys()))
         logger.error(_reason)
-        return web.Response(status=422, reason=_reason)
+        return web.Response(status=422, reason=_reason, text=_reason)
     target_repo_name = url_parsed.path
     # Format target_repo_name
     target_repo_name = target_repo_name.lstrip('/')
@@ -789,7 +789,7 @@ async def issue_badge(request: web.Request, pipeline_id) -> web.Response:
     except KeyError:
         _reason = 'Could not retrieve Jenkins job information: Pipeline has not ran yet'
         logger.error(_reason)
-        return web.Response(status=422, reason=_reason)
+        return web.Response(status=422, reason=_reason, text=_reason)
     try:
         badge_data = await _issue_badge(
             pipeline_id,
@@ -800,7 +800,7 @@ async def issue_badge(request: web.Request, pipeline_id) -> web.Response:
             build_info['commit_url']
         )
     except SQAaaSAPIException as e:
-        return web.Response(status=e.http_code, reason=e.message)
+        return web.Response(status=e.http_code, reason=e.message, text=e.message)
 
     # Add badge data to DB
     db.update_jenkins(
@@ -842,7 +842,7 @@ async def get_badge(request: web.Request, pipeline_id, share=None) -> web.Respon
     except KeyError:
         _reason = 'Badge not issued for pipeline <%s>' % pipeline_id
         logger.error(_reason)
-        return web.Response(status=422, reason=_reason)
+        return web.Response(status=422, reason=_reason, text=_reason)
 
     logger.info('Badge <%s> found' % badge_data['openBadgeId'])
 

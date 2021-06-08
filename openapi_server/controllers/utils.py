@@ -24,10 +24,14 @@ logger = logging.getLogger('sqaaas_api.controller')
 
 
 def upstream_502_response(r):
+    _reason = 'Unsuccessful request to upstream service API'
+    logger.error(_reason)
     return web.json_response(
         r,
         status=502,
-        reason='Unsuccessful request to upstream service API')
+        reason=_reason,
+        text=_reason
+    )
 
 
 def debug_request(f):
@@ -49,7 +53,7 @@ def extended_data_validation(f):
         if re.search(r'[^-.\w]', body['name']):
             _reason = 'Invalid pipeline name (allowed characters: [A-Za-z0-9_.-])'
             logger.warning(_reason)
-            return web.Response(status=400, reason=_reason)
+            return web.Response(status=400, reason=_reason, text=_reason)
         # Docker push feature
         for srv_name, srv_data in composer_data['services'].items():
             try:
@@ -67,14 +71,14 @@ def extended_data_validation(f):
                                    'provided and/or fallback credentials found in API '
                                    'configuration')
                         logger.warning(_reason)
-                        return web.Response(status=400, reason=_reason)
+                        return web.Response(status=400, reason=_reason, text=_reason)
                     try:
                         if not srv_data['image']['name']:
                             raise KeyError
                     except KeyError:
                         _reason = 'Request to push Docker images, but no image name provided!'
                         logger.warning(_reason)
-                        return web.Response(status=400, reason=_reason)
+                        return web.Response(status=400, reason=_reason, text=_reason)
                     try:
                         if not srv_data['build']:
                             raise KeyError
@@ -86,7 +90,7 @@ def extended_data_validation(f):
                     except KeyError:
                         _reason = 'Request to push Docker images, but no build data provided!'
                         logger.warning(_reason)
-                        return web.Response(status=400, reason=_reason)
+                        return web.Response(status=400, reason=_reason, text=_reason)
         ret = await f(*args, **kwargs)
         return ret
     return decorated_function
@@ -104,11 +108,11 @@ def validate_request(f):
             else:
                 _reason = 'Pipeline not found!: %s' % _pipeline_id
                 logger.warning(_reason)
-                return web.Response(status=404, reason=_reason)
+                return web.Response(status=404, reason=_reason, text=_reason)
         except ValueError:
             _reason = 'Invalid pipeline ID supplied!: %s' % _pipeline_id
             logger.warning(_reason)
-            return web.Response(status=400, reason=_reason)
+            return web.Response(status=400, reason=_reason, text=_reason)
 
         try:
             logger.debug('Running decorated method <%s>' % f.__name__)
