@@ -58,6 +58,8 @@ paths:
               operationId: get_pipeline_by_id
               parameters:
                 pipeline_id: $response.body#/id
+        "400":
+          description: Request failed validation
       summary: Creates a pipeline.
       x-openapi-router-controller: openapi_server.controllers.default_controller
       x-codegen-request-body-name: body
@@ -77,7 +79,7 @@ paths:
         "204":
           description: Pipeline successfully deleted
         "400":
-          description: Invalid pipeline ID supplied
+          description: Request failed validation
         "404":
           description: Pipeline not found
         "502":
@@ -115,6 +117,121 @@ paths:
           description: Pipeline not found
       summary: Find pipeline by ID
       x-openapi-router-controller: openapi_server.controllers.default_controller
+    put:
+      operationId: update_pipeline_by_id
+      parameters:
+      - description: ID of the pipeline to get
+        explode: false
+        in: path
+        name: pipeline_id
+        required: true
+        schema:
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Pipeline'
+        required: true
+        x-body-name: body
+      responses:
+        "204":
+          description: Pipeline successfully updated
+        "400":
+          description: Invalid pipeline ID supplied
+        "404":
+          description: Pipeline not found
+        "502":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UpstreamError'
+          description: |
+            The server while acting as a gateway or a proxy, received
+            an invalid response from the upstream server it accessed
+            in attempting to fulfill the request.
+      summary: Update pipeline by ID
+      x-openapi-router-controller: openapi_server.controllers.default_controller
+      x-codegen-request-body-name: body
+  /pipeline/{pipeline_id}/badge:
+    get:
+      description: |
+        Returns the badge data associated with the pipeline.
+      operationId: get_badge
+      parameters:
+      - description: ID of the pipeline to get
+        explode: false
+        in: path
+        name: pipeline_id
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: Returns the shared version of the badge in a specific format
+        explode: true
+        in: query
+        name: share
+        required: false
+        schema:
+          enum:
+          - html
+          type: string
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/Badge'
+                type: array
+          description: Successful operation
+        "400":
+          description: Invalid pipeline ID supplied
+        "404":
+          description: Pipeline not found
+        "422":
+          description: Badge not issued
+      summary: Gets badge data associated with the given pipeline
+      x-openapi-router-controller: openapi_server.controllers.default_controller
+    post:
+      description: |
+        Uses Badgr API to issue a badge after successful pipeline execution.
+      operationId: issue_badge
+      parameters:
+      - description: ID of the pipeline to get
+        explode: false
+        in: path
+        name: pipeline_id
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Badge'
+          description: Successful operation
+        "400":
+          description: Invalid pipeline ID supplied
+        "404":
+          description: Pipeline not found
+        "422":
+          description: Pipeline has not been successfully executed
+        "502":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UpstreamError'
+          description: |
+            The server while acting as a gateway or a proxy, received
+            an invalid response from the upstream server it accessed
+            in attempting to fulfill the request.
+      summary: Issues a quality badge.
+      x-openapi-router-controller: openapi_server.controllers.default_controller
   /pipeline/{pipeline_id}/composer:
     get:
       description: |
@@ -143,6 +260,33 @@ paths:
         "404":
           description: Pipeline not found
       summary: Gets composer configuration used by the pipeline.
+      x-openapi-router-controller: openapi_server.controllers.default_controller
+  /pipeline/{pipeline_id}/composer/jepl:
+    get:
+      description: |
+        Returns the content of JePL's composer file.
+      operationId: get_pipeline_composer_jepl
+      parameters:
+      - description: ID of the pipeline to get
+        explode: false
+        in: path
+        name: pipeline_id
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/inline_response_200_2'
+          description: Successful operation
+        "400":
+          description: Invalid pipeline ID supplied
+        "404":
+          description: Pipeline not found
+      summary: Gets JePL composer configuration for the given pipeline.
       x-openapi-router-controller: openapi_server.controllers.default_controller
   /pipeline/{pipeline_id}/compressed_files:
     get:
@@ -201,6 +345,64 @@ paths:
           description: Pipeline not found
       summary: Gets pipeline's main configuration.
       x-openapi-router-controller: openapi_server.controllers.default_controller
+  /pipeline/{pipeline_id}/config/jepl:
+    get:
+      description: |
+        Returns the content of JePL's config file.
+      operationId: get_pipeline_config_jepl
+      parameters:
+      - description: ID of the pipeline to get
+        explode: false
+        in: path
+        name: pipeline_id
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/inline_response_200'
+                type: array
+          description: Successful operation
+        "400":
+          description: Invalid pipeline ID supplied
+        "404":
+          description: Pipeline not found
+      summary: Gets JePL config configuration for the given pipeline.
+      x-openapi-router-controller: openapi_server.controllers.default_controller
+  /pipeline/{pipeline_id}/config/scripts:
+    get:
+      description: |
+        Returns the content of the list of scripts generated for the commands builder.
+      operationId: get_pipeline_commands_scripts
+      parameters:
+      - description: ID of the pipeline to get
+        explode: false
+        in: path
+        name: pipeline_id
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/inline_response_200_1'
+                type: array
+          description: Successful operation
+        "400":
+          description: Invalid pipeline ID supplied
+        "404":
+          description: Pipeline not found
+      summary: Gets the commands builder scripts
+      x-openapi-router-controller: openapi_server.controllers.default_controller
   /pipeline/{pipeline_id}/jenkinsfile:
     get:
       description: |
@@ -230,6 +432,33 @@ paths:
           description: Pipeline not found
       summary: Gets Jenkins pipeline definition used by the pipeline.
       x-openapi-router-controller: openapi_server.controllers.default_controller
+  /pipeline/{pipeline_id}/jenkinsfile/jepl:
+    get:
+      description: |
+        Returns the content of Jenkinsfile file for the given pipeline.
+      operationId: get_pipeline_jenkinsfile_jepl
+      parameters:
+      - description: ID of the pipeline to get
+        explode: false
+        in: path
+        name: pipeline_id
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/inline_response_200_3'
+          description: Successful operation
+        "400":
+          description: Invalid pipeline ID supplied
+        "404":
+          description: Pipeline not found
+      summary: Gets Jenkins configuration for the given pipeline.
+      x-openapi-router-controller: openapi_server.controllers.default_controller
   /pipeline/{pipeline_id}/pull_request:
     post:
       description: |
@@ -254,6 +483,12 @@ paths:
                   description: URL of the upstream repo
                   format: uri
                   type: string
+                branch:
+                  description: Brach from the upstream repo used as the base for the
+                    pull request
+                  type: string
+              required:
+              - repo
               type: object
         required: true
         x-body-name: body
@@ -264,7 +499,7 @@ paths:
               example:
                 pull_request_url: https://github.com/EOSC-synergy/sqaaas-api-spec/pull/23
               schema:
-                $ref: '#/components/schemas/inline_response_200_2'
+                $ref: '#/components/schemas/inline_response_200_6'
           description: Successful operation
         "400":
           description: Invalid pipeline ID supplied
@@ -296,6 +531,33 @@ paths:
         schema:
           type: string
         style: simple
+      - description: Flag to indicate whether a badge shall be issued if the pipeline
+          succeds
+        explode: true
+        in: query
+        name: issue_badge
+        required: false
+        schema:
+          default: false
+          type: boolean
+        style: form
+      - description: URL of the upstream repository to fetch the code from
+        explode: true
+        in: query
+        name: repo_url
+        required: false
+        schema:
+          format: uri
+          type: string
+        style: form
+      - description: Branch name of the upstream repository to fetch the code from
+        explode: true
+        in: query
+        name: repo_branch
+        required: false
+        schema:
+          type: string
+        style: form
       responses:
         "200":
           content:
@@ -303,7 +565,7 @@ paths:
               example:
                 build_url: https://jenkins.eosc-synergy.eu/job/eosc-synergy-org/job/sqaaas-api-spec
               schema:
-                $ref: '#/components/schemas/inline_response_200'
+                $ref: '#/components/schemas/inline_response_200_4'
           description: Successful operation
         "400":
           description: Invalid pipeline ID supplied
@@ -339,12 +601,14 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_200_1'
+                $ref: '#/components/schemas/inline_response_200_5'
           description: Successful operation
         "400":
           description: Invalid pipeline ID supplied
         "404":
           description: Pipeline not found
+        "422":
+          description: Pipeline has not been executed
         "502":
           content:
             application/json:
@@ -376,34 +640,25 @@ components:
         in attempting to fulfill the request.
   schemas:
     Repository:
-      additionalProperties:
-        properties:
-          repo:
-            example: https://github.com/jenkins-docs/simple-java-maven-app
-            format: uri
-            type: string
-          branch:
-            example: master
-            type: string
-        type: object
       example:
-        simple-java-maven-app:
-          repo: https://github.com/jenkins-docs/simple-java-maven-app
-          branch: master
+      - repo: https://github.com/jenkins-docs/simple-java-maven-app
+        branch: master
+      properties:
+        repo:
+          example: https://github.com/jenkins-docs/simple-java-maven-app
+          format: uri
+          type: string
+        branch:
+          example: master
+          type: string
       title: Repository
       type: object
-    Creds_simplified:
-      additionalProperties: false
+    Creds_user_pass:
       example:
-        password_var: KEYSTORE_PASSWORD
-        passphrase_var: KEYFILE_PASSPHRASE
-        username_var: KEYFILE_USERNAME
-        keystore_var: KEYSTORE_TMP_PATH
-        keyfile_var: KEYFILE_TMP_PATH
-        variable: MY_TOKEN
-        alias_var: KEYSTORE_ALIAS_NAME
+        password_var: GIT_PASS
+        username_var: GIT_USER
         id: my-dockerhub-token
-        type: file
+        type: username_password
       properties:
         id:
           example: my-dockerhub-token
@@ -411,56 +666,40 @@ components:
           type: string
         type:
           enum:
-          - file
-          - zip
           - username_password
-          - ssh_user_private_key
           title: type
           type: string
-        keystore_var:
-          example: KEYSTORE_TMP_PATH
-          title: keystore_var
-          type: string
-        alias_var:
-          example: KEYSTORE_ALIAS_NAME
-          title: alias_var
+        username_var:
+          example: GIT_USER
+          title: username_var
           type: string
         password_var:
-          example: KEYSTORE_PASSWORD
+          example: GIT_PASS
           title: password_var
-          type: string
-        variable:
-          example: MY_TOKEN
-          title: variable
-          type: string
-        keyfile_var:
-          example: KEYFILE_TMP_PATH
-          title: keyfile_var
-          type: string
-        passphrase_var:
-          example: KEYFILE_PASSPHRASE
-          title: passphrase_var
-          type: string
-        username_var:
-          example: KEYFILE_USERNAME
-          title: username_var
           type: string
       required:
       - id
-      title: Creds_simplified
+      - password_var
+      - username_var
+      title: Creds_user_pass
       type: object
     Commands_simplified:
-      default: []
       example:
       - mvn checkstyle:check
       items:
+        minLength: 1
         type: string
+      minItems: 1
       type: array
     Tox_simplified:
       properties:
         testenv:
-          example: cover
+          default:
+          - ALL
+          example:
+          - cover
           items:
+            minLength: 1
             type: string
           title: testenv
           type: array
@@ -469,17 +708,39 @@ components:
           example: tox.ini
           title: tox_file
           type: string
-      required:
-      - testenv
       title: Tox_simplified
       type: object
+    When_branch:
+      properties:
+        pattern:
+          minLength: 1
+          title: pattern
+          type: string
+        comparator:
+          default: GLOB
+          enum:
+          - EQUALS
+          - GLOB
+          - REGEXP
+          title: comparator
+          type: string
+      required:
+      - pattern
+      title: When_branch
+      type: object
+    When_building_tag:
+      type: boolean
     CriterionBuild:
       additionalProperties:
+        minProperties: 1
         properties:
           repos:
-            additionalProperties:
+            items:
               additionalProperties: false
               properties:
+                repo_url:
+                  format: uri
+                  type: string
                 container:
                   type: string
                 commands:
@@ -487,15 +748,27 @@ components:
                 tox:
                   $ref: '#/components/schemas/Tox_simplified'
               type: object
+            type: array
+          when:
+            additionalProperties: false
+            properties:
+              branch:
+                $ref: '#/components/schemas/When_branch'
+              building_tag:
+                $ref: '#/components/schemas/When_building_tag'
             type: object
+        required:
+        - repos
         type: object
       example:
-        qc_style:
+        QC.Sty:
           repos:
             simple-java-maven-app:
               container: checkstyle
               commands:
               - mvn checkstyle:check
+          branch:
+            pattern: release-\\d+
       title: sqa_criteria
       type: object
     Environment:
@@ -512,47 +785,44 @@ components:
           JPL_IGNOREFAILURES: defined
           JPL_DOCKERPUSH: docs service1 service4
         sqa_criteria:
-          qc_style:
+          QC.Sty:
             repos:
               simple-java-maven-app:
                 container: checkstyle
                 commands:
                 - mvn checkstyle:check
+            branch:
+              pattern: release-\\d+
         config:
           project_repos:
-            simple-java-maven-app:
-              repo: https://github.com/jenkins-docs/simple-java-maven-app
+          - - repo: https://github.com/jenkins-docs/simple-java-maven-app
+              branch: master
+          - - repo: https://github.com/jenkins-docs/simple-java-maven-app
               branch: master
           credentials:
-          - password_var: KEYSTORE_PASSWORD
-            passphrase_var: KEYFILE_PASSPHRASE
-            username_var: KEYFILE_USERNAME
-            keystore_var: KEYSTORE_TMP_PATH
-            keyfile_var: KEYFILE_TMP_PATH
-            variable: MY_TOKEN
-            alias_var: KEYSTORE_ALIAS_NAME
+          - password_var: GIT_PASS
+            username_var: GIT_USER
             id: my-dockerhub-token
-            type: file
-          - password_var: KEYSTORE_PASSWORD
-            passphrase_var: KEYFILE_PASSPHRASE
-            username_var: KEYFILE_USERNAME
-            keystore_var: KEYSTORE_TMP_PATH
-            keyfile_var: KEYFILE_TMP_PATH
-            variable: MY_TOKEN
-            alias_var: KEYSTORE_ALIAS_NAME
+            type: username_password
+          - password_var: GIT_PASS
+            username_var: GIT_USER
             id: my-dockerhub-token
-            type: file
-        timeout: 0
+            type: username_password
+        timeout: 1
       properties:
         config:
           $ref: '#/components/schemas/JePL_config_config'
         sqa_criteria:
           additionalProperties:
+            minProperties: 1
             properties:
               repos:
-                additionalProperties:
+                items:
                   additionalProperties: false
                   properties:
+                    repo_url:
+                      format: uri
+                      type: string
                     container:
                       type: string
                     commands:
@@ -560,15 +830,27 @@ components:
                     tox:
                       $ref: '#/components/schemas/Tox_simplified'
                   type: object
+                type: array
+              when:
+                additionalProperties: false
+                properties:
+                  branch:
+                    $ref: '#/components/schemas/When_branch'
+                  building_tag:
+                    $ref: '#/components/schemas/When_building_tag'
                 type: object
+            required:
+            - repos
             type: object
           example:
-            qc_style:
+            QC.Sty:
               repos:
                 simple-java-maven-app:
                   container: checkstyle
                   commands:
                   - mvn checkstyle:check
+              branch:
+                pattern: release-\\d+
           title: sqa_criteria
           type: object
         environment:
@@ -580,6 +862,7 @@ components:
           title: environment
           type: object
         timeout:
+          minimum: 1
           title: timeout
           type: integer
       title: JePL_config
@@ -587,6 +870,17 @@ components:
     ServiceDockerCompose:
       additionalProperties:
         properties:
+          build:
+            properties:
+              context:
+                type: string
+              dockerfile:
+                type: string
+              args:
+                additionalProperties:
+                  type: string
+                type: object
+            type: object
           image:
             properties:
               name:
@@ -601,6 +895,8 @@ components:
                   credential_id:
                     type: string
                 type: object
+            required:
+            - name
             type: object
           hostname:
             type: string
@@ -621,9 +917,17 @@ components:
             type: string
           environment:
             $ref: '#/components/schemas/Environment'
+          oneshot:
+            default: true
+            type: boolean
         type: object
       example:
         checkstyle:
+          build:
+            context: ./dir
+            dockerfile: Dockerfile-alternate
+            args:
+              buildno: 1
           image:
             name: checkstyle/maven-builder-image
             registry:
@@ -642,6 +946,11 @@ components:
       example:
         services:
           checkstyle:
+            build:
+              context: ./dir
+              dockerfile: Dockerfile-alternate
+              args:
+                buildno: 1
             image:
               name: checkstyle/maven-builder-image
               registry:
@@ -663,6 +972,17 @@ components:
         services:
           additionalProperties:
             properties:
+              build:
+                properties:
+                  context:
+                    type: string
+                  dockerfile:
+                    type: string
+                  args:
+                    additionalProperties:
+                      type: string
+                    type: object
+                type: object
               image:
                 properties:
                   name:
@@ -677,6 +997,8 @@ components:
                       credential_id:
                         type: string
                     type: object
+                required:
+                - name
                 type: object
               hostname:
                 type: string
@@ -697,9 +1019,17 @@ components:
                 type: string
               environment:
                 $ref: '#/components/schemas/Environment'
+              oneshot:
+                default: true
+                type: boolean
             type: object
           example:
             checkstyle:
+              build:
+                context: ./dir
+                dockerfile: Dockerfile-alternate
+                args:
+                  buildno: 1
               image:
                 name: checkstyle/maven-builder-image
                 registry:
@@ -754,75 +1084,66 @@ components:
             JPL_IGNOREFAILURES: defined
             JPL_DOCKERPUSH: docs service1 service4
           sqa_criteria:
-            qc_style:
+            QC.Sty:
               repos:
                 simple-java-maven-app:
                   container: checkstyle
                   commands:
                   - mvn checkstyle:check
+              branch:
+                pattern: release-\\d+
           config:
             project_repos:
-              simple-java-maven-app:
-                repo: https://github.com/jenkins-docs/simple-java-maven-app
+            - - repo: https://github.com/jenkins-docs/simple-java-maven-app
+                branch: master
+            - - repo: https://github.com/jenkins-docs/simple-java-maven-app
                 branch: master
             credentials:
-            - password_var: KEYSTORE_PASSWORD
-              passphrase_var: KEYFILE_PASSPHRASE
-              username_var: KEYFILE_USERNAME
-              keystore_var: KEYSTORE_TMP_PATH
-              keyfile_var: KEYFILE_TMP_PATH
-              variable: MY_TOKEN
-              alias_var: KEYSTORE_ALIAS_NAME
+            - password_var: GIT_PASS
+              username_var: GIT_USER
               id: my-dockerhub-token
-              type: file
-            - password_var: KEYSTORE_PASSWORD
-              passphrase_var: KEYFILE_PASSPHRASE
-              username_var: KEYFILE_USERNAME
-              keystore_var: KEYSTORE_TMP_PATH
-              keyfile_var: KEYFILE_TMP_PATH
-              variable: MY_TOKEN
-              alias_var: KEYSTORE_ALIAS_NAME
+              type: username_password
+            - password_var: GIT_PASS
+              username_var: GIT_USER
               id: my-dockerhub-token
-              type: file
-          timeout: 0
+              type: username_password
+          timeout: 1
         - environment:
             JPL_IGNOREFAILURES: defined
             JPL_DOCKERPUSH: docs service1 service4
           sqa_criteria:
-            qc_style:
+            QC.Sty:
               repos:
                 simple-java-maven-app:
                   container: checkstyle
                   commands:
                   - mvn checkstyle:check
+              branch:
+                pattern: release-\\d+
           config:
             project_repos:
-              simple-java-maven-app:
-                repo: https://github.com/jenkins-docs/simple-java-maven-app
+            - - repo: https://github.com/jenkins-docs/simple-java-maven-app
+                branch: master
+            - - repo: https://github.com/jenkins-docs/simple-java-maven-app
                 branch: master
             credentials:
-            - password_var: KEYSTORE_PASSWORD
-              passphrase_var: KEYFILE_PASSPHRASE
-              username_var: KEYFILE_USERNAME
-              keystore_var: KEYSTORE_TMP_PATH
-              keyfile_var: KEYFILE_TMP_PATH
-              variable: MY_TOKEN
-              alias_var: KEYSTORE_ALIAS_NAME
+            - password_var: GIT_PASS
+              username_var: GIT_USER
               id: my-dockerhub-token
-              type: file
-            - password_var: KEYSTORE_PASSWORD
-              passphrase_var: KEYFILE_PASSPHRASE
-              username_var: KEYFILE_USERNAME
-              keystore_var: KEYSTORE_TMP_PATH
-              keyfile_var: KEYFILE_TMP_PATH
-              variable: MY_TOKEN
-              alias_var: KEYSTORE_ALIAS_NAME
+              type: username_password
+            - password_var: GIT_PASS
+              username_var: GIT_USER
               id: my-dockerhub-token
-              type: file
-          timeout: 0
+              type: username_password
+          timeout: 1
         composer_data:
           services:
             checkstyle:
+              build:
+                context: ./dir
+                dockerfile: Dockerfile-alternate
+                args:
+                  buildno: 1
               image:
                 name: checkstyle/maven-builder-image
                 registry:
@@ -868,6 +1189,7 @@ components:
           type: string
         name:
           example: sqaaas-api-spec
+          format: '[A-Za-z0-9_.-]'
           title: name
           type: string
         config_data:
@@ -894,6 +1216,43 @@ components:
       - upstream_status
       title: UpstreamError
       type: object
+    Badge:
+      example:
+        openBadgeId: https://api.eu.badgr.io/public/assertions/KSwijifTQ_-I1lb9FtX1bw
+        createdAt: 2021-04-07T10:34:02.960Z
+        createdBy: e3h49VVbQRKQphuAAmxpgQ
+        badgeclass: sBS3EsJQRAC0ENTmvETtQw
+        issuer: aS1lWKgIR4u8bGjPZUzAyg
+        image: https://api.eu.badgr.io/public/assertions/KSwijifTQ_-I1lb9FtX1bw/image
+        recipient:
+          identity: sha256$5cb2939f3ae83961b31407fbfd2978e5c642177e50227eb0c7f550c0653803dc
+          hashed: true
+          type: url
+          plaintextIdentity: https://github.com/EOSC-synergy/test-sqaaas-web.sqaaas/commit/41a4a73505f407d57e7ed600dd5de7cf963feda3
+        issuedOn: 2021-04-07T10:07:00.000Z
+      properties:
+        openBadgeID:
+          format: uri
+          type: string
+        createdAt:
+          format: date-time
+          type: string
+        createdBy:
+          type: string
+        badgeClass:
+          type: string
+        issuer:
+          type: string
+        image:
+          format: uri
+          type: string
+        recipient:
+          $ref: '#/components/schemas/Badge_recipient'
+        issuedOn:
+          format: date-time
+          type: string
+      title: Badge
+      type: object
     inline_response_201:
       example:
         id: id
@@ -906,16 +1265,191 @@ components:
       type: object
     inline_response_200:
       example:
+        file_name: '{"file_name":"config.yml"}'
+        content:
+          QC.Sty:
+            repos:
+              simple-java-maven-app:
+                container: checkstyle
+                commands:
+                - mvn checkstyle:check
+            branch:
+              pattern: release-\\d+
+      properties:
+        file_name:
+          example: '{"file_name":"config.yml"}'
+          title: file_name
+          type: string
+        content:
+          additionalProperties:
+            minProperties: 1
+            properties:
+              repos:
+                items:
+                  additionalProperties: false
+                  properties:
+                    repo_url:
+                      format: uri
+                      type: string
+                    container:
+                      type: string
+                    commands:
+                      $ref: '#/components/schemas/Commands_simplified'
+                    tox:
+                      $ref: '#/components/schemas/Tox_simplified'
+                  type: object
+                type: array
+              when:
+                additionalProperties: false
+                properties:
+                  branch:
+                    $ref: '#/components/schemas/When_branch'
+                  building_tag:
+                    $ref: '#/components/schemas/When_building_tag'
+                type: object
+            required:
+            - repos
+            type: object
+          example:
+            QC.Sty:
+              repos:
+                simple-java-maven-app:
+                  container: checkstyle
+                  commands:
+                  - mvn checkstyle:check
+              branch:
+                pattern: release-\\d+
+          title: sqa_criteria
+          type: object
+      title: inline_response_200
+      type: object
+    inline_response_200_1:
+      example:
+        file_name: '{"file_name":"script.sh"}'
+        content: |-
+          (
+          cd workdir ; npm install
+          )
+      properties:
+        file_name:
+          example: '{"file_name":"script.sh"}'
+          title: file_name
+          type: string
+        content:
+          example: |-
+            (
+            cd workdir ; npm install
+            )
+          title: content
+          type: string
+      title: inline_response_200_1
+      type: object
+    inline_response_200_2:
+      example:
+        file_name: '{"file_name":"docker-compose.yml"}'
+        content:
+          services:
+            checkstyle:
+              build:
+                context: ./dir
+                dockerfile: Dockerfile-alternate
+                args:
+                  buildno: 1
+              image:
+                name: checkstyle/maven-builder-image
+                registry:
+                  push: true
+                  url: https://hub.docker.com/
+                  credential_id: my-dockerhub-cred
+              hostname: checkstyle-host
+              volumes:
+              - source: ./
+                target: ./simple-java-app
+                type: bind
+              command: sleep 600000
+          version: "3.7"
+      properties:
+        file_name:
+          example: '{"file_name":"docker-compose.yml"}'
+          title: file_name
+          type: string
+        content:
+          $ref: '#/components/schemas/JePL_composer'
+      title: inline_response_200_2
+      type: object
+    inline_response_200_3:
+      example:
+        file_name: Jenkinsfile
+        content: |-
+          @Library(['github.com/indigo-dc/jenkins-pipeline-library@release/2.1.0']) _
+
+          def projectConfig
+
+          pipeline {
+              agent any
+
+              stages {
+                  stage('SQA baseline criterion: QC.Sty') {
+                      when {
+                          branch pattern: 'sqaaas', comparator: ''
+                      }
+                      steps {
+                          script {
+                              projectConfig = pipelineConfig(
+                                  configFile: '.sqa/config.yml',
+                                  scmConfigs: [ localBranch: true ]
+                              )
+                              buildStages(projectConfig)
+                          }
+                      }
+                      post {
+                          cleanup {
+                              cleanWs()
+                          }
+                      }
+                  }
+                  stage('SQA baseline criterion: QC.Doc') {
+                      when {
+                          branch pattern: 'build', comparator: ''
+                      }
+                      steps {
+                          script {
+                              projectConfig = pipelineConfig(
+                                  configFile: '.sqa/config.snappy-peach-chicken.yml',
+                                  scmConfigs: [ localBranch: true ]
+                              )
+                              buildStages(projectConfig)
+                          }
+                      }
+                      post {
+                          cleanup {
+                              cleanWs()
+                          }
+                      }
+                  }
+              }
+          }
+      properties:
+        file_name:
+          example: '{"file_name":"Jenkinsfile"}'
+          type: string
+        content:
+          type: string
+      title: inline_response_200_3
+      type: object
+    inline_response_200_4:
+      example:
         build_url: https://openapi-generator.tech
       properties:
         build_url:
           format: uri
           title: build_url
           type: string
-      title: inline_response_200
+      title: inline_response_200_4
       type: object
-    inline_response_200_1:
+    inline_response_200_5:
       example:
+        openbadge_id: https://openapi-generator.tech
         build_status: success
         build_url: https://openapi-generator.tech
       properties:
@@ -933,7 +1467,11 @@ components:
           - waiting_scan_org
           title: build_status
           type: string
-      title: inline_response_200_1
+        openbadge_id:
+          format: uri
+          title: openbadge_id
+          type: string
+      title: inline_response_200_5
       type: object
     inline_object:
       properties:
@@ -941,8 +1479,14 @@ components:
           description: URL of the upstream repo
           format: uri
           type: string
+        branch:
+          description: Brach from the upstream repo used as the base for the pull
+            request
+          type: string
+      required:
+      - repo
       type: object
-    inline_response_200_2:
+    inline_response_200_6:
       example:
         pull_request_url: https://openapi-generator.tech
       properties:
@@ -950,54 +1494,33 @@ components:
           format: uri
           title: pull_request_url
           type: string
-      title: inline_response_200_2
+      title: inline_response_200_6
       type: object
     JePL_config_config:
       example:
         project_repos:
-          simple-java-maven-app:
-            repo: https://github.com/jenkins-docs/simple-java-maven-app
+        - - repo: https://github.com/jenkins-docs/simple-java-maven-app
+            branch: master
+        - - repo: https://github.com/jenkins-docs/simple-java-maven-app
             branch: master
         credentials:
-        - password_var: KEYSTORE_PASSWORD
-          passphrase_var: KEYFILE_PASSPHRASE
-          username_var: KEYFILE_USERNAME
-          keystore_var: KEYSTORE_TMP_PATH
-          keyfile_var: KEYFILE_TMP_PATH
-          variable: MY_TOKEN
-          alias_var: KEYSTORE_ALIAS_NAME
+        - password_var: GIT_PASS
+          username_var: GIT_USER
           id: my-dockerhub-token
-          type: file
-        - password_var: KEYSTORE_PASSWORD
-          passphrase_var: KEYFILE_PASSPHRASE
-          username_var: KEYFILE_USERNAME
-          keystore_var: KEYSTORE_TMP_PATH
-          keyfile_var: KEYFILE_TMP_PATH
-          variable: MY_TOKEN
-          alias_var: KEYSTORE_ALIAS_NAME
+          type: username_password
+        - password_var: GIT_PASS
+          username_var: GIT_USER
           id: my-dockerhub-token
-          type: file
+          type: username_password
       properties:
         project_repos:
-          additionalProperties:
-            properties:
-              repo:
-                example: https://github.com/jenkins-docs/simple-java-maven-app
-                format: uri
-                type: string
-              branch:
-                example: master
-                type: string
-            type: object
-          example:
-            simple-java-maven-app:
-              repo: https://github.com/jenkins-docs/simple-java-maven-app
-              branch: master
-          title: Repository
-          type: object
+          items:
+            $ref: '#/components/schemas/Repository'
+          title: project_repos
+          type: array
         credentials:
           items:
-            $ref: '#/components/schemas/Creds_simplified'
+            $ref: '#/components/schemas/Creds_user_pass'
           title: credentials
           type: array
       title: JePL_config_config
@@ -1064,4 +1587,25 @@ components:
         pipeline_config:
           $ref: '#/components/schemas/JePL_jenkinsfile_pipeline_config'
       title: JePL_jenkinsfile_stages
+      type: object
+    Badge_recipient:
+      properties:
+        identity:
+          title: identity
+          type: string
+        hashed:
+          title: hashed
+          type: boolean
+        type:
+          enum:
+          - email
+          - openBadgeId
+          - telephone
+          - url
+          title: type
+          type: string
+        plaintextIdentity:
+          title: plaintextIdentity
+          type: string
+      title: Badge_recipient
       type: object

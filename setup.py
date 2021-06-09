@@ -16,9 +16,10 @@ VERSION = "1.0.0"
 REQUIRES = [
     "connexion==2.6.0",
     "swagger-ui-bundle==0.0.6",
-    "aiohttp_jinja2==1.2.0",
     "PyGithub>=1.53",
-    "python-jenkins>=1.7.0"
+    "python-jenkins>=1.7.0",
+    "deepdiff>=5.2.3"
+    "GitPython>=3.1.17"
 ]
 
 setup(
@@ -34,6 +35,8 @@ setup(
         'LICENSE',
         'openapi/openapi.yaml',
         'templates/Jenkinsfile',
+        'templates/embed_badge.html',
+        'templates/commands_script.sh',
         '../etc/sqaaas.ini.sample']},
     include_package_data=False,
     entry_points={

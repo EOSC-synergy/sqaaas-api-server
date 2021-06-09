@@ -3,6 +3,7 @@ import requests
 import time
 
 from urllib.parse import urljoin
+from urllib.parse import quote_plus
 
 import jenkins
 
@@ -28,6 +29,16 @@ class JenkinsUtils(object):
             password = self.access_token)
         self.logger = logging.getLogger('sqaaas_api.jenkins')
 
+    @staticmethod
+    def format_job_name(job_name):
+        """Format job name according to what is expected by Jenkins.
+
+        Slash symbol '/' is double-encoded: ''%252F' instead of '%2F'
+
+        :param job_name: Name of the Jenkins job
+        """
+        return quote_plus(job_name.replace('/', '%2F'))
+
     def scan_organization(self, org_name='eosc-synergy-org'):
         path = '/job/%s/build?delay=0' % org_name
         r = requests.post(
@@ -40,7 +51,8 @@ class JenkinsUtils(object):
         job_info = {}
         try:
             job_info = self.server.get_job_info(name, depth=depth)
-            self.logger.debug('Information job <%s> obtained from Jenkins' % name)
+            self.logger.debug('Information for job <%s> obtained from Jenkins: %s' % (
+                name, job_info))
         except jenkins.JenkinsException:
             self.logger.error('No info could be fetched for Jenkins job <%s>' % name)
         return job_info
@@ -53,20 +65,39 @@ class JenkinsUtils(object):
         return self.get_job_info(job_name)
 
     def build_job(self, full_job_name):
-        item_no = self.server.build_job(full_job_name)
-        self.logger.debug('Triggered job build (queue item number: %s)' % item_no)
-        queue_data = {}
-        sleep_time_seconds = 15
-        while 'executable' not in list(queue_data):
-            self.logger.debug('Waiting for job to start (sleeping %s seconds)..' % sleep_time_seconds)
-            time.sleep(sleep_time_seconds)
-            queue_data = self.server.get_queue_item(item_no)
+        """Build existing job.
 
-        return queue_data['executable']
+        :param full_job_name: job name including folder/s, name & branch
+        """
+        item_no = None
+        try:
+            item_no = self.server.build_job(full_job_name)
+        except Exception:
+            self.logger.warning('Job <%s> has not been queued yet')
+        else:
+            self.logger.debug('Triggered job build (queue item number: %s)' % item_no)
+        return item_no
 
-    def get_build_status(self, full_job_name, build_no):
+    def get_queue_item(self, item_no):
+        """Get the status of the build item in the Jenkins queue.
+
+        :param item_no: item number in the Jenkins queue.
+        """
+        queue_data = self.server.get_queue_item(item_no)
+        executable_data = None
+        if 'executable' not in list(queue_data):
+            self.logger.debug('Waiting for job to start. Queue item: %s' % queue_data['url'])
+        else:
+            executable_data = queue_data['executable']
+            if executable_data:
+                self.logger.debug('Job started the execution (url: %s, number: %s)' % (
+                    executable_data['url'], executable_data['number']
+                ))
+        return executable_data
+
+    def get_build_info(self, full_job_name, build_no, depth=0):
         self.logger.debug('Getting status for job <%s> (build_no: %s)' % (full_job_name, build_no))
-        return self.server.get_build_info(full_job_name, build_no)['result']
+        return self.server.get_build_info(full_job_name, build_no, depth=depth)['result']
 
     def delete_job(self, full_job_name):
         self.logger.debug('Deleting Jenkins job: %s' % full_job_name)
