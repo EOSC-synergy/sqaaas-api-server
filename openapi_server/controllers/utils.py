@@ -177,6 +177,7 @@ class ProcessExtraData(object):
         :param repo_name: Relative repo checkout path
         :param composer_json: Composer data (JSON)
         """
+        logger.debug('Call to ProcessExtraData.set_build_context() method')
         if service_name:
             try:
                 composer_json['services'][service_name]['build']['context'] = repo_name
@@ -197,6 +198,7 @@ class ProcessExtraData(object):
         :param repo_checkout_dir: Relative repo checkout path
         :param repos_data: The individual repository data
         """
+        logger.debug('Call to ProcessExtraData.set_tox_env() method')
         repo_key = repo_checkout_dir
         if repo_checkout_dir in ['.']:
             repo_key = 'this_repo'
@@ -307,6 +309,9 @@ def process_extra_data(config_json, composer_json):
             oneshot = srv_data.pop('oneshot')
         if oneshot:
             srv_data['command'] = 'sleep 6000000'
+        ## Set default build:context to '.'
+        if 'build' in list(srv_data):
+            ProcessExtraData.set_build_context(srv_name, '.', composer_json)
 
     composer_data = {'data_json': composer_json}
 
