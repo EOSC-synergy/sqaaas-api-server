@@ -9,7 +9,6 @@ from zipfile import ZipFile, ZipInfo
 
 from aiohttp import web
 from jinja2 import Environment, PackageLoader
-from urllib.parse import urlparse
 from deepdiff import DeepDiff
 import namegenerator
 
@@ -593,18 +592,15 @@ async def create_pull_request(request: web.Request, pipeline_id, body) -> web.Re
     jenkinsfile = pipeline_data['data']['jenkinsfile']
 
     body = InlineObject.from_dict(body)
-    url_parsed = urlparse(body.repo)
-    if not utils.supported_git_platform(body.repo, platforms=SUPPORTED_PLATFORMS):
+    supported_platform = utils.supported_git_platform(body.repo, platforms=SUPPORTED_PLATFORMS)
+    if not supported_platform:
         _reason = ('Git platform <%s> is currently not supported for creating pull '
                    'requests (choose between: %s)' % (
-                       url_parsed.netloc,
+                       supported_platform,
                        SUPPORTED_PLATFORMS.keys()))
         logger.error(_reason)
         return web.Response(status=422, reason=_reason, text=_reason)
-    target_repo_name = url_parsed.path
-    # Format target_repo_name
-    target_repo_name = target_repo_name.lstrip('/')
-    target_repo_name = target_repo_name.rsplit('.git')[0]
+    target_repo_name = ctls_utils.get_short_repo_name(body.repo)
     logger.debug('Target repository (base) formatted. Resultant name: %s' % target_repo_name)
     target_repo = gh_utils.get_repository(
         target_repo_name, raise_exception=True)
@@ -882,3 +878,40 @@ async def get_badge(request: web.Request, pipeline_id, share=None) -> web.Respon
         )
 
     return web.json_response(badge_data, status=200)
+
+
+async def get_criteria_by_id(request: web.Request, criterion_id) -> web.Response:
+    """Returns information about a specific criterion, including tool support.
+
+    :param criterion_id: ID of the criterion
+    :type criterion_id: str
+
+    """
+    tooling_repo_url = config.get(
+        'tooling_repo_url',
+        fallback='https://github.com/EOSC-synergy/sqa-composer-templates'
+    )
+    tooling_repo_branch = config.get(
+        'tooling_repo_branch',
+        fallback='main'
+    )
+    tooling_metadata_file = config.get(
+        'tooling_metadata_file',
+        fallback='tooling.json'
+    )
+    platform = ctls_utils.supported_git_platform(
+        tooling_repo_url, platforms=SUPPORTED_PLATFORMS)
+    logger.debug('Getting supported tools from <%s> repo (metadata file: %s)' % (
+        tooling_repo_url, tooling_metadata_file))
+    tooling_metadata_json = {}
+    if platform in ['github']:
+        gh_content = ctls_utils.get_short_repo_name(tooling_repo_url)
+        tooling_metadata = gh_utils.get_file(
+            tooling_metadata_file, short_repo_url, branch=tooling_repo_branch)
+        tooling_metadata_encoded = gh_content.content
+        tooling_metadata_decoded = base64.b64decode(tooling_metadata_encoded).decode('UTF-8')
+        tooling_metadata_json = json.loads(tooling_metadata_decoded)
+    else:
+        raise NotImplementedError(('Getting tooling metadata from a non-Github '
+                                   'repo is not currently supported'))
+    return web.Response(status=200)

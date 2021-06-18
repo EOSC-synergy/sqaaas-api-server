@@ -440,7 +440,7 @@ def format_git_url(repo_url):
     return repo_url_final.geturl()
 
 
-def supported_git_platform(repo_url, supported_platforms)
+def supported_git_platform(repo_url, platforms):
     """Checks if the given repo_url belongs to any of the supported platforms.
 
     Returns the key of the git platform in case it matches with any of the supported
@@ -454,6 +454,20 @@ def supported_git_platform(repo_url, supported_platforms)
     if not netloc_without_extension in list(platforms):
         netloc_without_extension = None
     return netloc_without_extension
+
+
+def get_short_repo_name(repo_url):
+    """Returns the short name of the git repo, i.e. <user/org>/<repo_name>.
+
+    :param repo_url: URL of the git repository
+    """
+    url_parsed = urlparse(repo_url)
+    short_repo_name = url_parsed.path
+    # cleanup
+    short_repo_name = short_repo_name.lstrip('/')
+    short_repo_name = short_repo_name.rsplit('.git')[0]
+    logger.debug('Short repository name for <%s>: %s' % (repo_url, short_repo_name))
+    return short_repo_name
 
 
 # NOTE (workaround) Back to the old criteria codes from JePL 2.1.0
