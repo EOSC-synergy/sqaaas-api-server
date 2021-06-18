@@ -11,6 +11,12 @@ repository_backend = github
 ## ------------------------------------------ ##
 ## - Path to the JSON file used as DB
 # db_file = /sqaaas/sqaaas.json
+## - Criteria tooling: repository URL
+# tooling_repo_url = https://github.com/EOSC-synergy/sqa-composer-templates
+## - Criteria tooling: repository branch
+# tooling_repo_branch = main
+## - Criteria tooling: metadata (relative path from <tooling_repo_url>)
+# tooling_metadata_file = tooling.json
 
 
 [jenkins]

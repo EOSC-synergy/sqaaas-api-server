@@ -15,6 +15,33 @@ servers:
 - description: Development API server (mock server)
   url: https://api-dev.sqaaas.eosc-synergy.eu
 paths:
+  /criteria/{criterion_id}:
+    get:
+      operationId: get_criteria_by_id
+      parameters:
+      - description: ID of the criterion
+        explode: false
+        in: path
+        name: criterion_id
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/Criterion'
+                type: array
+          description: Successful operation
+        "400":
+          description: Invalid criterion supplied
+        "404":
+          description: Criterion not found
+      summary: Returns information about a specific criterion, including tool support.
+      x-openapi-router-controller: openapi_server.controllers.default_controller
   /pipeline:
     get:
       description: |
@@ -499,7 +526,7 @@ paths:
               example:
                 pull_request_url: https://github.com/EOSC-synergy/sqaaas-api-spec/pull/23
               schema:
-                $ref: '#/components/schemas/inline_response_200_6'
+                $ref: '#/components/schemas/inline_response_200_5'
           description: Successful operation
         "400":
           description: Invalid pipeline ID supplied
@@ -559,13 +586,7 @@ paths:
           type: string
         style: form
       responses:
-        "200":
-          content:
-            application/json:
-              example:
-                build_url: https://jenkins.eosc-synergy.eu/job/eosc-synergy-org/job/sqaaas-api-spec
-              schema:
-                $ref: '#/components/schemas/inline_response_200_4'
+        "204":
           description: Successful operation
         "400":
           description: Invalid pipeline ID supplied
@@ -601,7 +622,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_200_5'
+                $ref: '#/components/schemas/inline_response_200_4'
           description: Successful operation
         "400":
           description: Invalid pipeline ID supplied
@@ -639,6 +660,54 @@ components:
         an invalid response from the upstream server it accessed
         in attempting to fulfill the request.
   schemas:
+    Tool:
+      example:
+        docs: https://openapi-generator.tech
+        jepl_support: true
+        docker:
+          image: image
+          reviewed: 2000-01-23
+      properties:
+        jepl_support:
+          title: jepl_support
+          type: boolean
+        docs:
+          format: uri
+          title: docs
+          type: string
+        docker:
+          $ref: '#/components/schemas/Tool_docker'
+      title: Tool
+      type: object
+    Criterion:
+      example:
+        id: QC.Sty
+        tools:
+          key:
+          - docs: https://openapi-generator.tech
+            jepl_support: true
+            docker:
+              image: image
+              reviewed: 2000-01-23
+          - docs: https://openapi-generator.tech
+            jepl_support: true
+            docker:
+              image: image
+              reviewed: 2000-01-23
+      properties:
+        id:
+          example: QC.Sty
+          title: id
+          type: string
+        tools:
+          additionalProperties:
+            items:
+              $ref: '#/components/schemas/Tool'
+            type: array
+          title: tools
+          type: object
+      title: Criterion
+      type: object
     Repository:
       example:
       - repo: https://github.com/jenkins-docs/simple-java-maven-app
@@ -1439,16 +1508,6 @@ components:
       type: object
     inline_response_200_4:
       example:
-        build_url: https://openapi-generator.tech
-      properties:
-        build_url:
-          format: uri
-          title: build_url
-          type: string
-      title: inline_response_200_4
-      type: object
-    inline_response_200_5:
-      example:
         openbadge_id: https://openapi-generator.tech
         build_status: success
         build_url: https://openapi-generator.tech
@@ -1471,7 +1530,7 @@ components:
           format: uri
           title: openbadge_id
           type: string
-      title: inline_response_200_5
+      title: inline_response_200_4
       type: object
     inline_object:
       properties:
@@ -1486,7 +1545,7 @@ components:
       required:
       - repo
       type: object
-    inline_response_200_6:
+    inline_response_200_5:
       example:
         pull_request_url: https://openapi-generator.tech
       properties:
@@ -1494,7 +1553,21 @@ components:
           format: uri
           title: pull_request_url
           type: string
-      title: inline_response_200_6
+      title: inline_response_200_5
+      type: object
+    Tool_docker:
+      example:
+        image: image
+        reviewed: 2000-01-23
+      properties:
+        image:
+          title: image
+          type: string
+        reviewed:
+          format: date
+          title: reviewed
+          type: string
+      title: Tool_docker
       type: object
     JePL_config_config:
       example:
