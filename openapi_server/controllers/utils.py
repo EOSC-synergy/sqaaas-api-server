@@ -440,6 +440,22 @@ def format_git_url(repo_url):
     return repo_url_final.geturl()
 
 
+def supported_git_platform(repo_url, supported_platforms)
+    """Checks if the given repo_url belongs to any of the supported platforms.
+
+    Returns the key of the git platform in case it matches with any of the supported
+    platforms. Otherwise, returns None.
+
+    :param repo_url: URL of the git repository
+    :param platforms: Dict with the git supported platforms (e.g {'github': 'https://github.com'})
+    """
+    url_parsed = urlparse(repo_url)
+    netloc_without_extension = url_parsed.netloc.split('.')[0]
+    if not netloc_without_extension in list(platforms):
+        netloc_without_extension = None
+    return netloc_without_extension
+
+
 # NOTE (workaround) Back to the old criteria codes from JePL 2.1.0
 # FIXME by removing when using JePL > 2.1.0
 def rekey_criteria_codes(record):

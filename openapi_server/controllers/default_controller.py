@@ -585,8 +585,7 @@ async def create_pull_request(request: web.Request, pipeline_id, body) -> web.Re
 
     body = InlineObject.from_dict(body)
     url_parsed = urlparse(body.repo)
-    netloc_without_extension = url_parsed.netloc.split('.')[0]
-    if not netloc_without_extension in SUPPORTED_PLATFORMS:
+    if not utils.supported_git_platform(body.repo, platforms=SUPPORTED_PLATFORMS):
         _reason = ('Git platform <%s> is currently not supported for creating pull '
                    'requests (choose between: %s)' % (
                        url_parsed.netloc,
