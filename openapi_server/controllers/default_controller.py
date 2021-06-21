@@ -904,10 +904,10 @@ async def _get_criterion_tooling(criterion_id, metadata_json):
     return criterion_data_list
 
 
-async def get_criteria_by_id(request: web.Request, criterion_id) -> web.Response:
-    """Returns information about a specific criterion, including tool support.
+async def get_criteria(request: web.Request, criterion_id=None) -> web.Response:
+    """Returns data about criteria.
 
-    :param criterion_id: ID of the criterion
+    :param criterion_id: Get data from a specific criterion
     :type criterion_id: str
 
     """
@@ -940,11 +940,16 @@ async def get_criteria_by_id(request: web.Request, criterion_id) -> web.Response
         raise NotImplementedError(('Getting tooling metadata from a non-Github '
                                    'repo is not currently supported'))
 
+    r = []
+    criteria_id_list = list(tooling_metadata_json['criteria'])
+    if criterion_id:
+        criteria_id_list = [criterion_id]
     try:
-        tooling_data = await _get_criterion_tooling(
-            criterion_id, tooling_metadata_json)
+        for criterion in criteria_id_list:
+            tooling_data = await _get_criterion_tooling(
+                criterion, tooling_metadata_json)
+            r.append({'id': criterion, 'tools': tooling_data})
     except SQAaaSAPIException as e:
         return web.Response(status=e.http_code, reason=e.message, text=e.message)
 
-    r = {'id': criterion_id, 'tools': tooling_data}
     return web.json_response(r, status=200)
