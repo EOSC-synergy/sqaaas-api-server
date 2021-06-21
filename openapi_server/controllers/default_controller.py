@@ -937,10 +937,10 @@ async def get_criteria_by_id(request: web.Request, criterion_id) -> web.Response
         tooling_repo_url, platforms=SUPPORTED_PLATFORMS)
     tooling_metadata_json = {}
     if platform in ['github']:
-        gh_content = ctls_utils.get_short_repo_name(tooling_repo_url)
-        tooling_metadata = gh_utils.get_file(
-            tooling_metadata_file, short_repo_url, branch=tooling_repo_branch)
-        tooling_metadata_encoded = gh_content.content
+        short_repo_name = ctls_utils.get_short_repo_name(tooling_repo_url)
+        tooling_metadata_content = gh_utils.get_file(
+            tooling_metadata_file, short_repo_name, branch=tooling_repo_branch)
+        tooling_metadata_encoded = tooling_metadata_content.content
         tooling_metadata_decoded = base64.b64decode(tooling_metadata_encoded).decode('UTF-8')
         tooling_metadata_json = json.loads(tooling_metadata_decoded)
     else:
