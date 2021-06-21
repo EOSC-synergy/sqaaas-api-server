@@ -873,7 +873,7 @@ async def get_badge(request: web.Request, pipeline_id, share=None) -> web.Respon
     return web.json_response(badge_data, status=200)
 
 
-async def _get_tooling_per_criterion(criterion_id, metadata_json):
+async def _get_criterion_tooling(criterion_id, metadata_json):
     """Sorts out the criterion information to be returned in the HTTP response.
 
     :param criterion_id: ID of the criterion
