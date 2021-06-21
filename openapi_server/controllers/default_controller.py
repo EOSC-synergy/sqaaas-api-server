@@ -882,7 +882,7 @@ async def _get_criterion_tooling(criterion_id, metadata_json):
     :type metadata_json: dict
     """
     try:
-        criterion_data = metadata_json['criteria'][criterion_id]
+        criterion_data = metadata_json['criteria'][criterion_id]['tools']
     except Exception as e:
         _reason = 'Cannot find tooling information for criterion <%s> in metadata: %s' % (
             criterion_id, metadata_json)
