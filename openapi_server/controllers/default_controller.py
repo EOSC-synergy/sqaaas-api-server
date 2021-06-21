@@ -941,7 +941,7 @@ async def get_criteria_by_id(request: web.Request, criterion_id) -> web.Response
                                    'repo is not currently supported'))
 
     try:
-        tooling_data = _get_criterion_tooling(
+        tooling_data = await _get_criterion_tooling(
             criterion_id, tooling_metadata_json)
     except SQAaaSAPIException as e:
         return web.Response(status=e.http_code, reason=e.message, text=e.message)
