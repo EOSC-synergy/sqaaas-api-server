@@ -871,6 +871,37 @@ async def get_badge(request: web.Request, pipeline_id, share=None) -> web.Respon
     return web.json_response(badge_data, status=200)
 
 
+async def _get_tooling_per_criterion(criterion_id, metadata_json):
+    """Sorts out the criterion information to be returned in the HTTP response.
+
+    :param criterion_id: ID of the criterion
+    :type criterion_id: str
+    :param metadata_json: JSON with the metadata
+    :type metadata_json: dict
+    """
+    try:
+        criterion_data = metadata_json['criteria'][criterion_id]
+    except Exception as e:
+        _reason = 'Cannot find tooling information for criterion <%s> in metadata: %s' % (
+            criterion_id, metadata_json)
+        logger.error(_reason)
+        raise SQAaaSAPIException(502, _reason)
+
+    criterion_data_list = []
+    for lang, tools in criterion_data.items():
+        for tool in tools:
+            d = {}
+            try:
+                d[tool] = metadata_json['tools'][lang][tool]
+                d[tool]['lang'] = lang
+            except KeyError:
+                logger.warn('Cannot find data for tool <%s> (lang: %s)' % (
+                    tool, lang))
+            if d:
+                criterion_data_list.append(d)
+    return criterion_data_list
+
+
 async def get_criteria_by_id(request: web.Request, criterion_id) -> web.Response:
     """Returns information about a specific criterion, including tool support.
 
@@ -890,10 +921,11 @@ async def get_criteria_by_id(request: web.Request, criterion_id) -> web.Response
         'tooling_metadata_file',
         fallback='tooling.json'
     )
-    platform = ctls_utils.supported_git_platform(
-        tooling_repo_url, platforms=SUPPORTED_PLATFORMS)
+
     logger.debug('Getting supported tools from <%s> repo (metadata file: %s)' % (
         tooling_repo_url, tooling_metadata_file))
+    platform = ctls_utils.supported_git_platform(
+        tooling_repo_url, platforms=SUPPORTED_PLATFORMS)
     tooling_metadata_json = {}
     if platform in ['github']:
         gh_content = ctls_utils.get_short_repo_name(tooling_repo_url)
@@ -905,4 +937,12 @@ async def get_criteria_by_id(request: web.Request, criterion_id) -> web.Response
     else:
         raise NotImplementedError(('Getting tooling metadata from a non-Github '
                                    'repo is not currently supported'))
-    return web.Response(status=200)
+
+    try:
+        tooling_data = _get_criterion_tooling(
+            criterion_id, tooling_metadata_json)
+    except SQAaaSAPIException as e:
+        return web.Response(status=e.http_code, reason=e.message, text=e.message)
+
+    r = {'id': criterion_id, 'tools': tooling_data}
+    return web.json_response(r, status=200)
