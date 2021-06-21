@@ -15,25 +15,29 @@ class Tool(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, jepl_support: bool=None, docs: str=None, docker: ToolDocker=None):
+    def __init__(self, lang: str=None, jepl_support: bool=None, docs: str=None, docker: ToolDocker=None):
         """Tool - a model defined in OpenAPI
 
+        :param lang: The lang of this Tool.
         :param jepl_support: The jepl_support of this Tool.
         :param docs: The docs of this Tool.
         :param docker: The docker of this Tool.
         """
         self.openapi_types = {
+            'lang': str,
             'jepl_support': bool,
             'docs': str,
             'docker': ToolDocker
         }
 
         self.attribute_map = {
+            'lang': 'lang',
             'jepl_support': 'jepl_support',
             'docs': 'docs',
             'docker': 'docker'
         }
 
+        self._lang = lang
         self._jepl_support = jepl_support
         self._docs = docs
         self._docker = docker
@@ -46,6 +50,29 @@ class Tool(Model):
         :return: The Tool of this Tool.
         """
         return util.deserialize_model(dikt, cls)
+
+    @property
+    def lang(self):
+        """Gets the lang of this Tool.
+
+
+        :return: The lang of this Tool.
+        :rtype: str
+        """
+        return self._lang
+
+    @lang.setter
+    def lang(self, lang):
+        """Sets the lang of this Tool.
+
+
+        :param lang: The lang of this Tool.
+        :type lang: str
+        """
+        if lang is None:
+            raise ValueError("Invalid value for `lang`, must not be `None`")
+
+        self._lang = lang
 
     @property
     def jepl_support(self):

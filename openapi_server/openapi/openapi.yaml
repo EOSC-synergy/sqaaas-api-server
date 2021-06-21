@@ -663,11 +663,15 @@ components:
     Tool:
       example:
         docs: https://openapi-generator.tech
+        lang: lang
         jepl_support: true
         docker:
           image: image
           reviewed: 2000-01-23
       properties:
+        lang:
+          title: lang
+          type: string
         jepl_support:
           title: jepl_support
           type: boolean
@@ -677,6 +681,8 @@ components:
           type: string
         docker:
           $ref: '#/components/schemas/Tool_docker'
+      required:
+      - lang
       title: Tool
       type: object
     Criterion:
@@ -685,11 +691,13 @@ components:
         tools:
           key:
           - docs: https://openapi-generator.tech
+            lang: lang
             jepl_support: true
             docker:
               image: image
               reviewed: 2000-01-23
           - docs: https://openapi-generator.tech
+            lang: lang
             jepl_support: true
             docker:
               image: image
