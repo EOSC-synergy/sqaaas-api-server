@@ -15,18 +15,18 @@ servers:
 - description: Development API server (mock server)
   url: https://api-dev.sqaaas.eosc-synergy.eu
 paths:
-  /criteria/{criterion_id}:
+  /criteria:
     get:
-      operationId: get_criteria_by_id
+      operationId: get_criteria
       parameters:
-      - description: ID of the criterion
-        explode: false
-        in: path
+      - description: Get data from a specific criterion
+        explode: true
+        in: query
         name: criterion_id
-        required: true
+        required: false
         schema:
           type: string
-        style: simple
+        style: form
       responses:
         "200":
           content:
@@ -40,7 +40,7 @@ paths:
           description: Invalid criterion supplied
         "404":
           description: Criterion not found
-      summary: Returns information about a specific criterion, including tool support.
+      summary: Returns data about criteria
       x-openapi-router-controller: openapi_server.controllers.default_controller
   /pipeline:
     get:
