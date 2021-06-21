@@ -1,3 +1,4 @@
+import base64
 import calendar
 from datetime import datetime
 import io
