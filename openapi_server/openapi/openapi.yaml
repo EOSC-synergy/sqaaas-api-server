@@ -687,6 +687,10 @@ components:
       type: object
     Criterion:
       example:
+        description:
+          msg: msg
+          docs: https://openapi-generator.tech
+          improves: improves
         id: QC.Sty
         tools:
           key:
@@ -707,6 +711,8 @@ components:
           example: QC.Sty
           title: id
           type: string
+        description:
+          $ref: '#/components/schemas/Criterion_description'
         tools:
           additionalProperties:
             items:
@@ -1576,6 +1582,24 @@ components:
           title: reviewed
           type: string
       title: Tool_docker
+      type: object
+    Criterion_description:
+      example:
+        msg: msg
+        docs: https://openapi-generator.tech
+        improves: improves
+      properties:
+        msg:
+          title: msg
+          type: string
+        improves:
+          title: improves
+          type: string
+        docs:
+          format: uri
+          title: docs
+          type: string
+      title: Criterion_description
       type: object
     JePL_config_config:
       example:
