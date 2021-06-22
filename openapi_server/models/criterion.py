@@ -5,6 +5,7 @@ from datetime import date, datetime
 from typing import List, Dict, Type
 
 from openapi_server.models.base_model_ import Model
+from openapi_server.models.criterion_description import CriterionDescription
 from openapi_server.models.tool import Tool
 from openapi_server import util
 
@@ -15,23 +16,27 @@ class Criterion(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, id: str=None, tools: Dict[str, List[Tool]]=None):
+    def __init__(self, id: str=None, description: CriterionDescription=None, tools: Dict[str, List[Tool]]=None):
         """Criterion - a model defined in OpenAPI
 
         :param id: The id of this Criterion.
+        :param description: The description of this Criterion.
         :param tools: The tools of this Criterion.
         """
         self.openapi_types = {
             'id': str,
+            'description': CriterionDescription,
             'tools': Dict[str, List[Tool]]
         }
 
         self.attribute_map = {
             'id': 'id',
+            'description': 'description',
             'tools': 'tools'
         }
 
         self._id = id
+        self._description = description
         self._tools = tools
 
     @classmethod
@@ -63,6 +68,27 @@ class Criterion(Model):
         """
 
         self._id = id
+
+    @property
+    def description(self):
+        """Gets the description of this Criterion.
+
+
+        :return: The description of this Criterion.
+        :rtype: CriterionDescription
+        """
+        return self._description
+
+    @description.setter
+    def description(self, description):
+        """Sets the description of this Criterion.
+
+
+        :param description: The description of this Criterion.
+        :type description: CriterionDescription
+        """
+
+        self._description = description
 
     @property
     def tools(self):
