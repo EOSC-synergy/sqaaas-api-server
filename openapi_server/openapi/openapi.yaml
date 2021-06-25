@@ -667,6 +667,7 @@ components:
         jepl_support: true
         docker:
           image: image
+          dockerfile: dockerfile
           reviewed: 2000-01-23
       properties:
         lang:
@@ -699,12 +700,14 @@ components:
             jepl_support: true
             docker:
               image: image
+              dockerfile: dockerfile
               reviewed: 2000-01-23
           - docs: https://openapi-generator.tech
             lang: lang
             jepl_support: true
             docker:
               image: image
+              dockerfile: dockerfile
               reviewed: 2000-01-23
       properties:
         id:
@@ -830,6 +833,10 @@ components:
                   $ref: '#/components/schemas/Commands_simplified'
                 tox:
                   $ref: '#/components/schemas/Tox_simplified'
+                tools:
+                  items:
+                    $ref: '#/components/schemas/Tool'
+                  type: array
               type: object
             type: array
           when:
@@ -912,6 +919,10 @@ components:
                       $ref: '#/components/schemas/Commands_simplified'
                     tox:
                       $ref: '#/components/schemas/Tox_simplified'
+                    tools:
+                      items:
+                        $ref: '#/components/schemas/Tool'
+                      type: array
                   type: object
                 type: array
               when:
@@ -1380,6 +1391,10 @@ components:
                       $ref: '#/components/schemas/Commands_simplified'
                     tox:
                       $ref: '#/components/schemas/Tox_simplified'
+                    tools:
+                      items:
+                        $ref: '#/components/schemas/Tool'
+                      type: array
                   type: object
                 type: array
               when:
@@ -1572,10 +1587,14 @@ components:
     Tool_docker:
       example:
         image: image
+        dockerfile: dockerfile
         reviewed: 2000-01-23
       properties:
         image:
           title: image
+          type: string
+        dockerfile:
+          title: dockerfile
           type: string
         reviewed:
           format: date

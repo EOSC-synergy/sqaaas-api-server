@@ -219,6 +219,21 @@ class ProcessExtraData(object):
                 tox_file, testenv))
             repos_data[repo_key]['tox']['testenv'] = testenv
 
+    @staticmethod
+    def set_tool_env(tools):
+        """Set the tool environment.
+
+        Includes:
+        - (config.yml) generating the tool's execution through the commands builder
+        - (docker-compose.yml) generating the service entry for executing the tool
+        - (config.yml) adding the value for the 'container' property
+
+        :param tools: List of Tool objects
+        """
+        logger.debug('Call to ProcessExtraData.set_tool_env() method')
+
+        raise NotImplementedError
+
 
 def process_extra_data(config_json, composer_json):
     """Manage those properties, present in the API spec, that cannot
@@ -350,6 +365,9 @@ def process_extra_data(config_json, composer_json):
             repos_new = {}
             for repo in repos_old:
                 service_name = repo.get('container', None)
+                tools = repo.pop('tools')
+                if tools and not service_name:
+                    ProcessExtraData.set_tool_env(tools)
                 try:
                     repo_url = repo.pop('repo_url')
                     if not repo_url:
