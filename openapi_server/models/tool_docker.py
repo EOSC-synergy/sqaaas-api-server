@@ -14,23 +14,27 @@ class ToolDocker(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, image: str=None, reviewed: date=None):
+    def __init__(self, image: str=None, dockerfile: str=None, reviewed: date=None):
         """ToolDocker - a model defined in OpenAPI
 
         :param image: The image of this ToolDocker.
+        :param dockerfile: The dockerfile of this ToolDocker.
         :param reviewed: The reviewed of this ToolDocker.
         """
         self.openapi_types = {
             'image': str,
+            'dockerfile': str,
             'reviewed': date
         }
 
         self.attribute_map = {
             'image': 'image',
+            'dockerfile': 'dockerfile',
             'reviewed': 'reviewed'
         }
 
         self._image = image
+        self._dockerfile = dockerfile
         self._reviewed = reviewed
 
     @classmethod
@@ -62,6 +66,27 @@ class ToolDocker(Model):
         """
 
         self._image = image
+
+    @property
+    def dockerfile(self):
+        """Gets the dockerfile of this ToolDocker.
+
+
+        :return: The dockerfile of this ToolDocker.
+        :rtype: str
+        """
+        return self._dockerfile
+
+    @dockerfile.setter
+    def dockerfile(self, dockerfile):
+        """Sets the dockerfile of this ToolDocker.
+
+
+        :param dockerfile: The dockerfile of this ToolDocker.
+        :type dockerfile: str
+        """
+
+        self._dockerfile = dockerfile
 
     @property
     def reviewed(self):
