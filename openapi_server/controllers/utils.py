@@ -393,9 +393,9 @@ def process_extra_data(config_json, composer_json):
             }
             when_data = criterion_data_copy.pop('when')
             config_data_list.append({
-		'data_json': config_json_when,
+                'data_json': config_json_when,
                 'data_when': when_data
-	    })
+            })
             config_json_no_when['sqa_criteria'].pop(criterion_name)
         else:
             config_json_no_when['sqa_criteria'][criterion_name] = criterion_data_copy
