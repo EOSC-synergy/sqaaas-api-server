@@ -2,6 +2,7 @@ import copy
 import functools
 import itertools
 import logging
+import namegenerator
 import os
 import re
 import uuid
@@ -220,19 +221,63 @@ class ProcessExtraData(object):
             repos_data[repo_key]['tox']['testenv'] = testenv
 
     @staticmethod
-    def set_tool_env(tools):
+    def set_tool_env(tools, criterion_name, criterion_repo, composer_json):
         """Set the tool environment.
 
         Includes:
-        - (config.yml) generating the tool's execution through the commands builder
         - (docker-compose.yml) generating the service entry for executing the tool
         - (config.yml) adding the value for the 'container' property
+        - (config.yml) generating the tool's execution through the commands builder
 
         :param tools: List of Tool objects
+        :param criterion_name: Name of the criterion
+        :param criterion_repo: Repo data for the criterion
+        :param composer_json: Composer data (JSON)
         """
         logger.debug('Call to ProcessExtraData.set_tool_env() method')
 
-        raise NotImplementedError
+        # 1) Add service entry
+        if not composer_json:
+            logger.debug('No service was defined by the user')
+            composer_json['version'] = '3.7'
+        dockerfile = None
+        # All tools shall use the same service for the same criterion (JePL limitation)
+        reference_tool = tools[0]
+        try:
+            dockerfile = reference_tool['docker']['dockerfile']
+        except KeyError:
+            logger.debug('No Dockerfile definition found for tool <%s>' % reference_tool['name'])
+        if not dockerfile:
+            image = reference_tool['docker']['image']
+        srv_name = '_'.join([
+            criterion_name.lower(), namegenerator.gen()
+        ])
+        srv_definition = JePLUtils.get_composer_service(
+            srv_name, image=image, dockerfile=dockerfile
+        )
+        composer_json['services'].update(srv_definition)
+
+        # 2) Adding service name to config's container
+        old_container_name = criterion_repo['container']
+        logger.debug('Changing previous container name <%s> to <%s>' % (
+            old_container_name, srv_name
+        ))
+        criterion_repo['container'] = srv_name
+
+        # 3) Generate tool execution command
+        criterion_repo['commands'] = []
+        for tool in tools:
+            cmd_list = [tool['name']]
+            args = tool.get('args', None)
+            while args:
+                if args['type'] in ['optional']:
+                    cmd_list.append(args['option'])
+                cmd_list.append(args['value'])
+                args = args.get('args', None)
+            cmd = ' '.join(cmd_list)
+            criterion_repo['commands'].append(cmd)
+
+        return srv_name
 
 
 def process_extra_data(config_json, composer_json):
@@ -367,7 +412,8 @@ def process_extra_data(config_json, composer_json):
                 service_name = repo.get('container', None)
                 tools = repo.pop('tools')
                 if tools and not service_name:
-                    ProcessExtraData.set_tool_env(tools)
+                    service_name = ProcessExtraData.set_tool_env(
+                        tools, criterion_name, repo, composer_json)
                 try:
                     repo_url = repo.pop('repo_url')
                     if not repo_url:
