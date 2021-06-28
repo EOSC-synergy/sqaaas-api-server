@@ -234,3 +234,18 @@ class JePLUtils(object):
         logger.info('GitHub repository <%s> created with the JePL file structure' % repo)
 
         return last_commit
+
+    def get_composer_service(name, image=None, dockerfile=None)
+        """Get service definition compliant with the composer file.
+
+        :param image: Image name/location in the Docker registry (default: Docker Hub).
+        :param name: Path to the Dockerfile, when building is required.
+        """
+        srv_data = {'container': name}
+        if image:
+            srv_data['image'] = image
+        if dockerfile:
+            srv_data['build'] = {
+                'dockerfile': dockerfile
+            }
+        return {name: srv_data}
