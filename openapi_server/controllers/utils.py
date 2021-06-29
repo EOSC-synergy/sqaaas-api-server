@@ -221,17 +221,19 @@ class ProcessExtraData(object):
             repos_data[repo_key]['tox']['testenv'] = testenv
 
     @staticmethod
-    def set_tool_env(tools, criterion_name, criterion_repo, composer_json):
+    def set_tool_env(tools, criterion_name, criterion_repo, config_json, composer_json):
         """Set the tool environment.
 
         Includes:
         - (docker-compose.yml) generating the service entry for executing the tool
         - (config.yml) adding the value for the 'container' property
         - (config.yml) generating the tool's execution through the commands builder
+        - (config.yml) add templates repository to project_repos
 
         :param tools: List of Tool objects
         :param criterion_name: Name of the criterion
         :param criterion_repo: Repo data for the criterion
+        :param config_json: Config data (JSON)
         :param composer_json: Composer data (JSON)
         """
         logger.debug('Call to ProcessExtraData.set_tool_env() method')
@@ -278,6 +280,26 @@ class ProcessExtraData(object):
                 args = args.get('args', None)
             cmd = ' '.join(cmd_list)
             criterion_repo['commands'].append(cmd)
+
+        # 4) Add templates repository to <project_repos>
+        tooling_repo_url = config.get(
+            'tooling_repo_url',
+            fallback='https://github.com/EOSC-synergy/sqa-composer-templates'
+        )
+        tooling_repo_branch = config.get(
+            'tooling_repo_branch',
+            fallback='main'
+        )
+        template_repo_exists = False
+        for repo in config_json['config']['project_repos']:
+            if repo['repo'] == tooling_repo_url and
+               repo['branch'] == tooling_repo_branch:
+                   template_repo_exists = True
+        if not template_repo_exists:
+            config_json['config']['project_repos'].append({
+                'repo': tooling_repo,
+                'branch': tooling_branch
+            })
 
         return srv_name
 
@@ -415,7 +437,7 @@ def process_extra_data(config_json, composer_json):
                 tools = repo.pop('tools')
                 if tools and not service_name:
                     service_name = ProcessExtraData.set_tool_env(
-                        tools, criterion_name, repo, composer_json)
+                        tools, criterion_name, repo, config_json, composer_json)
                 try:
                     repo_url = repo.pop('repo_url')
                     if not repo_url:
