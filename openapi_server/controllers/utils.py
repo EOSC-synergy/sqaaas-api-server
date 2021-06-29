@@ -92,6 +92,17 @@ def extended_data_validation(f):
                         _reason = 'Request to push Docker images, but no build data provided!'
                         logger.warning(_reason)
                         return web.Response(status=400, reason=_reason, text=_reason)
+        # Tooling
+        for criterion_name, criterion_data in config_json['sqa_criteria'].items():
+            try:
+                commands = criterion_data['repos']['commands']
+                tools = criterion_data['repos']['tools']
+                if not commands and not tools:
+                    raise KeyError
+            except KeyError:
+                _reason = 'Builder <commands> might be empty only when <tools> have been defined'
+                logger.warning(_reason)
+                return web.Response(status=400, reason=_reason, text=_reason)
         ret = await f(*args, **kwargs)
         return ret
     return decorated_function
