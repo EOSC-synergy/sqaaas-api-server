@@ -879,7 +879,6 @@ components:
       items:
         minLength: 1
         type: string
-      minItems: 1
       type: array
     Tox_simplified:
       properties:
