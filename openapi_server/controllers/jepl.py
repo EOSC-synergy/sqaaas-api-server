@@ -241,7 +241,7 @@ class JePLUtils(object):
         :param image: Image name/location in the Docker registry (default: Docker Hub).
         :param name: Path to the Dockerfile, when building is required.
         """
-        srv_data = {'container': name}
+        srv_data = {}
         if image:
             srv_data['image'] = image
         if dockerfile:
