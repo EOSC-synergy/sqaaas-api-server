@@ -272,12 +272,13 @@ class ProcessExtraData(object):
         criterion_repo['commands'] = []
         for tool in tools:
             cmd_list = [tool['name']]
-            args = tool.get('args', None)
+            args = tool.get('args', [])
             while args:
-                if args['type'] in ['optional']:
-                    cmd_list.append(args['option'])
-                cmd_list.append(args['value'])
-                args = args.get('args', None)
+                for arg in args:
+                    if arg['type'] in ['optional']:
+                        cmd_list.append(arg['option'])
+                    cmd_list.append(arg['value'])
+                args = arg.get('args', [])
             cmd = ' '.join(cmd_list)
             criterion_repo['commands'].append(cmd)
 
