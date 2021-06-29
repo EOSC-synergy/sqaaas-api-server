@@ -235,7 +235,7 @@ class JePLUtils(object):
 
         return last_commit
 
-    def get_composer_service(name, image=None, dockerfile=None)
+    def get_composer_service(name, image=None, dockerfile=None):
         """Get service definition compliant with the composer file.
 
         :param image: Image name/location in the Docker registry (default: Docker Hub).
