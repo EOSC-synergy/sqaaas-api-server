@@ -405,11 +405,8 @@ def process_extra_data(config_json, composer_json):
     if 'project_repos' in config_json['config'].keys():
         for project_repo in config_json['config']['project_repos']:
             repo_url = project_repo.pop('repo')
-            repo_url_parsed = urlparse(repo_url)
-            repo_name_generated = ''.join([
-                repo_url_parsed.netloc,
-                repo_url_parsed.path,
-            ])
+            repo_name_generated = get_short_repo_name(
+                repo_url, include_netloc=True)
             project_repos_final[repo_name_generated] = {
                 'repo': repo_url,
                 **project_repo
@@ -544,13 +541,18 @@ def supported_git_platform(repo_url, platforms):
     return netloc_without_extension
 
 
-def get_short_repo_name(repo_url):
+def get_short_repo_name(repo_url, include_netloc=False):
     """Returns the short name of the git repo, i.e. <user/org>/<repo_name>.
 
     :param repo_url: URL of the git repository
     """
     url_parsed = urlparse(repo_url)
     short_repo_name = url_parsed.path
+    if include_netloc:
+        short_repo_name = ''.join([
+            url_parsed.netloc,
+            url_parsed.path,
+        ])
     # cleanup
     short_repo_name = short_repo_name.lstrip('/')
     short_repo_name = short_repo_name.rsplit('.git')[0]
