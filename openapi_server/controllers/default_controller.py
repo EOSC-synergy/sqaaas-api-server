@@ -903,8 +903,9 @@ async def _get_criterion_tooling(criterion_id, metadata_json):
         for tool in tools:
             d = {}
             try:
-                d[tool] = metadata_json['tools'][lang][tool]
-                d[tool]['lang'] = lang
+                d['name'] = tool
+                d['lang'] = lang
+                d.update(metadata_json['tools'][lang][tool])
             except KeyError:
                 logger.warn('Cannot find data for tool <%s> (lang: %s)' % (
                     tool, lang))
