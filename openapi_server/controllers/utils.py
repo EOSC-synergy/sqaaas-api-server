@@ -225,10 +225,10 @@ class ProcessExtraData(object):
         """Set the tool environment.
 
         Includes:
+        - (config.yml) add tooling repository to project_repos
         - (docker-compose.yml) generating the service entry for executing the tool
         - (config.yml) adding the value for the 'container' property
         - (config.yml) generating the tool's execution through the commands builder
-        - (config.yml) add templates repository to project_repos
 
         :param tools: List of Tool objects
         :param criterion_name: Name of the criterion
@@ -239,51 +239,7 @@ class ProcessExtraData(object):
         """
         logger.debug('Call to ProcessExtraData.set_tool_env() method')
 
-        # 1) Add service entry
-        if not composer_json:
-            logger.debug('No service was defined by the user')
-            composer_json['version'] = '3.7'
-        dockerfile = None
-        # All tools shall use the same service for the same criterion (JePL limitation)
-        reference_tool = tools[0]
-        dockerfile = None
-        image = None
-        try:
-            dockerfile = reference_tool['docker']['dockerfile']
-        except KeyError:
-            logger.debug('No Dockerfile definition found for tool <%s>' % reference_tool['name'])
-        if not dockerfile:
-            image = reference_tool['docker']['image']
-        srv_name = '_'.join([
-            criterion_name.lower(), namegenerator.gen()
-        ])
-        srv_definition = JePLUtils.get_composer_service(
-            srv_name, image=image, dockerfile=dockerfile
-        )
-        composer_json['services'].update(srv_definition)
-
-        # 2) Adding service name to config's container
-        old_container_name = criterion_repo['container']
-        logger.debug('Changing previous container name <%s> to <%s>' % (
-            old_container_name, srv_name
-        ))
-        criterion_repo['container'] = srv_name
-
-        # 3) Generate tool execution command
-        criterion_repo['commands'] = []
-        for tool in tools:
-            cmd_list = [tool['name']]
-            args = tool.get('args', [])
-            while args:
-                for arg in args:
-                    if arg['type'] in ['optional']:
-                        cmd_list.append(arg['option'])
-                    cmd_list.append(arg['value'])
-                args = arg.get('args', [])
-            cmd = ' '.join(cmd_list)
-            criterion_repo['commands'].append(cmd)
-
-        # 4) Add templates repository to <project_repos>
+        # 1) Add tooling repository to <project_repos>
         tooling_repo_url = config.get(
             'tooling_repo_url',
             fallback='https://github.com/EOSC-synergy/sqa-composer-templates'
@@ -306,6 +262,54 @@ class ProcessExtraData(object):
                 'repo': tooling_repo_url,
                 'branch': tooling_branch
             }
+
+        # 2) Add service entry
+        if not composer_json:
+            logger.debug('No service was defined by the user')
+            composer_json['version'] = '3.7'
+        dockerfile = None
+        # All tools shall use the same service for the same criterion (JePL limitation)
+        reference_tool = tools[0]
+        dockerfile = None
+        image = None
+        try:
+            dockerfile = reference_tool['docker']['dockerfile']
+            dockerfile = os.path.join(
+                project_repos_mapping[tooling_repo_url]['name'],
+                dockerfile
+            )
+        except KeyError:
+            logger.debug('No Dockerfile definition found for tool <%s>' % reference_tool['name'])
+        if not dockerfile:
+            image = reference_tool['docker']['image']
+        srv_name = '_'.join([
+            criterion_name.lower(), namegenerator.gen()
+        ])
+        srv_definition = JePLUtils.get_composer_service(
+            srv_name, image=image, dockerfile=dockerfile
+        )
+        composer_json['services'].update(srv_definition)
+
+        # 3) Adding service name to config's container
+        old_container_name = criterion_repo['container']
+        logger.debug('Changing previous container name <%s> to <%s>' % (
+            old_container_name, srv_name
+        ))
+        criterion_repo['container'] = srv_name
+
+        # 4) Generate tool execution command
+        criterion_repo['commands'] = []
+        for tool in tools:
+            cmd_list = [tool['name']]
+            args = tool.get('args', [])
+            while args:
+                for arg in args:
+                    if arg['type'] in ['optional']:
+                        cmd_list.append(arg['option'])
+                    cmd_list.append(arg['value'])
+                args = arg.get('args', [])
+            cmd = ' '.join(cmd_list)
+            criterion_repo['commands'].append(cmd)
 
         return srv_name
 
