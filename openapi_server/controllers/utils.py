@@ -221,7 +221,7 @@ class ProcessExtraData(object):
             repos_data[repo_key]['tox']['testenv'] = testenv
 
     @staticmethod
-    def set_tool_env(tools, criterion_name, criterion_repo, config_json, composer_json):
+    def set_tool_env(tools, criterion_name, criterion_repo, project_repos_mapping, config_json, composer_json):
         """Set the tool environment.
 
         Includes:
@@ -233,6 +233,7 @@ class ProcessExtraData(object):
         :param tools: List of Tool objects
         :param criterion_name: Name of the criterion
         :param criterion_repo: Repo data for the criterion
+        :param project_repos_mapping: Dict containing the defined project_repos
         :param config_json: Config data (JSON)
         :param composer_json: Composer data (JSON)
         """
@@ -291,15 +292,20 @@ class ProcessExtraData(object):
             'tooling_repo_branch',
             fallback='main'
         )
-        template_repo_exists = False
-        for repo in config_json['config']['project_repos']:
-            if repo['repo'] == tooling_repo_url and repo['branch'] == tooling_repo_branch:
-                   template_repo_exists = True
-        if not template_repo_exists:
-            config_json['config']['project_repos'].append({
-                'repo': tooling_repo,
+        if tooling_repo_url in list(project_repos_mapping):
+            logger.debug('Tool template repository <%s> already defined' % tooling_repo_url)
+        else:
+            repo_data = {}
+            repo_data['name'] = get_short_repo_name(
+                tooling_repo_url, include_netloc=True
+            )
+            repo_data['branch'] = tooling_repo_branch
+            project_repos_mapping[tooling_repo_url] = repo_data
+
+            config_json['config']['project_repos'][repo_data['name']] = {
+                'repo': tooling_repo_url,
                 'branch': tooling_branch
-            })
+            }
 
         return srv_name
 
@@ -434,7 +440,7 @@ def process_extra_data(config_json, composer_json):
                 tools = repo.pop('tools')
                 if tools and not service_name:
                     service_name = ProcessExtraData.set_tool_env(
-                        tools, criterion_name, repo, config_json, composer_json)
+                        tools, criterion_name, repo, project_repos_mapping, config_json, composer_json)
                 try:
                     repo_url = repo.pop('repo_url')
                     if not repo_url:
