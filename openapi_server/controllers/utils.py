@@ -293,8 +293,7 @@ class ProcessExtraData(object):
         )
         template_repo_exists = False
         for repo in config_json['config']['project_repos']:
-            if repo['repo'] == tooling_repo_url and
-               repo['branch'] == tooling_repo_branch:
+            if repo['repo'] == tooling_repo_url and repo['branch'] == tooling_repo_branch:
                    template_repo_exists = True
         if not template_repo_exists:
             config_json['config']['project_repos'].append({
