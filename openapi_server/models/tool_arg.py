@@ -14,7 +14,7 @@ class ToolArg(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, type: str=None, description: str=None, option: str=None, format: str=None, value: str=None, selectable: bool=None, args: List[''ToolArg']=None):
+    def __init__(self, type: str=None, description: str=None, option: str=None, format: str=None, value: str=None, selectable: bool=None, args: List['ToolArg']=None):
         """ToolArg - a model defined in OpenAPI
 
         :param type: The type of this ToolArg.
