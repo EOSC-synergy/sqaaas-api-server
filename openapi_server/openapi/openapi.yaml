@@ -660,9 +660,69 @@ components:
         an invalid response from the upstream server it accessed
         in attempting to fulfill the request.
   schemas:
+    ToolArg:
+      example:
+        type: subcommand
+        description: Detect the license of the given project
+        value: detect
+        selectable: false
+        args:
+          description: Path to project's license
+          format: string
+          value: "."
+      properties:
+        type:
+          description: type of argument
+          enum:
+          - subcommand
+          - positional
+          - optional
+          type: string
+        description:
+          type: string
+        option:
+          description: Name of the option, in the event of optional arguments
+          type: string
+        format:
+          description: The value format (to be rendered by web clients)
+          enum:
+          - string
+          - array
+          type: string
+        value:
+          description: Default value for the argument
+          type: string
+        selectable:
+          description: Whether the argument can be selected by the user (to be rendered
+            by web clients)
+          type: boolean
+        args:
+          items:
+            $ref: '#/components/schemas/ToolArg'
+          type: array
+      title: ToolArg
+      type: object
     Tool:
       example:
+        args:
+        - type: subcommand
+          description: Detect the license of the given project
+          value: detect
+          selectable: false
+          args:
+            description: Path to project's license
+            format: string
+            value: "."
+        - type: subcommand
+          description: Detect the license of the given project
+          value: detect
+          selectable: false
+          args:
+            description: Path to project's license
+            format: string
+            value: "."
         docs: https://openapi-generator.tech
+        name: name
         lang: lang
         jepl_support: true
         docker:
@@ -670,6 +730,9 @@ components:
           dockerfile: dockerfile
           reviewed: 2000-01-23
       properties:
+        name:
+          title: name
+          type: string
         lang:
           title: lang
           type: string
@@ -682,6 +745,11 @@ components:
           type: string
         docker:
           $ref: '#/components/schemas/Tool_docker'
+        args:
+          items:
+            $ref: '#/components/schemas/ToolArg'
+          title: args
+          type: array
       required:
       - lang
       title: Tool
@@ -695,14 +763,50 @@ components:
         id: QC.Sty
         tools:
           key:
-          - docs: https://openapi-generator.tech
+          - args:
+            - type: subcommand
+              description: Detect the license of the given project
+              value: detect
+              selectable: false
+              args:
+                description: Path to project's license
+                format: string
+                value: "."
+            - type: subcommand
+              description: Detect the license of the given project
+              value: detect
+              selectable: false
+              args:
+                description: Path to project's license
+                format: string
+                value: "."
+            docs: https://openapi-generator.tech
+            name: name
             lang: lang
             jepl_support: true
             docker:
               image: image
               dockerfile: dockerfile
               reviewed: 2000-01-23
-          - docs: https://openapi-generator.tech
+          - args:
+            - type: subcommand
+              description: Detect the license of the given project
+              value: detect
+              selectable: false
+              args:
+                description: Path to project's license
+                format: string
+                value: "."
+            - type: subcommand
+              description: Detect the license of the given project
+              value: detect
+              selectable: false
+              args:
+                description: Path to project's license
+                format: string
+                value: "."
+            docs: https://openapi-generator.tech
+            name: name
             lang: lang
             jepl_support: true
             docker:

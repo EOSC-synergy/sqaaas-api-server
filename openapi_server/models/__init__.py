@@ -24,6 +24,7 @@ from openapi_server.models.je_pl_jenkinsfile_when import JePLJenkinsfileWhen
 from openapi_server.models.pipeline import Pipeline
 from openapi_server.models.repository import Repository
 from openapi_server.models.tool import Tool
+from openapi_server.models.tool_arg import ToolArg
 from openapi_server.models.tool_docker import ToolDocker
 from openapi_server.models.tox_simplified import ToxSimplified
 from openapi_server.models.upstream_error import UpstreamError

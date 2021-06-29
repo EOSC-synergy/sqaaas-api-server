@@ -5,6 +5,7 @@ from datetime import date, datetime
 from typing import List, Dict, Type
 
 from openapi_server.models.base_model_ import Model
+from openapi_server.models.tool_arg import ToolArg
 from openapi_server.models.tool_docker import ToolDocker
 from openapi_server import util
 
@@ -15,32 +16,40 @@ class Tool(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, lang: str=None, jepl_support: bool=None, docs: str=None, docker: ToolDocker=None):
+    def __init__(self, name: str=None, lang: str=None, jepl_support: bool=None, docs: str=None, docker: ToolDocker=None, args: List[ToolArg]=None):
         """Tool - a model defined in OpenAPI
 
+        :param name: The name of this Tool.
         :param lang: The lang of this Tool.
         :param jepl_support: The jepl_support of this Tool.
         :param docs: The docs of this Tool.
         :param docker: The docker of this Tool.
+        :param args: The args of this Tool.
         """
         self.openapi_types = {
+            'name': str,
             'lang': str,
             'jepl_support': bool,
             'docs': str,
-            'docker': ToolDocker
+            'docker': ToolDocker,
+            'args': List[ToolArg]
         }
 
         self.attribute_map = {
+            'name': 'name',
             'lang': 'lang',
             'jepl_support': 'jepl_support',
             'docs': 'docs',
-            'docker': 'docker'
+            'docker': 'docker',
+            'args': 'args'
         }
 
+        self._name = name
         self._lang = lang
         self._jepl_support = jepl_support
         self._docs = docs
         self._docker = docker
+        self._args = args
 
     @classmethod
     def from_dict(cls, dikt: dict) -> 'Tool':
@@ -50,6 +59,27 @@ class Tool(Model):
         :return: The Tool of this Tool.
         """
         return util.deserialize_model(dikt, cls)
+
+    @property
+    def name(self):
+        """Gets the name of this Tool.
+
+
+        :return: The name of this Tool.
+        :rtype: str
+        """
+        return self._name
+
+    @name.setter
+    def name(self, name):
+        """Sets the name of this Tool.
+
+
+        :param name: The name of this Tool.
+        :type name: str
+        """
+
+        self._name = name
 
     @property
     def lang(self):
@@ -136,3 +166,24 @@ class Tool(Model):
         """
 
         self._docker = docker
+
+    @property
+    def args(self):
+        """Gets the args of this Tool.
+
+
+        :return: The args of this Tool.
+        :rtype: List[ToolArg]
+        """
+        return self._args
+
+    @args.setter
+    def args(self, args):
+        """Sets the args of this Tool.
+
+
+        :param args: The args of this Tool.
+        :type args: List[ToolArg]
+        """
+
+        self._args = args
