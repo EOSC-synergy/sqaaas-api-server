@@ -329,87 +329,6 @@ def process_extra_data(config_json, composer_json):
     :param config_json: JePL's config as received through the API request (JSON payload)
     :param composer_json: Composer content as received throught the API request (JSON payload).
     """
-    # COMPOSER (Docker Compose specific)
-    for srv_name, srv_data in composer_json['services'].items():
-        use_default_dockerhub_org = False
-        ## Set JPL_DOCKER* envvars
-        if 'registry' in srv_data['image'].keys():
-            registry_data = srv_data['image'].pop('registry')
-            if not 'environment' in config_json.keys():
-                config_json['environment'] = {}
-            # JPL_DOCKERPUSH
-            if registry_data['push']:
-                srv_push = config_json['environment'].get('JPL_DOCKERPUSH', '')
-                srv_push += ' %s' % srv_name
-                srv_push = srv_push.strip()
-                config_json['environment']['JPL_DOCKERPUSH'] = srv_push
-                credential_id = None
-                if registry_data.get('credential_id', None):
-                    credential_id = registry_data['credential_id']
-                else:
-                    credential_id = config.get_ci(
-                        'docker_credential_id', fallback=None)
-                    use_default_dockerhub_org = True
-                try:
-                    config_json['config']['credentials']
-                except KeyError:
-                    config_json['config']['credentials'] = []
-                finally:
-                    config_json['config']['credentials'].append({
-                        'id': credential_id,
-                        'username_var': 'JPL_DOCKERUSER',
-                        'password_var': 'JPL_DOCKERPASS'
-                    })
-            # JPL_DOCKERSERVER: current JePL 2.1.0 does not support 1-to-1 in image-to-registry
-            # so defaulting to the last match
-            if registry_data['url']:
-                config_json['environment']['JPL_DOCKERSERVER'] = registry_data['url']
-        ## Set 'image' property as string (required by Docker Compose)
-        srv_data['image'] = srv_data['image']['name']
-        if use_default_dockerhub_org:
-            org = config.get_ci(
-                'docker_credential_org', fallback=None)
-            img_name = srv_data['image'].split('/')[-1]
-            srv_data['image'] = '/'.join([org, img_name])
-        ## Set 'volumes' property (incl. default values)
-        try:
-            srv_data['volumes']
-        except KeyError:
-            pass
-        else:
-            srv_data['volumes'] = [{
-                'type': 'bind',
-                'source': './',
-                'target': '/sqaaas-build'
-            }]
-        ## Set 'working_dir' property (for simple use cases)
-        ## NOTE Setting working_dir only makes sense when only one volume is expected!
-        srv_data['working_dir'] = srv_data['volumes'][0]['target']
-        ## Check for empty values
-        props_to_remove = []
-        for prop, prop_value in srv_data.items():
-            pop_prop = False
-            if isinstance(prop_value, dict):
-                if not any(prop_value.values()):
-                    pop_prop = True
-            elif isinstance(prop_value, (list, str)):
-                if not prop_value:
-                    pop_prop = True
-            if pop_prop:
-                props_to_remove.append(prop)
-        [srv_data.pop(prop) for prop in props_to_remove]
-        ## Handle 'oneshot' services
-        oneshot = True
-        if 'oneshot' in srv_data.keys():
-            oneshot = srv_data.pop('oneshot')
-        if oneshot:
-            srv_data['command'] = 'sleep 6000000'
-        ## Set default build:context to '.'
-        if 'build' in list(srv_data):
-            ProcessExtraData.set_build_context(srv_name, '.', composer_json)
-
-    composer_data = {'data_json': composer_json}
-
     # CONFIG:CONFIG (Set repo name)
     project_repos_final = {}
     project_repos_mapping = {}
@@ -501,6 +420,97 @@ def process_extra_data(config_json, composer_json):
             'data_json': config_json_no_when,
             'data_when': None
         })
+
+    # COMPOSER (Docker Compose specific)
+    for srv_name, srv_data in composer_json['services'].items():
+        logger.debug('Processing composer data for service <%s>' % srv_name)
+        if 'image' in list(srv_data):
+            use_default_dockerhub_org = False
+            ## Set JPL_DOCKER* envvars
+            if 'registry' in srv_data['image'].keys():
+                logger.debug('Registry data found for image <%s>' % srv_data['image'])
+                registry_data = srv_data['image'].pop('registry')
+                if not 'environment' in config_json.keys():
+                    config_json['environment'] = {}
+                # JPL_DOCKERPUSH
+                if registry_data['push']:
+                    srv_push = config_json['environment'].get('JPL_DOCKERPUSH', '')
+                    srv_push += ' %s' % srv_name
+                    srv_push = srv_push.strip()
+                    config_json['environment']['JPL_DOCKERPUSH'] = srv_push
+                    logger.debug('Setting JPL_DOCKERPUSH environment value to <%s>' % srv_push)
+                    credential_id = None
+                    if registry_data.get('credential_id', None):
+                        credential_id = registry_data['credential_id']
+                        logger.debug('Using custom Jenkins credentials: %s' % credential_id)
+                    else:
+                        credential_id = config.get_ci(
+                            'docker_credential_id', fallback=None)
+                        use_default_dockerhub_org = True
+                        logger.debug('Using catch-all Jenkins credentials: %s' % credential_id)
+                    try:
+                        config_json['config']['credentials']
+                    except KeyError:
+                        config_json['config']['credentials'] = []
+                    finally:
+                        config_json['config']['credentials'].append({
+                            'id': credential_id,
+                            'username_var': 'JPL_DOCKERUSER',
+                            'password_var': 'JPL_DOCKERPASS'
+                        })
+                # JPL_DOCKERSERVER: current JePL 2.1.0 does not support 1-to-1 in image-to-registry
+                # so defaulting to the last match
+                if registry_data['url']:
+                    config_json['environment']['JPL_DOCKERSERVER'] = registry_data['url']
+                    logger.debug('Setting JPL_DOCKERSERVER environment value to <%s>' % registry_data['url'])
+            ## Set 'image' property as string (required by Docker Compose)
+            srv_data['image'] = srv_data['image']['name']
+            if use_default_dockerhub_org:
+                org = config.get_ci(
+                    'docker_credential_org', fallback=None)
+                logger.debug('Using default Docker Hub <%s> organization' % org)
+                img_name = srv_data['image'].split('/')[-1]
+                srv_data['image'] = '/'.join([org, img_name])
+                logger.debug('Resultant Docker image name: %s' % srv_data['image'])
+        ## Check for empty values
+        props_to_remove = []
+        for prop, prop_value in srv_data.items():
+            pop_prop = False
+            if isinstance(prop_value, dict):
+                if not any(prop_value.values()):
+                    pop_prop = True
+            elif isinstance(prop_value, (list, str)):
+                if not prop_value:
+                    pop_prop = True
+            if pop_prop:
+                props_to_remove.append(prop)
+        [srv_data.pop(prop) for prop in props_to_remove]
+        ## Set 'volumes' property (incl. default values)
+        try:
+            srv_data['volumes']
+        except KeyError:
+            srv_data['volumes'] = [{
+                'type': 'bind',
+                'source': './',
+                'target': '/sqaaas-build'
+            }]
+            logger.debug('Setting volume data to default values: %s' % srv_data['volumes'])
+        ## Set 'working_dir' property (for simple use cases)
+        ## NOTE Setting working_dir only makes sense when only one volume is expected!
+        srv_data['working_dir'] = srv_data['volumes'][0]['target']
+        logger.debug('Setting <working_dir> property to <%s>' % srv_data['working_dir'])
+        ## Handle 'oneshot' services
+        oneshot = True
+        if 'oneshot' in srv_data.keys():
+            oneshot = srv_data.pop('oneshot')
+        if oneshot:
+            logger.debug('Oneshot image, setting <sleep> command')
+            srv_data['command'] = 'sleep 6000000'
+        ## Set default build:context to '.'
+        if 'build' in list(srv_data):
+            ProcessExtraData.set_build_context(srv_name, '.', composer_json)
+
+    composer_data = {'data_json': composer_json}
 
     return (config_data_list, composer_data, commands_script_list)
 
