@@ -945,6 +945,7 @@ async def get_criteria(request: web.Request, criterion_id=None) -> web.Response:
     criteria_id_list = list(tooling_metadata_json['criteria'])
     if criterion_id:
         criteria_id_list = [criterion_id]
+        logger.debug('Filtering by criterion <%s>' % criterion_id)
     try:
         for criterion in criteria_id_list:
             tooling_data = await _get_criterion_tooling(
