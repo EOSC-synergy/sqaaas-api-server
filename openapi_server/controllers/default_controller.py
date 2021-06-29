@@ -1,15 +1,16 @@
+import base64
 import calendar
 from datetime import datetime
 import io
 import itertools
 import logging
+import json
 import urllib
 import uuid
 from zipfile import ZipFile, ZipInfo
 
 from aiohttp import web
 from jinja2 import Environment, PackageLoader
-from urllib.parse import urlparse
 from deepdiff import DeepDiff
 import namegenerator
 
@@ -584,19 +585,15 @@ async def create_pull_request(request: web.Request, pipeline_id, body) -> web.Re
     jenkinsfile = pipeline_data['data']['jenkinsfile']
 
     body = InlineObject.from_dict(body)
-    url_parsed = urlparse(body.repo)
-    netloc_without_extension = url_parsed.netloc.split('.')[0]
-    if not netloc_without_extension in SUPPORTED_PLATFORMS:
+    supported_platform = utils.supported_git_platform(body.repo, platforms=SUPPORTED_PLATFORMS)
+    if not supported_platform:
         _reason = ('Git platform <%s> is currently not supported for creating pull '
                    'requests (choose between: %s)' % (
-                       url_parsed.netloc,
+                       supported_platform,
                        SUPPORTED_PLATFORMS.keys()))
         logger.error(_reason)
         return web.Response(status=422, reason=_reason, text=_reason)
-    target_repo_name = url_parsed.path
-    # Format target_repo_name
-    target_repo_name = target_repo_name.lstrip('/')
-    target_repo_name = target_repo_name.rsplit('.git')[0]
+    target_repo_name = ctls_utils.get_short_repo_name(body.repo)
     logger.debug('Target repository (base) formatted. Resultant name: %s' % target_repo_name)
     target_repo = gh_utils.get_repository(
         target_repo_name, raise_exception=True)
@@ -874,3 +871,87 @@ async def get_badge(request: web.Request, pipeline_id, share=None) -> web.Respon
         )
 
     return web.json_response(badge_data, status=200)
+
+
+async def _get_criterion_tooling(criterion_id, metadata_json):
+    """Sorts out the criterion information to be returned in the HTTP response.
+
+    :param criterion_id: ID of the criterion
+    :type criterion_id: str
+    :param metadata_json: JSON with the metadata
+    :type metadata_json: dict
+    """
+    try:
+        criterion_data = metadata_json['criteria'][criterion_id]['tools']
+    except Exception as e:
+        _reason = 'Cannot find tooling information for criterion <%s> in metadata: %s' % (
+            criterion_id, metadata_json)
+        logger.error(_reason)
+        raise SQAaaSAPIException(502, _reason)
+
+    criterion_data_list = []
+    for lang, tools in criterion_data.items():
+        for tool in tools:
+            d = {}
+            try:
+                d['name'] = tool
+                d['lang'] = lang
+                d.update(metadata_json['tools'][lang][tool])
+            except KeyError:
+                logger.warn('Cannot find data for tool <%s> (lang: %s)' % (
+                    tool, lang))
+            if d:
+                criterion_data_list.append(d)
+    return criterion_data_list
+
+
+async def get_criteria(request: web.Request, criterion_id=None) -> web.Response:
+    """Returns data about criteria.
+
+    :param criterion_id: Get data from a specific criterion
+    :type criterion_id: str
+
+    """
+    tooling_repo_url = config.get(
+        'tooling_repo_url',
+        fallback='https://github.com/EOSC-synergy/sqa-composer-templates'
+    )
+    tooling_repo_branch = config.get(
+        'tooling_repo_branch',
+        fallback='main'
+    )
+    tooling_metadata_file = config.get(
+        'tooling_metadata_file',
+        fallback='tooling.json'
+    )
+
+    logger.debug('Getting supported tools from <%s> repo (metadata file: %s)' % (
+        tooling_repo_url, tooling_metadata_file))
+    platform = ctls_utils.supported_git_platform(
+        tooling_repo_url, platforms=SUPPORTED_PLATFORMS)
+    tooling_metadata_json = {}
+    if platform in ['github']:
+        short_repo_name = ctls_utils.get_short_repo_name(tooling_repo_url)
+        tooling_metadata_content = gh_utils.get_file(
+            tooling_metadata_file, short_repo_name, branch=tooling_repo_branch)
+        tooling_metadata_encoded = tooling_metadata_content.content
+        tooling_metadata_decoded = base64.b64decode(tooling_metadata_encoded).decode('UTF-8')
+        tooling_metadata_json = json.loads(tooling_metadata_decoded)
+    else:
+        raise NotImplementedError(('Getting tooling metadata from a non-Github '
+                                   'repo is not currently supported'))
+
+    r = []
+    criteria_id_list = list(tooling_metadata_json['criteria'])
+    if criterion_id:
+        criteria_id_list = [criterion_id]
+        logger.debug('Filtering by criterion <%s>' % criterion_id)
+    try:
+        for criterion in criteria_id_list:
+            tooling_data = await _get_criterion_tooling(
+                criterion, tooling_metadata_json)
+            r.append({'id': criterion, 'tools': tooling_data})
+    except SQAaaSAPIException as e:
+        return web.Response(status=e.http_code, reason=e.message, text=e.message)
+
+    return web.json_response(r, status=200)

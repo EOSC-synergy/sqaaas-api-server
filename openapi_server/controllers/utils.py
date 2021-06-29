@@ -2,6 +2,7 @@ import copy
 import functools
 import itertools
 import logging
+import namegenerator
 import os
 import re
 import uuid
@@ -91,6 +92,17 @@ def extended_data_validation(f):
                         _reason = 'Request to push Docker images, but no build data provided!'
                         logger.warning(_reason)
                         return web.Response(status=400, reason=_reason, text=_reason)
+        # Tooling
+        for criterion_name, criterion_data in config_json['sqa_criteria'].items():
+            try:
+                commands = criterion_data['repos']['commands']
+                tools = criterion_data['repos']['tools']
+                if not commands and not tools:
+                    raise KeyError
+            except KeyError:
+                _reason = 'Builder <commands> might be empty only when <tools> have been defined'
+                logger.warning(_reason)
+                return web.Response(status=400, reason=_reason, text=_reason)
         ret = await f(*args, **kwargs)
         return ret
     return decorated_function
@@ -219,6 +231,100 @@ class ProcessExtraData(object):
                 tox_file, testenv))
             repos_data[repo_key]['tox']['testenv'] = testenv
 
+    @staticmethod
+    def set_tool_env(tools, criterion_name, criterion_repo, project_repos_mapping, config_json, composer_json):
+        """Set the tool environment.
+
+        Includes:
+        - (config.yml) add tooling repository to project_repos
+        - (docker-compose.yml) generating the service entry for executing the tool
+        - (config.yml) adding the value for the 'container' property
+        - (config.yml) generating the tool's execution through the commands builder
+
+        :param tools: List of Tool objects
+        :param criterion_name: Name of the criterion
+        :param criterion_repo: Repo data for the criterion
+        :param project_repos_mapping: Dict containing the defined project_repos
+        :param config_json: Config data (JSON)
+        :param composer_json: Composer data (JSON)
+        """
+        logger.debug('Call to ProcessExtraData.set_tool_env() method')
+
+        # 1) Add tooling repository to <project_repos>
+        tooling_repo_url = config.get(
+            'tooling_repo_url',
+            fallback='https://github.com/EOSC-synergy/sqa-composer-templates'
+        )
+        tooling_repo_branch = config.get(
+            'tooling_repo_branch',
+            fallback='main'
+        )
+        if tooling_repo_url in list(project_repos_mapping):
+            logger.debug('Tool template repository <%s> already defined' % tooling_repo_url)
+        else:
+            repo_data = {}
+            repo_data['name'] = get_short_repo_name(
+                tooling_repo_url, include_netloc=True
+            )
+            repo_data['branch'] = tooling_repo_branch
+            project_repos_mapping[tooling_repo_url] = repo_data
+
+            config_json['config']['project_repos'][repo_data['name']] = {
+                'repo': tooling_repo_url,
+                'branch': tooling_branch
+            }
+
+        # 2) Add service entry
+        if not composer_json:
+            logger.debug('No service was defined by the user')
+            composer_json['version'] = '3.7'
+        dockerfile = None
+        # All tools shall use the same service for the same criterion (JePL limitation)
+        reference_tool = tools[0]
+        dockerfile = None
+        image = None
+        try:
+            dockerfile = reference_tool['docker']['dockerfile']
+            dockerfile = os.path.join(
+                project_repos_mapping[tooling_repo_url]['name'],
+                dockerfile
+            )
+            logger.debug('Dockerfile location: %s' % dockerfile)
+        except KeyError:
+            logger.debug('No Dockerfile definition found for tool <%s>' % reference_tool['name'])
+        if not dockerfile:
+            image = reference_tool['docker']['image']
+        srv_name = '_'.join([
+            criterion_name.lower(), namegenerator.gen()
+        ])
+        srv_definition = JePLUtils.get_composer_service(
+            srv_name, image=image, dockerfile=dockerfile
+        )
+        composer_json['services'].update(srv_definition)
+
+        # 3) Adding service name to config's container
+        old_container_name = criterion_repo['container']
+        logger.debug('Changing previous container name <%s> to <%s>' % (
+            old_container_name, srv_name
+        ))
+        criterion_repo['container'] = srv_name
+
+        # 4) Generate tool execution command
+        criterion_repo['commands'] = []
+        for tool in tools:
+            cmd_list = [tool['name']]
+            args = tool.get('args', [])
+            while args:
+                for arg in args:
+                    if arg['type'] in ['optional']:
+                        cmd_list.append(arg['option'])
+                    cmd_list.append(arg['value'])
+                args = arg.get('args', [])
+            cmd = ' '.join(cmd_list)
+            criterion_repo['commands'].append(cmd)
+
+        return srv_name
+
 
 def process_extra_data(config_json, composer_json):
     """Manage those properties, present in the API spec, that cannot
@@ -234,98 +340,14 @@ def process_extra_data(config_json, composer_json):
     :param config_json: JePL's config as received through the API request (JSON payload)
     :param composer_json: Composer content as received throught the API request (JSON payload).
     """
-    # COMPOSER (Docker Compose specific)
-    for srv_name, srv_data in composer_json['services'].items():
-        use_default_dockerhub_org = False
-        ## Set JPL_DOCKER* envvars
-        if 'registry' in srv_data['image'].keys():
-            registry_data = srv_data['image'].pop('registry')
-            if not 'environment' in config_json.keys():
-                config_json['environment'] = {}
-            # JPL_DOCKERPUSH
-            if registry_data['push']:
-                srv_push = config_json['environment'].get('JPL_DOCKERPUSH', '')
-                srv_push += ' %s' % srv_name
-                srv_push = srv_push.strip()
-                config_json['environment']['JPL_DOCKERPUSH'] = srv_push
-                credential_id = None
-                if registry_data.get('credential_id', None):
-                    credential_id = registry_data['credential_id']
-                else:
-                    credential_id = config.get_ci(
-                        'docker_credential_id', fallback=None)
-                    use_default_dockerhub_org = True
-                try:
-                    config_json['config']['credentials']
-                except KeyError:
-                    config_json['config']['credentials'] = []
-                finally:
-                    config_json['config']['credentials'].append({
-                        'id': credential_id,
-                        'username_var': 'JPL_DOCKERUSER',
-                        'password_var': 'JPL_DOCKERPASS'
-                    })
-            # JPL_DOCKERSERVER: current JePL 2.1.0 does not support 1-to-1 in image-to-registry
-            # so defaulting to the last match
-            if registry_data['url']:
-                config_json['environment']['JPL_DOCKERSERVER'] = registry_data['url']
-        ## Set 'image' property as string (required by Docker Compose)
-        srv_data['image'] = srv_data['image']['name']
-        if use_default_dockerhub_org:
-            org = config.get_ci(
-                'docker_credential_org', fallback=None)
-            img_name = srv_data['image'].split('/')[-1]
-            srv_data['image'] = '/'.join([org, img_name])
-        ## Set 'volumes' property (incl. default values)
-        try:
-            srv_data['volumes']
-        except KeyError:
-            pass
-        else:
-            srv_data['volumes'] = [{
-                'type': 'bind',
-                'source': './',
-                'target': '/sqaaas-build'
-            }]
-        ## Set 'working_dir' property (for simple use cases)
-        ## NOTE Setting working_dir only makes sense when only one volume is expected!
-        srv_data['working_dir'] = srv_data['volumes'][0]['target']
-        ## Check for empty values
-        props_to_remove = []
-        for prop, prop_value in srv_data.items():
-            pop_prop = False
-            if isinstance(prop_value, dict):
-                if not any(prop_value.values()):
-                    pop_prop = True
-            elif isinstance(prop_value, (list, str)):
-                if not prop_value:
-                    pop_prop = True
-            if pop_prop:
-                props_to_remove.append(prop)
-        [srv_data.pop(prop) for prop in props_to_remove]
-        ## Handle 'oneshot' services
-        oneshot = True
-        if 'oneshot' in srv_data.keys():
-            oneshot = srv_data.pop('oneshot')
-        if oneshot:
-            srv_data['command'] = 'sleep 6000000'
-        ## Set default build:context to '.'
-        if 'build' in list(srv_data):
-            ProcessExtraData.set_build_context(srv_name, '.', composer_json)
-
-    composer_data = {'data_json': composer_json}
-
     # CONFIG:CONFIG (Set repo name)
     project_repos_final = {}
     project_repos_mapping = {}
     if 'project_repos' in config_json['config'].keys():
         for project_repo in config_json['config']['project_repos']:
             repo_url = project_repo.pop('repo')
-            repo_url_parsed = urlparse(repo_url)
-            repo_name_generated = ''.join([
-                repo_url_parsed.netloc,
-                repo_url_parsed.path,
-            ])
+            repo_name_generated = get_short_repo_name(
+                repo_url, include_netloc=True)
             project_repos_final[repo_name_generated] = {
                 'repo': repo_url,
                 **project_repo
@@ -350,6 +372,10 @@ def process_extra_data(config_json, composer_json):
             repos_new = {}
             for repo in repos_old:
                 service_name = repo.get('container', None)
+                tools = repo.pop('tools')
+                if tools and not service_name:
+                    service_name = ProcessExtraData.set_tool_env(
+                        tools, criterion_name, repo, project_repos_mapping, config_json, composer_json)
                 try:
                     repo_url = repo.pop('repo_url')
                     if not repo_url:
@@ -393,9 +419,9 @@ def process_extra_data(config_json, composer_json):
             }
             when_data = criterion_data_copy.pop('when')
             config_data_list.append({
-		'data_json': config_json_when,
+                'data_json': config_json_when,
                 'data_when': when_data
-	    })
+            })
             config_json_no_when['sqa_criteria'].pop(criterion_name)
         else:
             config_json_no_when['sqa_criteria'][criterion_name] = criterion_data_copy
@@ -405,6 +431,97 @@ def process_extra_data(config_json, composer_json):
             'data_json': config_json_no_when,
             'data_when': None
         })
+
+    # COMPOSER (Docker Compose specific)
+    for srv_name, srv_data in composer_json['services'].items():
+        logger.debug('Processing composer data for service <%s>' % srv_name)
+        if 'image' in list(srv_data):
+            use_default_dockerhub_org = False
+            ## Set JPL_DOCKER* envvars
+            if 'registry' in srv_data['image'].keys():
+                logger.debug('Registry data found for image <%s>' % srv_data['image'])
+                registry_data = srv_data['image'].pop('registry')
+                if not 'environment' in config_json.keys():
+                    config_json['environment'] = {}
+                # JPL_DOCKERPUSH
+                if registry_data['push']:
+                    srv_push = config_json['environment'].get('JPL_DOCKERPUSH', '')
+                    srv_push += ' %s' % srv_name
+                    srv_push = srv_push.strip()
+                    config_json['environment']['JPL_DOCKERPUSH'] = srv_push
+                    logger.debug('Setting JPL_DOCKERPUSH environment value to <%s>' % srv_push)
+                    credential_id = None
+                    if registry_data.get('credential_id', None):
+                        credential_id = registry_data['credential_id']
+                        logger.debug('Using custom Jenkins credentials: %s' % credential_id)
+                    else:
+                        credential_id = config.get_ci(
+                            'docker_credential_id', fallback=None)
+                        use_default_dockerhub_org = True
+                        logger.debug('Using catch-all Jenkins credentials: %s' % credential_id)
+                    try:
+                        config_json['config']['credentials']
+                    except KeyError:
+                        config_json['config']['credentials'] = []
+                    finally:
+                        config_json['config']['credentials'].append({
+                            'id': credential_id,
+                            'username_var': 'JPL_DOCKERUSER',
+                            'password_var': 'JPL_DOCKERPASS'
+                        })
+                # JPL_DOCKERSERVER: current JePL 2.1.0 does not support 1-to-1 in image-to-registry
+                # so defaulting to the last match
+                if registry_data['url']:
+                    config_json['environment']['JPL_DOCKERSERVER'] = registry_data['url']
+                    logger.debug('Setting JPL_DOCKERSERVER environment value to <%s>' % registry_data['url'])
+            ## Set 'image' property as string (required by Docker Compose)
+            srv_data['image'] = srv_data['image']['name']
+            if use_default_dockerhub_org:
+                org = config.get_ci(
+                    'docker_credential_org', fallback=None)
+                logger.debug('Using default Docker Hub <%s> organization' % org)
+                img_name = srv_data['image'].split('/')[-1]
+                srv_data['image'] = '/'.join([org, img_name])
+                logger.debug('Resultant Docker image name: %s' % srv_data['image'])
+        ## Check for empty values
+        props_to_remove = []
+        for prop, prop_value in srv_data.items():
+            pop_prop = False
+            if isinstance(prop_value, dict):
+                if not any(prop_value.values()):
+                    pop_prop = True
+            elif isinstance(prop_value, (list, str)):
+                if not prop_value:
+                    pop_prop = True
+            if pop_prop:
+                props_to_remove.append(prop)
+        [srv_data.pop(prop) for prop in props_to_remove]
+        ## Set 'volumes' property (incl. default values)
+        try:
+            srv_data['volumes']
+        except KeyError:
+            srv_data['volumes'] = [{
+                'type': 'bind',
+                'source': './',
+                'target': '/sqaaas-build'
+            }]
+            logger.debug('Setting volume data to default values: %s' % srv_data['volumes'])
+        ## Set 'working_dir' property (for simple use cases)
+        ## NOTE Setting working_dir only makes sense when only one volume is expected!
+        srv_data['working_dir'] = srv_data['volumes'][0]['target']
+        logger.debug('Setting <working_dir> property to <%s>' % srv_data['working_dir'])
+        ## Handle 'oneshot' services
+        oneshot = True
+        if 'oneshot' in srv_data.keys():
+            oneshot = srv_data.pop('oneshot')
+        if oneshot:
+            logger.debug('Oneshot image, setting <sleep> command')
+            srv_data['command'] = 'sleep 6000000'
+        ## Set default build:context to '.'
+        if 'build' in list(srv_data):
+            ProcessExtraData.set_build_context(srv_name, '.', composer_json)
+
+    composer_data = {'data_json': composer_json}
 
     return (config_data_list, composer_data, commands_script_list)
 
@@ -438,6 +555,41 @@ def format_git_url(repo_url):
         fragment=repo_url_parsed.fragment
     )
     return repo_url_final.geturl()
+
+
+def supported_git_platform(repo_url, platforms):
+    """Checks if the given repo_url belongs to any of the supported platforms.
+
+    Returns the key of the git platform in case it matches with any of the supported
+    platforms. Otherwise, returns None.
+
+    :param repo_url: URL of the git repository
+    :param platforms: Dict with the git supported platforms (e.g {'github': 'https://github.com'})
+    """
+    url_parsed = urlparse(repo_url)
+    netloc_without_extension = url_parsed.netloc.split('.')[0]
+    if not netloc_without_extension in list(platforms):
+        netloc_without_extension = None
+    return netloc_without_extension
+
+
+def get_short_repo_name(repo_url, include_netloc=False):
+    """Returns the short name of the git repo, i.e. <user/org>/<repo_name>.
+
+    :param repo_url: URL of the git repository
+    """
+    url_parsed = urlparse(repo_url)
+    short_repo_name = url_parsed.path
+    if include_netloc:
+        short_repo_name = ''.join([
+            url_parsed.netloc,
+            url_parsed.path,
+        ])
+    # cleanup
+    short_repo_name = short_repo_name.lstrip('/')
+    short_repo_name = short_repo_name.rsplit('.git')[0]
+    logger.debug('Short repository name for <%s>: %s' % (repo_url, short_repo_name))
+    return short_repo_name
 
 
 # NOTE (workaround) Back to the old criteria codes from JePL 2.1.0

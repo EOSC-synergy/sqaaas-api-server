@@ -15,6 +15,33 @@ servers:
 - description: Development API server (mock server)
   url: https://api-dev.sqaaas.eosc-synergy.eu
 paths:
+  /criteria:
+    get:
+      operationId: get_criteria
+      parameters:
+      - description: Get data from a specific criterion
+        explode: true
+        in: query
+        name: criterion_id
+        required: false
+        schema:
+          type: string
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/Criterion'
+                type: array
+          description: Successful operation
+        "400":
+          description: Invalid criterion supplied
+        "404":
+          description: Criterion not found
+      summary: Returns data about criteria
+      x-openapi-router-controller: openapi_server.controllers.default_controller
   /pipeline:
     get:
       description: |
@@ -499,7 +526,7 @@ paths:
               example:
                 pull_request_url: https://github.com/EOSC-synergy/sqaaas-api-spec/pull/23
               schema:
-                $ref: '#/components/schemas/inline_response_200_6'
+                $ref: '#/components/schemas/inline_response_200_5'
           description: Successful operation
         "400":
           description: Invalid pipeline ID supplied
@@ -559,13 +586,7 @@ paths:
           type: string
         style: form
       responses:
-        "200":
-          content:
-            application/json:
-              example:
-                build_url: https://jenkins.eosc-synergy.eu/job/eosc-synergy-org/job/sqaaas-api-spec
-              schema:
-                $ref: '#/components/schemas/inline_response_200_4'
+        "204":
           description: Successful operation
         "400":
           description: Invalid pipeline ID supplied
@@ -601,7 +622,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_200_5'
+                $ref: '#/components/schemas/inline_response_200_4'
           description: Successful operation
         "400":
           description: Invalid pipeline ID supplied
@@ -639,6 +660,175 @@ components:
         an invalid response from the upstream server it accessed
         in attempting to fulfill the request.
   schemas:
+    ToolArg:
+      example:
+        type: subcommand
+        description: Detect the license of the given project
+        value: detect
+        selectable: false
+        args:
+          description: Path to project's license
+          format: string
+          value: "."
+      properties:
+        type:
+          description: type of argument
+          enum:
+          - subcommand
+          - positional
+          - optional
+          type: string
+        description:
+          type: string
+        option:
+          description: Name of the option, in the event of optional arguments
+          type: string
+        format:
+          description: The value format (to be rendered by web clients)
+          enum:
+          - string
+          - array
+          type: string
+        value:
+          description: Default value for the argument
+          type: string
+        selectable:
+          description: Whether the argument can be selected by the user (to be rendered
+            by web clients)
+          type: boolean
+        args:
+          items:
+            $ref: '#/components/schemas/ToolArg'
+          type: array
+      title: ToolArg
+      type: object
+    Tool:
+      example:
+        args:
+        - type: subcommand
+          description: Detect the license of the given project
+          value: detect
+          selectable: false
+          args:
+            description: Path to project's license
+            format: string
+            value: "."
+        - type: subcommand
+          description: Detect the license of the given project
+          value: detect
+          selectable: false
+          args:
+            description: Path to project's license
+            format: string
+            value: "."
+        docs: https://openapi-generator.tech
+        name: name
+        lang: lang
+        jepl_support: true
+        docker:
+          image: image
+          dockerfile: dockerfile
+          reviewed: 2000-01-23
+      properties:
+        name:
+          title: name
+          type: string
+        lang:
+          title: lang
+          type: string
+        jepl_support:
+          title: jepl_support
+          type: boolean
+        docs:
+          format: uri
+          title: docs
+          type: string
+        docker:
+          $ref: '#/components/schemas/Tool_docker'
+        args:
+          items:
+            $ref: '#/components/schemas/ToolArg'
+          title: args
+          type: array
+      required:
+      - lang
+      title: Tool
+      type: object
+    Criterion:
+      example:
+        description:
+          msg: msg
+          docs: https://openapi-generator.tech
+          improves: improves
+        id: QC.Sty
+        tools:
+          key:
+          - args:
+            - type: subcommand
+              description: Detect the license of the given project
+              value: detect
+              selectable: false
+              args:
+                description: Path to project's license
+                format: string
+                value: "."
+            - type: subcommand
+              description: Detect the license of the given project
+              value: detect
+              selectable: false
+              args:
+                description: Path to project's license
+                format: string
+                value: "."
+            docs: https://openapi-generator.tech
+            name: name
+            lang: lang
+            jepl_support: true
+            docker:
+              image: image
+              dockerfile: dockerfile
+              reviewed: 2000-01-23
+          - args:
+            - type: subcommand
+              description: Detect the license of the given project
+              value: detect
+              selectable: false
+              args:
+                description: Path to project's license
+                format: string
+                value: "."
+            - type: subcommand
+              description: Detect the license of the given project
+              value: detect
+              selectable: false
+              args:
+                description: Path to project's license
+                format: string
+                value: "."
+            docs: https://openapi-generator.tech
+            name: name
+            lang: lang
+            jepl_support: true
+            docker:
+              image: image
+              dockerfile: dockerfile
+              reviewed: 2000-01-23
+      properties:
+        id:
+          example: QC.Sty
+          title: id
+          type: string
+        description:
+          $ref: '#/components/schemas/Criterion_description'
+        tools:
+          additionalProperties:
+            items:
+              $ref: '#/components/schemas/Tool'
+            type: array
+          title: tools
+          type: object
+      title: Criterion
+      type: object
     Repository:
       example:
       - repo: https://github.com/jenkins-docs/simple-java-maven-app
@@ -689,7 +879,6 @@ components:
       items:
         minLength: 1
         type: string
-      minItems: 1
       type: array
     Tox_simplified:
       properties:
@@ -747,6 +936,10 @@ components:
                   $ref: '#/components/schemas/Commands_simplified'
                 tox:
                   $ref: '#/components/schemas/Tox_simplified'
+                tools:
+                  items:
+                    $ref: '#/components/schemas/Tool'
+                  type: array
               type: object
             type: array
           when:
@@ -829,6 +1022,10 @@ components:
                       $ref: '#/components/schemas/Commands_simplified'
                     tox:
                       $ref: '#/components/schemas/Tox_simplified'
+                    tools:
+                      items:
+                        $ref: '#/components/schemas/Tool'
+                      type: array
                   type: object
                 type: array
               when:
@@ -1297,6 +1494,10 @@ components:
                       $ref: '#/components/schemas/Commands_simplified'
                     tox:
                       $ref: '#/components/schemas/Tox_simplified'
+                    tools:
+                      items:
+                        $ref: '#/components/schemas/Tool'
+                      type: array
                   type: object
                 type: array
               when:
@@ -1439,16 +1640,6 @@ components:
       type: object
     inline_response_200_4:
       example:
-        build_url: https://openapi-generator.tech
-      properties:
-        build_url:
-          format: uri
-          title: build_url
-          type: string
-      title: inline_response_200_4
-      type: object
-    inline_response_200_5:
-      example:
         openbadge_id: https://openapi-generator.tech
         build_status: success
         build_url: https://openapi-generator.tech
@@ -1471,7 +1662,7 @@ components:
           format: uri
           title: openbadge_id
           type: string
-      title: inline_response_200_5
+      title: inline_response_200_4
       type: object
     inline_object:
       properties:
@@ -1486,7 +1677,7 @@ components:
       required:
       - repo
       type: object
-    inline_response_200_6:
+    inline_response_200_5:
       example:
         pull_request_url: https://openapi-generator.tech
       properties:
@@ -1494,7 +1685,43 @@ components:
           format: uri
           title: pull_request_url
           type: string
-      title: inline_response_200_6
+      title: inline_response_200_5
+      type: object
+    Tool_docker:
+      example:
+        image: image
+        dockerfile: dockerfile
+        reviewed: 2000-01-23
+      properties:
+        image:
+          title: image
+          type: string
+        dockerfile:
+          title: dockerfile
+          type: string
+        reviewed:
+          format: date
+          title: reviewed
+          type: string
+      title: Tool_docker
+      type: object
+    Criterion_description:
+      example:
+        msg: msg
+        docs: https://openapi-generator.tech
+        improves: improves
+      properties:
+        msg:
+          title: msg
+          type: string
+        improves:
+          title: improves
+          type: string
+        docs:
+          format: uri
+          title: docs
+          type: string
+      title: Criterion_description
       type: object
     JePL_config_config:
       example:
