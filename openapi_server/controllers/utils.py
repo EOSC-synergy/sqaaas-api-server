@@ -278,6 +278,7 @@ class ProcessExtraData(object):
                 project_repos_mapping[tooling_repo_url]['name'],
                 dockerfile
             )
+            logger.debug('Dockerfile location: %s' % dockerfile)
         except KeyError:
             logger.debug('No Dockerfile definition found for tool <%s>' % reference_tool['name'])
         if not dockerfile:
