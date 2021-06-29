@@ -243,6 +243,8 @@ class ProcessExtraData(object):
         dockerfile = None
         # All tools shall use the same service for the same criterion (JePL limitation)
         reference_tool = tools[0]
+        dockerfile = None
+        image = None
         try:
             dockerfile = reference_tool['docker']['dockerfile']
         except KeyError:
