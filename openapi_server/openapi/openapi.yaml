@@ -666,6 +666,7 @@ components:
         description: Detect the license of the given project
         value: detect
         selectable: false
+        repeatable: false
         args:
           description: Path to project's license
           format: string
@@ -679,9 +680,15 @@ components:
           - optional
           type: string
         description:
+          description: hint about what the command does
           type: string
+        value:
+          description: Value for the argument (can be of any type)
         option:
           description: Name of the option, in the event of optional arguments
+          type: string
+        summary:
+          description: very brief (2/3 words) description (to be rendered by web clients)
           type: string
         format:
           description: The value format (to be rendered by web clients)
@@ -689,17 +696,23 @@ components:
           - string
           - array
           type: string
-        value:
-          description: Default value for the argument
-          type: string
         selectable:
+          default: true
           description: Whether the argument can be selected by the user (to be rendered
             by web clients)
+          type: boolean
+        repeatable:
+          default: false
+          description: Whether the argument can be repeated (to be rendered by web
+            clients)
           type: boolean
         args:
           items:
             $ref: '#/components/schemas/ToolArg'
           type: array
+      required:
+      - description
+      - type
       title: ToolArg
       type: object
     Tool:
@@ -709,6 +722,7 @@ components:
           description: Detect the license of the given project
           value: detect
           selectable: false
+          repeatable: false
           args:
             description: Path to project's license
             format: string
@@ -717,6 +731,7 @@ components:
           description: Detect the license of the given project
           value: detect
           selectable: false
+          repeatable: false
           args:
             description: Path to project's license
             format: string
@@ -751,7 +766,10 @@ components:
           title: args
           type: array
       required:
+      - docker
+      - docs
       - lang
+      - name
       title: Tool
       type: object
     Criterion:
@@ -768,6 +786,7 @@ components:
               description: Detect the license of the given project
               value: detect
               selectable: false
+              repeatable: false
               args:
                 description: Path to project's license
                 format: string
@@ -776,6 +795,7 @@ components:
               description: Detect the license of the given project
               value: detect
               selectable: false
+              repeatable: false
               args:
                 description: Path to project's license
                 format: string
@@ -793,6 +813,7 @@ components:
               description: Detect the license of the given project
               value: detect
               selectable: false
+              repeatable: false
               args:
                 description: Path to project's license
                 format: string
@@ -801,6 +822,7 @@ components:
               description: Detect the license of the given project
               value: detect
               selectable: false
+              repeatable: false
               args:
                 description: Path to project's license
                 format: string
