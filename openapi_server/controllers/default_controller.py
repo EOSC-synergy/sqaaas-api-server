@@ -911,6 +911,14 @@ async def _get_criterion_tooling(criterion_id, metadata_json):
                     tool, lang))
             if d:
                 criterion_data_list.append(d)
+    # FIXME For the time being add only 'commands'
+    d_commands = {
+        'name': 'commands',
+        'lang': None,
+    }
+    d_commands.update(metadata_json['tools']['default']['commands'])
+    criterion_data_list.append(d_commands)
+
     return criterion_data_list
 
 
