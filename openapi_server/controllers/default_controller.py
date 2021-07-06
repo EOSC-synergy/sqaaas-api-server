@@ -491,16 +491,20 @@ async def get_pipeline_status(request: web.Request, pipeline_id) -> web.Response
     if jenkins_info['scan_org_wait']:
         logger.debug('scan_org_wait still enabled for pipeline job: %s' % jk_job_name)
         build_data = jk_utils.get_job_info(jk_job_name)
-        if build_data:
-            build_url = build_data['lastBuild']['url']
-            build_no = build_data['lastBuild']['number']
-            logger.info('Jenkins job build URL (after Scan Organization finished) obtained: %s' % build_url)
-            jenkins_info['build_info'].update({
-                'url': build_url,
-                'number': build_no,
-                'status': 'EXECUTING'
-            })
-            jenkins_info['scan_org_wait'] = False
+        if build_data.get('lastBuild', None):
+            try:
+                build_url = build_data['lastBuild']['url']
+                build_no = build_data['lastBuild']['number']
+            except KeyError as e:
+                logger.warning(e)
+            else:
+                logger.info('Jenkins job build URL (after Scan Organization finished) obtained: %s' % build_url)
+                jenkins_info['build_info'].update({
+                    'url': build_url,
+                    'number': build_no,
+                    'status': 'EXECUTING'
+                })
+                jenkins_info['scan_org_wait'] = False
         else:
             logger.debug('Job still waiting for scan organization to end')
             build_status = 'WAITING_SCAN_ORG'
