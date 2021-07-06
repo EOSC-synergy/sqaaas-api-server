@@ -522,8 +522,13 @@ async def get_pipeline_status(request: web.Request, pipeline_id) -> web.Response
             jk_job_name,
             build_no
         )
-        if _status:
-            build_status = _status
+        if _status['result']:
+            build_status = _status['result']
+            logger.debug('Job result returned from Jenkins: %s' % _status['result'])
+        else:
+            if _status.get('queueId', None):
+                build_status = 'EXECUTING'
+                logger.debug('Jenkins job queueId found: setting job status to <EXECUTING>')
     logger.info('Build status <%s> for job: %s (build_no: %s)' % (build_status, jk_job_name, build_no))
 
     badge_data = jenkins_info['build_info']['badge']

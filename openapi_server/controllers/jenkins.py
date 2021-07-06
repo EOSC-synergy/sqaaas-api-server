@@ -99,7 +99,7 @@ class JenkinsUtils(object):
         self.logger.debug('Getting status for job <%s> (build_no: %s)' % (full_job_name, build_no))
         build_info = self.server.get_build_info(full_job_name, build_no, depth=depth)
         self.logger.debug('Build info as obtained by Jenkins: %s' % build_info)
-        return build_info['result']
+        return build_info
 
     def delete_job(self, full_job_name):
         self.logger.debug('Deleting Jenkins job: %s' % full_job_name)
