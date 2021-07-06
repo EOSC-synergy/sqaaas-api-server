@@ -740,6 +740,7 @@ components:
         name: name
         lang: lang
         jepl_support: true
+        executable: executable
         docker:
           image: image
           dockerfile: dockerfile
@@ -760,6 +761,9 @@ components:
           type: string
         docker:
           $ref: '#/components/schemas/Tool_docker'
+        executable:
+          title: executable
+          type: string
         args:
           items:
             $ref: '#/components/schemas/ToolArg'
@@ -804,6 +808,7 @@ components:
             name: name
             lang: lang
             jepl_support: true
+            executable: executable
             docker:
               image: image
               dockerfile: dockerfile
@@ -831,6 +836,7 @@ components:
             name: name
             lang: lang
             jepl_support: true
+            executable: executable
             docker:
               image: image
               dockerfile: dockerfile

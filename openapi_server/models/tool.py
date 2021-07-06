@@ -16,7 +16,7 @@ class Tool(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, name: str=None, lang: str=None, jepl_support: bool=None, docs: str=None, docker: ToolDocker=None, args: List[ToolArg]=None):
+    def __init__(self, name: str=None, lang: str=None, jepl_support: bool=None, docs: str=None, docker: ToolDocker=None, executable: str=None, args: List[ToolArg]=None):
         """Tool - a model defined in OpenAPI
 
         :param name: The name of this Tool.
@@ -24,6 +24,7 @@ class Tool(Model):
         :param jepl_support: The jepl_support of this Tool.
         :param docs: The docs of this Tool.
         :param docker: The docker of this Tool.
+        :param executable: The executable of this Tool.
         :param args: The args of this Tool.
         """
         self.openapi_types = {
@@ -32,6 +33,7 @@ class Tool(Model):
             'jepl_support': bool,
             'docs': str,
             'docker': ToolDocker,
+            'executable': str,
             'args': List[ToolArg]
         }
 
@@ -41,6 +43,7 @@ class Tool(Model):
             'jepl_support': 'jepl_support',
             'docs': 'docs',
             'docker': 'docker',
+            'executable': 'executable',
             'args': 'args'
         }
 
@@ -49,6 +52,7 @@ class Tool(Model):
         self._jepl_support = jepl_support
         self._docs = docs
         self._docker = docker
+        self._executable = executable
         self._args = args
 
     @classmethod
@@ -172,6 +176,27 @@ class Tool(Model):
             raise ValueError("Invalid value for `docker`, must not be `None`")
 
         self._docker = docker
+
+    @property
+    def executable(self):
+        """Gets the executable of this Tool.
+
+
+        :return: The executable of this Tool.
+        :rtype: str
+        """
+        return self._executable
+
+    @executable.setter
+    def executable(self, executable):
+        """Sets the executable of this Tool.
+
+
+        :param executable: The executable of this Tool.
+        :type executable: str
+        """
+
+        self._executable = executable
 
     @property
     def args(self):

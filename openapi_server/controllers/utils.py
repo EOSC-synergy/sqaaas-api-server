@@ -315,6 +315,8 @@ class ProcessExtraData(object):
         criterion_repo['commands'] = []
         for tool in tools:
             cmd_list = [tool['name']]
+            if 'executable' in list(tool):
+                cmd_list = [tool['executable']]
             args = tool.get('args', [])
             while args:
                 for arg in args:
