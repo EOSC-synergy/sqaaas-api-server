@@ -24,7 +24,7 @@ pipeline {
                     projectConfig = pipelineConfig(
                         configFile: '{{ config_data.file_name }}',
                         scmConfigs: [ localBranch: true ],
-                        validatorDockerImage: 'eoscsynergy/jpl-validator:9c6de3e'
+                        validatorDockerImage: 'eoscsynergy/jpl-validator:1.2.0'
                     )
                     buildStages(projectConfig)
                 }
