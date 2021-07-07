@@ -276,10 +276,6 @@ async def get_pipeline_config_jepl(request: web.Request, pipeline_id) -> web.Res
     pipeline_data = db.get_entry(pipeline_id)
 
     config_data_list = pipeline_data['data']['config']
-    # NOTE Remove the 'for' below when new criteria codes are available in JePL>2.1.0
-    for config_data in config_data_list:
-        config_data['data_json']['sqa_criteria'] = ctls_utils.rekey_criteria_codes(
-            config_data['data_json']['sqa_criteria'])
     r = [{
             'file_name': config_data['file_name'],
             'content': config_data['data_json']

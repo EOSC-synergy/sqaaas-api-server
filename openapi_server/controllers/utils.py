@@ -594,23 +594,3 @@ def get_short_repo_name(repo_url, include_netloc=False):
     short_repo_name = short_repo_name.rsplit('.git')[0]
     logger.debug('Short repository name for <%s>: %s' % (repo_url, short_repo_name))
     return short_repo_name
-
-
-# NOTE (workaround) Back to the old criteria codes from JePL 2.1.0
-# FIXME by removing when using JePL > 2.1.0
-def rekey_criteria_codes(record):
-    criteria_map = {
-        'QC.Sty': 'qc_style',
-        'QC.Uni': 'qc_coverage',
-        'QC.Fun': 'qc_functional',
-        'QC.Sec': 'qc_security',
-        'QC.Doc': 'qc_doc',
-    }
-    if isinstance(record, str):
-        for new, old in criteria_map.items():
-            record = record.replace(new, old)
-        return record
-    elif isinstance(record, dict):
-        return {
-            criteria_map.get(new, new): old for new, old in record.items()
-        }
