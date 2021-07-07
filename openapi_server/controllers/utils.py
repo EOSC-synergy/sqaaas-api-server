@@ -97,8 +97,8 @@ def extended_data_validation(f):
             for criterion_name, criterion_data in config_json['sqa_criteria'].items():
                 for repo in criterion_data['repos']:
                     try:
-                        commands = repo['commands']
-                        tools = repo['tools']
+                        commands = repo.get('commands', [])
+                        tools = repo.get('tools', [])
                         if not commands and not tools:
                             raise KeyError
                     except KeyError:
