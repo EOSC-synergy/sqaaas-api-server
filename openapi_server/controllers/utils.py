@@ -467,7 +467,9 @@ def process_extra_data(config_json, composer_json):
             repos_new = {}
             for repo in repos_old:
                 service_name = repo.get('container', None)
-                tools = repo.pop('tools')
+                tools = []
+                if repo.get('tools', []):
+                    tools = repo.pop('tools')
                 if tools and not service_name:
                     service_name = ProcessExtraData.set_tool_env(
                         tools, criterion_name, repo, project_repos_mapping, config_json, composer_json)
