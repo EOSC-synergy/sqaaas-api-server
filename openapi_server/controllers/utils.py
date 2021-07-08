@@ -203,6 +203,19 @@ class ProcessExtraData(object):
         ## NOTE Setting working_dir only makes sense when only one volume is expected!
         service_data['working_dir'] = service_data['volumes'][0]['target']
         logger.debug('Setting <working_dir> property to <%s>' % service_data['working_dir'])
+    @staticmethod
+    def set_service_oneshot(service_data):
+        """Set the default volume data.
+
+        :param service_data: Data of the DC service
+        """
+        logger.debug('Call to ProcessExtraData.set_service_oneshot() method')
+        oneshot = True
+        if 'oneshot' in service_data.keys():
+            oneshot = service_data.pop('oneshot')
+        if oneshot:
+            logger.debug('Oneshot image, setting <sleep> command')
+            service_data['command'] = 'sleep 6000000'
 
     @staticmethod
     def set_build_context(service_name, repo_name, composer_json):
@@ -419,14 +432,9 @@ def process_extra_data(config_json, composer_json):
         ## Check for empty values
         srv_data = del_empty_keys(srv_data)
         ## Set 'volumes' property (incl. default values)
-        ProcessExtraData.set_service_volume(service_name)
+        ProcessExtraData.set_service_volume(srv_data)
         ## Handle 'oneshot' services
-        oneshot = True
-        if 'oneshot' in srv_data.keys():
-            oneshot = srv_data.pop('oneshot')
-        if oneshot:
-            logger.debug('Oneshot image, setting <sleep> command')
-            srv_data['command'] = 'sleep 6000000'
+        ProcessExtraData.set_service_oneshot(srv_data)
         ## Set default build:context to '.'
         if 'build' in list(srv_data):
             ProcessExtraData.set_build_context(srv_name, '.', composer_json)
