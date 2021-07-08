@@ -412,6 +412,78 @@ def process_extra_data(config_json, composer_json):
     :param config_json: JePL's config as received through the API request (JSON payload)
     :param composer_json: Composer content as received throught the API request (JSON payload).
     """
+    # CONFIG:CONFIG (Set repo name)
+    project_repos_final = {}
+    project_repos_mapping = {}
+    if 'project_repos' in config_json['config'].keys():
+        for project_repo in config_json['config']['project_repos']:
+            repo_url = project_repo.pop('repo')
+            repo_name_generated = get_short_repo_name(
+                repo_url, include_netloc=True)
+            project_repos_final[repo_name_generated] = {
+                'repo': repo_url,
+                **project_repo
+            }
+            project_repos_mapping[repo_url] = {
+                'name': repo_name_generated,
+                **project_repo
+            }
+        config_json['config']['project_repos'] = project_repos_final
+
+    # CONFIG:SQA_CRITERIA
+    # - Array-to-Object conversion for repos
+    # - Set 'context' to the appropriate checkout path for building the Dockerfile
+    commands_script_list = []
+    for criterion_name, criterion_data in config_json['sqa_criteria'].items():
+        criterion_data_copy = copy.deepcopy(criterion_data)
+        if 'repos' in criterion_data.keys():
+            repos_old = criterion_data_copy.pop('repos')
+            repos_new = {}
+            for repo in repos_old:
+                service_name = repo.get('container', None)
+                tools = []
+                if repo.get('tools', []):
+                    tools = repo.pop('tools')
+                if tools and not service_name:
+                    service_name = ProcessExtraData.set_tool_env(
+                        tools, criterion_name, repo, project_repos_mapping, config_json, composer_json)
+                try:
+                    repo_url = repo.pop('repo_url')
+                    if not repo_url:
+                        raise KeyError
+                except KeyError:
+                    # Use 'this_repo' as the placeholder for current repo & version
+                    repos_new['this_repo'] = repo
+                    # Modify Tox properties (chdir, defaults)
+                    ProcessExtraData.set_tox_env('.', repos_new)
+                    # Set Dockerfile's 'context' in the composer
+                    ProcessExtraData.set_build_context(service_name, '.', composer_json)
+                else:
+                    repo_name = project_repos_mapping[repo_url]['name']
+                    repos_new[repo_name] = repo
+                    # Create script for 'commands' builder
+                    # NOTE: This is a workaround -> a specific builder to tackle this will be implemented in JePL
+                    if 'commands' in repo.keys():
+                        commands_script_data = JePLUtils.get_commands_script(
+                            repo_name,
+                            repo['commands']
+                        )
+                        commands_script_data = JePLUtils.append_file_name(
+                            'commands_script',
+                            [{
+                                'content': commands_script_data
+                            }],
+                            force_random_name=True
+                        )
+                        commands_script_list.extend(commands_script_data)
+                        script_call = '/usr/bin/env sh %s' % commands_script_data[0]['file_name']
+                        repos_new[repo_name]['commands'] = [script_call]
+                    # Modify Tox properties (chdir, defaults)
+                    ProcessExtraData.set_tox_env(repo_name, repos_new)
+                    # Set Dockerfile's 'context' in the composer
+                    ProcessExtraData.set_build_context(service_name, repo_name, composer_json)
+            criterion_data_copy['repos'] = repos_new
+
     # COMPOSER (Docker Compose specific)
     for srv_name, srv_data in composer_json['services'].items():
         logger.debug('Processing composer data for service <%s>' % srv_name)
@@ -475,80 +547,8 @@ def process_extra_data(config_json, composer_json):
 
     composer_data = {'data_json': composer_json}
 
-    # CONFIG:CONFIG (Set repo name)
-    project_repos_final = {}
-    project_repos_mapping = {}
-    if 'project_repos' in config_json['config'].keys():
-        for project_repo in config_json['config']['project_repos']:
-            repo_url = project_repo.pop('repo')
-            repo_name_generated = get_short_repo_name(
-                repo_url, include_netloc=True)
-            project_repos_final[repo_name_generated] = {
-                'repo': repo_url,
-                **project_repo
-            }
-            project_repos_mapping[repo_url] = {
-                'name': repo_name_generated,
-                **project_repo
-            }
-        config_json['config']['project_repos'] = project_repos_final
-
     # CONFIG:SQA_CRITERIA
     # - Multiple stages/Jenkins when clause
-    # - Array-to-Object conversion for repos
-    # - Set 'context' to the appropriate checkout path for building the Dockerfile
-    commands_script_list = []
-    for criterion_name, criterion_data in config_json['sqa_criteria'].items():
-        criterion_data_copy = copy.deepcopy(criterion_data)
-        if 'repos' in criterion_data.keys():
-            repos_old = criterion_data_copy.pop('repos')
-            repos_new = {}
-            for repo in repos_old:
-                service_name = repo.get('container', None)
-                tools = []
-                if repo.get('tools', []):
-                    tools = repo.pop('tools')
-                if tools and not service_name:
-                    service_name = ProcessExtraData.set_tool_env(
-                        tools, criterion_name, repo, project_repos_mapping, config_json, composer_json)
-                try:
-                    repo_url = repo.pop('repo_url')
-                    if not repo_url:
-                        raise KeyError
-                except KeyError:
-                    # Use 'this_repo' as the placeholder for current repo & version
-                    repos_new['this_repo'] = repo
-                    # Modify Tox properties (chdir, defaults)
-                    ProcessExtraData.set_tox_env('.', repos_new)
-                    # Set Dockerfile's 'context' in the composer
-                    ProcessExtraData.set_build_context(service_name, '.', composer_json)
-                else:
-                    repo_name = project_repos_mapping[repo_url]['name']
-                    repos_new[repo_name] = repo
-                    # Create script for 'commands' builder
-                    # NOTE: This is a workaround -> a specific builder to tackle this will be implemented in JePL
-                    if 'commands' in repo.keys():
-                        commands_script_data = JePLUtils.get_commands_script(
-                            repo_name,
-                            repo['commands']
-                        )
-                        commands_script_data = JePLUtils.append_file_name(
-                            'commands_script',
-                            [{
-                                'content': commands_script_data
-                            }],
-                            force_random_name=True
-                        )
-                        commands_script_list.extend(commands_script_data)
-                        script_call = '/usr/bin/env sh %s' % commands_script_data[0]['file_name']
-                        repos_new[repo_name]['commands'] = [script_call]
-                    # Modify Tox properties (chdir, defaults)
-                    ProcessExtraData.set_tox_env(repo_name, repos_new)
-                    # Set Dockerfile's 'context' in the composer
-                    ProcessExtraData.set_build_context(service_name, repo_name, composer_json)
-            criterion_data_copy['repos'] = repos_new
-
-    # Process 'when' clause
     config_data_list = ProcessExtraData.set_config_when_clause(config_json)
 
     return (config_data_list, composer_data, commands_script_list)
