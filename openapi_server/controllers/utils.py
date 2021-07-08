@@ -199,6 +199,10 @@ class ProcessExtraData(object):
                 'target': '/sqaaas-build'
             }]
             logger.debug('Setting volume data to default values: %s' % service_data['volumes'])
+        ## Set 'working_dir' property (for simple use cases)
+        ## NOTE Setting working_dir only makes sense when only one volume is expected!
+        service_data['working_dir'] = service_data['volumes'][0]['target']
+        logger.debug('Setting <working_dir> property to <%s>' % service_data['working_dir'])
 
     @staticmethod
     def set_build_context(service_name, repo_name, composer_json):
@@ -416,10 +420,6 @@ def process_extra_data(config_json, composer_json):
         srv_data = del_empty_keys(srv_data)
         ## Set 'volumes' property (incl. default values)
         ProcessExtraData.set_service_volume(service_name)
-        ## Set 'working_dir' property (for simple use cases)
-        ## NOTE Setting working_dir only makes sense when only one volume is expected!
-        srv_data['working_dir'] = srv_data['volumes'][0]['target']
-        logger.debug('Setting <working_dir> property to <%s>' % srv_data['working_dir'])
         ## Handle 'oneshot' services
         oneshot = True
         if 'oneshot' in srv_data.keys():
