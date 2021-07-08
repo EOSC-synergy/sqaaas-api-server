@@ -273,7 +273,7 @@ class ProcessExtraData(object):
 
             config_json['config']['project_repos'][repo_data['name']] = {
                 'repo': tooling_repo_url,
-                'branch': tooling_branch
+                'branch': tooling_repo_branch
             }
 
         # 2) Add service entry
