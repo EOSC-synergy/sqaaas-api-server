@@ -184,6 +184,23 @@ def get_pipeline_data(request_body):
 class ProcessExtraData(object):
     """Utils class for the extra data processing."""
     @staticmethod
+    def set_service_volume(service_data):
+        """Set the default volume data.
+
+        :param service_data: Data of the DC service
+        """
+        logger.debug('Call to ProcessExtraData.set_service_volume() method')
+        try:
+            service_data['volumes']
+        except KeyError:
+            service_data['volumes'] = [{
+                'type': 'bind',
+                'source': './',
+                'target': '/sqaaas-build'
+            }]
+            logger.debug('Setting volume data to default values: %s' % service_data['volumes'])
+
+    @staticmethod
     def set_build_context(service_name, repo_name, composer_json):
         """Set the context within the docker-compose.yml's build property.
 
@@ -398,15 +415,7 @@ def process_extra_data(config_json, composer_json):
         ## Check for empty values
         srv_data = del_empty_keys(srv_data)
         ## Set 'volumes' property (incl. default values)
-        try:
-            srv_data['volumes']
-        except KeyError:
-            srv_data['volumes'] = [{
-                'type': 'bind',
-                'source': './',
-                'target': '/sqaaas-build'
-            }]
-            logger.debug('Setting volume data to default values: %s' % srv_data['volumes'])
+        ProcessExtraData.set_service_volume(service_name)
         ## Set 'working_dir' property (for simple use cases)
         ## NOTE Setting working_dir only makes sense when only one volume is expected!
         srv_data['working_dir'] = srv_data['volumes'][0]['target']
