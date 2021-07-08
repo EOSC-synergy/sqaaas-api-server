@@ -396,18 +396,7 @@ def process_extra_data(config_json, composer_json):
                 srv_data['image'] = '/'.join([org, img_name])
                 logger.debug('Resultant Docker image name: %s' % srv_data['image'])
         ## Check for empty values
-        props_to_remove = []
-        for prop, prop_value in srv_data.items():
-            pop_prop = False
-            if isinstance(prop_value, dict):
-                if not any(prop_value.values()):
-                    pop_prop = True
-            elif isinstance(prop_value, (list, str)):
-                if not prop_value:
-                    pop_prop = True
-            if pop_prop:
-                props_to_remove.append(prop)
-        [srv_data.pop(prop) for prop in props_to_remove]
+        srv_data = del_empty_keys(srv_data)
         ## Set 'volumes' property (incl. default values)
         try:
             srv_data['volumes']
@@ -598,3 +587,23 @@ def get_short_repo_name(repo_url, include_netloc=False):
     short_repo_name = short_repo_name.rsplit('.git')[0]
     logger.debug('Short repository name for <%s>: %s' % (repo_url, short_repo_name))
     return short_repo_name
+
+
+def del_empty_keys(data):
+    """Deletes the empty keys from a dict or json.
+
+    :param data: dict or json data
+    """
+    props_to_remove = []
+    for prop, prop_value in data.items():
+        pop_prop = False
+        if isinstance(prop_value, dict):
+            if not any(prop_value.values()):
+                pop_prop = True
+        elif isinstance(prop_value, (list, str)):
+            if not prop_value:
+                pop_prop = True
+        if pop_prop:
+            props_to_remove.append(prop)
+    [data.pop(prop) for prop in props_to_remove]
+    return data
