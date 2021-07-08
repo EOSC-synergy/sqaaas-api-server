@@ -364,6 +364,40 @@ class ProcessExtraData(object):
         return srv_name
 
 
+    @staticmethod
+    def set_config_when_clause(config_json):
+        """Split out in different config.yml files according to 'when' clause.
+
+        :param config_json: Config data (JSON)
+        """
+        logger.debug('Call to ProcessExtraData.set_config_when_clause() method')
+        config_data_list = []
+        for criterion_name, criterion_data in config_json['sqa_criteria'].items():
+            # Copy config_json __once all modifications are done__
+            config_json_no_when = copy.deepcopy(config_json)
+            if 'when' in criterion_data.keys():
+                config_json_when = copy.deepcopy(config_json)
+                config_json_when['sqa_criteria'] = {
+                    criterion_name: criterion_data_copy
+                }
+                when_data = criterion_data_copy.pop('when')
+                config_data_list.append({
+                    'data_json': config_json_when,
+                    'data_when': when_data
+                })
+                config_json_no_when['sqa_criteria'].pop(criterion_name)
+            else:
+                config_json_no_when['sqa_criteria'][criterion_name] = criterion_data_copy
+
+        if config_json_no_when['sqa_criteria']:
+            config_data_list.append({
+                'data_json': config_json_no_when,
+                'data_when': None
+            })
+
+        return config_data_list
+
+
 def process_extra_data(config_json, composer_json):
     """Manage those properties, present in the API spec, that cannot
     be directly translated into a workable 'config.yml' or composer
@@ -463,7 +497,6 @@ def process_extra_data(config_json, composer_json):
     # - Multiple stages/Jenkins when clause
     # - Array-to-Object conversion for repos
     # - Set 'context' to the appropriate checkout path for building the Dockerfile
-    config_data_list = []
     commands_script_list = []
     for criterion_name, criterion_data in config_json['sqa_criteria'].items():
         criterion_data_copy = copy.deepcopy(criterion_data)
@@ -515,27 +548,8 @@ def process_extra_data(config_json, composer_json):
                     ProcessExtraData.set_build_context(service_name, repo_name, composer_json)
             criterion_data_copy['repos'] = repos_new
 
-        # Copy config_json __once all modifications are done__
-        config_json_no_when = copy.deepcopy(config_json)
-        if 'when' in criterion_data.keys():
-            config_json_when = copy.deepcopy(config_json)
-            config_json_when['sqa_criteria'] = {
-                criterion_name: criterion_data_copy
-            }
-            when_data = criterion_data_copy.pop('when')
-            config_data_list.append({
-                'data_json': config_json_when,
-                'data_when': when_data
-            })
-            config_json_no_when['sqa_criteria'].pop(criterion_name)
-        else:
-            config_json_no_when['sqa_criteria'][criterion_name] = criterion_data_copy
-
-    if config_json_no_when['sqa_criteria']:
-        config_data_list.append({
-            'data_json': config_json_no_when,
-            'data_when': None
-        })
+    # Process 'when' clause
+    config_data_list = ProcessExtraData.set_config_when_clause(config_json)
 
     return (config_data_list, composer_data, commands_script_list)
 
