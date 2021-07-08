@@ -459,7 +459,6 @@ def process_extra_data(config_json, composer_json):
     # - Set 'context' to the appropriate checkout path for building the Dockerfile
     config_data_list = []
     commands_script_list = []
-    config_json_no_when = copy.deepcopy(config_json)
     for criterion_name, criterion_data in config_json['sqa_criteria'].items():
         criterion_data_copy = copy.deepcopy(criterion_data)
         if 'repos' in criterion_data.keys():
@@ -509,6 +508,9 @@ def process_extra_data(config_json, composer_json):
                     # Set Dockerfile's 'context' in the composer
                     ProcessExtraData.set_build_context(service_name, repo_name, composer_json)
             criterion_data_copy['repos'] = repos_new
+
+        # Copy config_json __once all modifications are done__
+        config_json_no_when = copy.deepcopy(config_json)
         if 'when' in criterion_data.keys():
             config_json_when = copy.deepcopy(config_json)
             config_json_when['sqa_criteria'] = {
