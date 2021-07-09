@@ -361,6 +361,8 @@ class ProcessExtraData(object):
             cmd = ' '.join(cmd_list)
             criterion_repo['commands'].append(cmd)
 
+        config_json['sqa_criteria'][criterion_name]['repos'] = criterion_repo
+
         return srv_name
 
 
@@ -484,6 +486,7 @@ def process_extra_data(config_json, composer_json):
                     # Set Dockerfile's 'context' in the composer
                     ProcessExtraData.set_build_context(service_name, repo_name, composer_json)
             criterion_data_copy['repos'] = repos_new
+        config_json['sqa_criteria'][criterion_name] = criterion_data_copy
 
     # COMPOSER (Docker Compose specific)
     for srv_name, srv_data in composer_json['services'].items():
