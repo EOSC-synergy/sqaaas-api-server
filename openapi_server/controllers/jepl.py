@@ -241,7 +241,7 @@ class JePLUtils(object):
         """
         srv_data = {}
         if image:
-            srv_data['image'] = image
+            srv_data['image'] = {'name': image}
         if dockerfile:
             srv_data['build'] = {
                 'dockerfile': dockerfile
