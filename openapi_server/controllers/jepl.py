@@ -236,8 +236,9 @@ class JePLUtils(object):
     def get_composer_service(name, image=None, dockerfile=None):
         """Get service definition compliant with the composer file.
 
+        :param name: Name of the service.
         :param image: Image name/location in the Docker registry (default: Docker Hub).
-        :param name: Path to the Dockerfile, when building is required.
+        :param dockerfile: Path to the Dockerfile, when building is required.
         """
         srv_data = {}
         if image:
