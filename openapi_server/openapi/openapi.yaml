@@ -745,6 +745,7 @@ components:
           image: image
           dockerfile: dockerfile
           reviewed: 2000-01-23
+          oneshot: true
       properties:
         name:
           title: name
@@ -813,6 +814,7 @@ components:
               image: image
               dockerfile: dockerfile
               reviewed: 2000-01-23
+              oneshot: true
           - args:
             - type: subcommand
               description: Detect the license of the given project
@@ -841,6 +843,7 @@ components:
               image: image
               dockerfile: dockerfile
               reviewed: 2000-01-23
+              oneshot: true
       properties:
         id:
           example: QC.Sty
@@ -1720,6 +1723,7 @@ components:
         image: image
         dockerfile: dockerfile
         reviewed: 2000-01-23
+        oneshot: true
       properties:
         image:
           title: image
@@ -1731,6 +1735,10 @@ components:
           format: date
           title: reviewed
           type: string
+        oneshot:
+          default: true
+          title: oneshot
+          type: boolean
       title: Tool_docker
       type: object
     Criterion_description:

@@ -14,28 +14,32 @@ class ToolDocker(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, image: str=None, dockerfile: str=None, reviewed: date=None):
+    def __init__(self, image: str=None, dockerfile: str=None, reviewed: date=None, oneshot: bool=True):
         """ToolDocker - a model defined in OpenAPI
 
         :param image: The image of this ToolDocker.
         :param dockerfile: The dockerfile of this ToolDocker.
         :param reviewed: The reviewed of this ToolDocker.
+        :param oneshot: The oneshot of this ToolDocker.
         """
         self.openapi_types = {
             'image': str,
             'dockerfile': str,
-            'reviewed': date
+            'reviewed': date,
+            'oneshot': bool
         }
 
         self.attribute_map = {
             'image': 'image',
             'dockerfile': 'dockerfile',
-            'reviewed': 'reviewed'
+            'reviewed': 'reviewed',
+            'oneshot': 'oneshot'
         }
 
         self._image = image
         self._dockerfile = dockerfile
         self._reviewed = reviewed
+        self._oneshot = oneshot
 
     @classmethod
     def from_dict(cls, dikt: dict) -> 'ToolDocker':
@@ -108,3 +112,24 @@ class ToolDocker(Model):
         """
 
         self._reviewed = reviewed
+
+    @property
+    def oneshot(self):
+        """Gets the oneshot of this ToolDocker.
+
+
+        :return: The oneshot of this ToolDocker.
+        :rtype: bool
+        """
+        return self._oneshot
+
+    @oneshot.setter
+    def oneshot(self, oneshot):
+        """Sets the oneshot of this ToolDocker.
+
+
+        :param oneshot: The oneshot of this ToolDocker.
+        :type oneshot: bool
+        """
+
+        self._oneshot = oneshot
