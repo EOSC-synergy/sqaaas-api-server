@@ -330,11 +330,12 @@ class ProcessExtraData(object):
             logger.debug('No Dockerfile definition found for tool <%s>' % reference_tool['name'])
         if not dockerfile:
             image = reference_tool['docker']['image']
+        oneshot = reference_tool['docker'].get('oneshot', True)
         srv_name = '_'.join([
             criterion_name.lower(), namegenerator.gen()
         ])
         srv_definition = JePLUtils.get_composer_service(
-            srv_name, image=image, dockerfile=dockerfile
+            srv_name, image=image, dockerfile=dockerfile, oneshot=oneshot
         )
         composer_json['services'].update(srv_definition)
 
