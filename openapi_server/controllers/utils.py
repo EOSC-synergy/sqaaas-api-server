@@ -228,7 +228,12 @@ class ProcessExtraData(object):
         logger.debug('Call to ProcessExtraData.set_build_context() method')
         if service_name:
             try:
-                composer_json['services'][service_name]['build']['context'] = repo_name
+                dockerfile_path = composer_json['services'][service_name]['build']['dockerfile']
+                dockerfile_filename = os.path.basename(dockerfile_path)
+                composer_json['services'][service_name]['build']['dockerfile'] = dockerfile_filename
+                dockerfile_dirname = os.path.dirname(dockerfile_path)
+                context_dir = dockerfile_dirname
+                composer_json['services'][service_name]['build']['context'] = context_dir
                 logger.debug('Build context set <%s> for service <%s>' % (
                     repo_name, service_name))
             except KeyError:
