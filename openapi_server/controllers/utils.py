@@ -360,6 +360,9 @@ class ProcessExtraData(object):
             args = tool.get('args', [])
             while args:
                 for arg in args:
+                    if 'value' in list(arg) and not arg['value']:
+                        logger.debug('Skipping argument <%s>: argument has no value' % arg)
+                        continue
                     if arg['type'] in ['optional']:
                         cmd_list.append(arg['option'])
                     cmd_list.append(arg['value'])
