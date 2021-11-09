@@ -68,7 +68,7 @@ class JePLUtils(object):
         template = env.get_template('commands_script.sh')
         return template.render({
             'checkout_dir': checkout_dir,
-            'commands': '&&'.join(cmd_list)
+            'commands': ' && '.join(cmd_list)
         })
 
     def get_jenkinsfile(config_data_list):
@@ -102,8 +102,6 @@ class JePLUtils(object):
         # Convert JSON to YAML
         for elem in config_data_list:
             elem['data_yml'] = ctls_utils.json_to_yaml(elem['data_json'])
-            # NOTE Remove the following line when moving to JePL>2.1.0
-            elem['data_yml'] = ctls_utils.rekey_criteria_codes(elem['data_yml'])
         composer_data['data_yml'] = ctls_utils.json_to_yaml(composer_data['data_json'])
 
         # Set file names to JePL data
@@ -234,3 +232,22 @@ class JePLUtils(object):
         logger.info('GitHub repository <%s> created with the JePL file structure' % repo)
 
         return last_commit
+
+    def get_composer_service(name, image=None, dockerfile=None, oneshot=True):
+        """Get service definition compliant with the composer file.
+
+        :param name: Name of the service.
+        :param image: Image name/location in the Docker registry (default: Docker Hub).
+        :param dockerfile: Path to the Dockerfile, when building is required.
+        :param oneshot: Whether the Docker image is oneshot.
+        """
+        srv_data = {}
+        if image:
+            srv_data['image'] = {'name': image}
+        if dockerfile:
+            srv_data['build'] = {
+                'dockerfile': dockerfile
+            }
+        if not oneshot:
+            srv_data['oneshot'] = oneshot
+        return {name: srv_data}

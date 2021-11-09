@@ -14,28 +14,20 @@ class InlineResponse2005(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, build_url: str=None, build_status: str=None, openbadge_id: str=None):
+    def __init__(self, pull_request_url: str=None):
         """InlineResponse2005 - a model defined in OpenAPI
 
-        :param build_url: The build_url of this InlineResponse2005.
-        :param build_status: The build_status of this InlineResponse2005.
-        :param openbadge_id: The openbadge_id of this InlineResponse2005.
+        :param pull_request_url: The pull_request_url of this InlineResponse2005.
         """
         self.openapi_types = {
-            'build_url': str,
-            'build_status': str,
-            'openbadge_id': str
+            'pull_request_url': str
         }
 
         self.attribute_map = {
-            'build_url': 'build_url',
-            'build_status': 'build_status',
-            'openbadge_id': 'openbadge_id'
+            'pull_request_url': 'pull_request_url'
         }
 
-        self._build_url = build_url
-        self._build_status = build_status
-        self._openbadge_id = openbadge_id
+        self._pull_request_url = pull_request_url
 
     @classmethod
     def from_dict(cls, dikt: dict) -> 'InlineResponse2005':
@@ -47,70 +39,22 @@ class InlineResponse2005(Model):
         return util.deserialize_model(dikt, cls)
 
     @property
-    def build_url(self):
-        """Gets the build_url of this InlineResponse2005.
+    def pull_request_url(self):
+        """Gets the pull_request_url of this InlineResponse2005.
 
 
-        :return: The build_url of this InlineResponse2005.
+        :return: The pull_request_url of this InlineResponse2005.
         :rtype: str
         """
-        return self._build_url
+        return self._pull_request_url
 
-    @build_url.setter
-    def build_url(self, build_url):
-        """Sets the build_url of this InlineResponse2005.
+    @pull_request_url.setter
+    def pull_request_url(self, pull_request_url):
+        """Sets the pull_request_url of this InlineResponse2005.
 
 
-        :param build_url: The build_url of this InlineResponse2005.
-        :type build_url: str
+        :param pull_request_url: The pull_request_url of this InlineResponse2005.
+        :type pull_request_url: str
         """
 
-        self._build_url = build_url
-
-    @property
-    def build_status(self):
-        """Gets the build_status of this InlineResponse2005.
-
-
-        :return: The build_status of this InlineResponse2005.
-        :rtype: str
-        """
-        return self._build_status
-
-    @build_status.setter
-    def build_status(self, build_status):
-        """Sets the build_status of this InlineResponse2005.
-
-
-        :param build_status: The build_status of this InlineResponse2005.
-        :type build_status: str
-        """
-        allowed_values = ["success", "failure", "aborted", "not_built", "unstable", "waiting_scan_org"]  # noqa: E501
-        if build_status not in allowed_values:
-            raise ValueError(
-                "Invalid value for `build_status` ({0}), must be one of {1}"
-                .format(build_status, allowed_values)
-            )
-
-        self._build_status = build_status
-
-    @property
-    def openbadge_id(self):
-        """Gets the openbadge_id of this InlineResponse2005.
-
-
-        :return: The openbadge_id of this InlineResponse2005.
-        :rtype: str
-        """
-        return self._openbadge_id
-
-    @openbadge_id.setter
-    def openbadge_id(self, openbadge_id):
-        """Sets the openbadge_id of this InlineResponse2005.
-
-
-        :param openbadge_id: The openbadge_id of this InlineResponse2005.
-        :type openbadge_id: str
-        """
-
-        self._openbadge_id = openbadge_id
+        self._pull_request_url = pull_request_url

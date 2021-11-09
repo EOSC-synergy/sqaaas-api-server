@@ -1,4 +1,4 @@
-@Library(['github.com/indigo-dc/jenkins-pipeline-library@release/2.1.0']) _
+@Library(['github.com/indigo-dc/jenkins-pipeline-library@stable/2.1.0']) _
 
 def projectConfig
 
@@ -23,7 +23,8 @@ pipeline {
                 script {
                     projectConfig = pipelineConfig(
                         configFile: '{{ config_data.file_name }}',
-                        scmConfigs: [ localBranch: true ]
+                        scmConfigs: [ localBranch: true ],
+                        validatorDockerImage: 'eoscsynergy/jpl-validator:1.2.0'
                     )
                     buildStages(projectConfig)
                 }
