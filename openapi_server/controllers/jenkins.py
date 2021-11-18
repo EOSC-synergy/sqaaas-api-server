@@ -105,3 +105,21 @@ class JenkinsUtils(object):
         self.logger.debug('Deleting Jenkins job: %s' % full_job_name)
         self.server.delete_job(full_job_name)
         self.logger.debug('Jenkins job <%s> successfully deleted' % full_job_name)
+
+    def get_stages(self, job_name, build_no):
+        """Get the info from the pipeline stages.
+
+        Via Pipeline Stage View API at https://github.com/jenkinsci/pipeline-stage-view-plugin
+
+        :param job_name: job name including folder/s, name & branch
+        :param build_no: build number.
+        """
+        job_name_items = job_name.split('/')
+        jenkins_job_name_items = list(map('/job/'.__add__, job_name_items))
+        jenkins_job_name = ''.join(jenkins_job_name_items)
+        path = '%s/%s/wfapi/describe' % (jenkins_job_name, build_no)
+        r = requests.post(
+            urljoin(self.endpoint, path),
+            auth=(self.access_user, self.access_token))
+        r.raise_for_status()
+        self.logger.debug('Triggered GitHub organization scan')
