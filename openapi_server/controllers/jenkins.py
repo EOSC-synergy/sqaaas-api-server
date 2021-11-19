@@ -134,11 +134,12 @@ class JenkinsUtils(object):
         stage_describe_endpoints = [stage['_links']['self']['href'] for stage in qc_stages]
         self.logger.info('Found %s stage/s that run quality criteria' % len(stage_describe_endpoints))
 
-        stage_outputs = []
+        criteria_data = {}
         for qa_stage in stage_describe_endpoints:
             data = do_request(qa_stage)
+            name = data['name'].split()[0]
             log_endpoint = data['stageFlowNodes'][0]['_links']['log']['href']
             data = do_request(log_endpoint)
-            stage_outputs.append(data['text'])
+            criteria_data[name] = {'stdout': data['text']}
 
-        return stage_outputs
+        return criteria_data
