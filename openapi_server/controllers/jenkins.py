@@ -138,8 +138,12 @@ class JenkinsUtils(object):
         for qa_stage in stage_describe_endpoints:
             data = do_request(qa_stage)
             name = data['name'].split()[0]
+            status = data['status']
             log_endpoint = data['stageFlowNodes'][0]['_links']['log']['href']
             data = do_request(log_endpoint)
-            criteria_data[name] = {'stdout': data['text']}
+            criteria_data[name] = {
+                'status': status,
+                'stdout': data['text']
+            }
 
         return criteria_data
