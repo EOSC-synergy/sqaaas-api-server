@@ -114,12 +114,31 @@ class JenkinsUtils(object):
         :param job_name: job name including folder/s, name & branch
         :param build_no: build number.
         """
-        job_name_items = job_name.split('/')
-        jenkins_job_name_items = list(map('/job/'.__add__, job_name_items))
-        jenkins_job_name = ''.join(jenkins_job_name_items)
-        path = '%s/%s/wfapi/describe' % (jenkins_job_name, build_no)
-        r = requests.post(
-            urljoin(self.endpoint, path),
-            auth=(self.access_user, self.access_token))
-        r.raise_for_status()
-        self.logger.debug('Triggered GitHub organization scan')
+        items = list(map('/job/'.__add__, job_name.split('/')))
+        jenkins_job_name = ''.join(items)
+        def do_request(path, append=False):
+            if append:
+                target_path = '%s/%s/%s' % (jenkins_job_name, build_no, path)
+            else:
+                target_path = path
+            self.logger.debug('Request to <%s>' % target_path)
+            r = requests.post(
+                urljoin(self.endpoint, target_path),
+                auth=(self.access_user, self.access_token),
+                verify=False
+            )
+            return r.json()
+        data = do_request('/wfapi/describe', append=True)
+        stage_name_prefix = 'QC.'
+        qc_stages = [stage for stage in data['stages'] if stage['name'].startswith(stage_name_prefix)]
+        stage_describe_endpoints = [stage['_links']['self']['href'] for stage in qc_stages]
+        self.logger.info('Found %s stage/s that run quality criteria' % len(stage_describe_endpoints))
+
+        stage_outputs = []
+        for qa_stage in stage_describe_endpoints:
+            data = do_request(qa_stage)
+            log_endpoint = data['stageFlowNodes'][0]['_links']['log']['href']
+            data = do_request(log_endpoint)
+            stage_outputs.append(data['text'])
+
+        return stage_outputs
