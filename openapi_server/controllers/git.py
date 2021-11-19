@@ -67,7 +67,7 @@ class GitUtils(object):
             except GitCommandError as e:
                 self.logger.warning('Could not fetch&pull from target repository: %s (git msg: %s)' % (target_repo, e))
             finally:
-                sqaaas.push()
+                sqaaas.push(force=True)
                 self.logger.debug('Repository pushed to remote: %s' % repo.remotes.sqaaas.url)
             default_branch = repo.active_branch
         return sqaaas.url, default_branch.name
