@@ -273,7 +273,12 @@ class ProcessExtraData(object):
             repos_data[repo_key]['tox']['testenv'] = testenv
 
     @staticmethod
-    def set_tool_env(tools, criterion_name, criterion_repo, project_repos_mapping, config_json, composer_json):
+    def set_tool_env(
+            tools,
+            criterion_name, criterion_repo,
+            project_repos_mapping,
+            config_json, composer_json,
+            report_to_stdout=False):
         """Set the tool environment.
 
         Includes:
@@ -369,6 +374,12 @@ class ProcessExtraData(object):
                 args = arg.get('args', [])
             cmd = ' '.join(cmd_list)
             criterion_repo['commands'].append(cmd)
+            # If applicable, print the generated report to stdout
+            if report_to_stdout:
+                report_file = tool.get('includes_report', None)
+                if report_file:
+                    cat_cmd = 'cat %s' % report_file
+                    criterion_repo['commands'].append(cat_cmd)
 
         config_json['sqa_criteria'][criterion_name]['repos'] = criterion_repo
 
@@ -467,7 +478,11 @@ def process_extra_data(config_json, composer_json, report_to_stdout=False):
                     tools = repo.pop('tools')
                 if tools and not service_name:
                     service_name = ProcessExtraData.set_tool_env(
-                        tools, criterion_name, repo, project_repos_mapping, config_json, composer_json)
+                        tools,
+                        criterion_name, repo,
+                        project_repos_mapping,
+                        config_json, composer_json,
+                        report_to_stdout=report_to_stdout)
                 try:
                     repo_url = repo.pop('repo_url')
                     if not repo_url:
