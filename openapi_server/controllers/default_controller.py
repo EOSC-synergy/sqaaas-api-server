@@ -460,20 +460,13 @@ async def run_pipeline(request: web.Request, pipeline_id, issue_badge=False, rep
     return web.Response(status=204, reason=reason, text=reason)
 
 
-@ctls_utils.debug_request
-@ctls_utils.validate_request
-async def get_pipeline_status(request: web.Request, pipeline_id) -> web.Response:
-    """Get pipeline status.
+async def _update_status(pipeline_data):
+    """Updates the build status of a pipeline.
 
-    Obtains the build URL in Jenkins for the given pipeline.
-
-    :param pipeline_id: ID of the pipeline to get
-    :type pipeline_id: str
+    :param pipeline_data: Pipeline's data from DB
+    :type pipeline_data: dict
 
     """
-    pipeline_data = db.get_entry(pipeline_id)
-    pipeline_repo = pipeline_data['pipeline_repo']
-
     if 'jenkins' not in pipeline_data.keys():
         _reason = 'Could not retrieve Jenkins job information: Pipeline has not yet ran'
         logger.error(_reason)
@@ -482,11 +475,11 @@ async def get_pipeline_status(request: web.Request, pipeline_id) -> web.Response
     jenkins_info = pipeline_data['jenkins']
     build_info = jenkins_info['build_info']
 
+    build_url = build_info['url']
+    build_status = build_info.get('status', None)
     jk_job_name = jenkins_info['job_name']
     build_item_no = build_info['item_number']
     build_no = build_info['number']
-    build_url = build_info['url']
-    build_status = build_info.get('status', None)
 
     if jenkins_info['scan_org_wait']:
         logger.debug('scan_org_wait still enabled for pipeline job: %s' % jk_job_name)
@@ -531,25 +524,6 @@ async def get_pipeline_status(request: web.Request, pipeline_id) -> web.Response
                 logger.debug('Jenkins job queueId found: setting job status to <EXECUTING>')
     logger.info('Build status <%s> for job: %s (build_no: %s)' % (build_status, jk_job_name, build_no))
 
-    badge_data = jenkins_info['build_info']['badge']
-    if jenkins_info['issue_badge']:
-        logger.info('Issuing badge as requested when running the pipeline')
-        try:
-            badge_data = await _issue_badge(
-                pipeline_id,
-                pipeline_data['data']['config'],
-                build_status,
-                build_url,
-                build_info['commit_id'],
-                build_info['commit_url']
-            )
-            jenkins_info['issue_badge'] = False
-        except SQAaaSAPIException as e:
-            if e.http_code == 422:
-                logger.warning(e.message)
-            else:
-                return web.Response(status=e.http_code, reason=e.message, text=e.message)
-
     # Add build status to DB
     db.update_jenkins(
         pipeline_id,
@@ -565,10 +539,47 @@ async def get_pipeline_status(request: web.Request, pipeline_id) -> web.Response
         badge_data=badge_data
     )
 
+    return (build_url, build_status)
+
+
+@ctls_utils.debug_request
+@ctls_utils.validate_request
+async def get_pipeline_status(request: web.Request, pipeline_id) -> web.Response:
+    """Get pipeline status.
+
+    Obtains the build URL in Jenkins for the given pipeline.
+
+    :param pipeline_id: ID of the pipeline to get
+    :type pipeline_id: str
+
+    """
+    pipeline_data = db.get_entry(pipeline_id)
+
+    build_url, build_status = _update_status(pipeline_data)
+
+    # badge_data = jenkins_info['build_info']['badge']
+    # if jenkins_info['issue_badge']:
+    #     logger.info('Issuing badge as requested when running the pipeline')
+    #     try:
+    #         badge_data = await _issue_badge(
+    #             pipeline_id,
+    #             pipeline_data['data']['config'],
+    #             build_status,
+    #             build_url,
+    #             build_info['commit_id'],
+    #             build_info['commit_url']
+    #         )
+    #         jenkins_info['issue_badge'] = False
+    #     except SQAaaSAPIException as e:
+    #         if e.http_code == 422:
+    #             logger.warning(e.message)
+    #         else:
+    #             return web.Response(status=e.http_code, reason=e.message, text=e.message)
+
     r = {
         'build_url': build_url,
         'build_status': build_status,
-        'openbadge_id': badge_data.get('openBadgeId', None)
+        # 'openbadge_id': badge_data.get('openBadgeId', None)
     }
     return web.json_response(r, status=200)
 
