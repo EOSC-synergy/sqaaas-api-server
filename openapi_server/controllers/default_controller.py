@@ -73,13 +73,15 @@ badgr_utils = BadgrUtils(BADGR_URL, BADGR_USER, badgr_token, BADGR_ISSUER, BADGR
 
 @ctls_utils.debug_request
 @ctls_utils.extended_data_validation
-async def add_pipeline(request: web.Request, body) -> web.Response:
+async def add_pipeline(request: web.Request, body, report_to_stdout=None) -> web.Response:
     """Creates a pipeline.
 
     Provides a ready-to-use Jenkins pipeline based on the v2 series of jenkins-pipeline-library.
 
     :param body:
     :type body: dict | bytes
+    :param report_to_stdout: Flag to indicate whether the pipeline shall print via via stdout the reports produced by the tools (required by QAA module)
+    :type report_to_stdout: bool
 
     """
     pipeline_id = str(uuid.uuid4())
@@ -93,7 +95,8 @@ async def add_pipeline(request: web.Request, body) -> web.Response:
         pipeline_id,
         pipeline_repo,
         pipeline_repo_url,
-        body
+        body,
+        report_to_stdout=report_to_stdout
     )
 
     r = {'id': pipeline_id}
