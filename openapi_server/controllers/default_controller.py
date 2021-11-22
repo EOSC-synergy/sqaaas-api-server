@@ -968,3 +968,15 @@ async def get_criteria(request: web.Request, criterion_id=None) -> web.Response:
         return web.Response(status=e.http_code, reason=e.message, text=e.message)
 
     return web.json_response(r, status=200)
+
+
+async def get_pipeline_output(request: web.Request, pipeline_id) -> web.Response:
+    """Get output from pipeline execution
+
+    Returns the console output from the pipeline execution.
+
+    :param pipeline_id: ID of the pipeline to get
+    :type pipeline_id: str
+
+    """
+    return web.Response(status=200)

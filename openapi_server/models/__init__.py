@@ -6,6 +6,7 @@ from openapi_server.models.badge_recipient import BadgeRecipient
 from openapi_server.models.creds_user_pass import CredsUserPass
 from openapi_server.models.criterion import Criterion
 from openapi_server.models.criterion_description import CriterionDescription
+from openapi_server.models.criterion_output import CriterionOutput
 from openapi_server.models.inline_object import InlineObject
 from openapi_server.models.inline_response200 import InlineResponse200
 from openapi_server.models.inline_response2001 import InlineResponse2001
