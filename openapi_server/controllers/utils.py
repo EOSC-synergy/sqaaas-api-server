@@ -420,15 +420,6 @@ class ProcessExtraData(object):
 
         return config_data_list
 
-    @staticmethod
-    def set_report_to_stdout(config_json):
-        """Append the commands to print the tool's report to stdout.
-
-        :param config_json: Config data (JSON)
-        """
-        logger.debug('Call to ProcessExtraData.set_report_to_stdout() method')
-        return NotImplementedError
-
 
 def process_extra_data(config_json, composer_json, report_to_stdout=False):
     """Manage those properties, present in the API spec, that cannot
@@ -588,11 +579,6 @@ def process_extra_data(config_json, composer_json, report_to_stdout=False):
     # CONFIG:SQA_CRITERIA
     # - Multiple stages/Jenkins when clause
     config_data_list = ProcessExtraData.set_config_when_clause(config_json)
-
-    # CONFIG:SQA_CRITERIA
-    # - Report to stdout
-    if report_to_stdout:
-        ProcessExtraData.set_report_to_stdout(config_json)
 
     return (config_data_list, composer_data, commands_script_list)
 
