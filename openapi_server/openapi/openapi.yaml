@@ -62,6 +62,17 @@ paths:
       description: |
         Provides a ready-to-use Jenkins pipeline based on the v2 series of jenkins-pipeline-library.
       operationId: add_pipeline
+      parameters:
+      - description: Flag to indicate whether the pipeline shall print via via stdout
+          the reports produced by the tools (required by QAA module)
+        explode: true
+        in: query
+        name: report_to_stdout
+        required: false
+        schema:
+          default: false
+          type: boolean
+        style: form
       requestBody:
         content:
           application/json:
