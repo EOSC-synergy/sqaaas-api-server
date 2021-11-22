@@ -378,6 +378,7 @@ class ProcessExtraData(object):
             if report_to_stdout:
                 report_file = tool.get('includes_report', None)
                 if report_file:
+                    logger.debug('Adding `cat` command (last step) to print generated report to stdout')
                     cat_cmd = 'cat %s' % report_file
                     criterion_repo['commands'].append(cat_cmd)
 
