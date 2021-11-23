@@ -468,9 +468,9 @@ async def _update_status(pipeline_data):
 
     """
     if 'jenkins' not in pipeline_data.keys():
-        _reason = 'Could not retrieve Jenkins job information: Pipeline has not yet ran'
+        _reason = 'Could not retrieve Jenkins job information: Pipeline  has not yet ran'
         logger.error(_reason)
-        return web.Response(status=422, reason=_reason, text=_reason)
+        raise SQAaaSAPIException(422, _reason)
 
     jenkins_info = pipeline_data['jenkins']
     build_info = jenkins_info['build_info']
@@ -555,7 +555,10 @@ async def get_pipeline_status(request: web.Request, pipeline_id) -> web.Response
     """
     pipeline_data = db.get_entry(pipeline_id)
 
-    build_url, build_status = await _update_status(pipeline_data)
+    try:
+        build_url, build_status = await _update_status(pipeline_data)
+    except SQAaaSAPIException as e:
+        return web.Response(status=e.http_code, reason=e.message, text=e.message)
 
     # badge_data = jenkins_info['build_info']['badge']
     # if jenkins_info['issue_badge']:
@@ -739,7 +742,10 @@ async def get_pipeline_output(request: web.Request, pipeline_id) -> web.Response
     """
     pipeline_data = db.get_entry(pipeline_id)
 
-    build_url, build_status = await _update_status(pipeline_data)
+    try:
+        build_url, build_status = await _update_status(pipeline_data)
+    except SQAaaSAPIException as e:
+        return web.Response(status=e.http_code, reason=e.message, text=e.message)
 
     #return web.Response(status=200)
     raise NotImplementedError
