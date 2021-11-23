@@ -590,6 +590,30 @@ async def get_pipeline_status(request: web.Request, pipeline_id) -> web.Response
     return web.json_response(r, status=200)
 
 
+# TODO: Finishing..
+@ctls_utils.debug_request
+@ctls_utils.validate_request
+async def get_pipeline_output(request: web.Request, pipeline_id) -> web.Response:
+    """Get output from pipeline execution
+
+    Returns the console output from the pipeline execution.
+
+    :param pipeline_id: ID of the pipeline to get
+    :type pipeline_id: str
+
+    """
+    pipeline_data = db.get_entry(pipeline_id)
+
+    try:
+        build_url, build_status, badge_data = await _update_status(
+            pipeline_id, pipeline_data)
+    except SQAaaSAPIException as e:
+        return web.Response(status=e.http_code, reason=e.message, text=e.message)
+
+    #return web.Response(status=200)
+    raise NotImplementedError
+
+
 @ctls_utils.debug_request
 @ctls_utils.validate_request
 async def create_pull_request(request: web.Request, pipeline_id, body) -> web.Response:
@@ -729,30 +753,6 @@ async def get_compressed_files(request: web.Request, pipeline_id) -> web.Respons
     await response.write(zip_data)
 
     return response
-
-
-# TODO: Finishing..
-@ctls_utils.debug_request
-@ctls_utils.validate_request
-async def get_pipeline_output(request: web.Request, pipeline_id) -> web.Response:
-    """Get output from pipeline execution
-
-    Returns the console output from the pipeline execution.
-
-    :param pipeline_id: ID of the pipeline to get
-    :type pipeline_id: str
-
-    """
-    pipeline_data = db.get_entry(pipeline_id)
-
-    try:
-        build_url, build_status, badge_data = await _update_status(
-            pipeline_id, pipeline_data)
-    except SQAaaSAPIException as e:
-        return web.Response(status=e.http_code, reason=e.message, text=e.message)
-
-    #return web.Response(status=200)
-    raise NotImplementedError
 
 
 async def _issue_badge(pipeline_id, config_data_list, build_status, build_url, commit_id, commit_url):
