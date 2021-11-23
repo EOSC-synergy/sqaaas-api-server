@@ -555,7 +555,7 @@ async def get_pipeline_status(request: web.Request, pipeline_id) -> web.Response
     """
     pipeline_data = db.get_entry(pipeline_id)
 
-    build_url, build_status = _update_status(pipeline_data)
+    build_url, build_status = await _update_status(pipeline_data)
 
     # badge_data = jenkins_info['build_info']['badge']
     # if jenkins_info['issue_badge']:
@@ -739,7 +739,7 @@ async def get_pipeline_output(request: web.Request, pipeline_id) -> web.Response
     """
     pipeline_data = db.get_entry(pipeline_id)
 
-    build_url, build_status = _update_status(pipeline_data)
+    build_url, build_status = await _update_status(pipeline_data)
 
     #return web.Response(status=200)
     raise NotImplementedError
