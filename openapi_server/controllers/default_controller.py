@@ -590,7 +590,6 @@ async def get_pipeline_status(request: web.Request, pipeline_id) -> web.Response
     return web.json_response(r, status=200)
 
 
-# TODO: Finishing..
 @ctls_utils.debug_request
 @ctls_utils.validate_request
 async def get_pipeline_output(request: web.Request, pipeline_id) -> web.Response:
@@ -610,8 +609,20 @@ async def get_pipeline_output(request: web.Request, pipeline_id) -> web.Response
     except SQAaaSAPIException as e:
         return web.Response(status=e.http_code, reason=e.message, text=e.message)
 
-    #return web.Response(status=200)
-    raise NotImplementedError
+    jenkins_info = pipeline_data['jenkins']
+    build_info = jenkins_info['build_info']
+    # build_url = build_info['url']
+    # build_status = build_info.get('status', None)
+    # jk_job_name = jenkins_info['job_name']
+    # build_item_no = build_info['item_number']
+    # build_no = build_info['number']
+
+    stage_data = jk_utils.get_stage_data(
+        jenkins_info['job_name'],
+        build_info['number']
+    )
+
+    return web.json_response(stage_data, status=200)
 
 
 @ctls_utils.debug_request
