@@ -322,15 +322,17 @@ class ProcessExtraData(object):
         dockerfile = None
         # All tools shall use the same service for the same criterion (JePL limitation)
         reference_tool = tools[0]
+        context = None
         dockerfile = None
         image = None
         try:
-            dockerfile = reference_tool['docker']['dockerfile']
-            dockerfile = os.path.join(
+            dockerfile_path = reference_tool['docker']['dockerfile']
+            dockerfile = os.path.basename(dockerfile_path)
+            context = os.path.join(
                 project_repos_mapping[tooling_repo_url]['name'],
-                dockerfile
+                os.path.dirname(dockerfile_path)
             )
-            logger.debug('Dockerfile location: %s' % dockerfile)
+            logger.debug('Dockerfile context: %s (file name: %s)' % (context, dockerfile))
         except KeyError:
             logger.debug('No Dockerfile definition found for tool <%s>' % reference_tool['name'])
         if not dockerfile:
@@ -340,7 +342,7 @@ class ProcessExtraData(object):
             criterion_name.lower(), namegenerator.gen()
         ])
         srv_definition = JePLUtils.get_composer_service(
-            srv_name, image=image, dockerfile=dockerfile, oneshot=oneshot
+            srv_name, image=image, context=context, dockerfile=dockerfile, oneshot=oneshot
         )
         composer_json['services'].update(srv_definition)
 
