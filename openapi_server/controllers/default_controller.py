@@ -924,7 +924,7 @@ async def get_criteria(request: web.Request, criterion_id=None) -> web.Response:
     """
     tooling_repo_url = config.get(
         'tooling_repo_url',
-        fallback='https://github.com/EOSC-synergy/sqa-composer-templates'
+        fallback='https://github.com/EOSC-synergy/sqaaas-tooling'
     )
     tooling_repo_branch = config.get(
         'tooling_repo_branch',
