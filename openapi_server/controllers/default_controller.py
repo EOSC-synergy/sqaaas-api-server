@@ -590,7 +590,7 @@ async def create_pull_request(request: web.Request, pipeline_id, body) -> web.Re
     jenkinsfile = pipeline_data['data']['jenkinsfile']
 
     body = InlineObject.from_dict(body)
-    supported_platform = utils.supported_git_platform(body.repo, platforms=SUPPORTED_PLATFORMS)
+    supported_platform = ctls_utils.supported_git_platform(body.repo, platforms=SUPPORTED_PLATFORMS)
     if not supported_platform:
         _reason = ('Git platform <%s> is currently not supported for creating pull '
                    'requests (choose between: %s)' % (
