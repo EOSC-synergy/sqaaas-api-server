@@ -106,7 +106,7 @@ class JenkinsUtils(object):
         self.server.delete_job(full_job_name)
         self.logger.debug('Jenkins job <%s> successfully deleted' % full_job_name)
 
-    def get_stages(self, job_name, build_no):
+    def get_stage_data(self, job_name, build_no):
         """Get the info from the pipeline stages.
 
         Via Pipeline Stage View API at https://github.com/jenkinsci/pipeline-stage-view-plugin
