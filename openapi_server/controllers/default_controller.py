@@ -725,6 +725,26 @@ async def get_compressed_files(request: web.Request, pipeline_id) -> web.Respons
     return response
 
 
+# TODO: Finishing..
+@ctls_utils.debug_request
+@ctls_utils.validate_request
+async def get_pipeline_output(request: web.Request, pipeline_id) -> web.Response:
+    """Get output from pipeline execution
+
+    Returns the console output from the pipeline execution.
+
+    :param pipeline_id: ID of the pipeline to get
+    :type pipeline_id: str
+
+    """
+    pipeline_data = db.get_entry(pipeline_id)
+
+    build_url, build_status = _update_status(pipeline_data)
+
+    #return web.Response(status=200)
+    raise NotImplementedError
+
+
 async def _issue_badge(pipeline_id, config_data_list, build_status, build_url, commit_id, commit_url):
     """Issues a badge using BadgrUtils.
 
@@ -979,15 +999,3 @@ async def get_criteria(request: web.Request, criterion_id=None) -> web.Response:
         return web.Response(status=e.http_code, reason=e.message, text=e.message)
 
     return web.json_response(r, status=200)
-
-
-async def get_pipeline_output(request: web.Request, pipeline_id) -> web.Response:
-    """Get output from pipeline execution
-
-    Returns the console output from the pipeline execution.
-
-    :param pipeline_id: ID of the pipeline to get
-    :type pipeline_id: str
-
-    """
-    return web.Response(status=200)
