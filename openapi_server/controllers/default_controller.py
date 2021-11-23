@@ -524,6 +524,25 @@ async def _update_status(pipeline_data):
                 logger.debug('Jenkins job queueId found: setting job status to <EXECUTING>')
     logger.info('Build status <%s> for job: %s (build_no: %s)' % (build_status, jk_job_name, build_no))
 
+    badge_data = jenkins_info['build_info']['badge']
+    if jenkins_info['issue_badge']:
+        logger.info('Issuing badge as requested when running the pipeline')
+        try:
+            badge_data = await _issue_badge(
+                pipeline_id,
+                pipeline_data['data']['config'],
+                build_status,
+                build_url,
+                build_info['commit_id'],
+                build_info['commit_url']
+            )
+            jenkins_info['issue_badge'] = False
+        except SQAaaSAPIException as e:
+            if e.http_code == 422:
+                logger.warning(e.message)
+            else:
+                return web.Response(status=e.http_code, reason=e.message, text=e.message)
+
     # Add build status to DB
     db.update_jenkins(
         pipeline_id,
@@ -539,7 +558,7 @@ async def _update_status(pipeline_data):
         badge_data=badge_data
     )
 
-    return (build_url, build_status)
+    return (build_url, build_status, badge_data)
 
 
 @ctls_utils.debug_request
@@ -556,33 +575,14 @@ async def get_pipeline_status(request: web.Request, pipeline_id) -> web.Response
     pipeline_data = db.get_entry(pipeline_id)
 
     try:
-        build_url, build_status = await _update_status(pipeline_data)
+        build_url, build_status, badge_data = await _update_status(pipeline_data)
     except SQAaaSAPIException as e:
         return web.Response(status=e.http_code, reason=e.message, text=e.message)
-
-    # badge_data = jenkins_info['build_info']['badge']
-    # if jenkins_info['issue_badge']:
-    #     logger.info('Issuing badge as requested when running the pipeline')
-    #     try:
-    #         badge_data = await _issue_badge(
-    #             pipeline_id,
-    #             pipeline_data['data']['config'],
-    #             build_status,
-    #             build_url,
-    #             build_info['commit_id'],
-    #             build_info['commit_url']
-    #         )
-    #         jenkins_info['issue_badge'] = False
-    #     except SQAaaSAPIException as e:
-    #         if e.http_code == 422:
-    #             logger.warning(e.message)
-    #         else:
-    #             return web.Response(status=e.http_code, reason=e.message, text=e.message)
 
     r = {
         'build_url': build_url,
         'build_status': build_status,
-        # 'openbadge_id': badge_data.get('openBadgeId', None)
+        'openbadge_id': badge_data.get('openBadgeId', None)
     }
     return web.json_response(r, status=200)
 
@@ -743,7 +743,7 @@ async def get_pipeline_output(request: web.Request, pipeline_id) -> web.Response
     pipeline_data = db.get_entry(pipeline_id)
 
     try:
-        build_url, build_status = await _update_status(pipeline_data)
+        build_url, build_status, badge_data = await _update_status(pipeline_data)
     except SQAaaSAPIException as e:
         return web.Response(status=e.http_code, reason=e.message, text=e.message)
 
