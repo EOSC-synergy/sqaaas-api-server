@@ -233,11 +233,12 @@ class JePLUtils(object):
 
         return last_commit
 
-    def get_composer_service(name, image=None, dockerfile=None, oneshot=True):
+    def get_composer_service(name, image=None, context=None, dockerfile=None, oneshot=True):
         """Get service definition compliant with the composer file.
 
         :param name: Name of the service.
         :param image: Image name/location in the Docker registry (default: Docker Hub).
+        :param context: Context path when building is required.
         :param dockerfile: Path to the Dockerfile, when building is required.
         :param oneshot: Whether the Docker image is oneshot.
         """
@@ -246,6 +247,7 @@ class JePLUtils(object):
             srv_data['image'] = {'name': image}
         if dockerfile:
             srv_data['build'] = {
+                'context': context,
                 'dockerfile': dockerfile
             }
         if not oneshot:
