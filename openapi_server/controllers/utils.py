@@ -411,6 +411,31 @@ class ProcessExtraData(object):
 
         return config_data_list
 
+    @staticmethod
+    def generate_script_for_commands(repo_name, commands_list, repos_data, commands_script_list):
+        """Generate the bash script including the received commands.
+
+        :param repos_name: The repository name
+        :param commands_list: The list of shell commands
+        :param repos_data: The individual repository data
+        :param commands_script_list: Current list of strings that generate the command builder scripts
+        """
+        logger.debug('Call to ProcessExtraData.generate_script_for_commands() method')
+        commands_script_data = JePLUtils.get_commands_script(
+            repo_name,
+            commands_list
+        )
+        commands_script_data = JePLUtils.append_file_name(
+            'commands_script',
+            [{
+                'content': commands_script_data
+            }],
+            force_random_name=True
+        )
+        commands_script_list.extend(commands_script_data)
+        script_call = '/usr/bin/env sh %s' % commands_script_data[0]['file_name']
+        repos_data[repo_name]['commands'] = [script_call]
+
 
 def process_extra_data(config_json, composer_json):
     """Manage those properties, present in the API spec, that cannot
@@ -478,20 +503,8 @@ def process_extra_data(config_json, composer_json):
                     # Create script for 'commands' builder
                     # NOTE: This is a workaround -> a specific builder to tackle this will be implemented in JePL
                     if 'commands' in repo.keys():
-                        commands_script_data = JePLUtils.get_commands_script(
-                            repo_name,
-                            repo['commands']
-                        )
-                        commands_script_data = JePLUtils.append_file_name(
-                            'commands_script',
-                            [{
-                                'content': commands_script_data
-                            }],
-                            force_random_name=True
-                        )
-                        commands_script_list.extend(commands_script_data)
-                        script_call = '/usr/bin/env sh %s' % commands_script_data[0]['file_name']
-                        repos_new[repo_name]['commands'] = [script_call]
+                        ProcessExtraData.generate_script_for_commands(
+                            repo_name, repo['commands'], repos_new, commands_script_list)
                     # Modify Tox properties (chdir, defaults)
                     ProcessExtraData.set_tox_env(repo_name, repos_new)
                     # Set Dockerfile's 'context' in the composer
