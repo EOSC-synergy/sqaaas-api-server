@@ -369,6 +369,19 @@ class ProcessExtraData(object):
         """
         criterion_repo['commands'] = []
         for tool in tools:
+            # special treatment for 'commands' builder
+            if tool['name'] in ['commands']:
+                value = tool['args'][0]['value']
+                cmd_list = []
+                # accepted values are str, comma-separated str & list
+                if type(value) in [str]:
+                    # comma-separated compound
+                    cmd_list = list(filter(None, value.split(',')))
+                elif type(value) in [list]:
+                    cmd_list = value
+                criterion_repo['commands'].extend(cmd_list)
+                continue
+
             cmd_list = [tool['name']]
             if 'executable' in list(tool):
                 cmd_list = [tool['executable']]
