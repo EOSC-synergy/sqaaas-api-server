@@ -353,7 +353,20 @@ class ProcessExtraData(object):
         ))
         criterion_repo['container'] = srv_name
 
-        # 4) Generate tool execution command
+        config_json['sqa_criteria'][criterion_name]['repos'] = criterion_repo
+
+        return srv_name
+
+
+    @staticmethod
+    def set_tool_execution_command(tools, criterion_name, criterion_repo, config_json):
+        """Set the tool execution command based on tool data.
+
+        :param tools: List of Tool objects
+        :param criterion_name: Name of the criterion
+        :param criterion_repo: Repo data for the criterion
+        :param config_json: Config data (JSON)
+        """
         criterion_repo['commands'] = []
         for tool in tools:
             cmd_list = [tool['name']]
@@ -373,8 +386,6 @@ class ProcessExtraData(object):
             criterion_repo['commands'].append(cmd)
 
         config_json['sqa_criteria'][criterion_name]['repos'] = criterion_repo
-
-        return srv_name
 
 
     @staticmethod
@@ -483,9 +494,12 @@ def process_extra_data(config_json, composer_json):
                 tools = []
                 if repo.get('tools', []):
                     tools = repo.pop('tools')
-                if tools and not service_name:
-                    service_name = ProcessExtraData.set_tool_env(
-                        tools, criterion_name, repo, project_repos_mapping, config_json, composer_json)
+                if tools:
+                    if not service_name:
+                        service_name = ProcessExtraData.set_tool_env(
+                            tools, criterion_name, repo, project_repos_mapping, config_json, composer_json)
+                    ProcessExtraData.set_tool_execution_command(
+                        tools, criterion_name, repo, config_json)
                 try:
                     repo_url = repo.pop('repo_url')
                     if not repo_url:
