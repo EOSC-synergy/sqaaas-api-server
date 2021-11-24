@@ -426,10 +426,10 @@ def process_extra_data(config_json, composer_json):
     :param config_json: JePL's config as received through the API request (JSON payload)
     :param composer_json: Composer content as received throught the API request (JSON payload).
     """
-    # CONFIG:CONFIG (Set repo name)
-    project_repos_final = {}
+    # CONFIG:CONFIG (Generate short url-based repo name & mapping)
     project_repos_mapping = {}
     if 'project_repos' in config_json['config'].keys():
+        project_repos_final = {}
         for project_repo in config_json['config']['project_repos']:
             repo_url = project_repo.pop('repo')
             repo_name_generated = get_short_repo_name(
