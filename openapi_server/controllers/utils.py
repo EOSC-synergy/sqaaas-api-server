@@ -218,29 +218,6 @@ class ProcessExtraData(object):
             service_data['command'] = 'sleep 6000000'
 
     @staticmethod
-    def set_build_context(service_name, repo_name, composer_json):
-        """Set the context within the docker-compose.yml's build property.
-
-        :param service_name: Name of the DC service
-        :param repo_name: Relative repo checkout path
-        :param composer_json: Composer data (JSON)
-        """
-        logger.debug('Call to ProcessExtraData.set_build_context() method')
-        if service_name:
-            try:
-                dockerfile_path = composer_json['services'][service_name]['build']['dockerfile']
-                dockerfile_filename = os.path.basename(dockerfile_path)
-                composer_json['services'][service_name]['build']['dockerfile'] = dockerfile_filename
-                dockerfile_dirname = os.path.dirname(dockerfile_path)
-                context_dir = dockerfile_dirname
-                composer_json['services'][service_name]['build']['context'] = context_dir
-                logger.debug('Build context set <%s> for service <%s>' % (
-                    repo_name, service_name))
-            except KeyError:
-                logger.debug(('No build definition found for service <%s>. Not setting '
-                              'build context' % service_name))
-
-    @staticmethod
     def set_tox_env(repo_checkout_dir, repos_data):
         """Prepare the Tox environment for the given repo.
 
@@ -315,48 +292,61 @@ class ProcessExtraData(object):
                 'branch': tooling_repo_branch
             }
 
-        # 2) Add service entry
+    def set_build_context(tools, criterion_name, criterion_repo, project_repos_mapping, config_json, composer_json, service_name=None):
+        """Set the composer's build context.
+
+        :param tools: List of Tool objects
+        :param criterion_name: Name of the criterion
+        :param criterion_repo: Repo data for the criterion
+        :param project_repos_mapping: Dict containing the defined project_repos
+        :param config_json: Config data (JSON)
+        :param composer_json: Composer data (JSON)
+        """
         if not composer_json:
             logger.debug('No service was defined by the user')
             composer_json['version'] = '3.7'
-        dockerfile = None
-        # All tools shall use the same service for the same criterion (JePL limitation)
+        # TODO: DOES NOT cover when more than one tool is set! 
         reference_tool = tools[0]
         context = None
         dockerfile = None
         image = None
         try:
-            dockerfile_path = reference_tool['docker']['dockerfile']
+            if service_name:
+                dockerfile_path = composer_json['services'][service_name]['build']['dockerfile']
+                context = os.path.dirname(dockerfile_path)
+            else:
+                dockerfile_path = reference_tool['docker']['dockerfile']
+                context = os.path.join(
+                    project_repos_mapping[tooling_repo_url]['name'],
+                    os.path.dirname(dockerfile_path)
+                )
             dockerfile = os.path.basename(dockerfile_path)
-            context = os.path.join(
-                project_repos_mapping[tooling_repo_url]['name'],
-                os.path.dirname(dockerfile_path)
-            )
             logger.debug('Dockerfile context: %s (file name: %s)' % (context, dockerfile))
-        except KeyError:
-            logger.debug('No Dockerfile definition found for tool <%s>' % reference_tool['name'])
-        if not dockerfile:
-            image = reference_tool['docker']['image']
-        oneshot = reference_tool['docker'].get('oneshot', True)
-        srv_name = '_'.join([
-            criterion_name.lower(), namegenerator.gen()
-        ])
+        except KeyError as e:
+            logger.error('An error ocurred while getting Dockerfile\'s context: %s' % str(e))
+        
+        if not service_name:
+            if not dockerfile:
+                image = reference_tool['docker']['image']
+            oneshot = reference_tool['docker'].get('oneshot', True)
+            service_name = '_'.join([
+                criterion_name.lower(), namegenerator.gen()
+            ])
+            # Adding service name to config's container
+            old_container_name = criterion_repo['container']
+            logger.debug('Changing previous container name <%s> to <%s>' % (
+                old_container_name, service_name
+            ))
+            criterion_repo['container'] = service_name
+
+            config_json['sqa_criteria'][criterion_name]['repos'] = criterion_repo
+
         srv_definition = JePLUtils.get_composer_service(
-            srv_name, image=image, context=context, dockerfile=dockerfile, oneshot=oneshot
+            service_name, image=image, context=context, dockerfile=dockerfile, oneshot=oneshot
         )
         composer_json['services'].update(srv_definition)
 
-        # 3) Adding service name to config's container
-        old_container_name = criterion_repo['container']
-        logger.debug('Changing previous container name <%s> to <%s>' % (
-            old_container_name, srv_name
-        ))
-        criterion_repo['container'] = srv_name
-
-        config_json['sqa_criteria'][criterion_name]['repos'] = criterion_repo
-
-        return srv_name
-
+        return service_name
 
     @staticmethod
     def set_tool_execution_command(tools, criterion_name, criterion_repo, config_json):
@@ -509,8 +499,10 @@ def process_extra_data(config_json, composer_json):
                     tools = repo.pop('tools')
                 if tools:
                     if not service_name:
-                        service_name = ProcessExtraData.set_tool_env(
+                        ProcessExtraData.set_tool_env(
                             tools, criterion_name, repo, project_repos_mapping, config_json, composer_json)
+                    service_name = ProcessExtraData.set_build_context(
+                        tools, criterion_name, repo, project_repos_mapping, config_json, composer_json, service_name=service_name)
                     ProcessExtraData.set_tool_execution_command(
                         tools, criterion_name, repo, config_json)
                 try:
@@ -522,8 +514,6 @@ def process_extra_data(config_json, composer_json):
                     repos_new['this_repo'] = repo
                     # Modify Tox properties (chdir, defaults)
                     ProcessExtraData.set_tox_env('.', repos_new)
-                    # Set Dockerfile's 'context' in the composer
-                    ProcessExtraData.set_build_context(service_name, '.', composer_json)
                 else:
                     repo_name = project_repos_mapping[repo_url]['name']
                     repos_new[repo_name] = repo
@@ -534,8 +524,6 @@ def process_extra_data(config_json, composer_json):
                             repo_name, repo['commands'], repos_new, commands_script_list)
                     # Modify Tox properties (chdir, defaults)
                     ProcessExtraData.set_tox_env(repo_name, repos_new)
-                    # Set Dockerfile's 'context' in the composer
-                    ProcessExtraData.set_build_context(service_name, repo_name, composer_json)
             criterion_data_copy['repos'] = repos_new
         config_json['sqa_criteria'][criterion_name] = criterion_data_copy
 
@@ -596,9 +584,6 @@ def process_extra_data(config_json, composer_json):
         ProcessExtraData.set_service_volume(srv_data)
         ## Handle 'oneshot' services
         ProcessExtraData.set_service_oneshot(srv_data)
-        ## Set default build:context to '.'
-        if 'build' in list(srv_data):
-            ProcessExtraData.set_build_context(srv_name, '.', composer_json)
 
     composer_data = {'data_json': composer_json}
 
