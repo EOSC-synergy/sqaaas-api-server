@@ -367,6 +367,14 @@ class ProcessExtraData(object):
         :param criterion_repo: Repo data for the criterion
         :param config_json: Config data (JSON)
         """
+        def process_value(arg):
+            value = arg['value']
+            if type(value) in [str]:
+                value_list = list(filter(None, value.split(',')))
+                if arg['repeatable'] and len(value_list) > 1:
+                    return ' '.join(value_list)
+            return value
+
         criterion_repo['commands'] = []
         for tool in tools:
             # special treatment for 'commands' builder
@@ -397,7 +405,7 @@ class ProcessExtraData(object):
                                 continue
                         cmd_list.append(arg['option'])
                     if not flag:
-                        cmd_list.append(arg['value'])
+                        cmd_list.append(process_value(arg))
                 args = arg.get('args', [])
             cmd = ' '.join(cmd_list)
             criterion_repo['commands'].append(cmd)
