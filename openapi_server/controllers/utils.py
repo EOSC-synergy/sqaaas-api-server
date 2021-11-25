@@ -301,6 +301,7 @@ class ProcessExtraData(object):
         :param project_repos_mapping: Dict containing the defined project_repos
         :param config_json: Config data (JSON)
         :param composer_json: Composer data (JSON)
+        :param service_name: name of the service (if known)
         """
         if not composer_json:
             logger.debug('No service was defined by the user')
