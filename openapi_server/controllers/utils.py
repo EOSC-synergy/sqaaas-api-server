@@ -23,6 +23,23 @@ from jenkins import JenkinsException
 
 logger = logging.getLogger('sqaaas_api.controller')
 
+tooling_repo_url = config.get(
+    'tooling_repo_url',
+    fallback='https://github.com/EOSC-synergy/sqaaas-tooling'
+)
+tooling_repo_branch = config.get(
+    'tooling_repo_branch',
+    fallback='main'
+)
+docker_credential_id = config.get_ci(
+    'docker_credential_id',
+    fallback=None
+)
+docker_credential_org = config.get_ci(
+    'docker_credential_org',
+    fallback=None
+)
+
 
 def upstream_502_response(r):
     _reason = 'Unsuccessful request to upstream service API'
@@ -65,7 +82,7 @@ def extended_data_validation(f):
                 if registry_data['push']:
                     try:
                         if not (registry_data['credential_id'] or
-                                config.get_ci('docker_credential_id')):
+                                docker_credential_id):
                             raise KeyError
                     except KeyError:
                         _reason = ('Request to push Docker images, but no credentials '
@@ -269,14 +286,6 @@ class ProcessExtraData(object):
         logger.debug('Call to ProcessExtraData.set_tool_env() method')
 
         # 1) Add tooling repository to <project_repos>
-        tooling_repo_url = config.get(
-            'tooling_repo_url',
-            fallback='https://github.com/EOSC-synergy/sqaaas-tooling'
-        )
-        tooling_repo_branch = config.get(
-            'tooling_repo_branch',
-            fallback='main'
-        )
         if tooling_repo_url in list(project_repos_mapping):
             logger.debug('Tool template repository <%s> already defined' % tooling_repo_url)
         else:
@@ -306,7 +315,7 @@ class ProcessExtraData(object):
         if not composer_json:
             logger.debug('No service was defined by the user')
             composer_json['version'] = '3.7'
-        # TODO: DOES NOT cover when more than one tool is set! 
+        # TODO: DOES NOT cover when more than one tool is set!
         reference_tool = tools[0]
         context = None
         dockerfile = None
@@ -325,7 +334,7 @@ class ProcessExtraData(object):
             logger.debug('Dockerfile context: %s (file name: %s)' % (context, dockerfile))
         except KeyError as e:
             logger.error('An error ocurred while getting Dockerfile\'s context: %s' % str(e))
-        
+
         if not service_name:
             if not dockerfile:
                 image = reference_tool['docker']['image']
@@ -551,8 +560,7 @@ def process_extra_data(config_json, composer_json):
                         credential_id = registry_data['credential_id']
                         logger.debug('Using custom Jenkins credentials: %s' % credential_id)
                     else:
-                        credential_id = config.get_ci(
-                            'docker_credential_id', fallback=None)
+                        credential_id = docker_credential_id
                         use_default_dockerhub_org = True
                         logger.debug('Using catch-all Jenkins credentials: %s' % credential_id)
                     try:
@@ -573,8 +581,7 @@ def process_extra_data(config_json, composer_json):
             ## Set 'image' property as string (required by Docker Compose)
             srv_data['image'] = srv_data['image']['name']
             if use_default_dockerhub_org:
-                org = config.get_ci(
-                    'docker_credential_org', fallback=None)
+                org = docker_credential_org
                 logger.debug('Using default Docker Hub <%s> organization' % org)
                 img_name = srv_data['image'].split('/')[-1]
                 srv_data['image'] = '/'.join([org, img_name])
