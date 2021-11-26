@@ -358,32 +358,31 @@ class ProcessExtraData(object):
         :param criterion_repo: Repo data for the criterion
         :param config_json: Config data (JSON)
         """
-        def process_value(arg):
+        def process_value(arg, commands_builder=False):
             value = arg['value']
             if type(value) in [str]:
                 value_list = list(filter(None, value.split(',')))
+                value_list = list(map(str.strip, value_list))
                 if arg['repeatable'] and len(value_list) > 1:
-                    return ' '.join(value_list)
+                    if commands_builder:
+                        return value_list
+                return list([' '.join(value_list)])
             return value
 
         criterion_repo['commands'] = []
         for tool in tools:
             # special treatment for 'commands' builder
+            commands_builder = False
             if tool['name'] in ['commands']:
-                value = tool['args'][0]['value']
-                cmd_list = []
-                # accepted values are str, comma-separated str & list
-                if type(value) in [str]:
-                    # comma-separated compound
-                    cmd_list = list(filter(None, value.split(',')))
-                elif type(value) in [list]:
-                    cmd_list = value
-                criterion_repo['commands'].extend(cmd_list)
-                continue
-
+                commands_builder = True
+            # when existing, use executable instead of name
+            # if executable exists but empty, then no name & no executable (commands)
             cmd_list = [tool['name']]
             if 'executable' in list(tool):
-                cmd_list = [tool['executable']]
+                if not tool['executable']:
+                    cmd_list = []
+                else:
+                    cmd_list = [tool['executable']]
             args = tool.get('args', [])
             while args:
                 for arg in args:
@@ -396,9 +395,12 @@ class ProcessExtraData(object):
                                 continue
                         cmd_list.append(arg['option'])
                     if not flag:
-                        cmd_list.append(process_value(arg))
+                        cmd_list.extend(process_value(arg, commands_builder=commands_builder))
                 args = arg.get('args', [])
-            cmd = ' '.join(cmd_list)
+            if commands_builder:
+                cmd = cmd_list
+            else:
+                cmd = ' '.join(cmd_list)
             criterion_repo['commands'].append(cmd)
 
         config_json['sqa_criteria'][criterion_name]['repos'] = criterion_repo
