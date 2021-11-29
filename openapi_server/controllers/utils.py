@@ -372,7 +372,7 @@ class ProcessExtraData(object):
             if type(value) in [str]:
                 value_list = list(filter(None, value.split(',')))
                 value_list = list(map(str.strip, value_list))
-                if arg['repeatable'] and len(value_list) > 1:
+                if arg.get('repeatable', False) and len(value_list) > 1:
                     if commands_builder:
                         return value_list
                 return list([' '.join(value_list)])
