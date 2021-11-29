@@ -596,6 +596,16 @@ async def get_pipeline_status(request: web.Request, pipeline_id) -> web.Response
     return web.json_response(r, status=200)
 
 
+async def _validate_output(stdout):
+    """Validates the stdout using the sqaaas-reporting tool.
+
+    :param stdout: Tool output
+    :type stdout: str
+
+    """
+    return NotImplementedError
+
+
 @ctls_utils.debug_request
 @ctls_utils.validate_request
 async def get_pipeline_output(request: web.Request, pipeline_id, validate=None) -> web.Response:
@@ -624,6 +634,11 @@ async def get_pipeline_output(request: web.Request, pipeline_id, validate=None) 
         jenkins_info['job_name'],
         build_info['number']
     )
+
+    if validate:
+        for criterion_id, criterion_data in stage_data.items():
+            logger.debug('Validating output from criterion <%s>' % criterion_id)
+            _validate_output(criterion_data['stdout_text'])
 
     return web.json_response(stage_data, status=200)
 
