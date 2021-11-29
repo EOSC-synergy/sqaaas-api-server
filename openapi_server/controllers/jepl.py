@@ -246,6 +246,8 @@ class JePLUtils(object):
         if image:
             srv_data['image'] = {'name': image}
         if dockerfile:
+            # Add './' when relative path. If not, Docker may confuse it with a remote URL
+            context = './' + context
             srv_data['build'] = {
                 'context': context,
                 'dockerfile': dockerfile
