@@ -598,13 +598,15 @@ async def get_pipeline_status(request: web.Request, pipeline_id) -> web.Response
 
 @ctls_utils.debug_request
 @ctls_utils.validate_request
-async def get_pipeline_output(request: web.Request, pipeline_id) -> web.Response:
+async def get_pipeline_output(request: web.Request, pipeline_id, validate=None) -> web.Response:
     """Get output from pipeline execution
 
     Returns the console output from the pipeline execution.
 
     :param pipeline_id: ID of the pipeline to get
     :type pipeline_id: str
+    :param validate: Flag to indicate whether the returned output shall be validate using sqaaas-reporting tool
+    :type validate: bool
 
     """
     pipeline_data = db.get_entry(pipeline_id)
