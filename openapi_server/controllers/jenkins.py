@@ -116,6 +116,7 @@ class JenkinsUtils(object):
         """
         items = list(map('/job/'.__add__, job_name.split('/')))
         jenkins_job_name = ''.join(items)
+
         def do_request(path, append=False):
             if append:
                 target_path = '%s/%s/%s' % (jenkins_job_name, build_no, path)
@@ -128,6 +129,20 @@ class JenkinsUtils(object):
                 verify=False
             )
             return r.json()
+
+        def process_stdout(stdout):
+            lines = stdout.split('\n')
+            cmd = lines.pop(0)
+            if not cmd.startswith('+'):
+                self.logger.warn((
+                    'Could not identify the command (identified by \'+\' '
+                    'prefix) in string <%s>. No change done to stdout' % cmd
+                ))
+                lines.insert(0, cmd)
+                cmd = ''
+            output_text = '\n'.join(lines)
+            return (cmd, output_text)
+
         data = do_request('/wfapi/describe', append=True)
         stage_name_prefix = 'QC.'
         qc_stages = [stage for stage in data['stages'] if stage['name'].startswith(stage_name_prefix)]
@@ -141,9 +156,12 @@ class JenkinsUtils(object):
             status = data['status']
             log_endpoint = data['stageFlowNodes'][0]['_links']['log']['href']
             data = do_request(log_endpoint)
+            stdout = data['text']
+            cmd, output_text = process_stdout(stdout)
             criteria_data[name] = {
                 'status': status,
-                'stdout': data['text']
+                'stdout_command': cmd,
+                'stdout_text': output_text
             }
 
         return criteria_data
