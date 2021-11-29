@@ -271,8 +271,7 @@ class ProcessExtraData(object):
             tools,
             criterion_name, criterion_repo,
             project_repos_mapping,
-            config_json, composer_json,
-            report_to_stdout=False):
+            config_json, composer_json):
         """Set the tool environment.
 
         Includes:
@@ -364,13 +363,18 @@ class ProcessExtraData(object):
         return service_name
 
     @staticmethod
-    def set_tool_execution_command(tools, criterion_name, criterion_repo, config_json):
+    def set_tool_execution_command(
+            tools,
+            criterion_name, criterion_repo,
+            config_json,
+            report_to_stdout=False):
         """Set the tool execution command based on tool data.
 
         :param tools: List of Tool objects
         :param criterion_name: Name of the criterion
         :param criterion_repo: Repo data for the criterion
         :param config_json: Config data (JSON)
+        :param report_to_stdout: Flag to indicate whether the pipeline shall print via via stdout the reports produced by the tools (required by QAA module)
         """
         def process_value(arg, commands_builder=False):
             value = arg['value']
