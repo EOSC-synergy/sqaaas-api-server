@@ -387,6 +387,23 @@ class ProcessExtraData(object):
                 return list([' '.join(value_list)])
             return value
 
+        def process_args(args, cmd_list=[]):
+            cmd_list = []
+            for arg in args:
+                flag = False
+                if arg['type'] in ['optional']:
+                    if not 'value' in list(arg):
+                        flag = True
+                    else:
+                        if arg['selectable'] and not arg['value']:
+                            continue
+                    cmd_list.append(arg['option'])
+                if not flag:
+                    cmd_list.extend(process_value(arg, commands_builder=commands_builder))
+                if arg.get('args', []):
+                    cmd_list.extend(process_args(arg['args'], cmd_list=cmd_list))
+            return cmd_list
+
         criterion_repo['commands'] = []
         for tool in tools:
             # special treatment for 'commands' builder
@@ -402,19 +419,7 @@ class ProcessExtraData(object):
                 else:
                     cmd_list = [tool['executable']]
             args = tool.get('args', [])
-            while args:
-                for arg in args:
-                    flag = False
-                    if arg['type'] in ['optional']:
-                        if not 'value' in list(arg):
-                            flag = True
-                        else:
-                            if arg['selectable'] and not arg['value']:
-                                continue
-                        cmd_list.append(arg['option'])
-                    if not flag:
-                        cmd_list.extend(process_value(arg, commands_builder=commands_builder))
-                args = arg.get('args', [])
+            cmd_list.extend(process_args(args))
             if commands_builder:
                 cmd = cmd_list
             else:
