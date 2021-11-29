@@ -166,6 +166,16 @@ paths:
         schema:
           type: string
         style: simple
+      - description: Flag to indicate whether the pipeline shall print via via stdout
+          the reports produced by the tools (required by QAA module)
+        explode: true
+        in: query
+        name: report_to_stdout
+        required: false
+        schema:
+          default: false
+          type: boolean
+        style: form
       requestBody:
         content:
           application/json:
@@ -511,6 +521,16 @@ paths:
         schema:
           type: string
         style: simple
+      - description: Flag to indicate whether the returned output shall be validate
+          using sqaaas-reporting tool
+        explode: true
+        in: query
+        name: validate
+        required: false
+        schema:
+          default: false
+          type: boolean
+        style: form
       responses:
         "200":
           content:
@@ -524,6 +544,8 @@ paths:
           description: Invalid pipeline ID supplied
         "404":
           description: Pipeline not found
+        "422":
+          description: Pipeline has not been executed
       summary: Get output from pipeline execution
       x-openapi-router-controller: openapi_server.controllers.default_controller
   /pipeline/{pipeline_id}/pull_request:
