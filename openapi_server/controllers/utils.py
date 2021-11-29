@@ -23,6 +23,23 @@ from jenkins import JenkinsException
 
 logger = logging.getLogger('sqaaas_api.controller')
 
+tooling_repo_url = config.get(
+    'tooling_repo_url',
+    fallback='https://github.com/EOSC-synergy/sqaaas-tooling'
+)
+tooling_repo_branch = config.get(
+    'tooling_repo_branch',
+    fallback='main'
+)
+docker_credential_id = config.get_ci(
+    'docker_credential_id',
+    fallback=None
+)
+docker_credential_org = config.get_ci(
+    'docker_credential_org',
+    fallback=None
+)
+
 
 def upstream_502_response(r):
     _reason = 'Unsuccessful request to upstream service API'
@@ -65,7 +82,7 @@ def extended_data_validation(f):
                 if registry_data['push']:
                     try:
                         if not (registry_data['credential_id'] or
-                                config.get_ci('docker_credential_id')):
+                                docker_credential_id):
                             raise KeyError
                     except KeyError:
                         _reason = ('Request to push Docker images, but no credentials '
@@ -218,29 +235,6 @@ class ProcessExtraData(object):
             service_data['command'] = 'sleep 6000000'
 
     @staticmethod
-    def set_build_context(service_name, repo_name, composer_json):
-        """Set the context within the docker-compose.yml's build property.
-
-        :param service_name: Name of the DC service
-        :param repo_name: Relative repo checkout path
-        :param composer_json: Composer data (JSON)
-        """
-        logger.debug('Call to ProcessExtraData.set_build_context() method')
-        if service_name:
-            try:
-                dockerfile_path = composer_json['services'][service_name]['build']['dockerfile']
-                dockerfile_filename = os.path.basename(dockerfile_path)
-                composer_json['services'][service_name]['build']['dockerfile'] = dockerfile_filename
-                dockerfile_dirname = os.path.dirname(dockerfile_path)
-                context_dir = dockerfile_dirname
-                composer_json['services'][service_name]['build']['context'] = context_dir
-                logger.debug('Build context set <%s> for service <%s>' % (
-                    repo_name, service_name))
-            except KeyError:
-                logger.debug(('No build definition found for service <%s>. Not setting '
-                              'build context' % service_name))
-
-    @staticmethod
     def set_tox_env(repo_checkout_dir, repos_data):
         """Prepare the Tox environment for the given repo.
 
@@ -297,14 +291,6 @@ class ProcessExtraData(object):
         logger.debug('Call to ProcessExtraData.set_tool_env() method')
 
         # 1) Add tooling repository to <project_repos>
-        tooling_repo_url = config.get(
-            'tooling_repo_url',
-            fallback='https://github.com/EOSC-synergy/sqaaas-tooling'
-        )
-        tooling_repo_branch = config.get(
-            'tooling_repo_branch',
-            fallback='main'
-        )
         if tooling_repo_url in list(project_repos_mapping):
             logger.debug('Tool template repository <%s> already defined' % tooling_repo_url)
         else:
@@ -320,59 +306,115 @@ class ProcessExtraData(object):
                 'branch': tooling_repo_branch
             }
 
-        # 2) Add service entry
+    def set_build_context(tools, criterion_name, criterion_repo, project_repos_mapping, config_json, composer_json, service_name=None):
+        """Set the composer's build context.
+
+        :param tools: List of Tool objects
+        :param criterion_name: Name of the criterion
+        :param criterion_repo: Repo data for the criterion
+        :param project_repos_mapping: Dict containing the defined project_repos
+        :param config_json: Config data (JSON)
+        :param composer_json: Composer data (JSON)
+        :param service_name: name of the service (if known)
+        """
         if not composer_json:
             logger.debug('No service was defined by the user')
             composer_json['version'] = '3.7'
-        dockerfile = None
-        # All tools shall use the same service for the same criterion (JePL limitation)
+        # TODO: DOES NOT cover when more than one tool is set!
         reference_tool = tools[0]
+        context = None
         dockerfile = None
         image = None
         try:
-            dockerfile = reference_tool['docker']['dockerfile']
-            dockerfile = os.path.join(
-                project_repos_mapping[tooling_repo_url]['name'],
-                dockerfile
-            )
-            logger.debug('Dockerfile location: %s' % dockerfile)
-        except KeyError:
-            logger.debug('No Dockerfile definition found for tool <%s>' % reference_tool['name'])
-        if not dockerfile:
-            image = reference_tool['docker']['image']
-        oneshot = reference_tool['docker'].get('oneshot', True)
-        srv_name = '_'.join([
-            criterion_name.lower(), namegenerator.gen()
-        ])
+            if service_name:
+                dockerfile_path = composer_json['services'][service_name]['build']['dockerfile']
+                context = os.path.dirname(dockerfile_path)
+            else:
+                dockerfile_path = reference_tool['docker']['dockerfile']
+                context = os.path.join(
+                    project_repos_mapping[tooling_repo_url]['name'],
+                    os.path.dirname(dockerfile_path)
+                )
+            dockerfile = os.path.basename(dockerfile_path)
+            logger.debug('Dockerfile context: %s (file name: %s)' % (context, dockerfile))
+        except KeyError as e:
+            logger.error('An error ocurred while getting Dockerfile\'s context: %s' % str(e))
+
+        if not service_name:
+            if not dockerfile:
+                image = reference_tool['docker']['image']
+            oneshot = reference_tool['docker'].get('oneshot', True)
+            service_name = '_'.join([
+                criterion_name.lower(), namegenerator.gen()
+            ])
+            # Adding service name to config's container
+            old_container_name = criterion_repo['container']
+            logger.debug('Changing previous container name <%s> to <%s>' % (
+                old_container_name, service_name
+            ))
+            criterion_repo['container'] = service_name
+
+            config_json['sqa_criteria'][criterion_name]['repos'] = criterion_repo
+
         srv_definition = JePLUtils.get_composer_service(
-            srv_name, image=image, dockerfile=dockerfile, oneshot=oneshot
+            service_name, image=image, context=context, dockerfile=dockerfile, oneshot=oneshot
         )
         composer_json['services'].update(srv_definition)
 
-        # 3) Adding service name to config's container
-        old_container_name = criterion_repo['container']
-        logger.debug('Changing previous container name <%s> to <%s>' % (
-            old_container_name, srv_name
-        ))
-        criterion_repo['container'] = srv_name
+        return service_name
 
-        # 4) Generate tool execution command
+    @staticmethod
+    def set_tool_execution_command(tools, criterion_name, criterion_repo, config_json):
+        """Set the tool execution command based on tool data.
+
+        :param tools: List of Tool objects
+        :param criterion_name: Name of the criterion
+        :param criterion_repo: Repo data for the criterion
+        :param config_json: Config data (JSON)
+        """
+        def process_value(arg, commands_builder=False):
+            value = arg['value']
+            if type(value) in [str]:
+                value_list = list(filter(None, value.split(',')))
+                value_list = list(map(str.strip, value_list))
+                if arg['repeatable'] and len(value_list) > 1:
+                    if commands_builder:
+                        return value_list
+                return list([' '.join(value_list)])
+            return value
+
         criterion_repo['commands'] = []
         for tool in tools:
+            # special treatment for 'commands' builder
+            commands_builder = False
+            if tool['name'] in ['commands']:
+                commands_builder = True
+            # when existing, use executable instead of name
+            # if executable exists but empty, then no name & no executable (commands)
             cmd_list = [tool['name']]
             if 'executable' in list(tool):
-                cmd_list = [tool['executable']]
+                if not tool['executable']:
+                    cmd_list = []
+                else:
+                    cmd_list = [tool['executable']]
             args = tool.get('args', [])
             while args:
                 for arg in args:
-                    if 'value' in list(arg) and not arg['value']:
-                        logger.debug('Skipping argument <%s>: argument has no value' % arg)
-                        continue
+                    flag = False
                     if arg['type'] in ['optional']:
+                        if not 'value' in list(arg):
+                            flag = True
+                        else:
+                            if arg['selectable'] and not arg['value']:
+                                continue
                         cmd_list.append(arg['option'])
-                    cmd_list.append(arg['value'])
+                    if not flag:
+                        cmd_list.extend(process_value(arg, commands_builder=commands_builder))
                 args = arg.get('args', [])
-            cmd = ' '.join(cmd_list)
+            if commands_builder:
+                cmd = cmd_list
+            else:
+                cmd = ' '.join(cmd_list)
             criterion_repo['commands'].append(cmd)
             # If applicable, print the generated report to stdout
             if report_to_stdout:
@@ -383,8 +425,6 @@ class ProcessExtraData(object):
                     criterion_repo['commands'].append(cat_cmd)
 
         config_json['sqa_criteria'][criterion_name]['repos'] = criterion_repo
-
-        return srv_name
 
     @staticmethod
     def set_config_when_clause(config_json):
@@ -420,6 +460,31 @@ class ProcessExtraData(object):
 
         return config_data_list
 
+    @staticmethod
+    def generate_script_for_commands(repo_name, commands_list, repos_data, commands_script_list):
+        """Generate the bash script including the received commands.
+
+        :param repos_name: The repository name
+        :param commands_list: The list of shell commands
+        :param repos_data: The individual repository data
+        :param commands_script_list: Current list of strings that generate the command builder scripts
+        """
+        logger.debug('Call to ProcessExtraData.generate_script_for_commands() method')
+        commands_script_data = JePLUtils.get_commands_script(
+            repo_name,
+            commands_list
+        )
+        commands_script_data = JePLUtils.append_file_name(
+            'commands_script',
+            [{
+                'content': commands_script_data
+            }],
+            force_random_name=True
+        )
+        commands_script_list.extend(commands_script_data)
+        script_call = '/usr/bin/env sh %s' % commands_script_data[0]['file_name']
+        repos_data[repo_name]['commands'] = [script_call]
+
 
 def process_extra_data(config_json, composer_json, report_to_stdout=False):
     """Manage those properties, present in the API spec, that cannot
@@ -436,10 +501,10 @@ def process_extra_data(config_json, composer_json, report_to_stdout=False):
     :param composer_json: Composer content as received throught the API request (JSON payload).
     :param report_to_stdout: Flag to indicate whether the pipeline shall print via via stdout the reports produced by the tools (required by QAA module)
     """
-    # CONFIG:CONFIG (Set repo name)
-    project_repos_final = {}
+    # CONFIG:CONFIG (Generate short url-based repo name & mapping)
     project_repos_mapping = {}
     if 'project_repos' in config_json['config'].keys():
+        project_repos_final = {}
         for project_repo in config_json['config']['project_repos']:
             repo_url = project_repo.pop('repo')
             repo_name_generated = get_short_repo_name(
@@ -468,13 +533,14 @@ def process_extra_data(config_json, composer_json, report_to_stdout=False):
                 tools = []
                 if repo.get('tools', []):
                     tools = repo.pop('tools')
-                if tools and not service_name:
-                    service_name = ProcessExtraData.set_tool_env(
-                        tools,
-                        criterion_name, repo,
-                        project_repos_mapping,
-                        config_json, composer_json,
-                        report_to_stdout=report_to_stdout)
+                if tools:
+                    if not service_name:
+                        ProcessExtraData.set_tool_env(
+                            tools, criterion_name, repo, project_repos_mapping, config_json, composer_json)
+                    service_name = ProcessExtraData.set_build_context(
+                        tools, criterion_name, repo, project_repos_mapping, config_json, composer_json, service_name=service_name)
+                    ProcessExtraData.set_tool_execution_command(
+                        tools, criterion_name, repo, config_json)
                 try:
                     repo_url = repo.pop('repo_url')
                     if not repo_url:
@@ -484,32 +550,16 @@ def process_extra_data(config_json, composer_json, report_to_stdout=False):
                     repos_new['this_repo'] = repo
                     # Modify Tox properties (chdir, defaults)
                     ProcessExtraData.set_tox_env('.', repos_new)
-                    # Set Dockerfile's 'context' in the composer
-                    ProcessExtraData.set_build_context(service_name, '.', composer_json)
                 else:
                     repo_name = project_repos_mapping[repo_url]['name']
                     repos_new[repo_name] = repo
                     # Create script for 'commands' builder
                     # NOTE: This is a workaround -> a specific builder to tackle this will be implemented in JePL
                     if 'commands' in repo.keys():
-                        commands_script_data = JePLUtils.get_commands_script(
-                            repo_name,
-                            repo['commands']
-                        )
-                        commands_script_data = JePLUtils.append_file_name(
-                            'commands_script',
-                            [{
-                                'content': commands_script_data
-                            }],
-                            force_random_name=True
-                        )
-                        commands_script_list.extend(commands_script_data)
-                        script_call = '/usr/bin/env sh %s' % commands_script_data[0]['file_name']
-                        repos_new[repo_name]['commands'] = [script_call]
+                        ProcessExtraData.generate_script_for_commands(
+                            repo_name, repo['commands'], repos_new, commands_script_list)
                     # Modify Tox properties (chdir, defaults)
                     ProcessExtraData.set_tox_env(repo_name, repos_new)
-                    # Set Dockerfile's 'context' in the composer
-                    ProcessExtraData.set_build_context(service_name, repo_name, composer_json)
             criterion_data_copy['repos'] = repos_new
         config_json['sqa_criteria'][criterion_name] = criterion_data_copy
 
@@ -541,8 +591,7 @@ def process_extra_data(config_json, composer_json, report_to_stdout=False):
                         credential_id = registry_data['credential_id']
                         logger.debug('Using custom Jenkins credentials: %s' % credential_id)
                     else:
-                        credential_id = config.get_ci(
-                            'docker_credential_id', fallback=None)
+                        credential_id = docker_credential_id
                         use_default_dockerhub_org = True
                         logger.debug('Using catch-all Jenkins credentials: %s' % credential_id)
                     try:
@@ -563,8 +612,7 @@ def process_extra_data(config_json, composer_json, report_to_stdout=False):
             ## Set 'image' property as string (required by Docker Compose)
             srv_data['image'] = srv_data['image']['name']
             if use_default_dockerhub_org:
-                org = config.get_ci(
-                    'docker_credential_org', fallback=None)
+                org = docker_credential_org
                 logger.debug('Using default Docker Hub <%s> organization' % org)
                 img_name = srv_data['image'].split('/')[-1]
                 srv_data['image'] = '/'.join([org, img_name])
@@ -575,9 +623,6 @@ def process_extra_data(config_json, composer_json, report_to_stdout=False):
         ProcessExtraData.set_service_volume(srv_data)
         ## Handle 'oneshot' services
         ProcessExtraData.set_service_oneshot(srv_data)
-        ## Set default build:context to '.'
-        if 'build' in list(srv_data):
-            ProcessExtraData.set_build_context(srv_name, '.', composer_json)
 
     composer_data = {'data_json': composer_json}
 
