@@ -513,6 +513,13 @@ def process_extra_data(config_json, composer_json, report_to_stdout=False):
             criterion_data_copy['repos'] = repos_new
         config_json['sqa_criteria'][criterion_name] = criterion_data_copy
 
+    # CONFIG:ENVIRONMENT
+    ## JPL_KEEPGOING
+    logger.debug('Enabling JPL_KEEPGOING flag (default behaviour)')
+    if not 'environment' in config_json.keys():
+        config_json['environment'] = {}
+    config_json['environment']['JPL_KEEPGOING'] = True
+
     # COMPOSER (Docker Compose specific)
     for srv_name, srv_data in composer_json['services'].items():
         logger.debug('Processing composer data for service <%s>' % srv_name)
@@ -522,8 +529,6 @@ def process_extra_data(config_json, composer_json, report_to_stdout=False):
             if 'registry' in srv_data['image'].keys():
                 logger.debug('Registry data found for image <%s>' % srv_data['image'])
                 registry_data = srv_data['image'].pop('registry')
-                if not 'environment' in config_json.keys():
-                    config_json['environment'] = {}
                 # JPL_DOCKERPUSH
                 if registry_data['push']:
                     srv_push = config_json['environment'].get('JPL_DOCKERPUSH', '')
