@@ -106,13 +106,15 @@ async def add_pipeline(request: web.Request, body, report_to_stdout=None) -> web
 @ctls_utils.debug_request
 @ctls_utils.extended_data_validation
 @ctls_utils.validate_request
-async def update_pipeline_by_id(request: web.Request, pipeline_id, body) -> web.Response:
+async def update_pipeline_by_id(request: web.Request, pipeline_id, body, report_to_stdout=None) -> web.Response:
     """Update pipeline by ID
 
     :param pipeline_id: ID of the pipeline to get
     :type pipeline_id: str
     :param body:
     :type body: dict | bytes
+    :param report_to_stdout: Flag to indicate whether the pipeline shall print via via stdout the reports produced by the tools (required by QAA module)
+    :type report_to_stdout: bool
 
     """
     pipeline_data = db.get_entry(pipeline_id)
@@ -140,7 +142,8 @@ async def update_pipeline_by_id(request: web.Request, pipeline_id, body) -> web.
             pipeline_id,
             pipeline_repo,
             pipeline_repo_url,
-            body
+            body,
+            report_to_stdout=report_to_stdout
         )
     else:
         logger.debug('Not updating the pipeline: no difference found')
