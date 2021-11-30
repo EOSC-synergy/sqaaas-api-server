@@ -618,10 +618,10 @@ async def _get_tool_from_command(tool_criterion_map, stdout_command):
     matched_tool = None
     for tool_name, tool_cmd in tool_criterion_map.items():
         if stdout_command.find(tool_cmd) != -1:
-            logger.debug('Matching tool <%s> found for stdout command <%>' % (tool_name, tool_cmd))
             matched_tool = tool_name
+            logger.debug('Matching tool <%s> found for stdout command <%s>' % (matched_tool, tool_cmd))
             break
-    return None
+    return matched_tool
 
 
 @ctls_utils.debug_request
