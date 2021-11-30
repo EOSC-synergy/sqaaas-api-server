@@ -25,6 +25,8 @@ from openapi_server.controllers import utils as ctls_utils
 from openapi_server.exception import SQAaaSAPIException
 from openapi_server.models.inline_object import InlineObject
 
+from report2sqaaas import utils as r2s_utils
+
 
 SUPPORTED_PLATFORMS = {
     'github': 'https://github.com'
@@ -596,7 +598,7 @@ async def get_pipeline_status(request: web.Request, pipeline_id) -> web.Response
     return web.json_response(r, status=200)
 
 
-async def _validate_output(tool, stdout):
+async def _run_validation(tool, stdout):
     """Validates the stdout using the sqaaas-reporting tool.
 
     :param tool: Tool name
@@ -605,7 +607,15 @@ async def _validate_output(tool, stdout):
     :type stdout: str
 
     """
-    return NotImplementedError
+    allowed_validators = r2s_utils.get_validators()
+    # NOTE tool name MUST match validator name!
+    if tool not in allowed_validators:
+        logger.error()
+        _reason = 'Could not find an output validator for tool <%s> (found: %s)' % (tool, allowed_validators)
+        logger.error(_reason)
+        raise SQAaaSAPIException(422, _reason)
+    validator = r2s_utils.get_validator(tool)
+    return validator.driver.validate(stdout)
 
 
 async def _get_tool_from_command(tool_criterion_map, stdout_command):
@@ -663,7 +673,7 @@ async def get_pipeline_output(request: web.Request, pipeline_id, validate=None) 
                 criterion_data['stdout_command']
             )
             logger.debug('Validating output from criterion <%s>' % criterion_name)
-            await _validate_output(matched_tool, criterion_data['stdout_text'])
+            out = await _run_validation(matched_tool, criterion_data['stdout_text'])
 
     return web.json_response(stage_data, status=200)
 
