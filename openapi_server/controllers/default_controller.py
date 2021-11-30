@@ -656,12 +656,12 @@ async def get_pipeline_output(request: web.Request, pipeline_id, validate=None) 
     if validate:
         for criterion_name, criterion_data in stage_data.items():
             tool_criterion_map = pipeline_data['tools'][criterion_name]
-            matched_tool = _get_tool_from_command(
+            matched_tool = await _get_tool_from_command(
                 tool_criterion_map,
                 criterion_data['stdout_command']
             )
             logger.debug('Validating output from criterion <%s>' % criterion_name)
-            _validate_output(matched_tool, criterion_data['stdout_text'])
+            await _validate_output(matched_tool, criterion_data['stdout_text'])
 
     return web.json_response(stage_data, status=200)
 
