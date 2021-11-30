@@ -61,6 +61,8 @@ def add_entry(pipeline_id, pipeline_repo, pipeline_repo_url, body):
         |-- 'raw_request': [Dict] API spec representation (from JSON request).
         |-- 'jenkins': [Dict] Jenkins-related data about the pipeline execution.
             |-- 'job_name'
+        |-- 'tools': [Dict] Tool-related data (per-criterion mapping)
+            |-- 'criterion_id': tools
 
     :param pipeline_id: UUID-format identifier for the pipeline.
     :param pipeline_repo: URL of the remote repository for the Jenkins integration.
@@ -68,8 +70,8 @@ def add_entry(pipeline_id, pipeline_repo, pipeline_repo_url, body):
     """
     raw_request = copy.deepcopy(body)
     config_json, composer_json, jenkinsfile_data = ctls_utils.get_pipeline_data(body)
-    config_data_list, composer_data, jenkinsfile, commands_script_list = JePLUtils.compose_files(
-        config_json, composer_json
+    config_data_list, composer_data, jenkinsfile, commands_script_list, tool_criteria_map = JePLUtils.compose_files(
+        config_json, composer_json, report_to_stdout=report_to_stdout
     )
 
     db = load_content()
@@ -82,7 +84,8 @@ def add_entry(pipeline_id, pipeline_repo, pipeline_repo_url, body):
             'jenkinsfile': jenkinsfile,
             'commands_scripts': commands_script_list
         },
-        'raw_request': raw_request
+        'raw_request': raw_request,
+        'tools': tool_criteria_map
     }
     store_content(db)
 

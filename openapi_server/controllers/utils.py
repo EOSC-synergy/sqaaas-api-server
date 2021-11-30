@@ -362,6 +362,8 @@ class ProcessExtraData(object):
     def set_tool_execution_command(tools, criterion_name, criterion_repo, config_json):
         """Set the tool execution command based on tool data.
 
+        Returns a mapping of the tools used for the given criterion.
+
         :param tools: List of Tool objects
         :param criterion_name: Name of the criterion
         :param criterion_repo: Repo data for the criterion
@@ -396,14 +398,16 @@ class ProcessExtraData(object):
             return cmd_list
 
         criterion_repo['commands'] = []
+        tool_map = {} # tool DB data
         for tool in tools:
+            tool_name = tool['name']
             # special treatment for 'commands' builder
             commands_builder = False
-            if tool['name'] in ['commands']:
+            if tool_name in ['commands']:
                 commands_builder = True
             # when existing, use executable instead of name
             # if executable exists but empty, then no name & no executable (commands)
-            cmd_list = [tool['name']]
+            cmd_list = [tool_name]
             if 'executable' in list(tool):
                 if not tool['executable']:
                     cmd_list = []
@@ -423,6 +427,7 @@ class ProcessExtraData(object):
 
         config_json['sqa_criteria'][criterion_name]['repos'] = criterion_repo
 
+        return {criterion_name: tool_map}
 
     @staticmethod
     def set_config_when_clause(config_json):
@@ -520,6 +525,7 @@ def process_extra_data(config_json, composer_json):
     # - Array-to-Object conversion for repos
     # - Set 'context' to the appropriate checkout path for building the Dockerfile
     commands_script_list = []
+    tool_criteria_map = {}
     for criterion_name, criterion_data in config_json['sqa_criteria'].items():
         criterion_data_copy = copy.deepcopy(criterion_data)
         if 'repos' in criterion_data.keys():
@@ -536,8 +542,9 @@ def process_extra_data(config_json, composer_json):
                             tools, criterion_name, repo, project_repos_mapping, config_json, composer_json)
                     service_name = ProcessExtraData.set_build_context(
                         tools, criterion_name, repo, project_repos_mapping, config_json, composer_json, service_name=service_name)
-                    ProcessExtraData.set_tool_execution_command(
+                    tool_criterion_map = ProcessExtraData.set_tool_execution_command(
                         tools, criterion_name, repo, config_json)
+                    tool_criteria_map.update(tool_criterion_map)
                 try:
                     repo_url = repo.pop('repo_url')
                     if not repo_url:
@@ -622,7 +629,7 @@ def process_extra_data(config_json, composer_json):
     # - Multiple stages/Jenkins when clause
     config_data_list = ProcessExtraData.set_config_when_clause(config_json)
 
-    return (config_data_list, composer_data, commands_script_list)
+    return (config_data_list, composer_data, commands_script_list, tool_criteria_map)
 
 
 def has_this_repo(config_data_list):
