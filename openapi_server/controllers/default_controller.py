@@ -596,9 +596,11 @@ async def get_pipeline_status(request: web.Request, pipeline_id) -> web.Response
     return web.json_response(r, status=200)
 
 
-async def _validate_output(stdout):
+async def _validate_output(tool, stdout):
     """Validates the stdout using the sqaaas-reporting tool.
 
+    :param tool: Tool name
+    :type tool: str
     :param stdout: Tool output
     :type stdout: str
 
