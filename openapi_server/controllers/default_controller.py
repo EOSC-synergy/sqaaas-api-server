@@ -606,6 +606,24 @@ async def _validate_output(stdout):
     return NotImplementedError
 
 
+async def _get_tool_from_command(tool_criterion_map, stdout_command):
+    """Returns the matching tool according to the given command.
+
+    :param tool_criterion_map: Dict indexed by tool that contains the commands executed
+    :type tool_criterion_map: dict
+    :param stdout_command: Tool command run by the pipeline.
+    :type stdout_command: str
+
+    """
+    matched_tool = None
+    for tool_name, tool_cmd in tool_criterion_map.items():
+        if stdout_command.find(tool_cmd) != -1:
+            logger.debug('Matching tool <%s> found for stdout command <%>' % (tool_name, tool_cmd))
+            matched_tool = tool_name
+            break
+    return None
+
+
 @ctls_utils.debug_request
 @ctls_utils.validate_request
 async def get_pipeline_output(request: web.Request, pipeline_id, validate=None) -> web.Response:
@@ -636,9 +654,14 @@ async def get_pipeline_output(request: web.Request, pipeline_id, validate=None) 
     )
 
     if validate:
-        for criterion_id, criterion_data in stage_data.items():
-            logger.debug('Validating output from criterion <%s>' % criterion_id)
-            _validate_output(criterion_data['stdout_text'])
+        for criterion_name, criterion_data in stage_data.items():
+            tool_criterion_map = pipeline_data['tools'][criterion_name]
+            matched_tool = _get_tool_from_command(
+                tool_criterion_map,
+                criterion_data['stdout_command']
+            )
+            logger.debug('Validating output from criterion <%s>' % criterion_name)
+            _validate_output(matched_tool, criterion_data['stdout_text'])
 
     return web.json_response(stage_data, status=200)
 
