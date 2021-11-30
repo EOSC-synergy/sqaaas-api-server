@@ -96,7 +96,7 @@ class JePLUtils(object):
         """
         # Extract & process those data that are not directly translated into
         # the composer and JePL config
-        config_data_list, composer_data, commands_script_list = ctls_utils.process_extra_data(
+        config_data_list, composer_data, commands_script_list, tool_criteria_map = ctls_utils.process_extra_data(
             config_json,
             composer_json,
             report_to_stdout=report_to_stdout
@@ -116,7 +116,7 @@ class JePLUtils(object):
             'composer', [composer_data])[0]
         jenkinsfile = cls.get_jenkinsfile(config_data_list)
 
-        return (config_data_list, composer_data, jenkinsfile, commands_script_list)
+        return (config_data_list, composer_data, jenkinsfile, commands_script_list, tool_criteria_map)
 
     def get_files(
         file_type,
