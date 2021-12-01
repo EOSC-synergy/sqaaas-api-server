@@ -666,6 +666,8 @@ async def get_pipeline_output(request: web.Request, pipeline_id, validate=None) 
     )
 
     if validate:
+        logger.debug('Output validation has been requested')
+        output_data = {}
         for criterion_name, criterion_data in stage_data.items():
             tool_criterion_map = pipeline_data['tools'][criterion_name]
             matched_tool = await _get_tool_from_command(
@@ -674,8 +676,11 @@ async def get_pipeline_output(request: web.Request, pipeline_id, validate=None) 
             )
             logger.debug('Validating output from criterion <%s>' % criterion_name)
             out = await _run_validation(matched_tool, criterion_data['stdout_text'])
+            output_data[criterion_name] = out
+    else:
+        output_data = stage_data
 
-    return web.json_response(stage_data, status=200)
+    return web.json_response(output_data, status=200)
 
 
 @ctls_utils.debug_request
