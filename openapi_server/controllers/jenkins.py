@@ -105,3 +105,63 @@ class JenkinsUtils(object):
         self.logger.debug('Deleting Jenkins job: %s' % full_job_name)
         self.server.delete_job(full_job_name)
         self.logger.debug('Jenkins job <%s> successfully deleted' % full_job_name)
+
+    def get_stage_data(self, job_name, build_no):
+        """Get the info from the pipeline stages.
+
+        Via Pipeline Stage View API at https://github.com/jenkinsci/pipeline-stage-view-plugin
+
+        :param job_name: job name including folder/s, name & branch
+        :param build_no: build number.
+        """
+        items = list(map('/job/'.__add__, job_name.split('/')))
+        jenkins_job_name = ''.join(items)
+
+        def do_request(path, append=False):
+            if append:
+                target_path = '%s/%s/%s' % (jenkins_job_name, build_no, path)
+            else:
+                target_path = path
+            self.logger.debug('Request to <%s>' % target_path)
+            r = requests.post(
+                urljoin(self.endpoint, target_path),
+                auth=(self.access_user, self.access_token),
+                verify=False
+            )
+            return r.json()
+
+        def process_stdout(stdout):
+            lines = stdout.split('\n')
+            cmd = lines.pop(0)
+            if not cmd.startswith('+'):
+                self.logger.warn((
+                    'Could not identify the command (identified by \'+\' '
+                    'prefix) in string <%s>. No change done to stdout' % cmd
+                ))
+                lines.insert(0, cmd)
+                cmd = ''
+            output_text = '\n'.join(lines)
+            return (cmd, output_text)
+
+        data = do_request('/wfapi/describe', append=True)
+        stage_name_prefix = 'QC.'
+        qc_stages = [stage for stage in data['stages'] if stage['name'].startswith(stage_name_prefix)]
+        stage_describe_endpoints = [stage['_links']['self']['href'] for stage in qc_stages]
+        self.logger.info('Found %s stage/s that run quality criteria' % len(stage_describe_endpoints))
+
+        criteria_data = {}
+        for qa_stage in stage_describe_endpoints:
+            data = do_request(qa_stage)
+            name = data['name'].split()[0]
+            status = data['status']
+            log_endpoint = data['stageFlowNodes'][0]['_links']['log']['href']
+            data = do_request(log_endpoint)
+            stdout = data['text']
+            cmd, output_text = process_stdout(stdout)
+            criteria_data[name] = {
+                'status': status,
+                'stdout_command': cmd,
+                'stdout_text': output_text
+            }
+
+        return criteria_data

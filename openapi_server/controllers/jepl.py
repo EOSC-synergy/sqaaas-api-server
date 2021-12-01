@@ -85,19 +85,22 @@ class JePLUtils(object):
         return template.render(config_data_list=config_data_list)
 
     @classmethod
-    def compose_files(cls, config_json, composer_json):
+    def compose_files(cls, config_json, composer_json, report_to_stdout=False):
         """Composes the JePL file structure from the raw JSONs obtained
         through the HTTP request.
 
         :param cls: Current class (from classmethod)
         :param config_json: JePL's config as received through the API request (JSON payload)
         :param composer_json: Composer content as received throught the API request (JSON payload).
+        :param report_to_stdout: Flag to indicate whether the pipeline shall print via via stdout the reports produced by the tools (required by QAA module)
         """
         # Extract & process those data that are not directly translated into
         # the composer and JePL config
-        config_data_list, composer_data, commands_script_list = ctls_utils.process_extra_data(
+        config_data_list, composer_data, commands_script_list, tool_criteria_map = ctls_utils.process_extra_data(
             config_json,
-            composer_json)
+            composer_json,
+            report_to_stdout=report_to_stdout
+        )
 
         # Convert JSON to YAML
         for elem in config_data_list:
@@ -113,7 +116,7 @@ class JePLUtils(object):
             'composer', [composer_data])[0]
         jenkinsfile = cls.get_jenkinsfile(config_data_list)
 
-        return (config_data_list, composer_data, jenkinsfile, commands_script_list)
+        return (config_data_list, composer_data, jenkinsfile, commands_script_list, tool_criteria_map)
 
     def get_files(
         file_type,
@@ -246,6 +249,8 @@ class JePLUtils(object):
         if image:
             srv_data['image'] = {'name': image}
         if dockerfile:
+            # Add './' when relative path. If not, Docker may confuse it with a remote URL
+            context = './' + context
             srv_data['build'] = {
                 'context': context,
                 'dockerfile': dockerfile

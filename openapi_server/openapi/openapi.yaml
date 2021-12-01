@@ -62,6 +62,17 @@ paths:
       description: |
         Provides a ready-to-use Jenkins pipeline based on the v2 series of jenkins-pipeline-library.
       operationId: add_pipeline
+      parameters:
+      - description: Flag to indicate whether the pipeline shall print via via stdout
+          the reports produced by the tools (required by QAA module)
+        explode: true
+        in: query
+        name: report_to_stdout
+        required: false
+        schema:
+          default: false
+          type: boolean
+        style: form
       requestBody:
         content:
           application/json:
@@ -155,6 +166,16 @@ paths:
         schema:
           type: string
         style: simple
+      - description: Flag to indicate whether the pipeline shall print via via stdout
+          the reports produced by the tools (required by QAA module)
+        explode: true
+        in: query
+        name: report_to_stdout
+        required: false
+        schema:
+          default: false
+          type: boolean
+        style: form
       requestBody:
         content:
           application/json:
@@ -211,7 +232,7 @@ paths:
             application/json:
               schema:
                 items:
-                  $ref: '#/components/schemas/Badge'
+                  $ref: '#/components/schemas/CriterionOutput'
                 type: array
           description: Successful operation
         "400":
@@ -485,6 +506,47 @@ paths:
         "404":
           description: Pipeline not found
       summary: Gets Jenkins configuration for the given pipeline.
+      x-openapi-router-controller: openapi_server.controllers.default_controller
+  /pipeline/{pipeline_id}/output:
+    get:
+      description: |
+        Returns the console output from the pipeline execution.
+      operationId: get_pipeline_output
+      parameters:
+      - description: ID of the pipeline to get
+        explode: false
+        in: path
+        name: pipeline_id
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: Flag to indicate whether the returned output shall be validate
+          using sqaaas-reporting tool
+        explode: true
+        in: query
+        name: validate
+        required: false
+        schema:
+          default: false
+          type: boolean
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/CriterionOutput'
+                type: array
+          description: Successful operation
+        "400":
+          description: Invalid pipeline ID supplied
+        "404":
+          description: Pipeline not found
+        "422":
+          description: Pipeline has not been executed
+      summary: Get output from pipeline execution
       x-openapi-router-controller: openapi_server.controllers.default_controller
   /pipeline/{pipeline_id}/pull_request:
     post:
@@ -1443,6 +1505,20 @@ components:
       - upstream_reason
       - upstream_status
       title: UpstreamError
+      type: object
+    CriterionOutput:
+      example:
+        stdout: stdout
+        id: QC.Sty
+      properties:
+        id:
+          example: QC.Sty
+          title: id
+          type: string
+        stdout:
+          title: stdout
+          type: string
+      title: CriterionOutput
       type: object
     Badge:
       example:

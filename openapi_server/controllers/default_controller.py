@@ -25,6 +25,8 @@ from openapi_server.controllers import utils as ctls_utils
 from openapi_server.exception import SQAaaSAPIException
 from openapi_server.models.inline_object import InlineObject
 
+from report2sqaaas import utils as r2s_utils
+
 
 SUPPORTED_PLATFORMS = {
     'github': 'https://github.com'
@@ -73,13 +75,15 @@ badgr_utils = BadgrUtils(BADGR_URL, BADGR_USER, badgr_token, BADGR_ISSUER, BADGR
 
 @ctls_utils.debug_request
 @ctls_utils.extended_data_validation
-async def add_pipeline(request: web.Request, body) -> web.Response:
+async def add_pipeline(request: web.Request, body, report_to_stdout=None) -> web.Response:
     """Creates a pipeline.
 
     Provides a ready-to-use Jenkins pipeline based on the v2 series of jenkins-pipeline-library.
 
     :param body:
     :type body: dict | bytes
+    :param report_to_stdout: Flag to indicate whether the pipeline shall print via via stdout the reports produced by the tools (required by QAA module)
+    :type report_to_stdout: bool
 
     """
     pipeline_id = str(uuid.uuid4())
@@ -93,7 +97,8 @@ async def add_pipeline(request: web.Request, body) -> web.Response:
         pipeline_id,
         pipeline_repo,
         pipeline_repo_url,
-        body
+        body,
+        report_to_stdout=report_to_stdout
     )
 
     r = {'id': pipeline_id}
@@ -103,13 +108,15 @@ async def add_pipeline(request: web.Request, body) -> web.Response:
 @ctls_utils.debug_request
 @ctls_utils.extended_data_validation
 @ctls_utils.validate_request
-async def update_pipeline_by_id(request: web.Request, pipeline_id, body) -> web.Response:
+async def update_pipeline_by_id(request: web.Request, pipeline_id, body, report_to_stdout=None) -> web.Response:
     """Update pipeline by ID
 
     :param pipeline_id: ID of the pipeline to get
     :type pipeline_id: str
     :param body:
     :type body: dict | bytes
+    :param report_to_stdout: Flag to indicate whether the pipeline shall print via via stdout the reports produced by the tools (required by QAA module)
+    :type report_to_stdout: bool
 
     """
     pipeline_data = db.get_entry(pipeline_id)
@@ -137,7 +144,8 @@ async def update_pipeline_by_id(request: web.Request, pipeline_id, body) -> web.
             pipeline_id,
             pipeline_repo,
             pipeline_repo_url,
-            body
+            body,
+            report_to_stdout=report_to_stdout
         )
     else:
         logger.debug('Not updating the pipeline: no difference found')
@@ -457,33 +465,28 @@ async def run_pipeline(request: web.Request, pipeline_id, issue_badge=False, rep
     return web.Response(status=204, reason=reason, text=reason)
 
 
-@ctls_utils.debug_request
-@ctls_utils.validate_request
-async def get_pipeline_status(request: web.Request, pipeline_id) -> web.Response:
-    """Get pipeline status.
-
-    Obtains the build URL in Jenkins for the given pipeline.
+async def _update_status(pipeline_id, pipeline_data):
+    """Updates the build status of a pipeline.
 
     :param pipeline_id: ID of the pipeline to get
     :type pipeline_id: str
+    :param pipeline_data: Pipeline's data from DB
+    :type pipeline_data: dict
 
     """
-    pipeline_data = db.get_entry(pipeline_id)
-    pipeline_repo = pipeline_data['pipeline_repo']
-
     if 'jenkins' not in pipeline_data.keys():
-        _reason = 'Could not retrieve Jenkins job information: Pipeline has not yet ran'
+        _reason = 'Could not retrieve Jenkins job information: Pipeline <%s> has not yet ran' % pipeline_id
         logger.error(_reason)
-        return web.Response(status=422, reason=_reason, text=_reason)
+        raise SQAaaSAPIException(422, _reason)
 
     jenkins_info = pipeline_data['jenkins']
     build_info = jenkins_info['build_info']
 
+    build_url = build_info['url']
+    build_status = build_info.get('status', None)
     jk_job_name = jenkins_info['job_name']
     build_item_no = build_info['item_number']
     build_no = build_info['number']
-    build_url = build_info['url']
-    build_status = build_info.get('status', None)
 
     if jenkins_info['scan_org_wait']:
         logger.debug('scan_org_wait still enabled for pipeline job: %s' % jk_job_name)
@@ -513,7 +516,10 @@ async def get_pipeline_status(request: web.Request, pipeline_id) -> web.Response
                 build_no = build_data['number']
                 build_url = build_data['url']
                 build_status = 'EXECUTING'
-                logger.info('Jenkins job build URL obtained for repository <%s>: %s' % (pipeline_repo, build_url))
+                logger.info('Jenkins job build URL obtained for repository <%s>: %s' % (
+                    pipeline_data['pipeline_repo'],
+                    build_url
+                ))
     else:
         _status = jk_utils.get_build_info(
             jk_job_name,
@@ -562,12 +568,120 @@ async def get_pipeline_status(request: web.Request, pipeline_id) -> web.Response
         badge_data=badge_data
     )
 
+    return (build_url, build_status, badge_data)
+
+
+@ctls_utils.debug_request
+@ctls_utils.validate_request
+async def get_pipeline_status(request: web.Request, pipeline_id) -> web.Response:
+    """Get pipeline status.
+
+    Obtains the build URL in Jenkins for the given pipeline.
+
+    :param pipeline_id: ID of the pipeline to get
+    :type pipeline_id: str
+
+    """
+    pipeline_data = db.get_entry(pipeline_id)
+
+    try:
+        build_url, build_status, badge_data = await _update_status(
+            pipeline_id, pipeline_data)
+    except SQAaaSAPIException as e:
+        return web.Response(status=e.http_code, reason=e.message, text=e.message)
+
     r = {
         'build_url': build_url,
         'build_status': build_status,
         'openbadge_id': badge_data.get('openBadgeId', None)
     }
     return web.json_response(r, status=200)
+
+
+async def _run_validation(tool, stdout):
+    """Validates the stdout using the sqaaas-reporting tool.
+
+    :param tool: Tool name
+    :type tool: str
+    :param stdout: Tool output
+    :type stdout: str
+
+    """
+    allowed_validators = r2s_utils.get_validators()
+    # NOTE tool name MUST match validator name!
+    if tool not in allowed_validators:
+        logger.error()
+        _reason = 'Could not find an output validator for tool <%s> (found: %s)' % (tool, allowed_validators)
+        logger.error(_reason)
+        raise SQAaaSAPIException(422, _reason)
+    validator = r2s_utils.get_validator(tool)
+    return validator.driver.validate(stdout)
+
+
+async def _get_tool_from_command(tool_criterion_map, stdout_command):
+    """Returns the matching tool according to the given command.
+
+    :param tool_criterion_map: Dict indexed by tool that contains the commands executed
+    :type tool_criterion_map: dict
+    :param stdout_command: Tool command run by the pipeline.
+    :type stdout_command: str
+
+    """
+    matched_tool = None
+    for tool_name, tool_cmd in tool_criterion_map.items():
+        if stdout_command.find(tool_cmd) != -1:
+            matched_tool = tool_name
+            logger.debug('Matching tool <%s> found for stdout command <%s>' % (matched_tool, tool_cmd))
+            break
+    return matched_tool
+
+
+@ctls_utils.debug_request
+@ctls_utils.validate_request
+async def get_pipeline_output(request: web.Request, pipeline_id, validate=None) -> web.Response:
+    """Get output from pipeline execution
+
+    Returns the console output from the pipeline execution.
+
+    :param pipeline_id: ID of the pipeline to get
+    :type pipeline_id: str
+    :param validate: Flag to indicate whether the returned output shall be validate using sqaaas-reporting tool
+    :type validate: bool
+
+    """
+    pipeline_data = db.get_entry(pipeline_id)
+
+    try:
+        build_url, build_status, badge_data = await _update_status(
+            pipeline_id, pipeline_data)
+    except SQAaaSAPIException as e:
+        return web.Response(status=e.http_code, reason=e.message, text=e.message)
+
+    jenkins_info = pipeline_data['jenkins']
+    build_info = jenkins_info['build_info']
+
+    stage_data = jk_utils.get_stage_data(
+        jenkins_info['job_name'],
+        build_info['number']
+    )
+
+    if validate:
+        logger.debug('Output validation has been requested')
+        output_data = {}
+        for criterion_name, criterion_data in stage_data.items():
+            output_data[criterion_name] = criterion_data
+            tool_criterion_map = pipeline_data['tools'][criterion_name]
+            matched_tool = await _get_tool_from_command(
+                tool_criterion_map,
+                criterion_data['stdout_command']
+            )
+            logger.debug('Validating output from criterion <%s>' % criterion_name)
+            out = await _run_validation(matched_tool, criterion_data['stdout_text'])
+            output_data[criterion_name]['validation'] = out
+    else:
+        output_data = stage_data
+
+    return web.json_response(output_data, status=200)
 
 
 @ctls_utils.debug_request

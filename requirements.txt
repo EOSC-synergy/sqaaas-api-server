@@ -12,3 +12,8 @@ python-jenkins
 deepdiff
 namegenerator
 GitPython
+stevedore
+# report2sqaaas == 1.0.0
+git+https://github.com/EOSC-synergy/sqaaas-reporting@main#egg=report2sqaaas
+# report2sqaaas-plugin-licensee = 1.0.0
+git+https://github.com/EOSC-synergy/sqaaas-reporting-plugins@main#egg=report2sqaaas-plugin-licensee&subdirectory=qc_lic_licensee
