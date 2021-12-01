@@ -610,7 +610,6 @@ async def _run_validation(tool, stdout):
     allowed_validators = r2s_utils.get_validators()
     # NOTE tool name MUST match validator name!
     if tool not in allowed_validators:
-        logger.error()
         _reason = 'Could not find an output validator for tool <%s> (found: %s)' % (tool, allowed_validators)
         logger.error(_reason)
         raise SQAaaSAPIException(422, _reason)
