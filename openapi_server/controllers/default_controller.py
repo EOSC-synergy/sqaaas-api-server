@@ -51,7 +51,7 @@ BADGR_USER = config.get_badge('user')
 BADGR_ISSUER = config.get_badge('issuer')
 BADGR_BADGECLASS = config.get_badge('badgeclass')
 
-logger = logging.getLogger('sqaaas_api.controller')
+logger = logging.getLogger('sqaaas.api.controller')
 
 # Instance of code repo backend object
 with open(TOKEN_GH_FILE,'r') as f:

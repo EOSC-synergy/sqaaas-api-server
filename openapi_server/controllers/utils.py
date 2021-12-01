@@ -21,7 +21,7 @@ from github.GithubException import UnknownObjectException
 from jenkins import JenkinsException
 
 
-logger = logging.getLogger('sqaaas_api.controller')
+logger = logging.getLogger('sqaaas.api.controller')
 
 tooling_repo_url = config.get(
     'tooling_repo_url',

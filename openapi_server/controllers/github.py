@@ -16,7 +16,7 @@ class GitHubUtils(object):
         :param access_token: GitHub's access token
         """
         self.client = Github(access_token)
-        self.logger = logging.getLogger('sqaaas_api.github')
+        self.logger = logging.getLogger('sqaaas.api.github')
 
     def get_repo_content(self, repo_name, branch, path='.'):
         """Gets the repository content from the given branch.

@@ -29,7 +29,7 @@ class BadgrUtils(object):
         :param issuer_name: String that corresponds to the Issuer name (as it appears in Badgr web)
         :param badgeclass_name: String that corresponds to the BadgeClass name (as it appears in Badgr web)
         """
-        self.logger = logging.getLogger('sqaaas_api.badgr')
+        self.logger = logging.getLogger('sqaaas.api.badgr')
         self.endpoint = endpoint
         self.issuer_name = issuer_name
         self.badgeclass_name = badgeclass_name

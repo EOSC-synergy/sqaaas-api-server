@@ -4,7 +4,7 @@ import sys
 from configparser import ConfigParser
 
 
-logger = logging.getLogger('sqaaas_api.config')
+logger = logging.getLogger('sqaaas.api.config')
 
 BADGE_SECTION = 'badgr'
 CI_SECTION = 'jenkins'

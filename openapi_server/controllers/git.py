@@ -23,7 +23,7 @@ class GitUtils(object):
         :param access_token: Access token to access the remote Git repository
         """
         self.access_token = access_token
-        self.logger = logging.getLogger('sqaaas_api.git')
+        self.logger = logging.getLogger('sqaaas.api.git')
 
     def setup_env(self, dirpath):
         """Setups the environment for handling remote repositories.

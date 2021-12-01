@@ -7,7 +7,7 @@ from jinja2 import Environment, PackageLoader, select_autoescape
 from openapi_server.controllers import utils as ctls_utils
 
 
-logger = logging.getLogger('sqaaas_api.jepl')
+logger = logging.getLogger('sqaaas.api.jepl')
 
 
 class JePLUtils(object):

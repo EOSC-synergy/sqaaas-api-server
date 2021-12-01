@@ -10,7 +10,7 @@ from openapi_server.controllers.jepl import JePLUtils
 
 DB_FILE = pathlib.Path(
     config.get('db_file', fallback='/sqaaas/sqaaas.json'))
-logger = logging.getLogger('sqaaas_api.controller.db')
+logger = logging.getLogger('sqaaas.api.controller.db')
 
 
 def load_content():

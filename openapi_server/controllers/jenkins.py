@@ -27,7 +27,7 @@ class JenkinsUtils(object):
             self.endpoint,
             username = self.access_user,
             password = self.access_token)
-        self.logger = logging.getLogger('sqaaas_api.jenkins')
+        self.logger = logging.getLogger('sqaaas.api.jenkins')
 
     @staticmethod
     def format_job_name(job_name):
