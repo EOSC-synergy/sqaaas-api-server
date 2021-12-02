@@ -653,32 +653,32 @@ async def get_pipeline_output(request: web.Request, pipeline_id, validate=None) 
     try:
         build_url, build_status, badge_data = await _update_status(
             pipeline_id, pipeline_data)
+
+        jenkins_info = pipeline_data['jenkins']
+        build_info = jenkins_info['build_info']
+
+        stage_data = jk_utils.get_stage_data(
+            jenkins_info['job_name'],
+            build_info['number']
+        )
+
+        if validate:
+            logger.debug('Output validation has been requested')
+            output_data = {}
+            for criterion_name, criterion_data in stage_data.items():
+                output_data[criterion_name] = criterion_data
+                tool_criterion_map = pipeline_data['tools'][criterion_name]
+                matched_tool = await _get_tool_from_command(
+                    tool_criterion_map,
+                    criterion_data['stdout_command']
+                )
+                logger.debug('Validating output from criterion <%s>' % criterion_name)
+                out = await _run_validation(matched_tool, criterion_data['stdout_text'])
+                output_data[criterion_name]['validation'] = out
+        else:
+            output_data = stage_data
     except SQAaaSAPIException as e:
         return web.Response(status=e.http_code, reason=e.message, text=e.message)
-
-    jenkins_info = pipeline_data['jenkins']
-    build_info = jenkins_info['build_info']
-
-    stage_data = jk_utils.get_stage_data(
-        jenkins_info['job_name'],
-        build_info['number']
-    )
-
-    if validate:
-        logger.debug('Output validation has been requested')
-        output_data = {}
-        for criterion_name, criterion_data in stage_data.items():
-            output_data[criterion_name] = criterion_data
-            tool_criterion_map = pipeline_data['tools'][criterion_name]
-            matched_tool = await _get_tool_from_command(
-                tool_criterion_map,
-                criterion_data['stdout_command']
-            )
-            logger.debug('Validating output from criterion <%s>' % criterion_name)
-            out = await _run_validation(matched_tool, criterion_data['stdout_text'])
-            output_data[criterion_name]['validation'] = out
-    else:
-        output_data = stage_data
 
     return web.json_response(output_data, status=200)
 
