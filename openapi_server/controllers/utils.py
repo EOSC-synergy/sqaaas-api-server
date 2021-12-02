@@ -427,8 +427,8 @@ class ProcessExtraData(object):
             if commands_builder:
                 cmd = cmd_list
             else:
-                cmd = ' '.join(cmd_list)
-            criterion_repo['commands'].append(cmd)
+                cmd = [' '.join(cmd_list)]
+            criterion_repo['commands'].extend(cmd)
             if tool in list(tool_map):
                 tool_map[tool_name].extend(cmd)
             else:
