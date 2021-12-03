@@ -1028,13 +1028,9 @@ async def _get_criterion_tooling(criterion_id, metadata_json):
     return criterion_data_list
 
 
-async def get_criteria(request: web.Request, criterion_id=None) -> web.Response:
-    """Returns data about criteria.
+async def _load_tooling():
+    """Loads tooling data from configured (remote) repository."""
 
-    :param criterion_id: Get data from a specific criterion
-    :type criterion_id: str
-
-    """
     tooling_repo_url = config.get(
         'tooling_repo_url',
         fallback='https://github.com/EOSC-synergy/sqaaas-tooling'
@@ -1063,6 +1059,18 @@ async def get_criteria(request: web.Request, criterion_id=None) -> web.Response:
     else:
         raise NotImplementedError(('Getting tooling metadata from a non-Github '
                                    'repo is not currently supported'))
+
+    return tooling_metadata_json
+
+
+async def get_criteria(request: web.Request, criterion_id=None) -> web.Response:
+    """Returns data about criteria.
+
+    :param criterion_id: Get data from a specific criterion
+    :type criterion_id: str
+
+    """
+    tooling_metadata_json = await _load_tooling()
 
     r = []
     criteria_id_list = list(tooling_metadata_json['criteria'])
