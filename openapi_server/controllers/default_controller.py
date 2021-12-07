@@ -607,14 +607,30 @@ async def _run_validation(tool, stdout):
     :type stdout: str
 
     """
+    def _get_tool_reporting_data(tool):
+        for tool_type, tools in tooling_metadata_json['tools'].items():
+            if tool in tools.keys():
+                data = tools[tool]['reporting']
+                logger.debug('Found reporting data in tooling for tool <%s>' % tool)
+                return data
+
     allowed_validators = r2s_utils.get_validators()
-    # NOTE tool name MUST match validator name!
-    if tool not in allowed_validators:
-        _reason = 'Could not find an output validator for tool <%s> (found: %s)' % (tool, allowed_validators)
+    tooling_metadata_json = await _load_tooling()
+    try:
+        reporting_data = _get_tool_reporting_data(tool)
+    except KeyError as e:
+        _reason = 'Cannot get reporting data for tool <%s>: %s' % (tool, e)
         logger.error(_reason)
         raise SQAaaSAPIException(422, _reason)
-    validator = r2s_utils.get_validator(tool)
-    return validator.driver.validate(stdout)
+   
+    reporting_data['stdout'] = stdout
+    validator = reporting_data['validator']
+    if validator not in allowed_validators:
+        _reason = 'Could not find report2sqaaas validator plugin <%s> (found: %s)' % (validator, allowed_validators)
+        logger.error(_reason)
+        raise SQAaaSAPIException(422, _reason)
+    validator = r2s_utils.get_validator(reporting_data)
+    return validator.driver.validate()
 
 
 async def _get_tool_from_command(tool_criterion_map, stdout_command):
@@ -627,7 +643,9 @@ async def _get_tool_from_command(tool_criterion_map, stdout_command):
 
     """
     matched_tool = None
-    for tool_name, tool_cmd in tool_criterion_map.items():
+    for tool_name, tool_cmd_list in tool_criterion_map.items():
+        # FIXME For the time being, let's suppose only one tool_cmd per tool_name
+        tool_cmd = tool_cmd_list[0]
         if stdout_command.find(tool_cmd) != -1:
             matched_tool = tool_name
             logger.debug('Matching tool <%s> found for stdout command <%s>' % (matched_tool, tool_cmd))
