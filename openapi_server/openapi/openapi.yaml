@@ -101,6 +101,39 @@ paths:
       summary: Creates a pipeline.
       x-openapi-router-controller: openapi_server.controllers.default_controller
       x-codegen-request-body-name: body
+  /pipeline/assessment:
+    post:
+      description: |
+        Creates a pipeline for assessment (QAA module).
+      operationId: add_pipeline_for_assessment
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Pipeline_assessment'
+        required: true
+        x-body-name: body
+      responses:
+        "201":
+          content:
+            application/json:
+              example:
+                id: dd7d8481-81a3-407f-95f0-a2f1cb382a4b
+              schema:
+                $ref: '#/components/schemas/inline_response_201'
+          description: Created
+          links:
+            get_pipeline_by_pipeline_id:
+              description: |
+                The `id` value returned in the response can be used as the `pipeline_id` parameter in `GET /pipeline/{pipeline_id}`.
+              operationId: get_pipeline_by_id
+              parameters:
+                pipeline_id: $response.body#/id
+        "400":
+          description: Request failed validation
+      summary: Creates a pipeline for assessment (QAA module).
+      x-openapi-router-controller: openapi_server.controllers.default_controller
+      x-codegen-request-body-name: body
   /pipeline/{pipeline_id}:
     delete:
       operationId: delete_pipeline_by_id
@@ -1492,6 +1525,17 @@ components:
         jenkinsfile_data:
           $ref: '#/components/schemas/JePL_jenkinsfile'
       title: Pipeline
+      type: object
+    Pipeline_assessment:
+      properties:
+        name:
+          example: sqaaas-api-spec
+          format: '[A-Za-z0-9_.-]'
+          type: string
+        url:
+          example: https://github.com/eosc-synergy/sqaaas-api-spec
+          format: uri
+          type: string
       type: object
     UpstreamError:
       properties:

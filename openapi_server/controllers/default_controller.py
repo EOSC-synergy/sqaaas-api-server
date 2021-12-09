@@ -105,6 +105,18 @@ async def add_pipeline(request: web.Request, body, report_to_stdout=None) -> web
     return web.json_response(r, status=201)
 
 
+async def add_pipeline_for_assessment(request: web.Request, body) -> web.Response:
+    """Creates a pipeline for assessment (QAA module).
+
+    Creates a pipeline for assessment (QAA module).
+
+    :param body:
+    :type body: dict | bytes
+
+    """
+    return web.Response(status=200)
+
+
 @ctls_utils.debug_request
 @ctls_utils.extended_data_validation
 @ctls_utils.validate_request
