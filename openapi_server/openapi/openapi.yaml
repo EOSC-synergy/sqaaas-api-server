@@ -536,9 +536,7 @@ paths:
           content:
             application/json:
               schema:
-                items:
-                  $ref: '#/components/schemas/CriterionOutput'
-                type: array
+                $ref: '#/components/schemas/CriterionOutput'
           description: Successful operation
         "400":
           description: Invalid pipeline ID supplied
@@ -1507,17 +1505,25 @@ components:
       title: UpstreamError
       type: object
     CriterionOutput:
-      example:
-        stdout: stdout
-        id: QC.Sty
-      properties:
-        id:
-          example: QC.Sty
-          title: id
-          type: string
-        stdout:
-          title: stdout
-          type: string
+      additionalProperties:
+        properties:
+          status:
+            enum:
+            - SUCCESS
+            - FAILED
+            type: string
+          stdout_command:
+            type: string
+          stdout_text:
+            type: string
+          validation:
+            properties:
+              valid:
+                type: boolean
+              data_unstructured:
+                type: object
+            type: object
+        type: object
       title: CriterionOutput
       type: object
     Badge:
