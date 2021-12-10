@@ -116,8 +116,7 @@ async def add_pipeline_for_assessment(request: web.Request, body) -> web.Respons
     """
     #0 Get criteria data from tooling
     tooling_metadata_json = await _get_tooling_metadata()
-    criteria_data_list = await _sort_tooling_by_criteria(
-        tooling_metadata_json, criteria_id_list=criteria_id_list)
+    criteria_data_list = await _sort_tooling_by_criteria(tooling_metadata_json)
 
     #1 Load request payload (same as passed to POST /pipeline) from templates
     env = Environment(
