@@ -123,11 +123,16 @@ async def add_pipeline_for_assessment(request: web.Request, body) -> web.Respons
         loader=PackageLoader('openapi_server', 'templates')
     )
     template = env.get_template('pipeline_assessment.json')
-    json_rendered = template.render({
-        'repo_code': body['repo_code'],
-        'repo_docs': body.get('repo_docs', {}),
-        'criteria_data_list': criteria_data_list
-    })
+    # NOTE Considering ONLY THE FIRST REPO (code & docs) for the time being
+    repo_code = body['repo_code'][0]
+    repo_docs = body.get('repo_docs', [])
+    if repo_docs:
+        repo_docs = repo_docs[0]
+    json_rendered = template.render(
+        repo_code=repo_code,
+        repo_docs=repo_docs,
+        criteria_data_list=criteria_data_list
+    )
 
     #2 Load tool data via _get_criterion_tooling() method
 
