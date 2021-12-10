@@ -1057,7 +1057,7 @@ async def _get_tooling_metadata():
         raise NotImplementedError(('Getting tooling metadata from a non-Github '
                                    'repo is not currently supported'))
 
-    returns tooling_metadata_json
+    return tooling_metadata_json
 
 
 async def _get_criterion_tooling(criterion_id, tooling_metadata_json):
