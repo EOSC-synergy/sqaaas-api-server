@@ -114,6 +114,29 @@ async def add_pipeline_for_assessment(request: web.Request, body) -> web.Respons
     :type body: dict | bytes
 
     """
+    #0 Get criteria data from tooling
+    tooling_metadata_json = await _get_tooling_metadata()
+    criteria_data_list = _sort_tooling_by_criterion(
+        tooling_metadata_json, criteria_id_list=criteria_id_list)
+
+    #1 Load request payload (same as passed to POST /pipeline) from templates
+    env = Environment(
+        loader=PackageLoader('openapi_server', 'templates')
+    )
+    template = env.get_template('pipeline_assessment.json')
+    json_rendered = template.render({
+        'repo_code': body['repo_code'],
+        'repo_docs': body.get('repo_docs', {}),
+        'criteria_data_list': criteria_data_list
+    })
+
+    #2 Load tool data via _get_criterion_tooling() method
+
+    #3 Add specific tool data for each criterion
+
+    #4 db.add_entry with the composed JSON as <body>
+
+    # FIXME Return appropriate JSON payload & response status
     return web.Response(status=200)
 
 
