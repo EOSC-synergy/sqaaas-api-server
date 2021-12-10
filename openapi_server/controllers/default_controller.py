@@ -1037,24 +1037,24 @@ async def _get_tooling_metadata():
     returns tooling_metadata_json
 
 
-async def _get_criterion_tooling(criterion_id, metadata_json):
+async def _get_criterion_tooling(criterion_id, tooling_metadata_json):
     """Gets the criterion information as it is returned within the /criteria response.
 
     :param criterion_id: ID of the criterion
     :type criterion_id: str
-    :param metadata_json: JSON with the metadata
-    :type metadata_json: dict
+    :param tooling_metadata_json: JSON with the metadata
+    :type tooling_metadata_json: dict
     """
     try:
-        criterion_data = metadata_json['criteria'][criterion_id]['tools']
+        criterion_data = tooling_metadata_json['criteria'][criterion_id]['tools']
     except Exception as e:
         _reason = 'Cannot find tooling information for criterion <%s> in metadata: %s' % (
-            criterion_id, metadata_json)
+            criterion_id, tooling_metadata_json)
         logger.error(_reason)
         raise SQAaaSAPIException(502, _reason)
 
     # Add default tools
-    default_data = {"default": list(metadata_json["tools"]["default"])}
+    default_data = {"default": list(tooling_metadata_json["tools"]["default"])}
     criterion_data.update(default_data)
 
     criterion_data_list = []
@@ -1064,7 +1064,7 @@ async def _get_criterion_tooling(criterion_id, metadata_json):
             try:
                 d['name'] = tool
                 d['lang'] = lang
-                d.update(metadata_json['tools'][lang][tool])
+                d.update(tooling_metadata_json['tools'][lang][tool])
             except KeyError:
                 logger.warn('Cannot find data for tool <%s> (lang: %s)' % (
                     tool, lang))
@@ -1074,27 +1074,27 @@ async def _get_criterion_tooling(criterion_id, metadata_json):
     return criterion_data_list
 
 
-async def _sort_tooling_by_criteria(metadata_json, criteria_id_list=[]):
+async def _sort_tooling_by_criteria(tooling_metadata_json, criteria_id_list=[]):
     """Sorts out the tooling data by each supported criterion.
 
     Returns a list of tooling data per supported criterion.
 
-    :param metadata_json: JSON with the metadata
-    :type metadata_json: dict
+    :param tooling_metadata_json: JSON with the metadata
+    :type tooling_metadata_json: dict
     :param criteria_id_list: custom set of criteria
     :type criteria_id_list: list
     """
     if criteria_id_list:
         logger.debug('Filtering by criterion <%s>' % criterion_id)
     else:
-        criteria_id_list = list(metadata_json['criteria'])
+        criteria_id_list = list(tooling_metadata_json['criteria'])
         logger.debug('Considering all the supported criteria from tooling <%s>' % criteria_id_list)
 
     criteria_data_list = []
     try:
         for criterion in criteria_id_list:
             tooling_data = await _get_criterion_tooling(
-                criterion, metadata_json)
+                criterion, tooling_metadata_json)
             criteria_data_list.append({'id': criterion, 'tools': tooling_data})
     except SQAaaSAPIException as e:
         return web.Response(status=e.http_code, reason=e.message, text=e.message)
