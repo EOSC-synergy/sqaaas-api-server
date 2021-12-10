@@ -1108,7 +1108,7 @@ async def _sort_tooling_by_criteria(tooling_metadata_json, criteria_id_list=[]):
     :type criteria_id_list: list
     """
     if criteria_id_list:
-        logger.debug('Filtering by criterion <%s>' % criterion_id)
+        logger.debug('Filtering criteria to <%s>' % criteria_id_list)
     else:
         criteria_id_list = list(tooling_metadata_json['criteria'])
         logger.debug('Considering all the supported criteria from tooling <%s>' % criteria_id_list)
