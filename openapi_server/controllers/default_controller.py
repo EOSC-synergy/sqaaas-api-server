@@ -1004,7 +1004,7 @@ async def get_badge(request: web.Request, pipeline_id, share=None) -> web.Respon
 
 
 async def _get_criterion_tooling(criterion_id, metadata_json):
-    """Sorts out the criterion information to be returned in the HTTP response.
+    """Gets the criterion information as it is returned within the /criteria response.
 
     :param criterion_id: ID of the criterion
     :type criterion_id: str
@@ -1038,6 +1038,34 @@ async def _get_criterion_tooling(criterion_id, metadata_json):
                 criterion_data_list.append(d)
 
     return criterion_data_list
+
+
+async def _sort_tooling_by_criteria(metadata_json, criteria_id_list=[]):
+    """Sorts out the tooling data by each supported criterion.
+
+    Returns a list of tooling data per supported criterion.
+
+    :param metadata_json: JSON with the metadata
+    :type metadata_json: dict
+    :param criteria_id_list: custom set of criteria
+    :type criteria_id_list: list
+    """
+    if criteria_id_list:
+        logger.debug('Filtering by criterion <%s>' % criterion_id)
+    else:
+        criteria_id_list = list(metadata_json['criteria'])
+        logger.debug('Considering all the supported criteria from tooling <%s>' % criteria_id_list)
+
+    criteria_data_list = []
+    try:
+        for criterion in criteria_id_list:
+            tooling_data = await _get_criterion_tooling(
+                criterion, metadata_json)
+            criteria_data_list.append({'id': criterion, 'tools': tooling_data})
+    except SQAaaSAPIException as e:
+        return web.Response(status=e.http_code, reason=e.message, text=e.message)
+
+    return criteria_data_list
 
 
 async def get_criteria(request: web.Request, criterion_id=None) -> web.Response:
@@ -1076,17 +1104,10 @@ async def get_criteria(request: web.Request, criterion_id=None) -> web.Response:
         raise NotImplementedError(('Getting tooling metadata from a non-Github '
                                    'repo is not currently supported'))
 
-    r = []
-    criteria_id_list = list(tooling_metadata_json['criteria'])
+    criteria_id_list = []
     if criterion_id:
         criteria_id_list = [criterion_id]
-        logger.debug('Filtering by criterion <%s>' % criterion_id)
-    try:
-        for criterion in criteria_id_list:
-            tooling_data = await _get_criterion_tooling(
-                criterion, tooling_metadata_json)
-            r.append({'id': criterion, 'tools': tooling_data})
-    except SQAaaSAPIException as e:
-        return web.Response(status=e.http_code, reason=e.message, text=e.message)
+    criteria_data_list = await _sort_tooling_by_criterion(
+        tooling_metadata_json, criteria_id_list=criteria_id_list)
 
-    return web.json_response(r, status=200)
+    return web.json_response(criteria_data_list, status=200)
