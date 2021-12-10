@@ -1003,6 +1003,40 @@ async def get_badge(request: web.Request, pipeline_id, share=None) -> web.Respon
     return web.json_response(badge_data, status=200)
 
 
+async def _get_tooling_metadata():
+    """Returns the tooling metadata available in the given remote code repository."""
+    tooling_repo_url = config.get(
+        'tooling_repo_url',
+        fallback='https://github.com/EOSC-synergy/sqaaas-tooling'
+    )
+    tooling_repo_branch = config.get(
+        'tooling_repo_branch',
+        fallback='main'
+    )
+    tooling_metadata_file = config.get(
+        'tooling_metadata_file',
+        fallback='tooling.json'
+    )
+
+    logger.debug('Getting supported tools from <%s> repo (metadata file: %s)' % (
+        tooling_repo_url, tooling_metadata_file))
+    platform = ctls_utils.supported_git_platform(
+        tooling_repo_url, platforms=SUPPORTED_PLATFORMS)
+    tooling_metadata_json = {}
+    if platform in ['github']:
+        short_repo_name = ctls_utils.get_short_repo_name(tooling_repo_url)
+        tooling_metadata_content = gh_utils.get_file(
+            tooling_metadata_file, short_repo_name, branch=tooling_repo_branch)
+        tooling_metadata_encoded = tooling_metadata_content.content
+        tooling_metadata_decoded = base64.b64decode(tooling_metadata_encoded).decode('UTF-8')
+        tooling_metadata_json = json.loads(tooling_metadata_decoded)
+    else:
+        raise NotImplementedError(('Getting tooling metadata from a non-Github '
+                                   'repo is not currently supported'))
+
+    returns tooling_metadata_json
+
+
 async def _get_criterion_tooling(criterion_id, metadata_json):
     """Gets the criterion information as it is returned within the /criteria response.
 
@@ -1075,34 +1109,7 @@ async def get_criteria(request: web.Request, criterion_id=None) -> web.Response:
     :type criterion_id: str
 
     """
-    tooling_repo_url = config.get(
-        'tooling_repo_url',
-        fallback='https://github.com/EOSC-synergy/sqaaas-tooling'
-    )
-    tooling_repo_branch = config.get(
-        'tooling_repo_branch',
-        fallback='main'
-    )
-    tooling_metadata_file = config.get(
-        'tooling_metadata_file',
-        fallback='tooling.json'
-    )
-
-    logger.debug('Getting supported tools from <%s> repo (metadata file: %s)' % (
-        tooling_repo_url, tooling_metadata_file))
-    platform = ctls_utils.supported_git_platform(
-        tooling_repo_url, platforms=SUPPORTED_PLATFORMS)
-    tooling_metadata_json = {}
-    if platform in ['github']:
-        short_repo_name = ctls_utils.get_short_repo_name(tooling_repo_url)
-        tooling_metadata_content = gh_utils.get_file(
-            tooling_metadata_file, short_repo_name, branch=tooling_repo_branch)
-        tooling_metadata_encoded = tooling_metadata_content.content
-        tooling_metadata_decoded = base64.b64decode(tooling_metadata_encoded).decode('UTF-8')
-        tooling_metadata_json = json.loads(tooling_metadata_decoded)
-    else:
-        raise NotImplementedError(('Getting tooling metadata from a non-Github '
-                                   'repo is not currently supported'))
+    tooling_metadata_json = await _get_tooling_metadata()
 
     criteria_id_list = []
     if criterion_id:
