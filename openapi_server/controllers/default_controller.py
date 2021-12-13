@@ -1,6 +1,7 @@
 import base64
 import calendar
 from datetime import datetime
+import copy
 import io
 import itertools
 import logging
@@ -105,6 +106,23 @@ async def add_pipeline(request: web.Request, body, report_to_stdout=None) -> web
     return web.json_response(r, status=201)
 
 
+async def _get_tooling_for_assessment():
+    """Returns per-criterion tooling metadata filtered for assessment."""
+    tooling_metadata_json = await _get_tooling_metadata()
+    criteria_data_list = await _sort_tooling_by_criteria(tooling_metadata_json)
+    criteria_data_list_filtered = []
+    for criterion_data in criteria_data_list:
+        criterion_data_copy = copy.deepcopy(criterion_data)
+        toolset_for_reporting = []
+        for tool in criterion_data['tools']:
+            # NOTE Filtered based on the availability of the <reporting> property
+            if 'reporting' in list(tool):
+                toolset_for_reporting.append(tool)
+        criterion_data_copy['tools'] = toolset_for_reporting
+        criteria_data_list_filtered.append(criterion_data_copy)
+    return criteria_data_list_filtered
+
+
 async def add_pipeline_for_assessment(request: web.Request, body) -> web.Response:
     """Creates a pipeline for assessment (QAA module).
 
@@ -114,9 +132,8 @@ async def add_pipeline_for_assessment(request: web.Request, body) -> web.Respons
     :type body: dict | bytes
 
     """
-    #0 Get criteria data from tooling
-    tooling_metadata_json = await _get_tooling_metadata()
-    criteria_data_list = await _sort_tooling_by_criteria(tooling_metadata_json)
+    #0 Filter per-criterion tools that will take part in the assessment
+    criteria_data_list = await _get_tooling_for_assessment()
 
     #1 Load request payload (same as passed to POST /pipeline) from templates
     env = Environment(
@@ -133,6 +150,7 @@ async def add_pipeline_for_assessment(request: web.Request, body) -> web.Respons
         repo_docs=repo_docs,
         criteria_data_list=criteria_data_list
     )
+    json_data = json.loads(json_rendered)
 
     #2 Load tool data via _get_criterion_tooling() method
 
