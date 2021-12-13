@@ -29,7 +29,8 @@
               "container": "{{ criterion_data.repo_name }}",
               "commands": [
                 "{{ criterion_data.commands }}"
-              ]
+              ],
+	      "tools": {{ criterion_data.tools | tojson }}
             }
           }
 	}{{"," if not loop.last}}
