@@ -22,7 +22,7 @@
       "sqa_criteria": {
         {%- for criterion_data in criteria_data_list %}
         "{{ criterion_data.id }}": {
-          "repos": {
+          "repos": [{
             "{{ criterion_data.repo_name }}": {
               "container": "{{ criterion_data.repo_name }}",
               "commands": [
@@ -30,7 +30,7 @@
               ],
 	      "tools": {{ criterion_data.tools | tojson }}
             }
-          }
+          }]
 	}{{"," if not loop.last}}
         {%- endfor %}
       },
