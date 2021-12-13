@@ -23,13 +23,9 @@
         {%- for criterion_data in criteria_data_list %}
         "{{ criterion_data.id }}": {
           "repos": [{
-            "{{ criterion_data.repo_name }}": {
-              "container": "{{ criterion_data.repo_name }}",
-              "commands": [
-                "{{ criterion_data.commands }}"
-              ],
-	      "tools": {{ criterion_data.tools | tojson }}
-            }
+            "repo_url": "{{ repo_code.repo }}",
+            "container": "",
+	        "tools": {{ criterion_data.tools | tojson }}
           }]
 	}{{"," if not loop.last}}
         {%- endfor %}
