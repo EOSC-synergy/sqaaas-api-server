@@ -6,6 +6,7 @@ import io
 import itertools
 import logging
 import json
+import os
 import urllib
 import uuid
 from zipfile import ZipFile, ZipInfo
@@ -74,18 +75,13 @@ logger.debug('Loading Badgr password from local filesystem')
 badgr_utils = BadgrUtils(BADGR_URL, BADGR_USER, badgr_token, BADGR_ISSUER, BADGR_BADGECLASS)
 
 
-@ctls_utils.debug_request
-@ctls_utils.extended_data_validation
-async def add_pipeline(request: web.Request, body, report_to_stdout=None) -> web.Response:
-    """Creates a pipeline.
+async def _add_pipeline_to_db(body):
+    """Stores the pipeline into the database.
 
-    Provides a ready-to-use Jenkins pipeline based on the v2 series of jenkins-pipeline-library.
+    Returns an UUID that identifies the pipeline in the database.
 
-    :param body:
-    :type body: dict | bytes
-    :param report_to_stdout: Flag to indicate whether the pipeline shall print via via stdout the reports produced by the tools (required by QAA module)
-    :type report_to_stdout: bool
-
+    :param body: JSON request payload, as defined in the spec when 'POST /pipeline'
+    :type pipeline_name: dict | bytes
     """
     pipeline_id = str(uuid.uuid4())
     pipeline_name = body['name']
@@ -101,6 +97,22 @@ async def add_pipeline(request: web.Request, body, report_to_stdout=None) -> web
         body,
         report_to_stdout=report_to_stdout
     )
+
+
+@ctls_utils.debug_request
+@ctls_utils.extended_data_validation
+async def add_pipeline(request: web.Request, body, report_to_stdout=None) -> web.Response:
+    """Creates a pipeline.
+
+    Provides a ready-to-use Jenkins pipeline based on the v2 series of jenkins-pipeline-library.
+
+    :param body: JSON request payload
+    :type body: dict | bytes
+    :param report_to_stdout: Flag to indicate whether the pipeline shall print via via stdout the reports produced by the tools (required by QAA module)
+    :type report_to_stdout: bool
+
+    """
+    pipeline_id = await _add_pipeline_to_db(name=pipeline_name)
 
     r = {'id': pipeline_id}
     return web.json_response(r, status=201)
@@ -128,38 +140,46 @@ async def add_pipeline_for_assessment(request: web.Request, body) -> web.Respons
 
     Creates a pipeline for assessment (QAA module).
 
-    :param body:
+    :param body: JSON payload request.
     :type body: dict | bytes
 
     """
+    # NOTE!! Considering ONLY THE FIRST REPO (code & docs) for the time being
+    repo_code = body['repo_code'][0]
+    logger.debug('Processing only one repository of code (current limitation): %s' % repo_code)
+    repo_docs = body.get('repo_docs', [])
+    if repo_docs:
+        repo_docs = repo_docs[0]
+        logger.debug('Processing only one repository for documentation (current limitation): %s' % repo_docs)
+
     #0 Filter per-criterion tools that will take part in the assessment
     criteria_data_list = await _get_tooling_for_assessment()
+    logger.debug('Gathered tooling data enabled for assessment: %s' % criteria_data_list)
 
     #1 Load request payload (same as passed to POST /pipeline) from templates
     env = Environment(
         loader=PackageLoader('openapi_server', 'templates')
     )
     template = env.get_template('pipeline_assessment.json')
-    # NOTE!! Considering ONLY THE FIRST REPO (code & docs) for the time being
-    repo_code = body['repo_code'][0]
-    repo_docs = body.get('repo_docs', [])
-    if repo_docs:
-        repo_docs = repo_docs[0]
+    pipeline_name = '.'.join([
+        os.path.basename(repo_code['repo']),
+        'assess'
+    ])
+    logger.debug('Generated pipeline name for the assessment: %s' % pipeline_name)
     json_rendered = template.render(
+        pipeline_name=pipeline_name,
         repo_code=repo_code,
         repo_docs=repo_docs,
         criteria_data_list=criteria_data_list
     )
     json_data = json.loads(json_rendered)
+    logger.debug('Generated JSON payload (from template) required to create the pipeline for the assessment: %s' % json_data)
 
-    #2 Load tool data via _get_criterion_tooling() method
+    #2 db.add_entry with the composed JSON as <>
+    pipeline_id = await _add_pipeline_to_db(json_data)
 
-    #3 Add specific tool data for each criterion
-
-    #4 db.add_entry with the composed JSON as <body>
-
-    # FIXME Return appropriate JSON payload & response status
-    return web.Response(status=200)
+    r = {'id': pipeline_id}
+    return web.json_response(r, status=201)
 
 
 @ctls_utils.debug_request

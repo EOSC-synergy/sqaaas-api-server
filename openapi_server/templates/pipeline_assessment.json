@@ -1,5 +1,5 @@
 {
-  "name": "sqaaas-api-spec",
+  "name": "{{ pipeline_name }}",
   "config_data": [
     {
       "config": {
