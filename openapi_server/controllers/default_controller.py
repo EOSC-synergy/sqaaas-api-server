@@ -131,11 +131,17 @@ async def _get_tooling_for_assessment():
         criterion_data_copy = copy.deepcopy(criterion_data)
         toolset_for_reporting = []
         for tool in criterion_data['tools']:
-            # NOTE Filtered based on the availability of the <reporting> property
+            # NOTE!! Filtered based on the availability of the <reporting> property
             if 'reporting' in list(tool):
                 toolset_for_reporting.append(tool)
-        criterion_data_copy['tools'] = toolset_for_reporting
-        criteria_data_list_filtered.append(criterion_data_copy)
+        criterion_id = criterion_data['id']
+        if not toolset_for_reporting:
+            logger.debug('No tool defined for assessment (missing <reporting> property) in <%s> criterion' % criterion_id)
+        else:
+            logger.debug('Found %s tool/s for assessment of criterion <%s>: %s' % (
+                len(toolset_for_reporting), criterion_id, [tool['name'] for tool in toolset_for_reporting]))
+            criterion_data_copy['tools'] = toolset_for_reporting
+            criteria_data_list_filtered.append(criterion_data_copy)
     return criteria_data_list_filtered
 
 
