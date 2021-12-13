@@ -140,7 +140,7 @@ async def add_pipeline_for_assessment(request: web.Request, body) -> web.Respons
         loader=PackageLoader('openapi_server', 'templates')
     )
     template = env.get_template('pipeline_assessment.json')
-    # NOTE Considering ONLY THE FIRST REPO (code & docs) for the time being
+    # NOTE!! Considering ONLY THE FIRST REPO (code & docs) for the time being
     repo_code = body['repo_code'][0]
     repo_docs = body.get('repo_docs', [])
     if repo_docs:
