@@ -31,7 +31,8 @@
                 "{{ criterion_data.commands }}"
               ]
             }
-          }        }
+          }
+	}{{"," if not loop.last}}
         {%- endfor %}
       },
       "environment": {},
