@@ -75,13 +75,15 @@ logger.debug('Loading Badgr password from local filesystem')
 badgr_utils = BadgrUtils(BADGR_URL, BADGR_USER, badgr_token, BADGR_ISSUER, BADGR_BADGECLASS)
 
 
-async def _add_pipeline_to_db(body):
+async def _add_pipeline_to_db(body, report_to_stdout=False):
     """Stores the pipeline into the database.
 
     Returns an UUID that identifies the pipeline in the database.
 
     :param body: JSON request payload, as defined in the spec when 'POST /pipeline'
     :type pipeline_name: dict | bytes
+    :param report_to_stdout: Flag to indicate whether the pipeline shall print via via stdout the reports produced by the tools (required by QAA module)
+    :type report_to_stdout: bool
     """
     pipeline_id = str(uuid.uuid4())
     pipeline_name = body['name']
@@ -112,7 +114,7 @@ async def add_pipeline(request: web.Request, body, report_to_stdout=None) -> web
     :type report_to_stdout: bool
 
     """
-    pipeline_id = await _add_pipeline_to_db(name=pipeline_name)
+    pipeline_id = await _add_pipeline_to_db(body, report_to_stdout=report_to_stdout)
 
     r = {'id': pipeline_id}
     return web.json_response(r, status=201)
@@ -176,7 +178,7 @@ async def add_pipeline_for_assessment(request: web.Request, body) -> web.Respons
     logger.debug('Generated JSON payload (from template) required to create the pipeline for the assessment: %s' % json_data)
 
     #2 db.add_entry with the composed JSON as <>
-    pipeline_id = await _add_pipeline_to_db(json_data)
+    pipeline_id = await _add_pipeline_to_db(json_data, report_to_stdout=True)
 
     r = {'id': pipeline_id}
     return web.json_response(r, status=201)
