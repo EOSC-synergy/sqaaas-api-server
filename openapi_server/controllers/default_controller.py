@@ -100,6 +100,8 @@ async def _add_pipeline_to_db(body, report_to_stdout=False):
         report_to_stdout=report_to_stdout
     )
 
+    return pipeline_id
+
 
 @ctls_utils.debug_request
 @ctls_utils.extended_data_validation
