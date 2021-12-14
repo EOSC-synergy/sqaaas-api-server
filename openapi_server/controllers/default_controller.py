@@ -617,12 +617,14 @@ async def _run_validation(tool, stdout):
     allowed_validators = r2s_utils.get_validators()
     tooling_metadata_json = await _load_tooling()
     try:
+        # Obtain the report2sqaas input args (aka <opts>) from tooling
         reporting_data = _get_tool_reporting_data(tool)
     except KeyError as e:
         _reason = 'Cannot get reporting data for tool <%s>: %s' % (tool, e)
         logger.error(_reason)
         raise SQAaaSAPIException(422, _reason)
-   
+
+    # Add output text as the report2sqaaas <stdout> input arg
     reporting_data['stdout'] = stdout
     validator = reporting_data['validator']
     if validator not in allowed_validators:
