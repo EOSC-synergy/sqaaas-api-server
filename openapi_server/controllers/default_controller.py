@@ -81,7 +81,7 @@ async def _add_pipeline_to_db(body, report_to_stdout=False):
     Returns an UUID that identifies the pipeline in the database.
 
     :param body: JSON request payload, as defined in the spec when 'POST /pipeline'
-    :type pipeline_name: dict | bytes
+    :type body: dict | bytes
     :param report_to_stdout: Flag to indicate whether the pipeline shall print via via stdout the reports produced by the tools (required by QAA module)
     :type report_to_stdout: bool
     """
@@ -185,7 +185,7 @@ async def add_pipeline_for_assessment(request: web.Request, body) -> web.Respons
     json_data = json.loads(json_rendered)
     logger.debug('Generated JSON payload (from template) required to create the pipeline for the assessment: %s' % json_data)
 
-    #2 db.add_entry with the composed JSON as <>
+    #2 Create pipeline
     pipeline_id = await _add_pipeline_to_db(json_data, report_to_stdout=True)
 
     r = {'id': pipeline_id}
