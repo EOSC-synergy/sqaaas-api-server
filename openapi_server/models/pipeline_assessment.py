@@ -5,6 +5,7 @@ from datetime import date, datetime
 from typing import List, Dict, Type
 
 from openapi_server.models.base_model_ import Model
+from openapi_server.models.repository import Repository
 from openapi_server import util
 
 
@@ -14,24 +15,24 @@ class PipelineAssessment(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, name: str=None, url: str=None):
+    def __init__(self, repo_code: Repository=None, repo_docs: Repository=None):
         """PipelineAssessment - a model defined in OpenAPI
 
-        :param name: The name of this PipelineAssessment.
-        :param url: The url of this PipelineAssessment.
+        :param repo_code: The repo_code of this PipelineAssessment.
+        :param repo_docs: The repo_docs of this PipelineAssessment.
         """
         self.openapi_types = {
-            'name': str,
-            'url': str
+            'repo_code': Repository,
+            'repo_docs': Repository
         }
 
         self.attribute_map = {
-            'name': 'name',
-            'url': 'url'
+            'repo_code': 'repo_code',
+            'repo_docs': 'repo_docs'
         }
 
-        self._name = name
-        self._url = url
+        self._repo_code = repo_code
+        self._repo_docs = repo_docs
 
     @classmethod
     def from_dict(cls, dikt: dict) -> 'PipelineAssessment':
@@ -43,43 +44,45 @@ class PipelineAssessment(Model):
         return util.deserialize_model(dikt, cls)
 
     @property
-    def name(self):
-        """Gets the name of this PipelineAssessment.
+    def repo_code(self):
+        """Gets the repo_code of this PipelineAssessment.
 
 
-        :return: The name of this PipelineAssessment.
-        :rtype: str
+        :return: The repo_code of this PipelineAssessment.
+        :rtype: Repository
         """
-        return self._name
+        return self._repo_code
 
-    @name.setter
-    def name(self, name):
-        """Sets the name of this PipelineAssessment.
+    @repo_code.setter
+    def repo_code(self, repo_code):
+        """Sets the repo_code of this PipelineAssessment.
 
 
-        :param name: The name of this PipelineAssessment.
-        :type name: str
+        :param repo_code: The repo_code of this PipelineAssessment.
+        :type repo_code: Repository
         """
+        if repo_code is None:
+            raise ValueError("Invalid value for `repo_code`, must not be `None`")
 
-        self._name = name
+        self._repo_code = repo_code
 
     @property
-    def url(self):
-        """Gets the url of this PipelineAssessment.
+    def repo_docs(self):
+        """Gets the repo_docs of this PipelineAssessment.
 
 
-        :return: The url of this PipelineAssessment.
-        :rtype: str
+        :return: The repo_docs of this PipelineAssessment.
+        :rtype: Repository
         """
-        return self._url
+        return self._repo_docs
 
-    @url.setter
-    def url(self, url):
-        """Sets the url of this PipelineAssessment.
+    @repo_docs.setter
+    def repo_docs(self, repo_docs):
+        """Sets the repo_docs of this PipelineAssessment.
 
 
-        :param url: The url of this PipelineAssessment.
-        :type url: str
+        :param repo_docs: The repo_docs of this PipelineAssessment.
+        :type repo_docs: Repository
         """
 
-        self._url = url
+        self._repo_docs = repo_docs
