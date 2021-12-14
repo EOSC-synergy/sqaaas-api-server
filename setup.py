@@ -37,6 +37,7 @@ setup(
         'templates/Jenkinsfile',
         'templates/embed_badge.html',
         'templates/commands_script.sh',
+        'templates/pipeline_assessment.json',
         '../etc/sqaaas.ini.sample']},
     include_package_data=False,
     entry_points={

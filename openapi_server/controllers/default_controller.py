@@ -1,10 +1,12 @@
 import base64
 import calendar
 from datetime import datetime
+import copy
 import io
 import itertools
 import logging
 import json
+import os
 import urllib
 import uuid
 from zipfile import ZipFile, ZipInfo
@@ -73,18 +75,15 @@ logger.debug('Loading Badgr password from local filesystem')
 badgr_utils = BadgrUtils(BADGR_URL, BADGR_USER, badgr_token, BADGR_ISSUER, BADGR_BADGECLASS)
 
 
-@ctls_utils.debug_request
-@ctls_utils.extended_data_validation
-async def add_pipeline(request: web.Request, body, report_to_stdout=None) -> web.Response:
-    """Creates a pipeline.
+async def _add_pipeline_to_db(body, report_to_stdout=False):
+    """Stores the pipeline into the database.
 
-    Provides a ready-to-use Jenkins pipeline based on the v2 series of jenkins-pipeline-library.
+    Returns an UUID that identifies the pipeline in the database.
 
-    :param body:
+    :param body: JSON request payload, as defined in the spec when 'POST /pipeline'
     :type body: dict | bytes
     :param report_to_stdout: Flag to indicate whether the pipeline shall print via via stdout the reports produced by the tools (required by QAA module)
     :type report_to_stdout: bool
-
     """
     pipeline_id = str(uuid.uuid4())
     pipeline_name = body['name']
@@ -100,6 +99,94 @@ async def add_pipeline(request: web.Request, body, report_to_stdout=None) -> web
         body,
         report_to_stdout=report_to_stdout
     )
+
+    return pipeline_id
+
+
+@ctls_utils.debug_request
+@ctls_utils.extended_data_validation
+async def add_pipeline(request: web.Request, body, report_to_stdout=None) -> web.Response:
+    """Creates a pipeline.
+
+    Provides a ready-to-use Jenkins pipeline based on the v2 series of jenkins-pipeline-library.
+
+    :param body: JSON request payload
+    :type body: dict | bytes
+    :param report_to_stdout: Flag to indicate whether the pipeline shall print via via stdout the reports produced by the tools (required by QAA module)
+    :type report_to_stdout: bool
+
+    """
+    pipeline_id = await _add_pipeline_to_db(body, report_to_stdout=report_to_stdout)
+
+    r = {'id': pipeline_id}
+    return web.json_response(r, status=201)
+
+
+async def _get_tooling_for_assessment():
+    """Returns per-criterion tooling metadata filtered for assessment."""
+    tooling_metadata_json = await _get_tooling_metadata()
+    criteria_data_list = await _sort_tooling_by_criteria(tooling_metadata_json)
+    criteria_data_list_filtered = []
+    for criterion_data in criteria_data_list:
+        criterion_data_copy = copy.deepcopy(criterion_data)
+        toolset_for_reporting = []
+        for tool in criterion_data['tools']:
+            # NOTE!! Filtered based on the availability of the <reporting> property
+            if 'reporting' in list(tool):
+                toolset_for_reporting.append(tool)
+        criterion_id = criterion_data['id']
+        if not toolset_for_reporting:
+            logger.debug('No tool defined for assessment (missing <reporting> property) in <%s> criterion' % criterion_id)
+        else:
+            logger.debug('Found %s tool/s for assessment of criterion <%s>: %s' % (
+                len(toolset_for_reporting), criterion_id, [tool['name'] for tool in toolset_for_reporting]))
+            criterion_data_copy['tools'] = toolset_for_reporting
+            criteria_data_list_filtered.append(criterion_data_copy)
+    return criteria_data_list_filtered
+
+
+async def add_pipeline_for_assessment(request: web.Request, body) -> web.Response:
+    """Creates a pipeline for assessment (QAA module).
+
+    Creates a pipeline for assessment (QAA module).
+
+    :param body: JSON payload request.
+    :type body: dict | bytes
+
+    """
+    # NOTE!! Considering ONLY THE FIRST REPO (code & docs) for the time being
+    repo_code = body['repo_code'][0]
+    logger.debug('Processing only one repository of code (current limitation): %s' % repo_code)
+    repo_docs = body.get('repo_docs', [])
+    if repo_docs:
+        repo_docs = repo_docs[0]
+        logger.debug('Processing only one repository for documentation (current limitation): %s' % repo_docs)
+
+    #0 Filter per-criterion tools that will take part in the assessment
+    criteria_data_list = await _get_tooling_for_assessment()
+    logger.debug('Gathered tooling data enabled for assessment: %s' % criteria_data_list)
+
+    #1 Load request payload (same as passed to POST /pipeline) from templates
+    env = Environment(
+        loader=PackageLoader('openapi_server', 'templates')
+    )
+    template = env.get_template('pipeline_assessment.json')
+    pipeline_name = '.'.join([
+        os.path.basename(repo_code['repo']),
+        'assess'
+    ])
+    logger.debug('Generated pipeline name for the assessment: %s' % pipeline_name)
+    json_rendered = template.render(
+        pipeline_name=pipeline_name,
+        repo_code=repo_code,
+        repo_docs=repo_docs,
+        criteria_data_list=criteria_data_list
+    )
+    json_data = json.loads(json_rendered)
+    logger.debug('Generated JSON payload (from template) required to create the pipeline for the assessment: %s' % json_data)
+
+    #2 Create pipeline
+    pipeline_id = await _add_pipeline_to_db(json_data, report_to_stdout=True)
 
     r = {'id': pipeline_id}
     return web.json_response(r, status=201)
@@ -991,50 +1078,8 @@ async def get_badge(request: web.Request, pipeline_id, share=None) -> web.Respon
     return web.json_response(badge_data, status=200)
 
 
-async def _get_criterion_tooling(criterion_id, metadata_json):
-    """Sorts out the criterion information to be returned in the HTTP response.
-
-    :param criterion_id: ID of the criterion
-    :type criterion_id: str
-    :param metadata_json: JSON with the metadata
-    :type metadata_json: dict
-    """
-    try:
-        criterion_data = metadata_json['criteria'][criterion_id]['tools']
-    except Exception as e:
-        _reason = 'Cannot find tooling information for criterion <%s> in metadata: %s' % (
-            criterion_id, metadata_json)
-        logger.error(_reason)
-        raise SQAaaSAPIException(502, _reason)
-
-    # Add default tools
-    default_data = {"default": list(metadata_json["tools"]["default"])}
-    criterion_data.update(default_data)
-
-    criterion_data_list = []
-    for lang, tools in criterion_data.items():
-        for tool in tools:
-            d = {}
-            try:
-                d['name'] = tool
-                d['lang'] = lang
-                d.update(metadata_json['tools'][lang][tool])
-            except KeyError:
-                logger.warn('Cannot find data for tool <%s> (lang: %s)' % (
-                    tool, lang))
-            if d:
-                criterion_data_list.append(d)
-
-    return criterion_data_list
-
-
-async def get_criteria(request: web.Request, criterion_id=None) -> web.Response:
-    """Returns data about criteria.
-
-    :param criterion_id: Get data from a specific criterion
-    :type criterion_id: str
-
-    """
+async def _get_tooling_metadata():
+    """Returns the tooling metadata available in the given remote code repository."""
     tooling_repo_url = config.get(
         'tooling_repo_url',
         fallback='https://github.com/EOSC-synergy/sqaaas-tooling'
@@ -1064,17 +1109,91 @@ async def get_criteria(request: web.Request, criterion_id=None) -> web.Response:
         raise NotImplementedError(('Getting tooling metadata from a non-Github '
                                    'repo is not currently supported'))
 
-    r = []
-    criteria_id_list = list(tooling_metadata_json['criteria'])
-    if criterion_id:
-        criteria_id_list = [criterion_id]
-        logger.debug('Filtering by criterion <%s>' % criterion_id)
+    return tooling_metadata_json
+
+
+async def _get_criterion_tooling(criterion_id, tooling_metadata_json):
+    """Gets the criterion information as it is returned within the /criteria response.
+
+    :param criterion_id: ID of the criterion
+    :type criterion_id: str
+    :param tooling_metadata_json: JSON with the metadata
+    :type tooling_metadata_json: dict
+    """
+    try:
+        criterion_data = tooling_metadata_json['criteria'][criterion_id]['tools']
+    except Exception as e:
+        _reason = 'Cannot find tooling information for criterion <%s> in metadata: %s' % (
+            criterion_id, tooling_metadata_json)
+        logger.error(_reason)
+        raise SQAaaSAPIException(502, _reason)
+
+    # Add default tools
+    default_data = {"default": list(tooling_metadata_json["tools"]["default"])}
+    criterion_data.update(default_data)
+
+    criterion_data_list = []
+    for lang, tools in criterion_data.items():
+        for tool in tools:
+            d = {}
+            try:
+                d['name'] = tool
+                d['lang'] = lang
+                d.update(tooling_metadata_json['tools'][lang][tool])
+            except KeyError:
+                logger.warn('Cannot find data for tool <%s> (lang: %s)' % (
+                    tool, lang))
+            if d:
+                criterion_data_list.append(d)
+
+    return criterion_data_list
+
+
+async def _sort_tooling_by_criteria(tooling_metadata_json, criteria_id_list=[]):
+    """Sorts out the tooling data by each supported criterion.
+
+    Returns a list of tooling data per supported criterion.
+
+    :param tooling_metadata_json: JSON with the metadata
+    :type tooling_metadata_json: dict
+    :param criteria_id_list: custom set of criteria
+    :type criteria_id_list: list
+    """
+    if criteria_id_list:
+        logger.debug('Filtering criteria to <%s>' % criteria_id_list)
+    else:
+        criteria_id_list = list(tooling_metadata_json['criteria'])
+        logger.debug('Considering all the supported criteria from tooling <%s>' % criteria_id_list)
+
+    criteria_data_list = []
     try:
         for criterion in criteria_id_list:
             tooling_data = await _get_criterion_tooling(
                 criterion, tooling_metadata_json)
-            r.append({'id': criterion, 'tools': tooling_data})
+            criteria_data_list.append({
+                'id': criterion,
+                'description': tooling_metadata_json['criteria'][criterion]['description'],
+                'tools': tooling_data
+            })
     except SQAaaSAPIException as e:
         return web.Response(status=e.http_code, reason=e.message, text=e.message)
 
-    return web.json_response(r, status=200)
+    return criteria_data_list
+
+
+async def get_criteria(request: web.Request, criterion_id=None) -> web.Response:
+    """Returns data about criteria.
+
+    :param criterion_id: Get data from a specific criterion
+    :type criterion_id: str
+
+    """
+    tooling_metadata_json = await _get_tooling_metadata()
+
+    criteria_id_list = []
+    if criterion_id:
+        criteria_id_list = [criterion_id]
+    criteria_data_list = await _sort_tooling_by_criteria(
+        tooling_metadata_json, criteria_id_list=criteria_id_list)
+
+    return web.json_response(criteria_data_list, status=200)
