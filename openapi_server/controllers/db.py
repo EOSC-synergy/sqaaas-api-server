@@ -71,7 +71,7 @@ def add_entry(pipeline_id, pipeline_repo, pipeline_repo_url, body):
     raw_request = copy.deepcopy(body)
     config_json, composer_json, jenkinsfile_data = ctls_utils.get_pipeline_data(body)
     config_data_list, composer_data, jenkinsfile, commands_script_list, tool_criteria_map = JePLUtils.compose_files(
-        config_json, composer_json, report_to_stdout=report_to_stdout
+        config_json, composer_json
     )
 
     db = load_content()
