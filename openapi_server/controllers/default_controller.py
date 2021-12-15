@@ -689,8 +689,9 @@ async def _run_validation(tool, stdout):
     :type stdout: str
 
     """
+    tooling_metadata_json = await _get_tooling_metadata()
+
     def _get_tool_reporting_data(tool):
-        tooling_metadata_json = await _get_tooling_metadata()
         for tool_type, tools in tooling_metadata_json['tools'].items():
             if tool in tools.keys():
                 data = tools[tool]['reporting']
