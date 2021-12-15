@@ -154,13 +154,8 @@ async def add_pipeline_for_assessment(request: web.Request, body) -> web.Respons
     :type body: dict | bytes
 
     """
-    # NOTE!! Considering ONLY THE FIRST REPO (code & docs) for the time being
-    repo_code = body['repo_code'][0]
-    logger.debug('Processing only one repository of code (current limitation): %s' % repo_code)
-    repo_docs = body.get('repo_docs', [])
-    if repo_docs:
-        repo_docs = repo_docs[0]
-        logger.debug('Processing only one repository for documentation (current limitation): %s' % repo_docs)
+    repo_code = body['repo_code']
+    repo_docs = body.get('repo_docs', {})
 
     #0 Filter per-criterion tools that will take part in the assessment
     criteria_data_list = await _get_tooling_for_assessment()
