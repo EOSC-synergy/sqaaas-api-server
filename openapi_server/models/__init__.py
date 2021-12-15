@@ -22,6 +22,7 @@ from openapi_server.models.je_pl_jenkinsfile_pipeline_config import JePLJenkinsf
 from openapi_server.models.je_pl_jenkinsfile_stages import JePLJenkinsfileStages
 from openapi_server.models.je_pl_jenkinsfile_when import JePLJenkinsfileWhen
 from openapi_server.models.pipeline import Pipeline
+from openapi_server.models.pipeline_assessment import PipelineAssessment
 from openapi_server.models.repository import Repository
 from openapi_server.models.tool import Tool
 from openapi_server.models.tool_arg import ToolArg

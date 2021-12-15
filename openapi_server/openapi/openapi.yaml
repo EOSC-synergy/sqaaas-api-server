@@ -101,6 +101,39 @@ paths:
       summary: Creates a pipeline.
       x-openapi-router-controller: openapi_server.controllers.default_controller
       x-codegen-request-body-name: body
+  /pipeline/assessment:
+    post:
+      description: |
+        Creates a pipeline for assessment (QAA module).
+      operationId: add_pipeline_for_assessment
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Pipeline_assessment'
+        required: true
+        x-body-name: body
+      responses:
+        "201":
+          content:
+            application/json:
+              example:
+                id: dd7d8481-81a3-407f-95f0-a2f1cb382a4b
+              schema:
+                $ref: '#/components/schemas/inline_response_201'
+          description: Created
+          links:
+            get_pipeline_by_pipeline_id:
+              description: |
+                The `id` value returned in the response can be used as the `pipeline_id` parameter in `GET /pipeline/{pipeline_id}`.
+              operationId: get_pipeline_by_id
+              parameters:
+                pipeline_id: $response.body#/id
+        "400":
+          description: Request failed validation
+      summary: Creates a pipeline for assessment (QAA module).
+      x-openapi-router-controller: openapi_server.controllers.default_controller
+      x-codegen-request-body-name: body
   /pipeline/{pipeline_id}:
     delete:
       operationId: delete_pipeline_by_id
@@ -584,7 +617,7 @@ paths:
           content:
             application/json:
               example:
-                pull_request_url: https://github.com/EOSC-synergy/sqaaas-api-spec/pull/23
+                pull_request_url: https://github.com/eosc-synergy/sqaaas-api-spec/pull/23
               schema:
                 $ref: '#/components/schemas/inline_response_200_5'
           description: Successful operation
@@ -722,15 +755,17 @@ components:
   schemas:
     ToolArg:
       example:
-        type: subcommand
-        description: Detect the license of the given project
-        value: detect
-        selectable: false
-        repeatable: false
+        summary: summary
         args:
-          description: Path to project's license
-          format: string
-          value: "."
+        - null
+        - null
+        repeatable: false
+        selectable: true
+        format: string
+        description: Detect the license of the given project
+        type: subcommand
+        value: detect
+        option: option
       properties:
         type:
           description: type of argument
@@ -738,37 +773,48 @@ components:
           - subcommand
           - positional
           - optional
+          title: type
           type: string
         description:
           description: hint about what the command does
+          example: Detect the license of the given project
+          title: description
           type: string
         value:
           description: Value for the argument (can be of any type)
+          example: detect
+          title: value
         option:
           description: Name of the option, in the event of optional arguments
+          title: option
           type: string
         summary:
           description: very brief (2/3 words) description (to be rendered by web clients)
+          title: summary
           type: string
         format:
           description: The value format (to be rendered by web clients)
           enum:
           - string
           - array
+          title: format
           type: string
         selectable:
           default: true
           description: Whether the argument can be selected by the user (to be rendered
             by web clients)
+          title: selectable
           type: boolean
         repeatable:
           default: false
           description: Whether the argument can be repeated (to be rendered by web
             clients)
+          title: repeatable
           type: boolean
         args:
           items:
             $ref: '#/components/schemas/ToolArg'
+          title: args
           type: array
       required:
       - description
@@ -778,24 +824,28 @@ components:
     Tool:
       example:
         args:
-        - type: subcommand
-          description: Detect the license of the given project
-          value: detect
-          selectable: false
-          repeatable: false
+        - summary: summary
           args:
-            description: Path to project's license
-            format: string
-            value: "."
-        - type: subcommand
-          description: Detect the license of the given project
-          value: detect
-          selectable: false
+          - null
+          - null
           repeatable: false
+          selectable: true
+          format: string
+          description: Detect the license of the given project
+          type: subcommand
+          value: detect
+          option: option
+        - summary: summary
           args:
-            description: Path to project's license
-            format: string
-            value: "."
+          - null
+          - null
+          repeatable: false
+          selectable: true
+          format: string
+          description: Detect the license of the given project
+          type: subcommand
+          value: detect
+          option: option
         docs: https://openapi-generator.tech
         name: name
         lang: lang
@@ -847,24 +897,28 @@ components:
         tools:
           key:
           - args:
-            - type: subcommand
-              description: Detect the license of the given project
-              value: detect
-              selectable: false
-              repeatable: false
+            - summary: summary
               args:
-                description: Path to project's license
-                format: string
-                value: "."
-            - type: subcommand
-              description: Detect the license of the given project
-              value: detect
-              selectable: false
+              - null
+              - null
               repeatable: false
+              selectable: true
+              format: string
+              description: Detect the license of the given project
+              type: subcommand
+              value: detect
+              option: option
+            - summary: summary
               args:
-                description: Path to project's license
-                format: string
-                value: "."
+              - null
+              - null
+              repeatable: false
+              selectable: true
+              format: string
+              description: Detect the license of the given project
+              type: subcommand
+              value: detect
+              option: option
             docs: https://openapi-generator.tech
             name: name
             lang: lang
@@ -876,24 +930,28 @@ components:
               reviewed: 2000-01-23
               oneshot: true
           - args:
-            - type: subcommand
-              description: Detect the license of the given project
-              value: detect
-              selectable: false
-              repeatable: false
+            - summary: summary
               args:
-                description: Path to project's license
-                format: string
-                value: "."
-            - type: subcommand
-              description: Detect the license of the given project
-              value: detect
-              selectable: false
+              - null
+              - null
               repeatable: false
+              selectable: true
+              format: string
+              description: Detect the license of the given project
+              type: subcommand
+              value: detect
+              option: option
+            - summary: summary
               args:
-                description: Path to project's license
-                format: string
-                value: "."
+              - null
+              - null
+              repeatable: false
+              selectable: true
+              format: string
+              description: Detect the license of the given project
+              type: subcommand
+              value: detect
+              option: option
             docs: https://openapi-generator.tech
             name: name
             lang: lang
@@ -922,15 +980,17 @@ components:
       type: object
     Repository:
       example:
-      - repo: https://github.com/jenkins-docs/simple-java-maven-app
+        repo: https://github.com/eosc-synergy/sqaaas-api-spec
         branch: master
       properties:
         repo:
-          example: https://github.com/jenkins-docs/simple-java-maven-app
+          example: https://github.com/eosc-synergy/sqaaas-api-spec
           format: uri
+          title: repo
           type: string
         branch:
           example: master
+          title: branch
           type: string
       title: Repository
       type: object
@@ -993,6 +1053,7 @@ components:
     When_branch:
       properties:
         pattern:
+          example: release-\\d+
           minLength: 1
           title: pattern
           type: string
@@ -1019,9 +1080,11 @@ components:
               additionalProperties: false
               properties:
                 repo_url:
+                  example: https://github.com/eosc-synergy/sqaaas-api-spec
                   format: uri
                   type: string
                 container:
+                  example: testing
                   type: string
                 commands:
                   $ref: '#/components/schemas/Commands_simplified'
@@ -1044,15 +1107,6 @@ components:
         required:
         - repos
         type: object
-      example:
-        QC.Sty:
-          repos:
-            simple-java-maven-app:
-              container: checkstyle
-              commands:
-              - mvn checkstyle:check
-          branch:
-            pattern: release-\\d+
       title: sqa_criteria
       type: object
     Environment:
@@ -1069,20 +1123,13 @@ components:
           JPL_IGNOREFAILURES: defined
           JPL_DOCKERPUSH: docs service1 service4
         sqa_criteria:
-          QC.Sty:
-            repos:
-              simple-java-maven-app:
-                container: checkstyle
-                commands:
-                - mvn checkstyle:check
-            branch:
-              pattern: release-\\d+
+          key: '{}'
         config:
           project_repos:
-          - - repo: https://github.com/jenkins-docs/simple-java-maven-app
-              branch: master
-          - - repo: https://github.com/jenkins-docs/simple-java-maven-app
-              branch: master
+          - repo: https://github.com/eosc-synergy/sqaaas-api-spec
+            branch: master
+          - repo: https://github.com/eosc-synergy/sqaaas-api-spec
+            branch: master
           credentials:
           - password_var: GIT_PASS
             username_var: GIT_USER
@@ -1105,9 +1152,11 @@ components:
                   additionalProperties: false
                   properties:
                     repo_url:
+                      example: https://github.com/eosc-synergy/sqaaas-api-spec
                       format: uri
                       type: string
                     container:
+                      example: testing
                       type: string
                     commands:
                       $ref: '#/components/schemas/Commands_simplified'
@@ -1130,15 +1179,6 @@ components:
             required:
             - repos
             type: object
-          example:
-            QC.Sty:
-              repos:
-                simple-java-maven-app:
-                  container: checkstyle
-                  commands:
-                  - mvn checkstyle:check
-              branch:
-                pattern: release-\\d+
           title: sqa_criteria
           type: object
         environment:
@@ -1161,8 +1201,10 @@ components:
           build:
             properties:
               context:
+                example: ./dir
                 type: string
               dockerfile:
+                example: Dockerfile-alternate
                 type: string
               args:
                 additionalProperties:
@@ -1172,21 +1214,25 @@ components:
           image:
             properties:
               name:
+                example: eoscsynergy/sqaaas-api-spec:1.0.0
                 type: string
               registry:
                 properties:
                   push:
                     type: boolean
                   url:
+                    example: https://hub.docker.com/
                     format: uri
                     type: string
                   credential_id:
+                    example: my-dockerhub-cred
                     type: string
                 type: object
             required:
             - name
             type: object
           hostname:
+            example: sqaaas-host
             type: string
           volumes:
             items:
@@ -1196,12 +1242,15 @@ components:
                   - bind
                   type: string
                 source:
+                  example: ./
                   type: string
                 target:
+                  example: ./sqaaas-build
                   type: string
               type: object
             type: array
           command:
+            example: sleep 600000
             type: string
           environment:
             $ref: '#/components/schemas/Environment'
@@ -1209,48 +1258,12 @@ components:
             default: true
             type: boolean
         type: object
-      example:
-        checkstyle:
-          build:
-            context: ./dir
-            dockerfile: Dockerfile-alternate
-            args:
-              buildno: 1
-          image:
-            name: checkstyle/maven-builder-image
-            registry:
-              push: true
-              url: https://hub.docker.com/
-              credential_id: my-dockerhub-cred
-          hostname: checkstyle-host
-          volumes:
-          - source: ./
-            target: ./simple-java-app
-            type: bind
-          command: sleep 600000
       title: services
       type: object
     JePL_composer:
       example:
         services:
-          checkstyle:
-            build:
-              context: ./dir
-              dockerfile: Dockerfile-alternate
-              args:
-                buildno: 1
-            image:
-              name: checkstyle/maven-builder-image
-              registry:
-                push: true
-                url: https://hub.docker.com/
-                credential_id: my-dockerhub-cred
-            hostname: checkstyle-host
-            volumes:
-            - source: ./
-              target: ./simple-java-app
-              type: bind
-            command: sleep 600000
+          key: '{}'
         version: "3.7"
       properties:
         version:
@@ -1263,8 +1276,10 @@ components:
               build:
                 properties:
                   context:
+                    example: ./dir
                     type: string
                   dockerfile:
+                    example: Dockerfile-alternate
                     type: string
                   args:
                     additionalProperties:
@@ -1274,21 +1289,25 @@ components:
               image:
                 properties:
                   name:
+                    example: eoscsynergy/sqaaas-api-spec:1.0.0
                     type: string
                   registry:
                     properties:
                       push:
                         type: boolean
                       url:
+                        example: https://hub.docker.com/
                         format: uri
                         type: string
                       credential_id:
+                        example: my-dockerhub-cred
                         type: string
                     type: object
                 required:
                 - name
                 type: object
               hostname:
+                example: sqaaas-host
                 type: string
               volumes:
                 items:
@@ -1298,12 +1317,15 @@ components:
                       - bind
                       type: string
                     source:
+                      example: ./
                       type: string
                     target:
+                      example: ./sqaaas-build
                       type: string
                   type: object
                 type: array
               command:
+                example: sleep 600000
                 type: string
               environment:
                 $ref: '#/components/schemas/Environment'
@@ -1311,25 +1333,6 @@ components:
                 default: true
                 type: boolean
             type: object
-          example:
-            checkstyle:
-              build:
-                context: ./dir
-                dockerfile: Dockerfile-alternate
-                args:
-                  buildno: 1
-              image:
-                name: checkstyle/maven-builder-image
-                registry:
-                  push: true
-                  url: https://hub.docker.com/
-                  credential_id: my-dockerhub-cred
-              hostname: checkstyle-host
-              volumes:
-              - source: ./
-                target: ./simple-java-app
-                type: bind
-              command: sleep 600000
           title: services
           type: object
       title: JePL_composer
@@ -1339,7 +1342,7 @@ components:
         stages:
         - pipeline_config:
             credentials_id: userpass_dockerhub
-            base_branch: https://github.com/jenkins-docs/simple-java-maven-app
+            base_branch: https://github.com/eosc-synergy/sqaaas-api-spec
             base_repository: master
             jepl_validator_docker_image: eoscsynergy/jpl-validator:1.1.0
             config_file: ./.sqa/config.yml
@@ -1349,7 +1352,7 @@ components:
             - master
         - pipeline_config:
             credentials_id: userpass_dockerhub
-            base_branch: https://github.com/jenkins-docs/simple-java-maven-app
+            base_branch: https://github.com/eosc-synergy/sqaaas-api-spec
             base_repository: master
             jepl_validator_docker_image: eoscsynergy/jpl-validator:1.1.0
             config_file: ./.sqa/config.yml
@@ -1372,20 +1375,13 @@ components:
             JPL_IGNOREFAILURES: defined
             JPL_DOCKERPUSH: docs service1 service4
           sqa_criteria:
-            QC.Sty:
-              repos:
-                simple-java-maven-app:
-                  container: checkstyle
-                  commands:
-                  - mvn checkstyle:check
-              branch:
-                pattern: release-\\d+
+            key: '{}'
           config:
             project_repos:
-            - - repo: https://github.com/jenkins-docs/simple-java-maven-app
-                branch: master
-            - - repo: https://github.com/jenkins-docs/simple-java-maven-app
-                branch: master
+            - repo: https://github.com/eosc-synergy/sqaaas-api-spec
+              branch: master
+            - repo: https://github.com/eosc-synergy/sqaaas-api-spec
+              branch: master
             credentials:
             - password_var: GIT_PASS
               username_var: GIT_USER
@@ -1400,20 +1396,13 @@ components:
             JPL_IGNOREFAILURES: defined
             JPL_DOCKERPUSH: docs service1 service4
           sqa_criteria:
-            QC.Sty:
-              repos:
-                simple-java-maven-app:
-                  container: checkstyle
-                  commands:
-                  - mvn checkstyle:check
-              branch:
-                pattern: release-\\d+
+            key: '{}'
           config:
             project_repos:
-            - - repo: https://github.com/jenkins-docs/simple-java-maven-app
-                branch: master
-            - - repo: https://github.com/jenkins-docs/simple-java-maven-app
-                branch: master
+            - repo: https://github.com/eosc-synergy/sqaaas-api-spec
+              branch: master
+            - repo: https://github.com/eosc-synergy/sqaaas-api-spec
+              branch: master
             credentials:
             - password_var: GIT_PASS
               username_var: GIT_USER
@@ -1426,24 +1415,7 @@ components:
           timeout: 1
         composer_data:
           services:
-            checkstyle:
-              build:
-                context: ./dir
-                dockerfile: Dockerfile-alternate
-                args:
-                  buildno: 1
-              image:
-                name: checkstyle/maven-builder-image
-                registry:
-                  push: true
-                  url: https://hub.docker.com/
-                  credential_id: my-dockerhub-cred
-              hostname: checkstyle-host
-              volumes:
-              - source: ./
-                target: ./simple-java-app
-                type: bind
-              command: sleep 600000
+            key: '{}'
           version: "3.7"
         name: sqaaas-api-spec
         id: dd7d8481-81a3-407f-95f0-a2f1cb382a4b
@@ -1451,7 +1423,7 @@ components:
           stages:
           - pipeline_config:
               credentials_id: userpass_dockerhub
-              base_branch: https://github.com/jenkins-docs/simple-java-maven-app
+              base_branch: https://github.com/eosc-synergy/sqaaas-api-spec
               base_repository: master
               jepl_validator_docker_image: eoscsynergy/jpl-validator:1.1.0
               config_file: ./.sqa/config.yml
@@ -1461,7 +1433,7 @@ components:
               - master
           - pipeline_config:
               credentials_id: userpass_dockerhub
-              base_branch: https://github.com/jenkins-docs/simple-java-maven-app
+              base_branch: https://github.com/eosc-synergy/sqaaas-api-spec
               base_repository: master
               jepl_validator_docker_image: eoscsynergy/jpl-validator:1.1.0
               config_file: ./.sqa/config.yml
@@ -1490,6 +1462,15 @@ components:
         jenkinsfile_data:
           $ref: '#/components/schemas/JePL_jenkinsfile'
       title: Pipeline
+      type: object
+    Pipeline_assessment:
+      properties:
+        repo_code:
+          $ref: '#/components/schemas/Repository'
+        repo_docs:
+          $ref: '#/components/schemas/Repository'
+      required:
+      - repo_code
       type: object
     UpstreamError:
       properties:
@@ -1528,38 +1509,52 @@ components:
       type: object
     Badge:
       example:
-        openBadgeId: https://api.eu.badgr.io/public/assertions/KSwijifTQ_-I1lb9FtX1bw
-        createdAt: 2021-04-07T10:34:02.960Z
-        createdBy: e3h49VVbQRKQphuAAmxpgQ
-        badgeclass: sBS3EsJQRAC0ENTmvETtQw
-        issuer: aS1lWKgIR4u8bGjPZUzAyg
+        createdAt: 2021-04-07T10:34:02.96Z
         image: https://api.eu.badgr.io/public/assertions/KSwijifTQ_-I1lb9FtX1bw/image
+        createdBy: e3h49VVbQRKQphuAAmxpgQ
         recipient:
           identity: sha256$5cb2939f3ae83961b31407fbfd2978e5c642177e50227eb0c7f550c0653803dc
           hashed: true
-          type: url
           plaintextIdentity: https://github.com/EOSC-synergy/test-sqaaas-web.sqaaas/commit/41a4a73505f407d57e7ed600dd5de7cf963feda3
-        issuedOn: 2021-04-07T10:07:00.000Z
+          type: email
+        openBadgeID: https://api.eu.badgr.io/public/assertions/KSwijifTQ_-I1lb9FtX1bw
+        badgeClass: sBS3EsJQRAC0ENTmvETtQw
+        issuer: aS1lWKgIR4u8bGjPZUzAyg
+        issuedOn: 2021-04-07T10:07:00Z
       properties:
         openBadgeID:
+          example: https://api.eu.badgr.io/public/assertions/KSwijifTQ_-I1lb9FtX1bw
           format: uri
+          title: openBadgeID
           type: string
         createdAt:
+          example: 2021-04-07T10:34:02.96Z
           format: date-time
+          title: createdAt
           type: string
         createdBy:
+          example: e3h49VVbQRKQphuAAmxpgQ
+          title: createdBy
           type: string
         badgeClass:
+          example: sBS3EsJQRAC0ENTmvETtQw
+          title: badgeClass
           type: string
         issuer:
+          example: aS1lWKgIR4u8bGjPZUzAyg
+          title: issuer
           type: string
         image:
+          example: https://api.eu.badgr.io/public/assertions/KSwijifTQ_-I1lb9FtX1bw/image
           format: uri
+          title: image
           type: string
         recipient:
           $ref: '#/components/schemas/Badge_recipient'
         issuedOn:
+          example: 2021-04-07T10:07:00Z
           format: date-time
+          title: issuedOn
           type: string
       title: Badge
       type: object
@@ -1577,14 +1572,7 @@ components:
       example:
         file_name: '{"file_name":"config.yml"}'
         content:
-          QC.Sty:
-            repos:
-              simple-java-maven-app:
-                container: checkstyle
-                commands:
-                - mvn checkstyle:check
-            branch:
-              pattern: release-\\d+
+          key: '{}'
       properties:
         file_name:
           example: '{"file_name":"config.yml"}'
@@ -1599,9 +1587,11 @@ components:
                   additionalProperties: false
                   properties:
                     repo_url:
+                      example: https://github.com/eosc-synergy/sqaaas-api-spec
                       format: uri
                       type: string
                     container:
+                      example: testing
                       type: string
                     commands:
                       $ref: '#/components/schemas/Commands_simplified'
@@ -1624,15 +1614,6 @@ components:
             required:
             - repos
             type: object
-          example:
-            QC.Sty:
-              repos:
-                simple-java-maven-app:
-                  container: checkstyle
-                  commands:
-                  - mvn checkstyle:check
-              branch:
-                pattern: release-\\d+
           title: sqa_criteria
           type: object
       title: inline_response_200
@@ -1663,24 +1644,7 @@ components:
         file_name: '{"file_name":"docker-compose.yml"}'
         content:
           services:
-            checkstyle:
-              build:
-                context: ./dir
-                dockerfile: Dockerfile-alternate
-                args:
-                  buildno: 1
-              image:
-                name: checkstyle/maven-builder-image
-                registry:
-                  push: true
-                  url: https://hub.docker.com/
-                  credential_id: my-dockerhub-cred
-              hostname: checkstyle-host
-              volumes:
-              - source: ./
-                target: ./simple-java-app
-                type: bind
-              command: sleep 600000
+            key: '{}'
           version: "3.7"
       properties:
         file_name:
@@ -1844,10 +1808,10 @@ components:
     JePL_config_config:
       example:
         project_repos:
-        - - repo: https://github.com/jenkins-docs/simple-java-maven-app
-            branch: master
-        - - repo: https://github.com/jenkins-docs/simple-java-maven-app
-            branch: master
+        - repo: https://github.com/eosc-synergy/sqaaas-api-spec
+          branch: master
+        - repo: https://github.com/eosc-synergy/sqaaas-api-spec
+          branch: master
         credentials:
         - password_var: GIT_PASS
           username_var: GIT_USER
@@ -1887,7 +1851,7 @@ components:
     JePL_jenkinsfile_pipeline_config:
       example:
         credentials_id: userpass_dockerhub
-        base_branch: https://github.com/jenkins-docs/simple-java-maven-app
+        base_branch: https://github.com/eosc-synergy/sqaaas-api-spec
         base_repository: master
         jepl_validator_docker_image: eoscsynergy/jpl-validator:1.1.0
         config_file: ./.sqa/config.yml
@@ -1901,7 +1865,7 @@ components:
           title: base_repository
           type: string
         base_branch:
-          example: https://github.com/jenkins-docs/simple-java-maven-app
+          example: https://github.com/eosc-synergy/sqaaas-api-spec
           title: base_branch
           type: string
         credentials_id:
@@ -1918,7 +1882,7 @@ components:
       example:
         pipeline_config:
           credentials_id: userpass_dockerhub
-          base_branch: https://github.com/jenkins-docs/simple-java-maven-app
+          base_branch: https://github.com/eosc-synergy/sqaaas-api-spec
           base_repository: master
           jepl_validator_docker_image: eoscsynergy/jpl-validator:1.1.0
           config_file: ./.sqa/config.yml
@@ -1934,8 +1898,14 @@ components:
       title: JePL_jenkinsfile_stages
       type: object
     Badge_recipient:
+      example:
+        identity: sha256$5cb2939f3ae83961b31407fbfd2978e5c642177e50227eb0c7f550c0653803dc
+        hashed: true
+        plaintextIdentity: https://github.com/EOSC-synergy/test-sqaaas-web.sqaaas/commit/41a4a73505f407d57e7ed600dd5de7cf963feda3
+        type: email
       properties:
         identity:
+          example: sha256$5cb2939f3ae83961b31407fbfd2978e5c642177e50227eb0c7f550c0653803dc
           title: identity
           type: string
         hashed:
@@ -1950,6 +1920,7 @@ components:
           title: type
           type: string
         plaintextIdentity:
+          example: https://github.com/EOSC-synergy/test-sqaaas-web.sqaaas/commit/41a4a73505f407d57e7ed600dd5de7cf963feda3
           title: plaintextIdentity
           type: string
       title: Badge_recipient

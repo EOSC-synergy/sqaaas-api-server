@@ -190,7 +190,7 @@ def get_pipeline_data(request_body):
 
     Obtains the pipeline data from the API request.
     """
-    # NOTE For the time being, we just support one config.yml
+    # NOTE!! For the time being, we just support one config.yml
     config_json = request_body['config_data'][0]
     composer_json = request_body['composer_data']
     jenkinsfile_data = request_body['jenkinsfile_data']
@@ -217,7 +217,7 @@ class ProcessExtraData(object):
             }]
             logger.debug('Setting volume data to default values: %s' % service_data['volumes'])
         ## Set 'working_dir' property (for simple use cases)
-        ## NOTE Setting working_dir only makes sense when only one volume is expected!
+        ### NOTE!! Setting working_dir only makes sense when only one volume is expected!
         service_data['working_dir'] = service_data['volumes'][0]['target']
         logger.debug('Setting <working_dir> property to <%s>' % service_data['working_dir'])
     @staticmethod
@@ -319,7 +319,7 @@ class ProcessExtraData(object):
         if not composer_json:
             logger.debug('No service was defined by the user')
             composer_json['version'] = '3.7'
-        # TODO: DOES NOT cover when more than one tool is set!
+        # NOTE TODO: DOES NOT cover when more than one tool is set!
         reference_tool = tools[0]
         context = None
         dockerfile = None
@@ -548,6 +548,8 @@ def process_extra_data(config_json, composer_json, report_to_stdout=False):
         if 'repos' in criterion_data.keys():
             repos_old = criterion_data_copy.pop('repos')
             repos_new = {}
+            # NOTE!! Currently only 1 repo is supported per criterion
+            # which means that len(repos_old)==1
             for repo in repos_old:
                 service_name = repo.get('container', None)
                 tools = []
