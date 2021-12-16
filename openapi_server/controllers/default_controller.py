@@ -7,6 +7,7 @@ import itertools
 import logging
 import json
 import os
+import re
 import urllib
 import uuid
 from zipfile import ZipFile, ZipInfo
@@ -689,14 +690,52 @@ async def _run_validation(tool, stdout):
     :type stdout: str
 
     """
-    allowed_validators = r2s_utils.get_validators()
-    # NOTE tool name MUST match validator name!
-    if tool not in allowed_validators:
-        _reason = 'Could not find an output validator for tool <%s> (found: %s)' % (tool, allowed_validators)
+    tooling_metadata_json = await _get_tooling_metadata()
+
+    def _get_tool_reporting_data(tool):
+        for tool_type, tools in tooling_metadata_json['tools'].items():
+            if tool in tools.keys():
+                data = tools[tool]['reporting']
+                logger.debug('Found reporting data in tooling for tool <%s>' % tool)
+                return data
+
+    try:
+        # Obtain the report2sqaas input args (aka <opts>) from tooling
+        reporting_data = _get_tool_reporting_data(tool)
+    except KeyError as e:
+        _reason = 'Cannot get reporting data for tool <%s>: %s' % (tool, e)
         logger.error(_reason)
         raise SQAaaSAPIException(422, _reason)
-    validator = r2s_utils.get_validator(tool)
-    return validator.driver.validate(stdout)
+
+    # Add output text as the report2sqaaas <stdout> input arg
+    reporting_data['stdout'] = stdout
+
+    allowed_validators = r2s_utils.get_validators()
+    validator = reporting_data['validator']
+    if validator not in allowed_validators:
+        _reason = 'Could not find report2sqaaas validator plugin <%s> (found: %s)' % (validator, allowed_validators)
+        logger.error(_reason)
+        raise SQAaaSAPIException(422, _reason)
+    validator = r2s_utils.get_validator(reporting_data)
+    return validator.driver.validate()
+
+
+async def _get_commands_from_script(stdout_command, commands_script_list):
+    """Returns the commands hosted in the bash commands script
+
+    :param stdout_command: Tool command run by the pipeline.
+    :type stdout_command: str
+    :param commands_script_list: List of command scripts used in the pipeline.
+    :type commands_script_list: list
+    """
+    bash_script_pattern = ".+(script\..+\.sh).*"
+    try:
+        script_name = re.search(bash_script_pattern, stdout_command).group(1)
+    except AttributeError:
+        return False
+    for commands_script in commands_script_list:
+        if script_name in commands_script['file_name']:
+            return commands_script['content']
 
 
 async def _get_tool_from_command(tool_criterion_map, stdout_command):
@@ -709,7 +748,9 @@ async def _get_tool_from_command(tool_criterion_map, stdout_command):
 
     """
     matched_tool = None
-    for tool_name, tool_cmd in tool_criterion_map.items():
+    for tool_name, tool_cmd_list in tool_criterion_map.items():
+        # FIXME For the time being, let's suppose only one tool_cmd per tool_name
+        tool_cmd = tool_cmd_list[0]
         if stdout_command.find(tool_cmd) != -1:
             matched_tool = tool_name
             logger.debug('Matching tool <%s> found for stdout command <%s>' % (matched_tool, tool_cmd))
@@ -748,11 +789,23 @@ async def get_pipeline_output(request: web.Request, pipeline_id, validate=None) 
             logger.debug('Output validation has been requested')
             output_data = {}
             for criterion_name, criterion_data in stage_data.items():
+                # Check if the command lies within a bash script
+                stdout_command = criterion_data['stdout_command']
+                commands_from_script = await _get_commands_from_script(
+                        stdout_command,
+                        pipeline_data['data']['commands_scripts']
+                )
+                if commands_from_script:
+                    logger.debug(
+                        'Detected a bash script in the criterion <%s> '
+                        'command. The real commands are: %s' % (
+                            criterion_name, commands_from_script))
+                    stdout_command = commands_from_script
                 output_data[criterion_name] = criterion_data
                 tool_criterion_map = pipeline_data['tools'][criterion_name]
                 matched_tool = await _get_tool_from_command(
                     tool_criterion_map,
-                    criterion_data['stdout_command']
+                    stdout_command
                 )
                 logger.debug('Validating output from criterion <%s>' % criterion_name)
                 out = await _run_validation(matched_tool, criterion_data['stdout_text'])
