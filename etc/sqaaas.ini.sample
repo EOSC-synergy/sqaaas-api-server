@@ -18,6 +18,21 @@ repository_backend = github
 ## - Criteria tooling: metadata (relative path from <tooling_repo_url>)
 # tooling_metadata_file = tooling.json
 
+[badge:software]
+bronze = QC.Acc QC.Lic QC.Met QC.Doc
+silver = ${badge_bronze} QC.Sty QC.Sec QC.Ver
+gold = ${badge_silver} QC.Uni QC.Wor QC.Man QC.Del
+
+[badge:services]
+bronze = SvcQC.Aud
+silver = ${badge_bronze} SvcQC.Fun SvcQC.Sec SvcQC.Doc
+gold = ${badge_silver} SvcQC.Api SvcQC.Per SvcQC.Int
+
+# [badge:fair]
+# bronze = rsa01 fairsfair05
+# silver = ${badge_bronze}
+# gold = ${badge_silver}
+
 
 [jenkins]
 ## -------------------- ##
