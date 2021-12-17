@@ -818,6 +818,33 @@ async def get_pipeline_output(request: web.Request, pipeline_id, validate=None) 
     return web.json_response(output_data, status=200)
 
 
+async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Response:
+    """Get the assessment output
+
+    Returns the reporting and badging data from the execution of the assessment pipeline.
+
+    :param pipeline_id: ID of the pipeline to get
+    :type pipeline_id: str
+
+    """
+    # #1 Same as GET /pipeline/<pipeline_id>/output BUT use <reporting:requirement_level> to
+    #    get the tools to execute.
+
+    # #2 Iterate over the criteria and associated tool results to compose the payload of the HTTP response:
+    #    - <report> property
+    #       + If any(valid is False and requirement_level in REQUIRED), then <QC.xxx>:valid=False
+    #       + Compose <QC.xxx>:data:[REQUIRED|RECOMMENDED|OPTIONAL]:tool_name:data
+    #    - <badge> property
+    #       + Get SET of badge:[bronze|silver|gold] from sqaaas.ini
+    #       + Compose SET of criteria fulfilled checking <QC.xxx>:valid is True
+    #         + SET INTERSECTION to get the badge type
+    #       + __FAIR special use case__:
+    #         + Additional property provided by the validator plugin ---> <subcriteria>
+    #         + If <subcriteria> is defined, then use these for the badge matchmaking (and not the criterion_name)
+
+    return web.Response(status=200)
+
+
 @ctls_utils.debug_request
 @ctls_utils.validate_request
 async def create_pull_request(request: web.Request, pipeline_id, body) -> web.Response:

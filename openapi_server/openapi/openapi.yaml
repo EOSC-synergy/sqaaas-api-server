@@ -134,6 +134,35 @@ paths:
       summary: Creates a pipeline for assessment (QAA module).
       x-openapi-router-controller: openapi_server.controllers.default_controller
       x-codegen-request-body-name: body
+  /pipeline/assessment/{pipeline_id}/output:
+    get:
+      description: |
+        Returns the reporting and badging data from the execution of the assessment pipeline.
+      operationId: get_output_for_assessment
+      parameters:
+      - description: ID of the pipeline to get
+        explode: false
+        in: path
+        name: pipeline_id
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AssessmentOutput'
+          description: Successful operation
+        "400":
+          description: Invalid pipeline ID supplied
+        "404":
+          description: Pipeline not found
+        "422":
+          description: Pipeline has not been executed
+      summary: Get the assessment output (QAA module)
+      x-openapi-router-controller: openapi_server.controllers.default_controller
   /pipeline/{pipeline_id}:
     delete:
       operationId: delete_pipeline_by_id
@@ -1472,6 +1501,26 @@ components:
       required:
       - repo_code
       type: object
+    AssessmentOutput:
+      example:
+        report:
+          valid: true
+          data:
+            REQUIRED:
+              licensee: <stdout>
+        badge:
+          software: BRONZE
+          services: SILVER
+          fair: GOLD
+      properties:
+        report:
+          additionalProperties:
+            $ref: '#/components/schemas/AssessmentOutput_report'
+          type: object
+        badge:
+          $ref: '#/components/schemas/AssessmentOutput_badge'
+      title: AssessmentOutput
+      type: object
     UpstreamError:
       properties:
         upstream_status:
@@ -1620,14 +1669,14 @@ components:
       type: object
     inline_response_200_1:
       example:
-        file_name: '{"file_name":"script.sh"}'
+        file_name: script.sh
         content: |-
           (
           cd workdir ; npm install
           )
       properties:
         file_name:
-          example: '{"file_name":"script.sh"}'
+          example: script.sh
           title: file_name
           type: string
         content:
@@ -1896,6 +1945,60 @@ components:
         pipeline_config:
           $ref: '#/components/schemas/JePL_jenkinsfile_pipeline_config'
       title: JePL_jenkinsfile_stages
+      type: object
+    AssessmentOutput_data:
+      properties:
+        REQUIRED:
+          additionalProperties:
+            type: string
+          title: REQUIRED
+          type: object
+        RECOMMENDED:
+          additionalProperties:
+            type: string
+          title: RECOMMENDED
+          type: object
+        OPTIONAL:
+          additionalProperties:
+            type: string
+          title: OPTIONAL
+          type: object
+      title: AssessmentOutput_data
+      type: object
+    AssessmentOutput_report:
+      properties:
+        valid:
+          default: false
+          title: valid
+          type: boolean
+        data:
+          $ref: '#/components/schemas/AssessmentOutput_data'
+      title: AssessmentOutput_report
+      type: object
+    AssessmentOutput_badge:
+      properties:
+        software:
+          enum:
+          - BRONZE
+          - SILVER
+          - GOLD
+          title: software
+          type: string
+        services:
+          enum:
+          - BRONZE
+          - SILVER
+          - GOLD
+          title: services
+          type: string
+        fair:
+          enum:
+          - BRONZE
+          - SILVER
+          - GOLD
+          title: fair
+          type: string
+      title: AssessmentOutput_badge
       type: object
     Badge_recipient:
       example:
