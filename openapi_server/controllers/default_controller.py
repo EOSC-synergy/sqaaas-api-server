@@ -823,18 +823,15 @@ async def _validate_output(stage_data, pipeline_data):
     return output_data
 
 
-@ctls_utils.debug_request
-@ctls_utils.validate_request
-async def get_pipeline_output(request: web.Request, pipeline_id, validate=None) -> web.Response:
-    """Get output from pipeline execution
+async def _get_output(pipeline_id, validate=False):
+    """Handles the output gathering from pipeline execution
 
-    Returns the console output from the pipeline execution.
+    Returns the output data.
 
     :param pipeline_id: ID of the pipeline to get
     :type pipeline_id: str
     :param validate: Flag to indicate whether the returned output shall be validate using sqaaas-reporting tool
     :type validate: bool
-
     """
     pipeline_data = db.get_entry(pipeline_id)
 
@@ -856,6 +853,22 @@ async def get_pipeline_output(request: web.Request, pipeline_id, validate=None) 
     except SQAaaSAPIException as e:
         return web.Response(status=e.http_code, reason=e.message, text=e.message)
 
+
+@ctls_utils.debug_request
+@ctls_utils.validate_request
+async def get_pipeline_output(request: web.Request, pipeline_id, validate=False) -> web.Response:
+    """Get output from pipeline execution
+
+    Returns the console output from the pipeline execution.
+
+    :param pipeline_id: ID of the pipeline to get
+    :type pipeline_id: str
+    :param validate: Flag to indicate whether the returned output shall be validate using sqaaas-reporting tool
+    :type validate: bool
+
+    """
+    output_data = await _get_output(pipeline_id, validate=validate)
+
     return web.json_response(output_data, status=200)
 
 
@@ -870,6 +883,7 @@ async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Re
     """
     # #1 Same as GET /pipeline/<pipeline_id>/output BUT use <reporting:requirement_level> to
     #    get the tools to execute.
+    output_data = await _get_output(pipeline_id, validate=True)
 
     # #2 Iterate over the criteria and associated tool results to compose the payload of the HTTP response:
     #    - <report> property
