@@ -106,6 +106,17 @@ paths:
       description: |
         Creates a pipeline for assessment (QAA module).
       operationId: add_pipeline_for_assessment
+      parameters:
+      - description: Optional tools that shall be accounted
+        explode: true
+        in: query
+        name: optional_tools
+        required: false
+        schema:
+          items:
+            type: string
+          type: array
+        style: form
       requestBody:
         content:
           application/json:
@@ -1504,10 +1515,11 @@ components:
     AssessmentOutput:
       example:
         report:
-          valid: true
-          data:
-            REQUIRED:
-              licensee: <stdout>
+          QC.Lic:
+            valid: true
+            data:
+              REQUIRED:
+                licensee: <stdout>
         badge:
           software: BRONZE
           services: SILVER
@@ -1515,7 +1527,28 @@ components:
       properties:
         report:
           additionalProperties:
-            $ref: '#/components/schemas/AssessmentOutput_report'
+            additionalProperties:
+              properties:
+                valid:
+                  default: false
+                  type: boolean
+                data:
+                  properties:
+                    REQUIRED:
+                      additionalProperties:
+                        type: string
+                      type: object
+                    RECOMMENDED:
+                      additionalProperties:
+                        type: string
+                      type: object
+                    OPTIONAL:
+                      additionalProperties:
+                        type: string
+                      type: object
+                  type: object
+              type: object
+            type: object
           type: object
         badge:
           $ref: '#/components/schemas/AssessmentOutput_badge'
@@ -1945,35 +1978,6 @@ components:
         pipeline_config:
           $ref: '#/components/schemas/JePL_jenkinsfile_pipeline_config'
       title: JePL_jenkinsfile_stages
-      type: object
-    AssessmentOutput_data:
-      properties:
-        REQUIRED:
-          additionalProperties:
-            type: string
-          title: REQUIRED
-          type: object
-        RECOMMENDED:
-          additionalProperties:
-            type: string
-          title: RECOMMENDED
-          type: object
-        OPTIONAL:
-          additionalProperties:
-            type: string
-          title: OPTIONAL
-          type: object
-      title: AssessmentOutput_data
-      type: object
-    AssessmentOutput_report:
-      properties:
-        valid:
-          default: false
-          title: valid
-          type: boolean
-        data:
-          $ref: '#/components/schemas/AssessmentOutput_data'
-      title: AssessmentOutput_report
       type: object
     AssessmentOutput_badge:
       properties:

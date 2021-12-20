@@ -6,7 +6,6 @@ from typing import List, Dict, Type
 
 from openapi_server.models.base_model_ import Model
 from openapi_server.models.assessment_output_badge import AssessmentOutputBadge
-from openapi_server.models.assessment_output_report import AssessmentOutputReport
 from openapi_server import util
 
 
@@ -16,14 +15,14 @@ class AssessmentOutput(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, report: Dict[str, AssessmentOutputReport]=None, badge: AssessmentOutputBadge=None):
+    def __init__(self, report: Dict[str, Dict[str, object]]=None, badge: AssessmentOutputBadge=None):
         """AssessmentOutput - a model defined in OpenAPI
 
         :param report: The report of this AssessmentOutput.
         :param badge: The badge of this AssessmentOutput.
         """
         self.openapi_types = {
-            'report': Dict[str, AssessmentOutputReport],
+            'report': Dict[str, Dict[str, object]],
             'badge': AssessmentOutputBadge
         }
 
@@ -50,7 +49,7 @@ class AssessmentOutput(Model):
 
 
         :return: The report of this AssessmentOutput.
-        :rtype: Dict[str, AssessmentOutputReport]
+        :rtype: Dict[str, Dict[str, object]]
         """
         return self._report
 
@@ -60,7 +59,7 @@ class AssessmentOutput(Model):
 
 
         :param report: The report of this AssessmentOutput.
-        :type report: Dict[str, AssessmentOutputReport]
+        :type report: Dict[str, Dict[str, object]]
         """
 
         self._report = report

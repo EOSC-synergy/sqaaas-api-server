@@ -123,8 +123,12 @@ async def add_pipeline(request: web.Request, body, report_to_stdout=None) -> web
     return web.json_response(r, status=201)
 
 
-async def _get_tooling_for_assessment():
-    """Returns per-criterion tooling metadata filtered for assessment."""
+async def _get_tooling_for_assessment(optional_tools=[]):
+    """Returns per-criterion tooling metadata filtered for assessment.
+
+    :param optional_tools: Optional tools that shall be accounted
+    :type optional_tools: list
+    """
     levels_for_assessment = ['REQUIRED', 'RECOMMENDED']
 
     tooling_metadata_json = await _get_tooling_metadata()
@@ -134,13 +138,21 @@ async def _get_tooling_for_assessment():
         criterion_data_copy = copy.deepcopy(criterion_data)
         toolset_for_reporting = []
         for tool in criterion_data['tools']:
-            # NOTE!! Filtered based on the availability of the <reporting> property
+            account_tool = False
+            # NOTE!! Filtered based on the availability of the <reporting:requirement_level> property
             try:
                 level = tool['reporting']['requirement_level']
                 if level in levels_for_assessment:
-                    toolset_for_reporting.append(tool)
+                    account_tool = True
+                    logger.debug('Accounting for assessment the REQUIRED/RECOMMENDED tool: %s' % tool)
+                else:
+                    if tool in optional_tools:
+                        account_tool = True
+                        logger.debug('Accounting the requested OPTIONAL tool <%s>' % tool)
             except KeyError:
                 logger.debug('Could not get reporting data from tooling for tool <%s>' % tool)
+            if account_tool:
+                toolset_for_reporting.append(tool)
         criterion_id = criterion_data['id']
         if not toolset_for_reporting:
             logger.debug('No tool defined for assessment (missing <reporting> property) in <%s> criterion' % criterion_id)
@@ -152,7 +164,7 @@ async def _get_tooling_for_assessment():
     return criteria_data_list_filtered
 
 
-async def add_pipeline_for_assessment(request: web.Request, body) -> web.Response:
+async def add_pipeline_for_assessment(request: web.Request, body, optional_tools=[]) -> web.Response:
     """Creates a pipeline for assessment (QAA module).
 
     Creates a pipeline for assessment (QAA module).
