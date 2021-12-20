@@ -776,6 +776,44 @@ async def _get_tool_from_command(tool_criterion_map, stdout_command):
     return matched_tool
 
 
+async def _validate_output(stage_data, pipeline_data):
+    """Validates the output obtained from the pipeline execution.
+
+    Returns the data following according to GET /pipeline/<id>/output path specification.
+
+    :param stage_data: Per-stage data gathered from Jenkins pipeline execution.
+    :type stage_data: dict
+    :param pipeline_data: Pipeline's data from DB
+    :type pipeline_data: dict
+    """
+    logger.debug('Output validation has been requested')
+    output_data = {}
+    for criterion_name, criterion_data in stage_data.items():
+        # Check if the command lies within a bash script
+        stdout_command = criterion_data['stdout_command']
+        commands_from_script = await _get_commands_from_script(
+                stdout_command,
+                pipeline_data['data']['commands_scripts']
+        )
+        if commands_from_script:
+            logger.debug(
+                'Detected a bash script in the criterion <%s> '
+                'command. The real commands are: %s' % (
+                    criterion_name, commands_from_script))
+            stdout_command = commands_from_script
+        output_data[criterion_name] = criterion_data
+        tool_criterion_map = pipeline_data['tools'][criterion_name]
+        matched_tool = await _get_tool_from_command(
+            tool_criterion_map,
+            stdout_command
+        )
+        logger.debug('Validating output from criterion <%s>' % criterion_name)
+        out = await _run_validation(matched_tool, criterion_data['stdout_text'])
+        output_data[criterion_name]['validation'] = out
+
+    return output_data
+
+
 @ctls_utils.debug_request
 @ctls_utils.validate_request
 async def get_pipeline_output(request: web.Request, pipeline_id, validate=None) -> web.Response:
@@ -803,33 +841,9 @@ async def get_pipeline_output(request: web.Request, pipeline_id, validate=None) 
             build_info['number']
         )
 
+        output_data = stage_data
         if validate:
-            logger.debug('Output validation has been requested')
-            output_data = {}
-            for criterion_name, criterion_data in stage_data.items():
-                # Check if the command lies within a bash script
-                stdout_command = criterion_data['stdout_command']
-                commands_from_script = await _get_commands_from_script(
-                        stdout_command,
-                        pipeline_data['data']['commands_scripts']
-                )
-                if commands_from_script:
-                    logger.debug(
-                        'Detected a bash script in the criterion <%s> '
-                        'command. The real commands are: %s' % (
-                            criterion_name, commands_from_script))
-                    stdout_command = commands_from_script
-                output_data[criterion_name] = criterion_data
-                tool_criterion_map = pipeline_data['tools'][criterion_name]
-                matched_tool = await _get_tool_from_command(
-                    tool_criterion_map,
-                    stdout_command
-                )
-                logger.debug('Validating output from criterion <%s>' % criterion_name)
-                out = await _run_validation(matched_tool, criterion_data['stdout_text'])
-                output_data[criterion_name]['validation'] = out
-        else:
-            output_data = stage_data
+            output_data = _validate_output(stage_data)
     except SQAaaSAPIException as e:
         return web.Response(status=e.http_code, reason=e.message, text=e.message)
 
