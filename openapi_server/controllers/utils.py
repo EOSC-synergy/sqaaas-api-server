@@ -453,9 +453,8 @@ class ProcessExtraData(object):
         """
         logger.debug('Call to ProcessExtraData.set_config_when_clause() method')
         config_data_list = []
+        config_json_no_when = copy.deepcopy(config_json)
         for criterion_name, criterion_data in config_json['sqa_criteria'].items():
-            # Copy config_json __once all modifications are done__
-            config_json_no_when = copy.deepcopy(config_json)
             criterion_data_copy = copy.deepcopy(criterion_data)
             if 'when' in criterion_data.keys():
                 config_json_when = copy.deepcopy(config_json)
