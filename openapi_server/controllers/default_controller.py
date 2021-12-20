@@ -853,6 +853,8 @@ async def _get_output(pipeline_id, validate=False):
     except SQAaaSAPIException as e:
         return web.Response(status=e.http_code, reason=e.message, text=e.message)
 
+    return output_data
+
 
 @ctls_utils.debug_request
 @ctls_utils.validate_request
