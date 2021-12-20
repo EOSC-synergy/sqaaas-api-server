@@ -7,13 +7,13 @@
           {
             "repo": "{{ repo_code.repo }}",
             "branch": "{{ repo_code.branch }}"
-          {%- if repo_docs %}
-	      },
+          {%- if repo_docs.get('repo', {})  %}
+	  },
           {
             "repo": "{{ repo_docs.repo }}",
             "branch": "{{ repo_docs.branch }}"
           }
-	      {%- else %}
+	  {%- else %}
           }
           {%- endif %}
         ],
