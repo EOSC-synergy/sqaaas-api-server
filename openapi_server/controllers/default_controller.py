@@ -161,6 +161,12 @@ async def _get_tooling_for_assessment(optional_tools=[]):
                 len(toolset_for_reporting), criterion_id, [tool['name'] for tool in toolset_for_reporting]))
             criterion_data_copy['tools'] = toolset_for_reporting
             criteria_data_list_filtered.append(criterion_data_copy)
+
+    if not criteria_data_list_filtered:
+        _reason = 'Could not find any tool for criteria assessment'
+        logger.error(_reason)
+        raise SQAaaSAPIException(422, _reason)
+
     return criteria_data_list_filtered
 
 
@@ -177,8 +183,11 @@ async def add_pipeline_for_assessment(request: web.Request, body, optional_tools
     repo_docs = body.get('repo_docs', {})
 
     #0 Filter per-criterion tools that will take part in the assessment
-    criteria_data_list = await _get_tooling_for_assessment()
-    logger.debug('Gathered tooling data enabled for assessment: %s' % criteria_data_list)
+    try:
+        criteria_data_list = await _get_tooling_for_assessment(optional_tools=optional_tools)
+        logger.debug('Gathered tooling data enabled for assessment: %s' % criteria_data_list)
+    except SQAaaSAPIException as e:
+        return web.Response(status=e.http_code, reason=e.message, text=e.message)
 
     #1 Load request payload (same as passed to POST /pipeline) from templates
     env = Environment(
