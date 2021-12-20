@@ -125,6 +125,8 @@ async def add_pipeline(request: web.Request, body, report_to_stdout=None) -> web
 
 async def _get_tooling_for_assessment():
     """Returns per-criterion tooling metadata filtered for assessment."""
+    levels_for_assessment = ['REQUIRED', 'RECOMMENDED']
+
     tooling_metadata_json = await _get_tooling_metadata()
     criteria_data_list = await _sort_tooling_by_criteria(tooling_metadata_json)
     criteria_data_list_filtered = []
@@ -133,8 +135,12 @@ async def _get_tooling_for_assessment():
         toolset_for_reporting = []
         for tool in criterion_data['tools']:
             # NOTE!! Filtered based on the availability of the <reporting> property
-            if 'reporting' in list(tool):
-                toolset_for_reporting.append(tool)
+            try:
+                level = tool['reporting']['requirement_level']
+                if level in levels_for_assessment:
+                    toolset_for_reporting.append(tool)
+            except KeyError:
+                logger.debug('Could not get reporting data from tooling for tool <%s>' % tool)
         criterion_id = criterion_data['id']
         if not toolset_for_reporting:
             logger.debug('No tool defined for assessment (missing <reporting> property) in <%s> criterion' % criterion_id)
