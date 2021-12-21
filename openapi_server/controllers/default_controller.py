@@ -177,6 +177,8 @@ async def add_pipeline_for_assessment(request: web.Request, body, optional_tools
 
     :param body: JSON payload request.
     :type body: dict | bytes
+    :param optional_tools: Optional tools that shall be accounted
+    :type optional_tools: list
 
     """
     repo_code = body['repo_code']
@@ -909,7 +911,7 @@ async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Re
                 data[level][tool] = validation_data['data_unstructured']
             else:
                 data[level] = {tool: validation_data['data_unstructured']}
-            report_data[criterion_name]['data'] = data 
+            report_data[criterion_name]['data'] = data
             # FIXME Since we only expect ONE tool per CRITERION, <valid> is the one from the tool
             # This shall be computed amongst all the tool validations
             report_data[criterion_name]['valid'] = validation_data['valid']
@@ -945,7 +947,7 @@ async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Re
     else:
         logger.info('Pipeline <%s> fulfills BRONZE badge criteria!' % pipeline_id)
         badge_data['software'] = 'BRONZE'
-    
+
     r = {'report': report_data, 'badge': badge_data}
     return web.json_response(r, status=200)
 
