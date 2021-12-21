@@ -36,3 +36,7 @@ def get_ci(key, fallback=None):
 
 def get_badge(key, fallback=None):
     return CONF.get(BADGE_SECTION, key, fallback=fallback)
+
+
+def get_badge_sub(subsection, key, fallback=None):
+    return CONF.get(':'.join([BADGE_SECTION, subsection]), key, fallback=fallback)

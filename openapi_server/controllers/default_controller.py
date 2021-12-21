@@ -123,8 +123,14 @@ async def add_pipeline(request: web.Request, body, report_to_stdout=None) -> web
     return web.json_response(r, status=201)
 
 
-async def _get_tooling_for_assessment():
-    """Returns per-criterion tooling metadata filtered for assessment."""
+async def _get_tooling_for_assessment(optional_tools=[]):
+    """Returns per-criterion tooling metadata filtered for assessment.
+
+    :param optional_tools: Optional tools that shall be accounted
+    :type optional_tools: list
+    """
+    levels_for_assessment = ['REQUIRED', 'RECOMMENDED']
+
     tooling_metadata_json = await _get_tooling_metadata()
     criteria_data_list = await _sort_tooling_by_criteria(tooling_metadata_json)
     criteria_data_list_filtered = []
@@ -132,8 +138,20 @@ async def _get_tooling_for_assessment():
         criterion_data_copy = copy.deepcopy(criterion_data)
         toolset_for_reporting = []
         for tool in criterion_data['tools']:
-            # NOTE!! Filtered based on the availability of the <reporting> property
-            if 'reporting' in list(tool):
+            account_tool = False
+            # NOTE!! Filtered based on the availability of the <reporting:requirement_level> property
+            try:
+                level = tool['reporting']['requirement_level']
+                if level in levels_for_assessment:
+                    account_tool = True
+                    logger.debug('Accounting for assessment the REQUIRED/RECOMMENDED tool: %s' % tool)
+                else:
+                    if tool in optional_tools:
+                        account_tool = True
+                        logger.debug('Accounting the requested OPTIONAL tool <%s>' % tool)
+            except KeyError:
+                logger.debug('Could not get reporting data from tooling for tool <%s>' % tool)
+            if account_tool:
                 toolset_for_reporting.append(tool)
         criterion_id = criterion_data['id']
         if not toolset_for_reporting:
@@ -143,24 +161,35 @@ async def _get_tooling_for_assessment():
                 len(toolset_for_reporting), criterion_id, [tool['name'] for tool in toolset_for_reporting]))
             criterion_data_copy['tools'] = toolset_for_reporting
             criteria_data_list_filtered.append(criterion_data_copy)
+
+    if not criteria_data_list_filtered:
+        _reason = 'Could not find any tool for criteria assessment'
+        logger.error(_reason)
+        raise SQAaaSAPIException(422, _reason)
+
     return criteria_data_list_filtered
 
 
-async def add_pipeline_for_assessment(request: web.Request, body) -> web.Response:
+async def add_pipeline_for_assessment(request: web.Request, body, optional_tools=[]) -> web.Response:
     """Creates a pipeline for assessment (QAA module).
 
     Creates a pipeline for assessment (QAA module).
 
     :param body: JSON payload request.
     :type body: dict | bytes
+    :param optional_tools: Optional tools that shall be accounted
+    :type optional_tools: list
 
     """
     repo_code = body['repo_code']
     repo_docs = body.get('repo_docs', {})
 
     #0 Filter per-criterion tools that will take part in the assessment
-    criteria_data_list = await _get_tooling_for_assessment()
-    logger.debug('Gathered tooling data enabled for assessment: %s' % criteria_data_list)
+    try:
+        criteria_data_list = await _get_tooling_for_assessment(optional_tools=optional_tools)
+        logger.debug('Gathered tooling data enabled for assessment: %s' % criteria_data_list)
+    except SQAaaSAPIException as e:
+        return web.Response(status=e.http_code, reason=e.message, text=e.message)
 
     #1 Load request payload (same as passed to POST /pipeline) from templates
     env = Environment(
@@ -684,6 +713,8 @@ async def get_pipeline_status(request: web.Request, pipeline_id) -> web.Response
 async def _run_validation(tool, stdout):
     """Validates the stdout using the sqaaas-reporting tool.
 
+    Returns a (<tooling data>, <validation data>) tuple.
+
     :param tool: Tool name
     :type tool: str
     :param stdout: Tool output
@@ -708,16 +739,17 @@ async def _run_validation(tool, stdout):
         raise SQAaaSAPIException(422, _reason)
 
     # Add output text as the report2sqaaas <stdout> input arg
-    reporting_data['stdout'] = stdout
+    validator_opts = copy.deepcopy(reporting_data)
+    validator_opts['stdout'] = stdout
 
     allowed_validators = r2s_utils.get_validators()
-    validator = reporting_data['validator']
-    if validator not in allowed_validators:
-        _reason = 'Could not find report2sqaaas validator plugin <%s> (found: %s)' % (validator, allowed_validators)
+    validator_name = reporting_data['validator']
+    if validator_name not in allowed_validators:
+        _reason = 'Could not find report2sqaaas validator plugin <%s> (found: %s)' % (validator_name, allowed_validators)
         logger.error(_reason)
         raise SQAaaSAPIException(422, _reason)
-    validator = r2s_utils.get_validator(reporting_data)
-    return validator.driver.validate()
+    validator = r2s_utils.get_validator(validator_opts)
+    return (reporting_data, validator.driver.validate())
 
 
 async def _get_commands_from_script(stdout_command, commands_script_list):
@@ -758,18 +790,62 @@ async def _get_tool_from_command(tool_criterion_map, stdout_command):
     return matched_tool
 
 
-@ctls_utils.debug_request
-@ctls_utils.validate_request
-async def get_pipeline_output(request: web.Request, pipeline_id, validate=None) -> web.Response:
-    """Get output from pipeline execution
+async def _validate_output(stage_data, pipeline_data):
+    """Validates the output obtained from the pipeline execution.
 
-    Returns the console output from the pipeline execution.
+    Returns the data following according to GET /pipeline/<id>/output path specification.
+
+    :param stage_data: Per-stage data gathered from Jenkins pipeline execution.
+    :type stage_data: dict
+    :param pipeline_data: Pipeline's data from DB
+    :type pipeline_data: dict
+    """
+    logger.debug('Output validation has been requested')
+    output_data = {}
+    for criterion_name, criterion_stage_data in stage_data.items():
+        stage_exit_status = criterion_stage_data['status']
+        if stage_exit_status not in ['SUCCESS']:
+            logger.warn('Stage exit status (%s) is not successful. Skipping..' % stage_exit_status)
+            continue
+
+        logger.debug('Successful stage exit status for criterion <%s>' % criterion_name)
+        # Check if the command lies within a bash script
+        stdout_command = criterion_stage_data['stdout_command']
+        commands_from_script = await _get_commands_from_script(
+                stdout_command,
+                pipeline_data['data']['commands_scripts']
+        )
+        if commands_from_script:
+            logger.debug(
+                'Detected a bash script in the criterion <%s> '
+                'command. The real commands are: %s' % (
+                    criterion_name, commands_from_script))
+            stdout_command = commands_from_script
+        output_data[criterion_name] = criterion_stage_data
+        tool_criterion_map = pipeline_data['tools'][criterion_name]
+        matched_tool = await _get_tool_from_command(
+            tool_criterion_map,
+            stdout_command
+        )
+        output_data[criterion_name]['tool'] = matched_tool
+
+        logger.debug('Validating output from criterion <%s>' % criterion_name)
+        reporting_data, out = await _run_validation(matched_tool, criterion_stage_data['stdout_text'])
+        output_data[criterion_name].update(reporting_data)
+        output_data[criterion_name]['validation'] = out
+
+    return output_data
+
+
+async def _get_output(pipeline_id, validate=False):
+    """Handles the output gathering from pipeline execution
+
+    Returns the output data.
 
     :param pipeline_id: ID of the pipeline to get
     :type pipeline_id: str
     :param validate: Flag to indicate whether the returned output shall be validate using sqaaas-reporting tool
     :type validate: bool
-
     """
     pipeline_data = db.get_entry(pipeline_id)
 
@@ -785,37 +861,95 @@ async def get_pipeline_output(request: web.Request, pipeline_id, validate=None) 
             build_info['number']
         )
 
+        output_data = stage_data
         if validate:
-            logger.debug('Output validation has been requested')
-            output_data = {}
-            for criterion_name, criterion_data in stage_data.items():
-                # Check if the command lies within a bash script
-                stdout_command = criterion_data['stdout_command']
-                commands_from_script = await _get_commands_from_script(
-                        stdout_command,
-                        pipeline_data['data']['commands_scripts']
-                )
-                if commands_from_script:
-                    logger.debug(
-                        'Detected a bash script in the criterion <%s> '
-                        'command. The real commands are: %s' % (
-                            criterion_name, commands_from_script))
-                    stdout_command = commands_from_script
-                output_data[criterion_name] = criterion_data
-                tool_criterion_map = pipeline_data['tools'][criterion_name]
-                matched_tool = await _get_tool_from_command(
-                    tool_criterion_map,
-                    stdout_command
-                )
-                logger.debug('Validating output from criterion <%s>' % criterion_name)
-                out = await _run_validation(matched_tool, criterion_data['stdout_text'])
-                output_data[criterion_name]['validation'] = out
-        else:
-            output_data = stage_data
+            output_data = await _validate_output(stage_data, pipeline_data)
     except SQAaaSAPIException as e:
         return web.Response(status=e.http_code, reason=e.message, text=e.message)
 
+    return output_data
+
+
+@ctls_utils.debug_request
+@ctls_utils.validate_request
+async def get_pipeline_output(request: web.Request, pipeline_id, validate=False) -> web.Response:
+    """Get output from pipeline execution
+
+    Returns the console output from the pipeline execution.
+
+    :param pipeline_id: ID of the pipeline to get
+    :type pipeline_id: str
+    :param validate: Flag to indicate whether the returned output shall be validate using sqaaas-reporting tool
+    :type validate: bool
+
+    """
+    output_data = await _get_output(pipeline_id, validate=validate)
+
     return web.json_response(output_data, status=200)
+
+
+async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Response:
+    """Get the assessment output
+
+    Returns the reporting and badging data from the execution of the assessment pipeline.
+
+    :param pipeline_id: ID of the pipeline to get
+    :type pipeline_id: str
+
+    """
+    output_data = await _get_output(pipeline_id, validate=True)
+
+    def _format_report():
+        report_data = {}
+        data = {}
+        for criterion_name, criterion_output_data in output_data.items():
+            report_data[criterion_name] = {}
+            level = criterion_output_data['requirement_level']
+            tool = criterion_output_data['tool']
+            validation_data = criterion_output_data['validation']
+            if level in list(data):
+                data[level][tool] = validation_data['data_unstructured']
+            else:
+                data[level] = {tool: validation_data['data_unstructured']}
+            report_data[criterion_name]['data'] = data
+            # FIXME Since we only expect ONE tool per CRITERION, <valid> is the one from the tool
+            # This shall be computed amongst all the tool validations
+            report_data[criterion_name]['valid'] = validation_data['valid']
+        return report_data
+
+    # Iterate over the criteria and associated tool results to compose the payload of the HTTP response:
+    #    - <report> property
+    #       + If any(valid is False and requirement_level in REQUIRED), then <QC.xxx>:valid=False
+    #       + Compose <QC.xxx>:data:[REQUIRED|RECOMMENDED|OPTIONAL]:tool_name:data
+    #    - <badge> property
+    #       + Get SET of badge:[bronze|silver|gold] from sqaaas.ini
+    #       + Compose SET of criteria fulfilled checking <QC.xxx>:valid is True
+    #         + SET INTERSECTION to get the badge type
+    #       + __FAIR special use case__:
+    #         + Additional property provided by the validator plugin ---> <subcriteria>
+    #         + If <subcriteria> is defined, then use these for the badge matchmaking (and not the criterion_name)
+    # Format <report> key
+    report_data = _format_report()
+
+    # Gather & format <badge> key
+    # FIXME ONLY TACKLING BRONZE BADGES FOR SOFTWARE
+    badge_data = {}
+    sw_bronze_criteria = config.get_badge_sub(
+        'software', 'bronze'
+    )
+    sw_bronze_criteria_list = sw_bronze_criteria.split()
+    logger.debug('Obtaining BRONZE criteria for SOFTWARE: %s' % sw_bronze_criteria_list)
+    criteria_fulfilled = [criterion for criterion, criterion_data in report_data.items() if criterion_data['valid']]
+    logger.info('Criteria fulfilled for pipeline <%s>: %s' % (pipeline_id, criteria_fulfilled))
+    missing_bronze_criteria = set(sw_bronze_criteria_list).difference(criteria_fulfilled)
+    if missing_bronze_criteria:
+        logger.warn('Pipeline <%s> not fulfilling BRONZE badge criteria. Missing criteria: %s' % (pipeline_id, missing_bronze_criteria))
+    else:
+        logger.info('Pipeline <%s> fulfills BRONZE badge criteria!' % pipeline_id)
+        badge_data['software'] = 'BRONZE'
+
+    r = {'report': report_data, 'badge': badge_data}
+    return web.json_response(r, status=200)
 
 
 @ctls_utils.debug_request
