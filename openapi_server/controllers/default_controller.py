@@ -797,9 +797,15 @@ async def _validate_output(stage_data, pipeline_data):
     """
     logger.debug('Output validation has been requested')
     output_data = {}
-    for criterion_name, criterion_data in stage_data.items():
+    for criterion_name, criterion_stage_data in stage_data.items():
+        stage_exit_status = criterion_stage_data['status']
+        if stage_exit_status not in ['SUCCESS']:
+            logger.warn('Stage exit status (%s) is not successful. Skipping..' % stage_exit_status)
+            continue
+
+        logger.debug('Successful stage exit status for criterion <%s>' % criterion_name)
         # Check if the command lies within a bash script
-        stdout_command = criterion_data['stdout_command']
+        stdout_command = criterion_stage_data['stdout_command']
         commands_from_script = await _get_commands_from_script(
                 stdout_command,
                 pipeline_data['data']['commands_scripts']
@@ -810,14 +816,14 @@ async def _validate_output(stage_data, pipeline_data):
                 'command. The real commands are: %s' % (
                     criterion_name, commands_from_script))
             stdout_command = commands_from_script
-        output_data[criterion_name] = criterion_data
+        output_data[criterion_name] = criterion_stage_data
         tool_criterion_map = pipeline_data['tools'][criterion_name]
         matched_tool = await _get_tool_from_command(
             tool_criterion_map,
             stdout_command
         )
         logger.debug('Validating output from criterion <%s>' % criterion_name)
-        out = await _run_validation(matched_tool, criterion_data['stdout_text'])
+        out = await _run_validation(matched_tool, criterion_stage_data['stdout_text'])
         output_data[criterion_name]['validation'] = out
 
     return output_data
