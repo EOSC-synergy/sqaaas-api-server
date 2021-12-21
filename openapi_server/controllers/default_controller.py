@@ -930,8 +930,24 @@ async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Re
     report_data = _format_report()
 
     # Gather & format <badge> key
-
-    return web.json_response(report_data, status=200)
+    # FIXME ONLY TACKLING BRONZE BADGES FOR SOFTWARE
+    badge_data = {}
+    sw_bronze_criteria = config.get_badge_sub(
+        'software', 'bronze'
+    )
+    sw_bronze_criteria_list = sw_bronze_criteria.split()
+    logger.debug('Obtaining BRONZE criteria for SOFTWARE: %s' % sw_bronze_criteria_list)
+    criteria_fulfilled = [criterion for criterion, criterion_data in report_data.items() if criterion_data['valid']]
+    logger.info('Criteria fulfilled for pipeline <%s>: %s' % (pipeline_id, criteria_fulfilled))
+    missing_bronze_criteria = set(sw_bronze_criteria_list).difference(criteria_fulfilled)
+    if missing_bronze_criteria:
+        logger.warn('Pipeline <%s> not fulfilling BRONZE badge criteria. Missing criteria: %s' % (pipeline_id, missing_bronze_criteria))
+    else:
+        logger.info('Pipeline <%s> fulfills BRONZE badge criteria!' % pipeline_id)
+        badge_data['software'] = 'BRONZE'
+    
+    r = {'report': report_data, 'badge': badge_data}
+    return web.json_response(r, status=200)
 
 
 @ctls_utils.debug_request
