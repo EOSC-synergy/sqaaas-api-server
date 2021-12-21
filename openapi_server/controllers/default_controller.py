@@ -895,11 +895,27 @@ async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Re
     :type pipeline_id: str
 
     """
-    # #1 Same as GET /pipeline/<pipeline_id>/output BUT use <reporting:requirement_level> to
-    #    get the tools to execute.
     output_data = await _get_output(pipeline_id, validate=True)
 
-    # #2 Iterate over the criteria and associated tool results to compose the payload of the HTTP response:
+    def _format_report():
+        report_data = {}
+        data = {}
+        for criterion_name, criterion_output_data in output_data.items():
+            report_data[criterion_name] = {}
+            level = criterion_output_data['requirement_level']
+            tool = criterion_output_data['tool']
+            validation_data = criterion_output_data['validation']
+            if level in list(data):
+                data[level][tool] = validation_data['data_unstructured']
+            else:
+                data[level] = {tool: validation_data['data_unstructured']}
+            report_data[criterion_name]['data'] = data 
+            # FIXME Since we only expect ONE tool per CRITERION, <valid> is the one from the tool
+            # This shall be computed amongst all the tool validations
+            report_data[criterion_name]['valid'] = validation_data['valid']
+        return report_data
+
+    # Iterate over the criteria and associated tool results to compose the payload of the HTTP response:
     #    - <report> property
     #       + If any(valid is False and requirement_level in REQUIRED), then <QC.xxx>:valid=False
     #       + Compose <QC.xxx>:data:[REQUIRED|RECOMMENDED|OPTIONAL]:tool_name:data
@@ -910,8 +926,12 @@ async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Re
     #       + __FAIR special use case__:
     #         + Additional property provided by the validator plugin ---> <subcriteria>
     #         + If <subcriteria> is defined, then use these for the badge matchmaking (and not the criterion_name)
+    # Format <report> key
+    report_data = _format_report()
 
-    return web.json_response(output_data, status=200)
+    # Gather & format <badge> key
+
+    return web.json_response(report_data, status=200)
 
 
 @ctls_utils.debug_request
