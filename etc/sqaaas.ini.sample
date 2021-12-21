@@ -18,22 +18,6 @@ repository_backend = github
 ## - Criteria tooling: metadata (relative path from <tooling_repo_url>)
 # tooling_metadata_file = tooling.json
 
-[badge:software]
-bronze = QC.Acc QC.Lic QC.Met QC.Doc
-silver = ${badge_bronze} QC.Sty QC.Sec QC.Ver
-gold = ${badge_silver} QC.Uni QC.Wor QC.Man QC.Del
-
-[badge:services]
-bronze = SvcQC.Aud
-silver = ${badge_bronze} SvcQC.Fun SvcQC.Sec SvcQC.Doc
-gold = ${badge_silver} SvcQC.Api SvcQC.Per SvcQC.Int
-
-# [badge:fair]
-# bronze = rsa01 fairsfair05
-# silver = ${badge_bronze}
-# gold = ${badge_silver}
-
-
 [jenkins]
 ## -------------------- ##
 ## Mandatory parameters ##
@@ -93,3 +77,18 @@ badgeclass = my_badgeclass_name
 ## ------------------------------------------ ##
 ## - Path to file containing the given Badgr user's password
 # token = /etc/sqaaas/.bdgr_token
+
+[badgr:software]
+bronze = QC.Acc QC.Lic QC.Met QC.Doc
+silver = ${bronze} QC.Sty QC.Sec QC.Ver
+gold = ${silver} QC.Uni QC.Wor QC.Man QC.Del
+
+[badgr:services]
+bronze = SvcQC.Aud
+silver = ${bronze} SvcQC.Fun SvcQC.Sec SvcQC.Doc
+gold = ${silver} SvcQC.Api SvcQC.Per SvcQC.Int
+
+# [badgr:fair]
+# bronze = rsa01 fairsfair05
+# silver = ${bronze}
+# gold = ${silver}
