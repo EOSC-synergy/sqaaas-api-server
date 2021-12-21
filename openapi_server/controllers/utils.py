@@ -335,6 +335,7 @@ class ProcessExtraData(object):
         except KeyError as e:
             logger.error('An error ocurred while getting Dockerfile\'s context: %s' % str(e))
 
+        oneshot = True
         if not service_name:
             if not dockerfile:
                 image = reference_tool['docker']['image']
