@@ -305,7 +305,7 @@ paths:
             application/json:
               schema:
                 items:
-                  $ref: '#/components/schemas/CriterionOutput'
+                  $ref: '#/components/schemas/Badge'
                 type: array
           description: Successful operation
         "400":
@@ -1567,43 +1567,6 @@ components:
       - upstream_status
       title: UpstreamError
       type: object
-    CriterionOutput:
-      additionalProperties:
-        properties:
-          status:
-            enum:
-            - SUCCESS
-            - FAILED
-            type: string
-          stdout_command:
-            type: string
-          stdout_text:
-            type: string
-          tool:
-            type: string
-          validator:
-            type: string
-          validation:
-            properties:
-              valid:
-                type: boolean
-              data_unstructured:
-                type: object
-            type: object
-        type: object
-      example:
-        QC.Lic:
-          status: SUCCESS
-          stdout_command: + docker-compose -f .sqa/docker-compose.yml --project-directory
-            /jenkins/workspace/ava-maven-app.assess.sqaaas_main/ exec -T qc.lic_boozy-smalt-maltese
-            /usr/bin/env sh .sqa/script.paltry-taupe-reindeer.sh
-          tool: licensee
-          validator: licensee
-          validation:
-            valid: true
-            data_unstructured: {}
-      title: CriterionOutput
-      type: object
     Badge:
       example:
         createdAt: 2021-04-07T10:34:02.96Z
@@ -1654,6 +1617,42 @@ components:
           title: issuedOn
           type: string
       title: Badge
+      type: object
+    CriterionOutput:
+      additionalProperties:
+        properties:
+          status:
+            enum:
+            - SUCCESS
+            - FAILED
+            type: string
+          stdout_command:
+            type: string
+          stdout_text:
+            type: string
+          tool:
+            type: string
+          validator:
+            type: string
+          validation:
+            properties:
+              valid:
+                type: boolean
+              data_unstructured:
+                type: object
+            type: object
+        type: object
+      example:
+        QC.Lic:
+          status: SUCCESS
+          stdout_command: + docker-compose -f .sqa/docker-compose.yml --project-directory
+            /jenkins/workspace/ava-maven-app.assess.sqaaas_main/ exec -T qc.lic_boozy-smalt-maltese
+            /usr/bin/env sh .sqa/script.paltry-taupe-reindeer.sh
+          tool: licensee
+          validator: licensee
+          validation:
+            valid: true
+            data_unstructured: {}
       type: object
     inline_response_201:
       example:
