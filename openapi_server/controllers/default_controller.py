@@ -711,6 +711,8 @@ async def get_pipeline_status(request: web.Request, pipeline_id) -> web.Response
 async def _run_validation(tool, stdout):
     """Validates the stdout using the sqaaas-reporting tool.
 
+    Returns a (<tooling data>, <validation data>) tuple.
+
     :param tool: Tool name
     :type tool: str
     :param stdout: Tool output
@@ -735,16 +737,17 @@ async def _run_validation(tool, stdout):
         raise SQAaaSAPIException(422, _reason)
 
     # Add output text as the report2sqaaas <stdout> input arg
-    reporting_data['stdout'] = stdout
+    validator_opts = copy.deepcopy(reporting_data)
+    validator_opts['stdout'] = stdout
 
     allowed_validators = r2s_utils.get_validators()
-    validator = reporting_data['validator']
-    if validator not in allowed_validators:
-        _reason = 'Could not find report2sqaaas validator plugin <%s> (found: %s)' % (validator, allowed_validators)
+    validator_name = reporting_data['validator']
+    if validator_name not in allowed_validators:
+        _reason = 'Could not find report2sqaaas validator plugin <%s> (found: %s)' % (validator_name, allowed_validators)
         logger.error(_reason)
         raise SQAaaSAPIException(422, _reason)
-    validator = r2s_utils.get_validator(reporting_data)
-    return validator.driver.validate()
+    validator = r2s_utils.get_validator(validator_opts)
+    return (reporting_data, validator.driver.validate())
 
 
 async def _get_commands_from_script(stdout_command, commands_script_list):
@@ -822,8 +825,11 @@ async def _validate_output(stage_data, pipeline_data):
             tool_criterion_map,
             stdout_command
         )
+        output_data[criterion_name]['tool'] = matched_tool
+
         logger.debug('Validating output from criterion <%s>' % criterion_name)
-        out = await _run_validation(matched_tool, criterion_stage_data['stdout_text'])
+        reporting_data, out = await _run_validation(matched_tool, criterion_stage_data['stdout_text'])
+        output_data[criterion_name].update(reporting_data)
         output_data[criterion_name]['validation'] = out
 
     return output_data
@@ -905,7 +911,7 @@ async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Re
     #         + Additional property provided by the validator plugin ---> <subcriteria>
     #         + If <subcriteria> is defined, then use these for the badge matchmaking (and not the criterion_name)
 
-    return web.Response(status=200)
+    return web.json_response(output_data, status=200)
 
 
 @ctls_utils.debug_request
