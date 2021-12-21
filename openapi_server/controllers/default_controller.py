@@ -849,7 +849,7 @@ async def _get_output(pipeline_id, validate=False):
 
         output_data = stage_data
         if validate:
-            output_data = _validate_output(stage_data)
+            output_data = await _validate_output(stage_data, pipeline_data)
     except SQAaaSAPIException as e:
         return web.Response(status=e.http_code, reason=e.message, text=e.message)
 
