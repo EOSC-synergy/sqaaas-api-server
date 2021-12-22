@@ -52,7 +52,6 @@ TOKEN_BADGR_FILE = config.get_badge(
 BADGR_URL = config.get_badge('url')
 BADGR_USER = config.get_badge('user')
 BADGR_ISSUER = config.get_badge('issuer')
-BADGR_BADGECLASS = config.get_badge('badgeclass')
 
 logger = logging.getLogger('sqaaas.api.controller')
 
@@ -73,7 +72,7 @@ jk_utils = JenkinsUtils(JENKINS_URL, JENKINS_USER, jk_token)
 with open(TOKEN_BADGR_FILE,'r') as f:
     badgr_token = f.read().strip()
 logger.debug('Loading Badgr password from local filesystem')
-badgr_utils = BadgrUtils(BADGR_URL, BADGR_USER, badgr_token, BADGR_ISSUER, BADGR_BADGECLASS)
+badgr_utils = BadgrUtils(BADGR_URL, BADGR_USER, badgr_token, BADGR_ISSUER)
 
 
 async def _add_pipeline_to_db(body, report_to_stdout=False):
@@ -897,6 +896,38 @@ async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Re
             report_data[criterion_name]['valid'] = validation_data['valid']
         return report_data
 
+    def _get_criteria_per_badge_type(report_data):
+        # Criteria prefixes
+        SW_PREFIX = 'QC.'
+        SRV_PREFIX = 'SvcQC'
+        FAIR_PREFIX = 'QC.Fair'
+
+        criteria_fulfilled_list = [
+            criterion
+            for criterion, criterion_data in report_data.items()
+            if criterion_data['valid']
+        ]
+
+        if not criteria_fulfilled_list:
+            logger.warn('No criteria was fulfilled!')
+            criteria_fulfilled_map = {}
+        else:
+            # NOTE Keys aligned with subsection name in sqaaas.ini
+            criteria_fulfilled_map = {
+                'software': [],
+                'services': [],
+                'fair': [],
+            }
+            for criterion in criteria_fulfilled_list:
+                if criterion.startswith(FAIR_PREFIX):
+                    badge_type = 'fair'
+                elif criterion.startswith(SW_PREFIX):
+                    badge_type = 'software'
+                elif criterion.startswith(SRV_PREFIX):
+                    badge_type = 'services'
+                criteria_fulfilled_map[badge_type].extend(criterion)
+        return criteria_fulfilled_map
+
     # Iterate over the criteria and associated tool results to compose the payload of the HTTP response:
     #    - <report> property
     #       + If any(valid is False and requirement_level in REQUIRED), then <QC.xxx>:valid=False
@@ -912,21 +943,34 @@ async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Re
     report_data = _format_report()
 
     # Gather & format <badge> key
-    # FIXME ONLY TACKLING BRONZE BADGES FOR SOFTWARE
     badge_data = {}
-    sw_bronze_criteria = config.get_badge_sub(
-        'software', 'bronze'
-    )
-    sw_bronze_criteria_list = sw_bronze_criteria.split()
-    logger.debug('Obtaining BRONZE criteria for SOFTWARE: %s' % sw_bronze_criteria_list)
-    criteria_fulfilled = [criterion for criterion, criterion_data in report_data.items() if criterion_data['valid']]
-    logger.info('Criteria fulfilled for pipeline <%s>: %s' % (pipeline_id, criteria_fulfilled))
-    missing_bronze_criteria = set(sw_bronze_criteria_list).difference(criteria_fulfilled)
-    if missing_bronze_criteria:
-        logger.warn('Pipeline <%s> not fulfilling BRONZE badge criteria. Missing criteria: %s' % (pipeline_id, missing_bronze_criteria))
-    else:
-        logger.info('Pipeline <%s> fulfills BRONZE badge criteria!' % pipeline_id)
-        badge_data['software'] = 'BRONZE'
+    # List of fullfilled criteria per badge type (i.e. [software, services, fair])
+    criteria_fulfilled_map = _get_criteria_per_badge_type(report_data)
+    if criteria_fulfilled_map:
+        # Get pipeline data for the badge
+        pipeline_data = db.get_entry(pipeline_id)
+        try:
+            jenkins_info = pipeline_data['jenkins']
+            build_info = jenkins_info['build_info']
+        except KeyError:
+            _reason = 'Could not retrieve Jenkins job information: Pipeline has not ran yet'
+            logger.error(_reason)
+            return web.Response(status=422, reason=_reason, text=_reason)
+        # Get Badgr's badgeclass and proceed with badge issuance
+        for badge_type, criteria_fulfilled_list in criteria_fulfilled_map.items():
+            badgeclass_name = await _badgeclass_matchmaking(
+                badge_type, criteria_fulfilled_list
+            )
+            if badgeclass_name:
+                try:
+                    if not badge_type in list(badge_data):
+                        badge_data[badge_type] = {}
+                    badge_data[badge_type] = await _issue_badge(
+                        pipeline_id,
+                        badgeclass_name,
+                    )
+                except SQAaaSAPIException as e:
+                    return web.Response(status=e.http_code, reason=e.message, text=e.message)
 
     r = {'report': report_data, 'badge': badge_data}
     return web.json_response(r, status=200)
@@ -1073,80 +1117,54 @@ async def get_compressed_files(request: web.Request, pipeline_id) -> web.Respons
     return response
 
 
-async def _issue_badge(pipeline_id, config_data_list, build_status, build_url, commit_id, commit_url):
+async def _badgeclass_matchmaking(badge_type, criteria_fulfilled_list):
+    """Does the matchmaking to obtain the badgeclass to be awarded (if any).
+
+    :param badge_type: The type of badge from [software, services, fair].
+    :type badge_type: str
+    :param criteria_fulfilled_list: List of criteria codes fulfilled by the pipeline.
+    :type criteria_fulfilled_list: list
+    """
+    badge_awarded_badgeclass_name = None
+    for badge_category in ['bronze', 'silver', 'gold']:
+        logger.info('Matching given criteria against defined %s criteria for %s' % (
+            badge_category.upper(), badge_type.upper())
+        )
+
+        # Get badge type's config values
+        badgeclass_name = config.get_badge_sub(
+            badge_type, 'badgeclass'
+        )
+        criteria_to_fulfill_list = config.get_badge_sub(
+            ':'.join([badge_type, badge_category]), 'criteria'
+        ).split()
+        # Matchmaking
+        missing_criteria = set(criteria_to_fulfill_list).difference(criteria_fulfilled_list)
+        if missing_criteria:
+            logger.warn('Pipeline <%s> not fulfilling %s criteria. Missing criteria: %s' % (
+                pipeline_id, badge_category.upper(), missing_criteria)
+            )
+            break
+        else:
+            logger.info('Pipeline <%s> fulfills %s badge criteria!' % (
+                pipeline_id, badge_category.upper())
+            )
+            badge_awarded_badgeclass_name = badgeclass_name
+
+    return badge_awarded_badgeclass_name
+
+
+async def _issue_badge(pipeline_id, badgeclass_name):
     """Issues a badge using BadgrUtils.
 
     :param pipeline_id: ID of the pipeline to get
     :type pipeline_id: str
-    :param config_data_list: List of config data Dicts
-    :type config_data_list: list
-    :param build_status:
-    :type build_status: str
-    :param build_url: Jenkins' job build URL.
-    :type build_url: str
-    :param commit_id: Commit ID assigned by git as a result of pushing the JePL files.
-    :type commit_id: str
-    :param commit_url: Commit URL of the git repository platform.
-    :type commit_url: str
-
+    :param badgeclass_name: String that corresponds to the BadgeClass name (as it appears in Badgr web)
+    :type badgeclass_name: str
     """
-    if not build_status in ['SUCCESS', 'UNSTABLE']:
-        _reason = 'Cannot issue a badge for pipeline <%s>: build status is \'%s\'' % (pipeline_id, build_status)
-        logger.error(_reason)
-        raise SQAaaSAPIException(422, _reason)
-
-    # Get 'sw_criteria' & 'srv_criteria'
-    SW_CODE_PREFIX = 'QC.'
-    SRV_CODE_PREFIX = 'SvcQC'
-    logger.debug('Filtering Software criteria codes by <%s> prefix' % SW_CODE_PREFIX)
-    logger.debug('Filtering Service criteria codes by <%s> prefix' % SRV_CODE_PREFIX)
-    criteria = [
-        config_data['data_json']['sqa_criteria'].keys()
-            for config_data in config_data_list
-    ]
-    criteria = list(itertools.chain.from_iterable(criteria))
-    sw_criteria = [
-        criterion
-            for criterion in criteria
-                if criterion.startswith(SW_CODE_PREFIX)
-    ]
-    srv_criteria = [
-        criterion
-            for criterion in criteria
-                if criterion.startswith(SRV_CODE_PREFIX)
-    ]
-    logger.debug('Obtained Software criteria: %s' % sw_criteria)
-    logger.debug('Obtained Service criteria: %s' % srv_criteria)
-
     logger.info('Issuing badge for pipeline <%s>' % pipeline_id)
-    try:
-        badge_data = badgr_utils.issue_badge(
-            commit_id=commit_id,
-            commit_url=commit_url,
-            ci_build_url=build_url,
-            sw_criteria=sw_criteria,
-            srv_criteria=srv_criteria
-        )
-    except Exception as e:
-        _reason = 'Cannot issue a badge for pipeline <%s>: %s' % (pipeline_id, e)
-        logger.error(_reason)
-        raise SQAaaSAPIException(502, _reason)
-    else:
-        logger.info('Badge successfully issued: %s' % badge_data['openBadgeId'])
-        return badge_data
 
-
-@ctls_utils.debug_request
-@ctls_utils.validate_request
-async def issue_badge(request: web.Request, pipeline_id) -> web.Response:
-    """Issues a quality badge.
-
-    Uses Badgr API to issue a badge after successful pipeline execution.
-
-    :param pipeline_id: ID of the pipeline to get
-    :type pipeline_id: str
-
-    """
+    # Get pipeline data
     pipeline_data = db.get_entry(pipeline_id)
     try:
         jenkins_info = pipeline_data['jenkins']
@@ -1155,32 +1173,21 @@ async def issue_badge(request: web.Request, pipeline_id) -> web.Response:
         _reason = 'Could not retrieve Jenkins job information: Pipeline has not ran yet'
         logger.error(_reason)
         return web.Response(status=422, reason=_reason, text=_reason)
-    try:
-        badge_data = await _issue_badge(
-            pipeline_id,
-            pipeline_data['data']['config'],
-            build_info['status'],
-            build_info['url'],
-            build_info['commit_id'],
-            build_info['commit_url']
-        )
-    except SQAaaSAPIException as e:
-        return web.Response(status=e.http_code, reason=e.message, text=e.message)
 
-    # Add badge data to DB
-    db.update_jenkins(
-        pipeline_id,
-        jenkins_info['job_name'],
-        commit_id=jenkins_info['build_info']['commit_id'],
-        commit_url=jenkins_info['build_info']['commit_url'],
-        build_no=jenkins_info['build_info']['number'],
-        build_url=jenkins_info['build_info']['url'],
-        scan_org_wait=jenkins_info['scan_org_wait'],
-        build_status=jenkins_info['build_info']['status'],
-        issue_badge=False,
-        badge_data=jenkins_info['build_info']['badge']
-    )
-    return web.json_response(badge_data, status=200)
+    try:
+        badge_data = badgr_utils.issue_badge(
+            badgeclass_name=badgeclass_name,
+            commit_id=build_info['commit_id'],
+            commit_url=build_info['commit_url'],
+            ci_build_url=build_info['url']
+        )
+    except Exception as e:
+        _reason = 'Cannot issue a badge for pipeline <%s>: %s' % (pipeline_id, e)
+        logger.error(_reason)
+        raise SQAaaSAPIException(502, _reason)
+    else:
+        logger.info('Badge successfully issued: %s' % badge_data['openBadgeId'])
+        return badge_data
 
 
 @ctls_utils.debug_request
@@ -1225,7 +1232,7 @@ async def get_badge(request: web.Request, pipeline_id, share=None) -> web.Respon
             'openBadgeId': badge_data['openBadgeId'],
             'commit_url': commit_url,
             'image': badge_data['image'],
-            'badgr_badgeclass': BADGR_BADGECLASS,
+            'badgr_badgeclass': badge_data['badgeClass'],
             'award_month': calendar.month_name[dt.month],
             'award_day': dt.day,
             'award_year': dt.year,
