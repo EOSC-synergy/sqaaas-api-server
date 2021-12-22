@@ -677,10 +677,10 @@ async def _update_status(pipeline_id, pipeline_data):
         scan_org_wait=jenkins_info['scan_org_wait'],
         build_status=build_status,
         issue_badge=jenkins_info['issue_badge'],
-        badge_data=badge_data
+        badge_data=jenkins_info['build_info']['badge']
     )
 
-    return (build_url, build_status, badge_data)
+    return (build_url, build_status)
 
 
 @ctls_utils.debug_request
@@ -697,15 +697,14 @@ async def get_pipeline_status(request: web.Request, pipeline_id) -> web.Response
     pipeline_data = db.get_entry(pipeline_id)
 
     try:
-        build_url, build_status, badge_data = await _update_status(
+        build_url, build_status = await _update_status(
             pipeline_id, pipeline_data)
     except SQAaaSAPIException as e:
         return web.Response(status=e.http_code, reason=e.message, text=e.message)
 
     r = {
         'build_url': build_url,
-        'build_status': build_status,
-        'openbadge_id': badge_data.get('openBadgeId', None)
+        'build_status': build_status
     }
     return web.json_response(r, status=200)
 
@@ -850,7 +849,7 @@ async def _get_output(pipeline_id, validate=False):
     pipeline_data = db.get_entry(pipeline_id)
 
     try:
-        build_url, build_status, badge_data = await _update_status(
+        build_url, build_status = await _update_status(
             pipeline_id, pipeline_data)
 
         jenkins_info = pipeline_data['jenkins']
