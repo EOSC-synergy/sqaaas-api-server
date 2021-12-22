@@ -316,43 +316,6 @@ paths:
           description: Badge not issued
       summary: Gets badge data associated with the given pipeline
       x-openapi-router-controller: openapi_server.controllers.default_controller
-    post:
-      description: |
-        Uses Badgr API to issue a badge after successful pipeline execution.
-      operationId: issue_badge
-      parameters:
-      - description: ID of the pipeline to get
-        explode: false
-        in: path
-        name: pipeline_id
-        required: true
-        schema:
-          type: string
-        style: simple
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Badge'
-          description: Successful operation
-        "400":
-          description: Invalid pipeline ID supplied
-        "404":
-          description: Pipeline not found
-        "422":
-          description: Pipeline has not been successfully executed
-        "502":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/UpstreamError'
-          description: |
-            The server while acting as a gateway or a proxy, received
-            an invalid response from the upstream server it accessed
-            in attempting to fulfill the request.
-      summary: Issues a quality badge.
-      x-openapi-router-controller: openapi_server.controllers.default_controller
   /pipeline/{pipeline_id}/composer:
     get:
       description: |
