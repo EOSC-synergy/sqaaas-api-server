@@ -971,6 +971,8 @@ async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Re
                     )
                 except SQAaaSAPIException as e:
                     return web.Response(status=e.http_code, reason=e.message, text=e.message)
+        # Store badge data in DB
+        db.add_badge_data(pipeline_id, badge_data)
 
     r = {'report': report_data, 'badge': badge_data}
     return web.json_response(r, status=200)
