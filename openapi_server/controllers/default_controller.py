@@ -656,8 +656,7 @@ async def _update_status(pipeline_id, pipeline_data):
         build_url=build_url,
         scan_org_wait=jenkins_info['scan_org_wait'],
         build_status=build_status,
-        issue_badge=jenkins_info['issue_badge'],
-        badge_data=jenkins_info['build_info']['badge']
+        issue_badge=jenkins_info['issue_badge']
     )
 
     return (build_url, build_status)
