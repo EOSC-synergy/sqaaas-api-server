@@ -646,25 +646,6 @@ async def _update_status(pipeline_id, pipeline_data):
                 logger.debug('Jenkins job queueId found: setting job status to <EXECUTING>')
     logger.info('Build status <%s> for job: %s (build_no: %s)' % (build_status, jk_job_name, build_no))
 
-    badge_data = jenkins_info['build_info']['badge']
-    if jenkins_info['issue_badge']:
-        logger.info('Issuing badge as requested when running the pipeline')
-        try:
-            badge_data = await _issue_badge(
-                pipeline_id,
-                pipeline_data['data']['config'],
-                build_status,
-                build_url,
-                build_info['commit_id'],
-                build_info['commit_url']
-            )
-            jenkins_info['issue_badge'] = False
-        except SQAaaSAPIException as e:
-            if e.http_code == 422:
-                logger.warning(e.message)
-            else:
-                return web.Response(status=e.http_code, reason=e.message, text=e.message)
-
     # Add build status to DB
     db.update_jenkins(
         pipeline_id,
