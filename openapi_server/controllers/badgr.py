@@ -20,19 +20,17 @@ SRV_CRITERIA_MAP = {
 
 class BadgrUtils(object):
     """Class for handling requests to Badgr API."""
-    def __init__(self, endpoint, access_user, access_pass, issuer_name, badgeclass_name):
+    def __init__(self, endpoint, access_user, access_pass, issuer_name):
         """BadgrUtils object definition.
 
         :param endpoint: Badgr endpoint URL
         :param access_user: Badgr's access user id
         :param access_pass: Badgr's user password
         :param issuer_name: String that corresponds to the Issuer name (as it appears in Badgr web)
-        :param badgeclass_name: String that corresponds to the BadgeClass name (as it appears in Badgr web)
         """
         self.logger = logging.getLogger('sqaaas.api.badgr')
         self.endpoint = endpoint
         self.issuer_name = issuer_name
-        self.badgeclass_name = badgeclass_name
         self.access_user = access_user
         self.access_pass = access_pass
 
@@ -148,33 +146,37 @@ class BadgrUtils(object):
 
         return entity_name_dict[entity_name]
 
-    def get_badgeclass_entity(self):
-        """Returns the BadgeClass entityID corresponding to the given Issuer and Badgeclass name combination."""
+    def get_badgeclass_entity(self, badgeclass_name):
+        """Returns the BadgeClass entityID corresponding to the given Issuer and Badgeclass name combination.
+
+        :param badgeclass_name: String that corresponds to the BadgeClass name (as it appears in Badgr web).
+        """
         issuer_id = self._get_matching_entity_id(
             self.issuer_name,
             entity_type='issuer'
         )
         badgeclass_id = self._get_matching_entity_id(
-            self.badgeclass_name,
+            badgeclass_name,
             entity_type='badgeclass',
             issuer_id=issuer_id
         )
         return badgeclass_id
 
     @refresh_token
-    def issue_badge(self, commit_id, commit_url, ci_build_url, sw_criteria=[], srv_criteria=[]):
+    def issue_badge(self, badgeclass_name, commit_id, commit_url, ci_build_url, sw_criteria=[], srv_criteria=[]):
         """Issues a badge (Badgr's assertion).
 
+        :param badgeclass_name: String that corresponds to the BadgeClass name (as it appears in Badgr web)
         :param commit_id: Commit ID assigned by git as a result of pushing the JePL files.
         :param commit_url: Absolute URL pointing to the commit that triggered the pipeline
         :param ci_build_url: Absolute URL pointing to the build results of the pipeline
         :param sw_criteria: List of fulfilled criteria codes from the Software baseline
         :param srv_criteria: List of fulfilled criteria codes from the Service baseline
         """
-        badgeclass_id = self.get_badgeclass_entity()
+        badgeclass_id = self.get_badgeclass_entity(badgeclass_name)
         self.logger.info('BadgeClass entityId found for Issuer <%s> and BadgeClass <%s>: %s' % (
             self.issuer_name,
-            self.badgeclass_name,
+            badgeclass_name,
             badgeclass_id
         ))
         path = 'v2/badgeclasses/%s/assertions' % badgeclass_id
@@ -211,7 +213,7 @@ class BadgrUtils(object):
         })
         self.logger.debug('Assertion data: %s' % assertion_data)
 
-        self.logger.debug('Posting to get an Assertion of BadgeClass <%s> from Badgr API: \'POST %s\'' % (self.badgeclass_name, path))
+        self.logger.debug('Posting to get an Assertion of BadgeClass <%s> from Badgr API: \'POST %s\'' % (badgeclass_name, path))
         r = requests.post(
             urljoin(self.endpoint, path),
             headers=headers,
