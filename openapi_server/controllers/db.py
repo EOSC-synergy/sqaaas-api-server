@@ -63,6 +63,7 @@ def add_entry(pipeline_id, pipeline_repo, pipeline_repo_url, body, report_to_std
             |-- 'job_name'
         |-- 'tools': [Dict] Tool-related data (per-criterion mapping)
             |-- 'criterion_id': tools
+        |-- 'badge': [Dict] Badge data for each badge type in [software, services, fair]
 
     :param pipeline_id: UUID-format identifier for the pipeline.
     :param pipeline_repo: URL of the remote repository for the Jenkins integration.
