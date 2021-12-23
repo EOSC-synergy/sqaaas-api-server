@@ -301,8 +301,10 @@ class ProcessExtraData(object):
                 'branch': tooling_repo_branch
             }
 
-    def get_service_image_properties(composer_json, service_name=None, tools=[], criterion_name=None, project_repos_mapping={}):
+    def curate_service_image_properties(composer_json, service_name=None, tools=[], criterion_name=None, project_repos_mapping={}):
         """Curate the composer parameters of the given config.yml repo entry.
+
+        Returns the service name.
 
         :param composer_json: Composer data (JSON)
         :param service_name: name of the service (if known)
@@ -351,7 +353,14 @@ class ProcessExtraData(object):
         else:
             service_data = service_image_properties
 
-        return (service_name, service_data)
+        # Update service image definition
+        if service_name in list(composer_json['services']):
+            composer_json['services'][service_name].update(service_image_properties)
+        else:
+            composer_json['services'][service_name] = service_image_properties
+        logger.info('Service <%s> image properties updated: %s' % (service_name, service_image_properties))
+
+        return service_name
 
     @staticmethod
     def set_tool_execution_command(tools, criterion_name, criterion_repo, config_json):
@@ -527,7 +536,7 @@ def process_extra_data(config_json, composer_json):
     # - Set 'context' to the appropriate checkout path for building the Dockerfile
     commands_script_list = []
     tool_criteria_map = {}
-    service_images_curated_list = [] # services processed by get_service_image_properties()
+    service_images_curated_list = [] # services processed by curate_service_image_properties()
     for criterion_name, criterion_data in config_json['sqa_criteria'].items():
         logger.debug('Processing config data for criterion <%s>' % criterion_name)
         criterion_data_copy = copy.deepcopy(criterion_data)
@@ -550,7 +559,7 @@ def process_extra_data(config_json, composer_json):
                         logger.debug('Service name is not defined: tooling repository already loaded in config.yml')
 
                 # Processing image details for current repo
-                service_name, service_image_properties = ProcessExtraData.get_service_image_properties(
+                service_name = ProcessExtraData.curate_service_image_properties(
                     composer_json,
                     service_name=service_name,
                     tools=tools,
@@ -558,12 +567,6 @@ def process_extra_data(config_json, composer_json):
                     project_repos_mapping=project_repos_mapping
                 )
                 service_images_curated_list.append(service_name)
-                # Update service image definition
-                if service_name in list(composer_json['services']):
-                    composer_json['services'][service_name].update(service_image_properties)
-                else:
-                    composer_json['services'][service_name] = service_image_properties
-                logger.info('Service <%s> image properties updated: %s' % (service_name, service_image_properties))
                 # Set service_name in repo's <container> property
                 repo['container'] = service_name
 
@@ -599,7 +602,7 @@ def process_extra_data(config_json, composer_json):
     for srv_name, srv_data in composer_json['services'].items():
         if srv_name not in service_images_curated_list:
             logger.debug('Service <%s> image properties not curated' % srv_name)
-            service_name, service_image_properties = ProcessExtraData.get_service_image_properties(
+            service_name = ProcessExtraData.curate_service_image_properties(
                 composer_json, service_name=srv_name
             )
             service_images_curated_list.append(service_name)
