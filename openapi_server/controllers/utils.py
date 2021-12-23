@@ -535,9 +535,10 @@ def process_extra_data(config_json, composer_json):
             for repo in repos_old:
                 logger.debug('Processing repository entry: %s' % repo)
                 service_name = repo.get('container', None)
-                tools = []
-                if repo.get('tools', []):
+                try:
                     tools = repo.pop('tools')
+                except KeyError:
+                    tools = []
                 if tools:
                     if not service_name:
                         ProcessExtraData.set_tool_env(
