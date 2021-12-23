@@ -547,9 +547,12 @@ def process_extra_data(config_json, composer_json):
             for repo in repos_old:
                 logger.debug('Processing repository entry: %s' % repo)
                 service_name = repo.get('container', None)
-                tools = []
-                if not service_name:
+                try:
                     tools = repo.pop('tools')
+                except KeyError:
+                    logger.warn('Tools not provided on request!')
+                    tools = []
+                if not service_name:
                     if not tooling_repo_is_loaded:
                         logger.debug('Service name is not defined: adding tooling repository to config.yml')
                         ProcessExtraData.set_tool_env(
