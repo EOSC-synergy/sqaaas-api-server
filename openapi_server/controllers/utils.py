@@ -301,14 +301,14 @@ class ProcessExtraData(object):
                 'branch': tooling_repo_branch
             }
 
-    def get_service_image_details(criterion_name, project_repos_mapping, composer_json, service_name=None, tools=[]):
+    def get_service_image_details(composer_json, service_name=None, tools=[], criterion_name=None, project_repos_mapping={}):
         """Curate the composer parameters of the given config.yml repo entry.
 
-        :param criterion_name: Name of the criterion
-        :param project_repos_mapping: Dict containing the defined project_repos
         :param composer_json: Composer data (JSON)
         :param service_name: name of the service (if known)
         :param tools: List of Tool objects
+        :param criterion_name: Name of the criterion
+        :param project_repos_mapping: Dict containing the defined project_repos
         """
         if not composer_json:
             logger.debug('No service was defined by the user')
@@ -551,7 +551,12 @@ def process_extra_data(config_json, composer_json):
 
                 # Processing image details for current repo
                 service_name, service_image_details = ProcessExtraData.get_service_image_details(
-                    criterion_name, project_repos_mapping, composer_json, service_name=service_name, tools=tools)
+                    composer_json,
+                    service_name=service_name,
+                    tools=tools,
+                    criterion_name=criterion_name,
+                    project_repos_mapping=project_repos_mapping
+                )
                 service_images_curated_list.append(service_name)
                 # Update service image definition
                 if service_name in list(composer_json['services']):
@@ -592,6 +597,13 @@ def process_extra_data(config_json, composer_json):
 
     # COMPOSER (Docker Compose specific)
     for srv_name, srv_data in composer_json['services'].items():
+        if srv_name not in service_images_curated_list:
+            logger.debug('Service <%s> image properties not curated' % srv_name)
+            service_name, service_image_details = ProcessExtraData.get_service_image_details(
+                composer_json, service_name=srv_name
+            )
+            service_images_curated_list.append(service_name)
+
         logger.debug('Processing composer data for service <%s>' % srv_name)
         if 'image' in list(srv_data):
             use_default_dockerhub_org = False
