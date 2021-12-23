@@ -357,7 +357,14 @@ class ProcessExtraData(object):
     def set_tool_execution_command(tools, criterion_name, criterion_repo, config_json):
         """Compose the command/s for the given tool according to its args in the tooling metadata.
 
-        Returns a mapping of the tools used for the given criterion.
+        Returns a mapping of the tools used for the given criterion, such as:
+            {
+                "QC.Sty": {
+                    "licensee": [
+                        "licensee detect . --json"
+                    ]
+                }
+            }
 
         :param tools: List of Tool objects
         :param criterion_name: Name of the criterion
