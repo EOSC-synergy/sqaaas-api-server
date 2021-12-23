@@ -527,11 +527,13 @@ def process_extra_data(config_json, composer_json):
     commands_script_list = []
     tool_criteria_map = {}
     for criterion_name, criterion_data in config_json['sqa_criteria'].items():
+        logger.debug('Processing config data for criterion <%s>' % criterion_name)
         criterion_data_copy = copy.deepcopy(criterion_data)
         if 'repos' in criterion_data.keys():
             repos_old = criterion_data_copy.pop('repos')
             repos_new = {}
             for repo in repos_old:
+                logger.debug('Processing repository entry: %s' % repo)
                 service_name = repo.get('container', None)
                 tools = []
                 if repo.get('tools', []):
