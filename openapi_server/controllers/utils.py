@@ -535,19 +535,23 @@ def process_extra_data(config_json, composer_json):
             for repo in repos_old:
                 logger.debug('Processing repository entry: %s' % repo)
                 service_name = repo.get('container', None)
-                try:
+                tooling_repo_is_loaded = False
+                tools = []
+                if not service_name:
                     tools = repo.pop('tools')
-                except KeyError:
-                    tools = []
-                if tools:
-                    if not service_name:
+                    if not tooling_repo_is_loaded:
+                        logger.debug('Service name is not defined: adding tooling repository to config.yml')
                         ProcessExtraData.set_tool_env(
                             tools, criterion_name, repo, project_repos_mapping, config_json, composer_json)
-                    service_name = ProcessExtraData.set_build_context(
-                        tools, criterion_name, repo, project_repos_mapping, config_json, composer_json, service_name=service_name)
-                    tool_criterion_map = ProcessExtraData.set_tool_execution_command(
-                        tools, criterion_name, repo, config_json)
-                    tool_criteria_map.update(tool_criterion_map)
+                        tooling_repo_is_loaded = True
+                    else:
+                        logger.debug('Service name is not defined: tooling repository already loaded in config.yml')
+                service_name = ProcessExtraData.set_build_context(
+                    tools, criterion_name, repo, project_repos_mapping, config_json, composer_json, service_name=service_name)
+                tool_criterion_map = ProcessExtraData.set_tool_execution_command(
+                    tools, criterion_name, repo, config_json)
+                tool_criteria_map.update(tool_criterion_map)
+
                 try:
                     repo_url = repo.pop('repo_url')
                     if not repo_url:
