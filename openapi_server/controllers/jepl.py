@@ -247,7 +247,9 @@ class JePLUtils(object):
         """
         srv_data = {}
         if image:
+            logger.info('No build context is needed for service <%s>' % name)
             srv_data['image'] = {'name': image}
+            logger.debug('Image name set for service <%s>: %s' % (name, image))
         if dockerfile:
             # Add './' when relative path. If not, Docker may confuse it with a remote URL
             context = './' + context
@@ -255,6 +257,9 @@ class JePLUtils(object):
                 'context': context,
                 'dockerfile': dockerfile
             }
+            logger.debug('Dockerfile build context set for service <%s>: %s' % (
+                name, srv_data['build']))
         if not oneshot:
             srv_data['oneshot'] = oneshot
-        return {name: srv_data}
+            logger.debug('Setting oneshot for service <%s>: %s' % (name, oneshot))
+        return srv_data

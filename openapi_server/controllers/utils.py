@@ -40,6 +40,23 @@ docker_credential_org = config.get_ci(
     fallback=None
 )
 
+tooling_repo_url = config.get(
+    'tooling_repo_url',
+    fallback='https://github.com/EOSC-synergy/sqaaas-tooling'
+)
+tooling_repo_branch = config.get(
+    'tooling_repo_branch',
+    fallback='main'
+)
+docker_credential_id = config.get_ci(
+    'docker_credential_id',
+    fallback=None
+)
+docker_credential_org = config.get_ci(
+    'docker_credential_org',
+    fallback=None
+)
+
 
 def upstream_502_response(r):
     _reason = 'Unsuccessful request to upstream service API'
@@ -305,73 +322,83 @@ class ProcessExtraData(object):
                 'branch': tooling_repo_branch
             }
 
-    def set_build_context(tools, criterion_name, criterion_repo, project_repos_mapping, config_json, composer_json, service_name=None):
-        """Set the composer's build context.
+    def curate_service_image_properties(composer_json, service_name=None, tools=[], criterion_name=None, project_repos_mapping={}):
+        """Curate the composer parameters of the given config.yml repo entry.
 
-        :param tools: List of Tool objects
-        :param criterion_name: Name of the criterion
-        :param criterion_repo: Repo data for the criterion
-        :param project_repos_mapping: Dict containing the defined project_repos
-        :param config_json: Config data (JSON)
+        Returns the service name.
+
         :param composer_json: Composer data (JSON)
         :param service_name: name of the service (if known)
+        :param tools: List of Tool objects
+        :param criterion_name: Name of the criterion
+        :param project_repos_mapping: Dict containing the defined project_repos
         """
         if not composer_json:
             logger.debug('No service was defined by the user')
             composer_json['version'] = '3.7'
-        # NOTE TODO: DOES NOT cover when more than one tool is set!
-        reference_tool = tools[0]
+
+        reference_tool = {}
         context = None
         dockerfile = None
         image = None
-        try:
-            if service_name:
-                dockerfile_path = composer_json['services'][service_name]['build']['dockerfile']
-                context = os.path.dirname(dockerfile_path)
-            else:
-                dockerfile_path = reference_tool['docker']['dockerfile']
-                context = os.path.join(
-                    project_repos_mapping[tooling_repo_url]['name'],
-                    os.path.dirname(dockerfile_path)
-                )
-            dockerfile = os.path.basename(dockerfile_path)
-            logger.debug('Dockerfile context: %s (file name: %s)' % (context, dockerfile))
-        except KeyError as e:
-            logger.error('An error ocurred while getting Dockerfile\'s context: %s' % str(e))
-
         oneshot = True
-        if not service_name:
-            if not dockerfile:
-                image = reference_tool['docker']['image']
-            oneshot = reference_tool['docker'].get('oneshot', True)
+        service_data = {} # existing service data
+
+        if service_name:
+            service_data = composer_json['services'][service_name]
+            dockerfile_path = service_data.get('build', {}).get('dockerfile', '')
+            context = os.path.dirname(dockerfile_path)
+            image = service_data.get('image', {}).get('name', '')
+        else:
+            # NOTE ONLY ONE TOOL IS EXPECTED !!
+            reference_tool = tools[0]
             service_name = '_'.join([
                 criterion_name.lower(), namegenerator.gen()
             ])
-            # Adding service name to config's container
-            old_container_name = criterion_repo['container']
-            logger.debug('Changing previous container name <%s> to <%s>' % (
-                old_container_name, service_name
-            ))
-            criterion_repo['container'] = service_name
+            logger.debug('Service name set: %s' % service_name)
+            dockerfile_path = reference_tool['docker'].get('dockerfile', '')
+            context = os.path.join(
+                project_repos_mapping[tooling_repo_url]['name'],
+                os.path.dirname(dockerfile_path)
+            )
+            image = reference_tool['docker'].get('image', '')
+            oneshot = reference_tool['docker'].get('oneshot', True)
 
-            config_json['sqa_criteria'][criterion_name]['repos'] = criterion_repo
-
-        srv_definition = JePLUtils.get_composer_service(
+        dockerfile = os.path.basename(dockerfile_path)
+        service_image_properties = JePLUtils.get_composer_service(
             service_name, image=image, context=context, dockerfile=dockerfile, oneshot=oneshot
         )
-        composer_json['services'].update(srv_definition)
+
+        if service_data:
+            service_data.update(service_image_properties)
+        else:
+            service_data = service_image_properties
+
+        # Update service image definition
+        if service_name in list(composer_json['services']):
+            composer_json['services'][service_name].update(service_image_properties)
+        else:
+            composer_json['services'][service_name] = service_image_properties
+        logger.info('Service <%s> image properties updated: %s' % (service_name, service_image_properties))
 
         return service_name
 
     @staticmethod
-    def set_tool_execution_command(
-            tools,
-            criterion_name, criterion_repo,
+    def set_tool_execution_command(tools,
+            criterion_name,
+            criterion_repo,
             config_json,
             report_to_stdout=False):
-        """Set the tool execution command based on tool data.
+        """Compose the command/s for the given tool according to its args in the tooling metadata.
 
-        Returns a mapping of the tools used for the given criterion.
+        Returns a mapping of the tools used for the given criterion, such as:
+            {
+                "QC.Sty": {
+                    "licensee": [
+                        "licensee detect . --json"
+                    ]
+                }
+            }
 
         :param tools: List of Tool objects
         :param criterion_name: Name of the criterion
@@ -543,27 +570,46 @@ def process_extra_data(config_json, composer_json, report_to_stdout=False):
     # - Set 'context' to the appropriate checkout path for building the Dockerfile
     commands_script_list = []
     tool_criteria_map = {}
+    service_images_curated_list = [] # services processed by curate_service_image_properties()
     for criterion_name, criterion_data in config_json['sqa_criteria'].items():
+        logger.debug('Processing config data for criterion <%s>' % criterion_name)
         criterion_data_copy = copy.deepcopy(criterion_data)
         if 'repos' in criterion_data.keys():
             repos_old = criterion_data_copy.pop('repos')
             repos_new = {}
-            # NOTE!! Currently only 1 repo is supported per criterion
-            # which means that len(repos_old)==1
+            tooling_repo_is_loaded = False
             for repo in repos_old:
+                logger.debug('Processing repository entry: %s' % repo)
                 service_name = repo.get('container', None)
                 tools = []
-                if repo.get('tools', []):
+                if not service_name:
                     tools = repo.pop('tools')
-                if tools:
-                    if not service_name:
+                    if not tooling_repo_is_loaded:
+                        logger.debug('Service name is not defined: adding tooling repository to config.yml')
                         ProcessExtraData.set_tool_env(
                             tools, criterion_name, repo, project_repos_mapping, config_json, composer_json)
-                    service_name = ProcessExtraData.set_build_context(
-                        tools, criterion_name, repo, project_repos_mapping, config_json, composer_json, service_name=service_name)
-                    tool_criterion_map = ProcessExtraData.set_tool_execution_command(
-                        tools, criterion_name, repo, config_json)
-                    tool_criteria_map.update(tool_criterion_map)
+                        tooling_repo_is_loaded = True
+                    else:
+                        logger.debug('Service name is not defined: tooling repository already loaded in config.yml')
+
+                # Processing image details for current repo
+                service_name = ProcessExtraData.curate_service_image_properties(
+                    composer_json,
+                    service_name=service_name,
+                    tools=tools,
+                    criterion_name=criterion_name,
+                    project_repos_mapping=project_repos_mapping
+                )
+                service_images_curated_list.append(service_name)
+                # Set service_name in repo's <container> property
+                repo['container'] = service_name
+
+                # Compose command/s according to tooling metadata
+                tool_criterion_map = ProcessExtraData.set_tool_execution_command(
+                    tools, criterion_name, repo, config_json)
+                tool_criteria_map.update(tool_criterion_map)
+
+                tox_checkout_dir = '.'
                 try:
                     repo_url = repo.pop('repo_url')
                     if not repo_url:
@@ -571,8 +617,6 @@ def process_extra_data(config_json, composer_json, report_to_stdout=False):
                 except KeyError:
                     # Use 'this_repo' as the placeholder for current repo & version
                     repos_new['this_repo'] = repo
-                    # Modify Tox properties (chdir, defaults)
-                    ProcessExtraData.set_tox_env('.', repos_new)
                 else:
                     repo_name = project_repos_mapping[repo_url]['name']
                     repos_new[repo_name] = repo
@@ -581,8 +625,10 @@ def process_extra_data(config_json, composer_json, report_to_stdout=False):
                     if 'commands' in repo.keys():
                         ProcessExtraData.generate_script_for_commands(
                             repo_name, repo['commands'], repos_new, commands_script_list)
-                    # Modify Tox properties (chdir, defaults)
-                    ProcessExtraData.set_tox_env(repo_name, repos_new)
+                    tox_checkout_dir = repo_name
+                # FIXME Commented out until issue #154 gets resolved
+                # Modify Tox properties (chdir, defaults)
+                # ProcessExtraData.set_tox_env(tox_checkout_dir, repos_new)
             criterion_data_copy['repos'] = repos_new
         config_json['sqa_criteria'][criterion_name] = criterion_data_copy
 
@@ -595,6 +641,13 @@ def process_extra_data(config_json, composer_json, report_to_stdout=False):
 
     # COMPOSER (Docker Compose specific)
     for srv_name, srv_data in composer_json['services'].items():
+        if srv_name not in service_images_curated_list:
+            logger.debug('Service <%s> image properties not curated' % srv_name)
+            service_name = ProcessExtraData.curate_service_image_properties(
+                composer_json, service_name=srv_name
+            )
+            service_images_curated_list.append(service_name)
+
         logger.debug('Processing composer data for service <%s>' % srv_name)
         if 'image' in list(srv_data):
             use_default_dockerhub_org = False
