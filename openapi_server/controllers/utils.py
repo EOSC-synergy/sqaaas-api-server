@@ -567,6 +567,7 @@ def process_extra_data(config_json, composer_json):
                     tools, criterion_name, repo, config_json)
                 tool_criteria_map.update(tool_criterion_map)
 
+                tox_checkout_dir = '.'
                 try:
                     repo_url = repo.pop('repo_url')
                     if not repo_url:
@@ -574,8 +575,6 @@ def process_extra_data(config_json, composer_json):
                 except KeyError:
                     # Use 'this_repo' as the placeholder for current repo & version
                     repos_new['this_repo'] = repo
-                    # Modify Tox properties (chdir, defaults)
-                    ProcessExtraData.set_tox_env('.', repos_new)
                 else:
                     repo_name = project_repos_mapping[repo_url]['name']
                     repos_new[repo_name] = repo
@@ -584,8 +583,10 @@ def process_extra_data(config_json, composer_json):
                     if 'commands' in repo.keys():
                         ProcessExtraData.generate_script_for_commands(
                             repo_name, repo['commands'], repos_new, commands_script_list)
-                    # Modify Tox properties (chdir, defaults)
-                    ProcessExtraData.set_tox_env(repo_name, repos_new)
+                    tox_checkout_dir = repo_name
+                # FIXME Commented out until issue #154 gets resolved
+                # Modify Tox properties (chdir, defaults)
+                # ProcessExtraData.set_tox_env(tox_checkout_dir, repos_new)
             criterion_data_copy['repos'] = repos_new
         config_json['sqa_criteria'][criterion_name] = criterion_data_copy
 
