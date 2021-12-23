@@ -355,7 +355,7 @@ class ProcessExtraData(object):
 
     @staticmethod
     def set_tool_execution_command(tools, criterion_name, criterion_repo, config_json):
-        """Set the tool execution command based on tool data.
+        """Compose the command/s for the given tool according to its args in the tooling metadata.
 
         Returns a mapping of the tools used for the given criterion.
 
@@ -555,6 +555,7 @@ def process_extra_data(config_json, composer_json):
                 # Set service_name in repo's <container> property
                 repo['container'] = service_name
 
+                # Compose command/s according to tooling metadata
                 tool_criterion_map = ProcessExtraData.set_tool_execution_command(
                     tools, criterion_name, repo, config_json)
                 tool_criteria_map.update(tool_criterion_map)
