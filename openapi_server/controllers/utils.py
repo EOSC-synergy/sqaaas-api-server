@@ -406,14 +406,19 @@ class ProcessExtraData(object):
         :param config_json: Config data (JSON)
         :param report_to_stdout: Flag to indicate whether the pipeline shall print via via stdout the reports produced by the tools (required by QAA module)
         """
-        def process_value(arg, commands_builder=False):
+        def process_value(arg, commands_builder=False, option_no_flag=False):
             value = arg['value']
             if type(value) in [str]:
                 value_list = list(filter(None, value.split(',')))
                 value_list = list(map(str.strip, value_list))
-                if arg.get('repeatable', False) and len(value_list) > 1:
-                    if commands_builder:
-                        return value_list
+                if arg.get('repeatable', False):
+                    if len(value_list) == 1:
+                        value_list = value_list[0]
+                        if option_no_flag:
+                            return list(map(lambda value: ' '.join([option_no_flag, value]), value_list.split()))
+                    elif len(value_list) > 1:
+                        if commands_builder:
+                            return value_list
                 return list([' '.join(value_list)])
             return value
 
@@ -426,6 +431,9 @@ class ProcessExtraData(object):
                         flag = True
                     else:
                         if arg['selectable'] and not arg['value']:
+                            continue
+                        if arg['repeatable']:
+                            cmd_list.extend(process_value(arg, commands_builder=commands_builder, option_no_flag=arg['option']))
                             continue
                     cmd_list.append(arg['option'])
                 if not flag:
