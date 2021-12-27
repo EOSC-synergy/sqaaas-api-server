@@ -958,7 +958,7 @@ async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Re
         # Get Badgr's badgeclass and proceed with badge issuance
         for badge_type, criteria_fulfilled_list in criteria_fulfilled_map.items():
             badgeclass_name = await _badgeclass_matchmaking(
-                badge_type, criteria_fulfilled_list
+                pipeline_id, badge_type, criteria_fulfilled_list
             )
             if badgeclass_name:
                 try:
@@ -1118,9 +1118,11 @@ async def get_compressed_files(request: web.Request, pipeline_id) -> web.Respons
     return response
 
 
-async def _badgeclass_matchmaking(badge_type, criteria_fulfilled_list):
+async def _badgeclass_matchmaking(pipeline_id, badge_type, criteria_fulfilled_list):
     """Does the matchmaking to obtain the badgeclass to be awarded (if any).
 
+    :param pipeline_id: ID of the pipeline to get
+    :type pipeline_id: str
     :param badge_type: The type of badge from [software, services, fair].
     :type badge_type: str
     :param criteria_fulfilled_list: List of criteria codes fulfilled by the pipeline.
