@@ -284,29 +284,14 @@ class ProcessExtraData(object):
             repos_data[repo_key]['tox']['testenv'] = testenv
 
     @staticmethod
-    def set_tool_env(
-            tools,
-            criterion_name, criterion_repo,
-            project_repos_mapping,
-            config_json, composer_json):
-        """Set the tool environment.
+    def load_tooling_repo(project_repos_mapping, config_json):
+        """Add tooling repository to <project_repos> property.
 
-        Includes:
-        - (config.yml) add tooling repository to project_repos
-        - (docker-compose.yml) generating the service entry for executing the tool
-        - (config.yml) adding the value for the 'container' property
-        - (config.yml) generating the tool's execution through the commands builder
-
-        :param tools: List of Tool objects
-        :param criterion_name: Name of the criterion
-        :param criterion_repo: Repo data for the criterion
         :param project_repos_mapping: Dict containing the defined project_repos
         :param config_json: Config data (JSON)
-        :param composer_json: Composer data (JSON)
         """
-        logger.debug('Call to ProcessExtraData.set_tool_env() method')
+        logger.debug('Call to ProcessExtraData.load_tooling_repo() method')
 
-        # 1) Add tooling repository to <project_repos>
         if tooling_repo_url in list(project_repos_mapping):
             logger.debug('Tool template repository <%s> already defined' % tooling_repo_url)
         else:
@@ -597,8 +582,7 @@ def process_extra_data(config_json, composer_json, report_to_stdout=False):
                 if not service_name:
                     if not tooling_repo_is_loaded:
                         logger.debug('Service name is not defined: adding tooling repository to config.yml')
-                        ProcessExtraData.set_tool_env(
-                            tools, criterion_name, repo, project_repos_mapping, config_json, composer_json)
+                        ProcessExtraData.load_tooling_repo(project_repos_mapping, config_json)
                         tooling_repo_is_loaded = True
                     else:
                         logger.debug('Service name is not defined: tooling repository already loaded in config.yml')
