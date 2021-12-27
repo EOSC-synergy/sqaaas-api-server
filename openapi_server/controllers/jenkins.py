@@ -7,6 +7,8 @@ from urllib.parse import quote_plus
 
 import jenkins
 
+from openapi_server.exception import SQAaaSAPIException
+
 
 class JenkinsUtils(object):
     """Class for handling requests to Jenkins API.
@@ -158,6 +160,15 @@ class JenkinsUtils(object):
             data = do_request(log_endpoint)
             stdout = data['text']
             cmd, output_text = process_stdout(stdout)
+            if not cmd:
+                _reason = (
+                    'Could not get the command for the stage: output text '
+                    'might be truncated by Jenkins, consider to set/increase '
+                    'Pipeline REST API Plugin\'s maxReturnChars property (see '
+                    'https://github.com/jenkinsci/pipeline-stage-view-plugin)'
+                )
+                logger.error(_reason)
+                raise SQAaaSAPIException(502, _reason)
             criteria_data[name] = {
                 'status': status,
                 'stdout_command': cmd,
