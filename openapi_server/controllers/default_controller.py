@@ -879,8 +879,8 @@ async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Re
 
     def _format_report():
         report_data = {}
-        data = {}
         for criterion_name, criterion_output_data in output_data.items():
+            data = {}
             report_data[criterion_name] = {}
             level = criterion_output_data['requirement_level']
             tool = criterion_output_data['tool']
