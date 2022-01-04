@@ -171,8 +171,6 @@ def add_badge_data(pipeline_id, badge_data):
     :param badge_data: Badge data for the pipeline.
     """
     db = load_content()
-    db[pipeline_id] = {
-        'badge': badge_data
-    }
+    db[pipeline_id]['badge'] = badge_data
     store_content(db)
     logger.debug('Badge data added for pipeline <%s>: %s' % (pipeline_id, db[pipeline_id]['badge']))
