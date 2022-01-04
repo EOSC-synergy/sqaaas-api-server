@@ -940,6 +940,10 @@ async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Re
     #         + If <subcriteria> is defined, then use these for the badge matchmaking (and not the criterion_name)
     # Format <report> key
     report_data = _format_report()
+    if not report_data:
+        _reason = 'Could not gather reporting data. Exiting..'
+        logger.error(_reason)
+        return web.Response(status=422, reason=_reason, text=_reason)
 
     # Gather & format <badge> key
     badge_data = {}
