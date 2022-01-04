@@ -387,8 +387,8 @@ class ProcessExtraData(object):
                 value_list = list(map(str.strip, value_list))
                 if arg.get('repeatable', False):
                     if len(value_list) == 1:
-                        value_list = value_list[0]
                         if option_no_flag:
+                            value_list = value_list[0]
                             return list(map(lambda value: ' '.join([option_no_flag, value]), value_list.split()))
                     elif len(value_list) > 1:
                         if commands_builder:
