@@ -926,7 +926,7 @@ async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Re
                     badge_type = 'software'
                 elif criterion.startswith(SRV_PREFIX):
                     badge_type = 'services'
-                criteria_fulfilled_map[badge_type].extend(criterion)
+                criteria_fulfilled_map[badge_type].append(criterion)
         return criteria_fulfilled_map
 
     # Iterate over the criteria and associated tool results to compose the payload of the HTTP response:
