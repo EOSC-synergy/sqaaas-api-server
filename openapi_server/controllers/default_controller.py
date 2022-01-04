@@ -885,10 +885,12 @@ async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Re
             level = criterion_output_data['requirement_level']
             tool = criterion_output_data['tool']
             validation_data = criterion_output_data['validation']
+            # Some validators return empty <data_unstructured> value
+            validation_data_unstructured = validation_data.get('data_unstructured', {})
             if level in list(data):
-                data[level][tool] = validation_data['data_unstructured']
+                data[level][tool] = validation_data_unstructured
             else:
-                data[level] = {tool: validation_data['data_unstructured']}
+                data[level] = {tool: validation_data_unstructured}
             report_data[criterion_name]['data'] = data
             # FIXME Since we only expect ONE tool per CRITERION, <valid> is the one from the tool
             # This shall be computed amongst all the tool validations
