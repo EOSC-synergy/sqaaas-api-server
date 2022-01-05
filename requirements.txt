@@ -17,6 +17,8 @@ stevedore
 git+https://github.com/EOSC-synergy/sqaaas-reporting@main#egg=report2sqaaas
 # report2sqaaas-plugin-markdownlint = 1.0.0
 git+https://github.com/EOSC-synergy/sqaaas-reporting-plugins@main#egg=report2sqaaas-plugin-markdownlint&subdirectory=qc_doc_markdownlint
+# report2sqaaas-plugin-find_readme = 1.0.0
+git+https://github.com/EOSC-synergy/sqaaas-reporting-plugins@main#egg=report2sqaaas-plugin-find_readme&subdirectory=qc_doc_licensee
 # report2sqaaas-plugin-licensee = 1.0.0
 git+https://github.com/EOSC-synergy/sqaaas-reporting-plugins@main#egg=report2sqaaas-plugin-licensee&subdirectory=qc_lic_licensee
 # report2sqaaas-plugin-boolean = 1.0.0
