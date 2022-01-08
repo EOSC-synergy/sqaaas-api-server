@@ -263,3 +263,29 @@ class JePLUtils(object):
             srv_data['oneshot'] = oneshot
             logger.debug('Setting oneshot for service <%s>: %s' % (name, oneshot))
         return srv_data
+
+
+    def generate_stage_name(repo_name):
+        """Generate the stage name in the event where the same repo will be
+        used within the same criterion. It uses a counter-based suffix.
+
+        Generated stage name will be in the form of <repo_name>(__[1-9][0-9]{0,})
+
+        :param repo_name: Previous name of the repository.
+        """
+        # Only interested in the 1st chunk
+        name_parts = repo_name.split('__', 1)
+        if len(name_parts) == 1:
+            counter = 1
+        elif len(name_parts) == 2:
+            counter = int(name_parts[1])
+        else:
+            logger.error((
+                'Something nasty happened when parsing the repository name: '
+                '<%s>' % repo_name
+            ))
+        counter += 1
+        stage_name = '__'.join([name_parts[0], str(counter)])
+        logger.debug('New counter-based repository name generated: '
+                     '<%s>' % stage_name)
+        return stage_name
