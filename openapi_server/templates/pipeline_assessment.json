@@ -22,15 +22,19 @@
       "sqa_criteria": {
         {%- for criterion_data in criteria_data_list %}
         "{{ criterion_data.id }}": {
-          "repos": [{
-            {%- if criterion_data.id in ["QC.Doc"] and repo_docs.repo %}
-            "repo_url": "{{ repo_docs.repo }}",
-	        {%- else %}
-            "repo_url": "{{ repo_code.repo }}",
-            {%- endif %}
-            "container": "",
-	        "tools": {{ criterion_data.tools | tojson }}
-          }]
+          "repos": [
+            {%- for tool in criterion_data.tools %}
+            {
+              {%- if criterion_data.id in ["QC.Doc"] and repo_docs.repo %}
+              "repo_url": "{{ repo_docs.repo }}",
+	          {%- else %}
+              "repo_url": "{{ repo_code.repo }}",
+              {%- endif %}
+              "container": "",
+	          "tool": {{ tool | tojson }}
+            }{{"," if not loop.last}}
+            {%- endfor %}
+          ]
 	    }{{"," if not loop.last}}
         {%- endfor %}
       },
