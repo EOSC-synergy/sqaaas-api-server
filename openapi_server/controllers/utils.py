@@ -376,11 +376,9 @@ class ProcessExtraData(object):
 
         Returns a mapping of the tool and associated command for the given criterion, such as:
             {
-                "QC.Sty": {
-                    "licensee": [
-                        "licensee detect . --json"
-                    ]
-                }
+                "licensee": [
+                    "licensee detect . --json"
+                ]
             }
 
         :param tool: Tool object
@@ -461,7 +459,7 @@ class ProcessExtraData(object):
 
         config_json['sqa_criteria'][criterion_name]['repos'] = criterion_repo
 
-        return {criterion_name: tool_map}
+        return tool_map
 
     @staticmethod
     def set_config_when_clause(config_json):
@@ -600,7 +598,10 @@ def process_extra_data(config_json, composer_json, report_to_stdout=False):
                 # Compose command/s according to tooling metadata
                 tool_criterion_map = ProcessExtraData.set_tool_execution_command(
                     tool, criterion_name, repo, config_json)
-                tool_criteria_map.update(tool_criterion_map)
+                if criterion_name in list(tool_criteria_map):
+                    tool_criteria_map[criterion_name].update(tool_criterion_map)
+                else:
+                    tool_criteria_map[criterion_name] = tool_criterion_map
 
                 tox_checkout_dir = '.'
                 try:
