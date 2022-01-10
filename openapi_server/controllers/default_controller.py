@@ -759,8 +759,8 @@ async def _get_tool_from_command(tool_criterion_map, stdout_command):
     """
     matched_tool = None
     for tool_name, tool_cmd_list in tool_criterion_map.items():
-        # FIXME For the time being, let's suppose only one tool_cmd per tool_name
-        tool_cmd = tool_cmd_list[0]
+        # For the matching tool process, let's consider all cmds as a whole
+        tool_cmd = ';'.join(tool_cmd_list)
         if stdout_command.find(tool_cmd) != -1:
             matched_tool = tool_name
             logger.debug('Matching tool <%s> found for stdout command <%s>' % (matched_tool, tool_cmd))
