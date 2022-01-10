@@ -759,32 +759,35 @@ async def _get_tool_from_command(tool_criterion_map, stdout_command):
     """
     matched_tool = None
     for tool_name, tool_cmd_list in tool_criterion_map.items():
-        # FIXME For the time being, let's suppose only one tool_cmd per tool_name
-        tool_cmd = tool_cmd_list[0]
+        # For the matching tool process, let's consider all cmds as a whole
+        tool_cmd = ';'.join(tool_cmd_list)
         if stdout_command.find(tool_cmd) != -1:
             matched_tool = tool_name
             logger.debug('Matching tool <%s> found for stdout command <%s>' % (matched_tool, tool_cmd))
             break
+    if not matched_tool:
+        _reason = 'No matching tool found in command: %s' % stdout_command.replace('\n','')
+        logger.error(_reason)
+        raise SQAaaSAPIException(502, _reason)
+    
     return matched_tool
 
 
-async def _validate_output(stage_data, pipeline_data):
+async def _validate_output(stage_data_list, pipeline_data):
     """Validates the output obtained from the pipeline execution.
 
     Returns the data following according to GET /pipeline/<id>/output path specification.
 
-    :param stage_data: Per-stage data gathered from Jenkins pipeline execution.
-    :type stage_data: dict
+    :param stage_data_list: Per-stage data gathered from Jenkins pipeline execution.
+    :type stage_data_list: list
     :param pipeline_data: Pipeline's data from DB
     :type pipeline_data: dict
     """
     logger.debug('Output validation has been requested')
     output_data = {}
-    for criterion_name, criterion_stage_data in stage_data.items():
-        stage_exit_status = criterion_stage_data['status']
-        if stage_exit_status not in ['SUCCESS']:
-            logger.warn('Stage exit status (%s) is not successful. Skipping..' % stage_exit_status)
-            continue
+    for stage_data in stage_data_list:
+        criterion_stage_data = copy.deepcopy(stage_data)
+        criterion_name = criterion_stage_data['criterion']
 
         logger.debug('Successful stage exit status for criterion <%s>' % criterion_name)
         # Check if the command lies within a bash script
@@ -799,18 +802,23 @@ async def _validate_output(stage_data, pipeline_data):
                 'command. The real commands are: %s' % (
                     criterion_name, commands_from_script))
             stdout_command = commands_from_script
-        output_data[criterion_name] = criterion_stage_data
         tool_criterion_map = pipeline_data['tools'][criterion_name]
         matched_tool = await _get_tool_from_command(
             tool_criterion_map,
             stdout_command
         )
-        output_data[criterion_name]['tool'] = matched_tool
+        criterion_stage_data['tool'] = matched_tool
 
         logger.debug('Validating output from criterion <%s>' % criterion_name)
         reporting_data, out = await _run_validation(matched_tool, criterion_stage_data['stdout_text'])
-        output_data[criterion_name].update(reporting_data)
-        output_data[criterion_name]['validation'] = out
+        criterion_stage_data.update(reporting_data)
+        criterion_stage_data['validation'] = out
+
+        # Append if criterion is already there
+        if criterion_name in list(output_data):
+            output_data[criterion_name].append(criterion_stage_data)
+        else:
+            output_data[criterion_name] = [criterion_stage_data]
 
     return output_data
 
@@ -827,23 +835,20 @@ async def _get_output(pipeline_id, validate=False):
     """
     pipeline_data = db.get_entry(pipeline_id)
 
-    try:
-        build_url, build_status = await _update_status(
-            pipeline_id, pipeline_data)
+    build_url, build_status = await _update_status(
+        pipeline_id, pipeline_data)
 
-        jenkins_info = pipeline_data['jenkins']
-        build_info = jenkins_info['build_info']
+    jenkins_info = pipeline_data['jenkins']
+    build_info = jenkins_info['build_info']
 
-        stage_data = jk_utils.get_stage_data(
-            jenkins_info['job_name'],
-            build_info['number']
-        )
+    stage_data_list = jk_utils.get_stage_data(
+        jenkins_info['job_name'],
+        build_info['number']
+    )
 
-        output_data = stage_data
-        if validate:
-            output_data = await _validate_output(stage_data, pipeline_data)
-    except SQAaaSAPIException as e:
-        return web.Response(status=e.http_code, reason=e.message, text=e.message)
+    output_data = stage_data_list
+    if validate:
+        output_data = await _validate_output(stage_data_list, pipeline_data)
 
     return output_data
 
@@ -861,7 +866,10 @@ async def get_pipeline_output(request: web.Request, pipeline_id, validate=False)
     :type validate: bool
 
     """
-    output_data = await _get_output(pipeline_id, validate=validate)
+    try:
+        output_data = await _get_output(pipeline_id, validate=validate)
+    except SQAaaSAPIException as e:
+        return web.Response(status=e.http_code, reason=e.message, text=e.message)
 
     return web.json_response(output_data, status=200)
 
@@ -875,26 +883,33 @@ async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Re
     :type pipeline_id: str
 
     """
-    output_data = await _get_output(pipeline_id, validate=True)
+    try:
+        output_data = await _get_output(pipeline_id, validate=True)
+    except SQAaaSAPIException as e:
+        return web.Response(status=e.http_code, reason=e.message, text=e.message)
 
     def _format_report():
         report_data = {}
-        for criterion_name, criterion_output_data in output_data.items():
-            data = {}
+        for criterion_name, criterion_output_data_list in output_data.items():
+            criterion_valid = True
             report_data[criterion_name] = {}
-            level = criterion_output_data['requirement_level']
-            tool = criterion_output_data['tool']
-            validation_data = criterion_output_data['validation']
-            # Some validators return empty <data_unstructured> value
-            validation_data_unstructured = validation_data.get('data_unstructured', {})
-            if level in list(data):
-                data[level][tool] = validation_data_unstructured
-            else:
-                data[level] = {tool: validation_data_unstructured}
-            report_data[criterion_name]['data'] = data
-            # FIXME Since we only expect ONE tool per CRITERION, <valid> is the one from the tool
-            # This shall be computed amongst all the tool validations
-            report_data[criterion_name]['valid'] = validation_data['valid']
+            level_data = {}
+            for criterion_output_data in criterion_output_data_list:
+                level = criterion_output_data['requirement_level']
+                validation_data = criterion_output_data['validation']
+                tool = criterion_output_data['tool']
+                # Check validity of the criterion output
+                if level in ['REQUIRED'] and validation_data['valid'] == False:
+                    criterion_valid = False
+                # Compose criterion stage data
+                ##  Some validators return empty <data_unstructured> value
+                validation_data_unstructured = validation_data.get('data_unstructured', {})
+                if level in list(level_data):
+                    level_data[level].append({tool: validation_data_unstructured})
+                else:
+                    level_data[level] = [{tool: validation_data_unstructured}]
+            report_data[criterion_name]['valid'] = criterion_valid
+            report_data[criterion_name]['data'] = level_data
         return report_data
 
     def _get_criteria_per_badge_type(report_data):

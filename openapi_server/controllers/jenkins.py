@@ -151,10 +151,11 @@ class JenkinsUtils(object):
         stage_describe_endpoints = [stage['_links']['self']['href'] for stage in qc_stages]
         self.logger.info('Found %s stage/s that run quality criteria' % len(stage_describe_endpoints))
 
-        criteria_data = {}
+        criteria_data_list = []
         for qa_stage in stage_describe_endpoints:
             data = do_request(qa_stage)
-            name = data['name'].split()[0]
+            name = data['name']
+            criterion = name.split()[0]
             status = data['status']
             log_endpoint = data['stageFlowNodes'][0]['_links']['log']['href']
             data = do_request(log_endpoint)
@@ -169,10 +170,12 @@ class JenkinsUtils(object):
                 )
                 logger.error(_reason)
                 raise SQAaaSAPIException(502, _reason)
-            criteria_data[name] = {
+            criteria_data_list.append({
+                'name': name,
+                'criterion': criterion,
                 'status': status,
                 'stdout_command': cmd,
                 'stdout_text': output_text
-            }
+            })
 
-        return criteria_data
+        return criteria_data_list
