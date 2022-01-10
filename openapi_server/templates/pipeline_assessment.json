@@ -27,15 +27,15 @@
             {
               {%- if criterion_data.id in ["QC.Doc"] and repo_docs.repo %}
               "repo_url": "{{ repo_docs.repo }}",
-	          {%- else %}
+              {%- else %}
               "repo_url": "{{ repo_code.repo }}",
               {%- endif %}
               "container": "",
-	          "tool": {{ tool | tojson }}
+              "tool": {{ tool | tojson }}
             }{{"," if not loop.last}}
             {%- endfor %}
           ]
-	    }{{"," if not loop.last}}
+        }{{"," if not loop.last}}
         {%- endfor %}
       },
       "environment": {},
