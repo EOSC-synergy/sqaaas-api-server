@@ -835,23 +835,20 @@ async def _get_output(pipeline_id, validate=False):
     """
     pipeline_data = db.get_entry(pipeline_id)
 
-    try:
-        build_url, build_status = await _update_status(
-            pipeline_id, pipeline_data)
+    build_url, build_status = await _update_status(
+        pipeline_id, pipeline_data)
 
-        jenkins_info = pipeline_data['jenkins']
-        build_info = jenkins_info['build_info']
+    jenkins_info = pipeline_data['jenkins']
+    build_info = jenkins_info['build_info']
 
-        stage_data_list = jk_utils.get_stage_data(
-            jenkins_info['job_name'],
-            build_info['number']
-        )
+    stage_data_list = jk_utils.get_stage_data(
+        jenkins_info['job_name'],
+        build_info['number']
+    )
 
-        output_data = stage_data_list
-        if validate:
-            output_data = await _validate_output(stage_data_list, pipeline_data)
-    except SQAaaSAPIException as e:
-        return web.Response(status=e.http_code, reason=e.message, text=e.message)
+    output_data = stage_data_list
+    if validate:
+        output_data = await _validate_output(stage_data_list, pipeline_data)
 
     return output_data
 
@@ -869,7 +866,10 @@ async def get_pipeline_output(request: web.Request, pipeline_id, validate=False)
     :type validate: bool
 
     """
-    output_data = await _get_output(pipeline_id, validate=validate)
+    try:
+        output_data = await _get_output(pipeline_id, validate=validate)
+    except SQAaaSAPIException as e:
+        return web.Response(status=e.http_code, reason=e.message, text=e.message)
 
     return web.json_response(output_data, status=200)
 
@@ -883,7 +883,10 @@ async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Re
     :type pipeline_id: str
 
     """
-    output_data = await _get_output(pipeline_id, validate=True)
+    try:
+        output_data = await _get_output(pipeline_id, validate=True)
+    except SQAaaSAPIException as e:
+        return web.Response(status=e.http_code, reason=e.message, text=e.message)
 
     def _format_report():
         report_data = {}
