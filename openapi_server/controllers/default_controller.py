@@ -765,6 +765,11 @@ async def _get_tool_from_command(tool_criterion_map, stdout_command):
             matched_tool = tool_name
             logger.debug('Matching tool <%s> found for stdout command <%s>' % (matched_tool, tool_cmd))
             break
+    if not matched_tool:
+        _reason = 'No matching tool found in command: %s' % stdout_command.replace('\n','')
+        logger.error(_reason)
+        raise SQAaaSAPIException(502, _reason)
+    
     return matched_tool
 
 
