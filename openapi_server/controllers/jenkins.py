@@ -130,7 +130,12 @@ class JenkinsUtils(object):
                 auth=(self.access_user, self.access_token),
                 verify=False
             )
-            return r.json()
+            try:
+                return r.json()
+            except ValueError:
+                _reason = 'Could not obtain a JSON response payload from Jenkins path: %s' % target_path
+                self.logger.error(_reason)
+                raise SQAaaSAPIException(502, _reason)
 
         def process_stdout(stdout):
             lines = stdout.split('\n')
