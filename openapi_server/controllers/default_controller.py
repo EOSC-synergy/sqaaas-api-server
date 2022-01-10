@@ -789,11 +789,6 @@ async def _validate_output(stage_data_list, pipeline_data):
         criterion_stage_data = copy.deepcopy(stage_data)
         criterion_name = criterion_stage_data['criterion']
 
-        stage_exit_status = criterion_stage_data['status']
-        if stage_exit_status not in ['SUCCESS']:
-            logger.warn('Stage exit status (%s) is not successful. Skipping..' % stage_exit_status)
-            continue
-
         logger.debug('Successful stage exit status for criterion <%s>' % criterion_name)
         # Check if the command lies within a bash script
         stdout_command = criterion_stage_data['stdout_command']
