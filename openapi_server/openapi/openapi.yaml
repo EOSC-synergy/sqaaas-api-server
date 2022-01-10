@@ -1093,10 +1093,8 @@ components:
                   $ref: '#/components/schemas/Commands_simplified'
                 tox:
                   $ref: '#/components/schemas/Tox_simplified'
-                tools:
-                  items:
-                    $ref: '#/components/schemas/Tool'
-                  type: array
+                tool:
+                  $ref: '#/components/schemas/Tool'
               type: object
             type: array
           when:
@@ -1165,10 +1163,8 @@ components:
                       $ref: '#/components/schemas/Commands_simplified'
                     tox:
                       $ref: '#/components/schemas/Tox_simplified'
-                    tools:
-                      items:
-                        $ref: '#/components/schemas/Tool'
-                      type: array
+                    tool:
+                      $ref: '#/components/schemas/Tool'
                   type: object
                 type: array
               when:
@@ -1656,10 +1652,8 @@ components:
                       $ref: '#/components/schemas/Commands_simplified'
                     tox:
                       $ref: '#/components/schemas/Tox_simplified'
-                    tools:
-                      items:
-                        $ref: '#/components/schemas/Tool'
-                      type: array
+                    tool:
+                      $ref: '#/components/schemas/Tool'
                   type: object
                 type: array
               when:

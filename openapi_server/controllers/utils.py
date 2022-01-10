@@ -132,11 +132,11 @@ def extended_data_validation(f):
                 for repo in criterion_data['repos']:
                     try:
                         commands = repo.get('commands', [])
-                        tools = repo.get('tools', [])
-                        if not commands and not tools:
+                        tool = repo.get('tool', {})
+                        if not commands and not tool:
                             raise KeyError
                     except KeyError:
-                        _reason = 'Builder <commands> might be empty only when <tools> have been defined'
+                        _reason = 'Builder <commands> might be empty only when <tool> has been provided'
                         logger.warning(_reason)
                         return web.Response(status=400, reason=_reason, text=_reason)
         ret = await f(*args, **kwargs)
@@ -307,14 +307,14 @@ class ProcessExtraData(object):
                 'branch': tooling_repo_branch
             }
 
-    def curate_service_image_properties(composer_json, service_name=None, tools=[], criterion_name=None, project_repos_mapping={}):
+    def curate_service_image_properties(composer_json, service_name=None, tool={}, criterion_name=None, project_repos_mapping={}):
         """Curate the composer parameters of the given config.yml repo entry.
 
         Returns the service name.
 
         :param composer_json: Composer data (JSON)
         :param service_name: name of the service (if known)
-        :param tools: List of Tool objects
+        :param tool: Tool object
         :param criterion_name: Name of the criterion
         :param project_repos_mapping: Dict containing the defined project_repos
         """
@@ -322,7 +322,6 @@ class ProcessExtraData(object):
             logger.debug('No service was defined by the user')
             composer_json['version'] = '3.7'
 
-        reference_tool = {}
         context = None
         dockerfile = None
         image = None
@@ -335,19 +334,17 @@ class ProcessExtraData(object):
             context = os.path.dirname(dockerfile_path)
             image = service_data.get('image', {}).get('name', '')
         else:
-            # NOTE ONLY ONE TOOL IS EXPECTED !!
-            reference_tool = tools[0]
             service_name = '_'.join([
                 criterion_name.lower(), namegenerator.gen()
             ])
             logger.debug('Service name set: %s' % service_name)
-            dockerfile_path = reference_tool['docker'].get('dockerfile', '')
+            dockerfile_path = tool['docker'].get('dockerfile', '')
             context = os.path.join(
                 project_repos_mapping[tooling_repo_url]['name'],
                 os.path.dirname(dockerfile_path)
             )
-            image = reference_tool['docker'].get('image', '')
-            oneshot = reference_tool['docker'].get('oneshot', True)
+            image = tool['docker'].get('image', '')
+            oneshot = tool['docker'].get('oneshot', True)
 
         dockerfile = os.path.basename(dockerfile_path)
         service_image_properties = JePLUtils.get_composer_service(
@@ -369,14 +366,15 @@ class ProcessExtraData(object):
         return service_name
 
     @staticmethod
-    def set_tool_execution_command(tools,
+    def set_tool_execution_command(
+            tool,
             criterion_name,
             criterion_repo,
             config_json,
             report_to_stdout=False):
         """Compose the command/s for the given tool according to its args in the tooling metadata.
 
-        Returns a mapping of the tools used for the given criterion, such as:
+        Returns a mapping of the tool and associated command for the given criterion, such as:
             {
                 "QC.Sty": {
                     "licensee": [
@@ -385,11 +383,11 @@ class ProcessExtraData(object):
                 }
             }
 
-        :param tools: List of Tool objects
+        :param tool: Tool object
         :param criterion_name: Name of the criterion
         :param criterion_repo: Repo data for the criterion
         :param config_json: Config data (JSON)
-        :param report_to_stdout: Flag to indicate whether the pipeline shall print via via stdout the reports produced by the tools (required by QAA module)
+        :param report_to_stdout: Flag to indicate whether the pipeline shall print via via stdout the reports produced by the tool (required by QAA module)
         """
         def process_value(arg, commands_builder=False, option_no_flag=False):
             value = arg['value']
@@ -429,38 +427,37 @@ class ProcessExtraData(object):
 
         criterion_repo['commands'] = []
         tool_map = {} # tool DB data
-        for tool in tools:
-            tool_name = tool['name']
-            # special treatment for 'commands' builder
-            commands_builder = False
-            if tool_name in ['commands']:
-                commands_builder = True
-            # when existing, use executable instead of name
-            # if executable exists but empty, then no name & no executable (commands)
-            cmd_list = [tool_name]
-            if 'executable' in list(tool):
-                if not tool['executable']:
-                    cmd_list = []
-                else:
-                    cmd_list = [tool['executable']]
-            args = tool.get('args', [])
-            cmd_list.extend(process_args(args))
-            if commands_builder:
-                cmd = cmd_list
+        tool_name = tool['name']
+        # special treatment for 'commands' builder
+        commands_builder = False
+        if tool_name in ['commands']:
+            commands_builder = True
+        # when existing, use executable instead of name
+        # if executable exists but empty, then no name & no executable (commands)
+        cmd_list = [tool_name]
+        if 'executable' in list(tool):
+            if not tool['executable']:
+                cmd_list = []
             else:
-                cmd = [' '.join(cmd_list)]
-            criterion_repo['commands'].extend(cmd)
-            if tool in list(tool_map):
-                tool_map[tool_name].extend(cmd)
-            else:
-                tool_map[tool_name] = cmd
-            # If applicable, print the generated report to stdout
-            if report_to_stdout:
-                report_file = tool.get('includes_report', None)
-                if report_file:
-                    logger.debug('Adding `cat` command (last step) to print generated report to stdout')
-                    cat_cmd = 'cat %s' % report_file
-                    criterion_repo['commands'].append(cat_cmd)
+                cmd_list = [tool['executable']]
+        args = tool.get('args', [])
+        cmd_list.extend(process_args(args))
+        if commands_builder:
+            cmd = cmd_list
+        else:
+            cmd = [' '.join(cmd_list)]
+        criterion_repo['commands'].extend(cmd)
+        if tool in list(tool_map):
+            tool_map[tool_name].extend(cmd)
+        else:
+            tool_map[tool_name] = cmd
+        # If applicable, print the generated report to stdout
+        if report_to_stdout:
+            report_file = tool.get('includes_report', None)
+            if report_file:
+                logger.debug('Adding `cat` command (last step) to print generated report to stdout')
+                cat_cmd = 'cat %s' % report_file
+                criterion_repo['commands'].append(cat_cmd)
 
         config_json['sqa_criteria'][criterion_name]['repos'] = criterion_repo
 
@@ -500,17 +497,18 @@ class ProcessExtraData(object):
         return config_data_list
 
     @staticmethod
-    def generate_script_for_commands(repo_name, commands_list, repos_data, commands_script_list):
+    def generate_script_for_commands(stage_name, checkout_dir, commands_list, repos_data, commands_script_list):
         """Generate the bash script including the received commands.
 
-        :param repos_name: The repository name
+        :param stage_name: The stage name
+        :param checkout_dir: The local path where the repo has been cloned
         :param commands_list: The list of shell commands
         :param repos_data: The individual repository data
         :param commands_script_list: Current list of strings that generate the command builder scripts
         """
         logger.debug('Call to ProcessExtraData.generate_script_for_commands() method')
         commands_script_data = JePLUtils.get_commands_script(
-            repo_name,
+            checkout_dir,
             commands_list
         )
         commands_script_data = JePLUtils.append_file_name(
@@ -522,7 +520,7 @@ class ProcessExtraData(object):
         )
         commands_script_list.extend(commands_script_data)
         script_call = '/usr/bin/env sh %s' % commands_script_data[0]['file_name']
-        repos_data[repo_name]['commands'] = [script_call]
+        repos_data[stage_name]['commands'] = [script_call]
 
 
 def process_extra_data(config_json, composer_json, report_to_stdout=False):
@@ -538,7 +536,7 @@ def process_extra_data(config_json, composer_json, report_to_stdout=False):
 
     :param config_json: JePL's config as received through the API request (JSON payload)
     :param composer_json: Composer content as received throught the API request (JSON payload).
-    :param report_to_stdout: Flag to indicate whether the pipeline shall print via via stdout the reports produced by the tools (required by QAA module)
+    :param report_to_stdout: Flag to indicate whether the pipeline shall print via via stdout the reports produced by the tool (required by QAA module)
     """
     # CONFIG:CONFIG (Generate short url-based repo name & mapping)
     project_repos_mapping = {}
@@ -575,10 +573,10 @@ def process_extra_data(config_json, composer_json, report_to_stdout=False):
                 logger.debug('Processing repository entry: %s' % repo)
                 service_name = repo.get('container', None)
                 try:
-                    tools = repo.pop('tools')
+                    tool = repo.pop('tool')
                 except KeyError:
-                    logger.warn('Tools not provided on request!')
-                    tools = []
+                    logger.warn('Tool not provided on request!')
+                    tool = {}
                 if not service_name:
                     if not tooling_repo_is_loaded:
                         logger.debug('Service name is not defined: adding tooling repository to config.yml')
@@ -591,7 +589,7 @@ def process_extra_data(config_json, composer_json, report_to_stdout=False):
                 service_name = ProcessExtraData.curate_service_image_properties(
                     composer_json,
                     service_name=service_name,
-                    tools=tools,
+                    tool=tool,
                     criterion_name=criterion_name,
                     project_repos_mapping=project_repos_mapping
                 )
@@ -601,7 +599,7 @@ def process_extra_data(config_json, composer_json, report_to_stdout=False):
 
                 # Compose command/s according to tooling metadata
                 tool_criterion_map = ProcessExtraData.set_tool_execution_command(
-                    tools, criterion_name, repo, config_json)
+                    tool, criterion_name, repo, config_json)
                 tool_criteria_map.update(tool_criterion_map)
 
                 tox_checkout_dir = '.'
@@ -611,16 +609,26 @@ def process_extra_data(config_json, composer_json, report_to_stdout=False):
                         raise KeyError
                 except KeyError:
                     # Use 'this_repo' as the placeholder for current repo & version
-                    repos_new['this_repo'] = repo
+                    stage_name = 'this_repo'
                 else:
-                    repo_name = project_repos_mapping[repo_url]['name']
-                    repos_new[repo_name] = repo
+                    stage_name = project_repos_mapping[repo_url]['name']
+
+                if stage_name in list(repos_new):
+                    stage_name = JePLUtils.generate_stage_name(stage_name)
+                repos_new[stage_name] = repo
+
+                if repo_url:
                     # Create script for 'commands' builder
                     # NOTE: This is a workaround -> a specific builder to tackle this will be implemented in JePL
                     if 'commands' in repo.keys():
                         ProcessExtraData.generate_script_for_commands(
-                            repo_name, repo['commands'], repos_new, commands_script_list)
-                    tox_checkout_dir = repo_name
+                            stage_name=stage_name,
+                            checkout_dir=project_repos_mapping[repo_url]['name'],
+                            commands_list=repo['commands'],
+                            repos_data=repos_new,
+                            commands_script_list=commands_script_list
+                        )
+                    tox_checkout_dir = stage_name
                 # FIXME Commented out until issue #154 gets resolved
                 # Modify Tox properties (chdir, defaults)
                 # ProcessExtraData.set_tox_env(tox_checkout_dir, repos_new)
