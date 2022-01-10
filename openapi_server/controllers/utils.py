@@ -322,17 +322,20 @@ class ProcessExtraData(object):
             logger.debug('No service was defined by the user')
             composer_json['version'] = '3.7'
 
+        image = None
         context = None
         dockerfile = None
-        image = None
+        build_args = None
         oneshot = True
         service_data = {} # existing service data
 
         if service_name:
             service_data = composer_json['services'][service_name]
+            image = service_data.get('image', {}).get('name', '')
             dockerfile_path = service_data.get('build', {}).get('dockerfile', '')
             context = os.path.dirname(dockerfile_path)
-            image = service_data.get('image', {}).get('name', '')
+            # For now <build_args> are only present in user-defined services
+            build_args = service_data.get('build', {}).get('args', None)
         else:
             service_name = '_'.join([
                 criterion_name.lower(), namegenerator.gen()
@@ -348,7 +351,12 @@ class ProcessExtraData(object):
 
         dockerfile = os.path.basename(dockerfile_path)
         service_image_properties = JePLUtils.get_composer_service(
-            service_name, image=image, context=context, dockerfile=dockerfile, oneshot=oneshot
+            service_name,
+            image=image,
+            context=context,
+            dockerfile=dockerfile,
+            build_args=build_args,
+            oneshot=oneshot
         )
 
         if service_data:

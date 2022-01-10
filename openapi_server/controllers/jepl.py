@@ -236,7 +236,14 @@ class JePLUtils(object):
 
         return last_commit
 
-    def get_composer_service(name, image=None, context=None, dockerfile=None, oneshot=True):
+    def get_composer_service(
+            name,
+            image=None,
+            context=None,
+            dockerfile=None,
+            build_args=None,
+            oneshot=True
+    ):
         """Get service definition compliant with the composer file.
 
         :param name: Name of the service.
@@ -257,6 +264,8 @@ class JePLUtils(object):
                 'context': context,
                 'dockerfile': dockerfile
             }
+            if build_args:
+                srv_data['build']['args'] = build_args
             logger.debug('Dockerfile build context set for service <%s>: %s' % (
                 name, srv_data['build']))
         if not oneshot:
