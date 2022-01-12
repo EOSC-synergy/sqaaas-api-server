@@ -897,18 +897,17 @@ async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Re
             level_data = {}
             for criterion_output_data in criterion_output_data_list:
                 level = criterion_output_data['requirement_level']
-                validation_data = criterion_output_data['validation']
                 tool = criterion_output_data['tool']
+                validation_data = criterion_output_data['validation']
+                valid = validation_data.pop('valid')
                 # Check validity of the criterion output
-                if level in ['REQUIRED'] and validation_data['valid'] == False:
+                if level in ['REQUIRED'] and valid == False:
                     criterion_valid = False
                 # Compose criterion stage data
-                ##  Some validators return empty <data_unstructured> value
-                validation_data_unstructured = validation_data.get('data_unstructured', {})
                 if level in list(level_data):
-                    level_data[level].append({tool: validation_data_unstructured})
+                    level_data[level].append({tool: validation_data})
                 else:
-                    level_data[level] = [{tool: validation_data_unstructured}]
+                    level_data[level] = [{tool: validation_data}]
             report_data[criterion_name]['valid'] = criterion_valid
             report_data[criterion_name]['data'] = level_data
         return report_data
