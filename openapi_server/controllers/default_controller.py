@@ -811,6 +811,7 @@ async def _validate_output(stage_data_list, pipeline_data):
 
         logger.debug('Validating output from criterion <%s>' % criterion_name)
         reporting_data, out = await _run_validation(matched_tool, criterion_stage_data['stdout_text'])
+        logger.debug('Output returned by <%s> tool validator: %s' % (matched_tool, out))
         criterion_stage_data.update(reporting_data)
         criterion_stage_data['validation'] = out
 
