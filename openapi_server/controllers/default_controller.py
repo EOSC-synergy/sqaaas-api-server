@@ -551,8 +551,6 @@ async def run_pipeline(request: web.Request, pipeline_id, issue_badge=False, rep
         build_item_no = jk_utils.build_job(jk_job_name)
         if build_item_no:
             build_status = 'QUEUED'
-            # Fire & forget _update_status()
-            asyncio.create_task(_update_status(pipeline_id, pipeline_data))
             #
             logger.info('Build status for pipeline <%s>: %s' % (pipeline_repo, build_status))
             reason = 'Triggered the existing Jenkins job'
@@ -567,6 +565,8 @@ async def run_pipeline(request: web.Request, pipeline_id, issue_badge=False, rep
     if issue_badge:
         logger.debug('Badge issuing (<issue_badge> flag) is requested for the current build: %s' % commit_id)
 
+    # FIXME Just need to update build data:
+    #   <build_status>, <build_item_no>, <scan_org_wait>, <issue_badge>?
     db.update_jenkins(
         pipeline_id,
         jk_job_name,
@@ -580,18 +580,20 @@ async def run_pipeline(request: web.Request, pipeline_id, issue_badge=False, rep
         issue_badge=issue_badge
     )
 
+    # Fire & forget _update_status()
+    asyncio.create_task(_update_status(pipeline_id, triggered_by_run=True))
+
     return web.Response(status=204, reason=reason, text=reason)
 
 
-async def _update_status(pipeline_id, pipeline_data):
+async def _update_status(pipeline_id, triggered_by_run=False):
     """Updates the build status of a pipeline.
 
     :param pipeline_id: ID of the pipeline to get
     :type pipeline_id: str
-    :param pipeline_data: Pipeline's data from DB
-    :type pipeline_data: dict
-
     """
+    pipeline_data = db.get_entry(pipeline_id)
+
     if 'jenkins' not in pipeline_data.keys():
         _reason = 'Could not retrieve Jenkins job information: Pipeline <%s> has not yet ran' % pipeline_id
         logger.error(_reason)
@@ -628,11 +630,10 @@ async def _update_status(pipeline_id, pipeline_data):
             build_status = 'WAITING_SCAN_ORG'
 
     if not build_no:
-        # print('*'*20)
-        # import json
-        # print(json.dumps(pipeline_data, indent=4))
-        # print('*'*20)
-        if build_item_no:
+        build_data = {}
+        # Keep looping if triggered by /run, but do not if triggered
+        # by /status or /output
+        while not build_data and triggered_by_run:
             build_data = await jk_utils.get_queue_item(build_item_no)
             if build_data:
                 build_no = build_data['number']
@@ -642,6 +643,9 @@ async def _update_status(pipeline_id, pipeline_data):
                     pipeline_data['pipeline_repo'],
                     build_url
                 ))
+            else:
+                logger.debug('Could not get build data from Jenkins queue item: %s' % build_item_no)
+                await asyncio.sleep(3)
     else:
         _status = jk_utils.get_build_info(
             jk_job_name,
@@ -684,11 +688,8 @@ async def get_pipeline_status(request: web.Request, pipeline_id) -> web.Response
     :type pipeline_id: str
 
     """
-    pipeline_data = db.get_entry(pipeline_id)
-
     try:
-        build_url, build_status = await _update_status(
-            pipeline_id, pipeline_data)
+        build_url, build_status = await _update_status(pipeline_id)
     except SQAaaSAPIException as e:
         return web.Response(status=e.http_code, reason=e.message, text=e.message)
 
@@ -845,10 +846,7 @@ async def _get_output(pipeline_id, validate=False):
     :param validate: Flag to indicate whether the returned output shall be validate using sqaaas-reporting tool
     :type validate: bool
     """
-    pipeline_data = db.get_entry(pipeline_id)
-
-    build_url, build_status = await _update_status(
-        pipeline_id, pipeline_data)
+    build_url, build_status = await _update_status(pipeline_id)
 
     jenkins_info = pipeline_data['jenkins']
     build_info = jenkins_info['build_info']
