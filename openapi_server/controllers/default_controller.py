@@ -1,3 +1,4 @@
+import asyncio
 import base64
 import calendar
 from datetime import datetime
@@ -546,11 +547,17 @@ async def run_pipeline(request: web.Request, pipeline_id, issue_badge=False, rep
     reason = ''
     if jk_utils.exist_job(jk_job_name):
         logger.warning('Jenkins job <%s> already exists!' % jk_job_name)
+        # <build_item_no> is only valid for about 5 min after job completion
         build_item_no = jk_utils.build_job(jk_job_name)
         if build_item_no:
             build_status = 'QUEUED'
-        logger.info('Build status for pipeline <%s>: %s' % (pipeline_repo, build_status))
-        reason = 'Triggered the existing Jenkins job'
+            # Fire & forget _update_status()
+            asyncio.create_task(_update_status(pipeline_id, pipeline_data))
+            #
+            logger.info('Build status for pipeline <%s>: %s' % (pipeline_repo, build_status))
+            reason = 'Triggered the existing Jenkins job'
+        # else:
+        #    raise SQAaaSAPIException('Could not build job')
     else:
         jk_utils.scan_organization()
         scan_org_wait = True
@@ -621,8 +628,12 @@ async def _update_status(pipeline_id, pipeline_data):
             build_status = 'WAITING_SCAN_ORG'
 
     if not build_no:
+        # print('*'*20)
+        # import json
+        # print(json.dumps(pipeline_data, indent=4))
+        # print('*'*20)
         if build_item_no:
-            build_data = jk_utils.get_queue_item(build_item_no)
+            build_data = await jk_utils.get_queue_item(build_item_no)
             if build_data:
                 build_no = build_data['number']
                 build_url = build_data['url']

@@ -80,7 +80,7 @@ class JenkinsUtils(object):
             self.logger.debug('Triggered job build (queue item number: %s)' % item_no)
         return item_no
 
-    def get_queue_item(self, item_no):
+    async def get_queue_item(self, item_no):
         """Get the status of the build item in the Jenkins queue.
 
         :param item_no: item number in the Jenkins queue.
