@@ -551,11 +551,12 @@ async def run_pipeline(request: web.Request, pipeline_id, issue_badge=False, rep
         build_item_no = jk_utils.build_job(jk_job_name)
         if build_item_no:
             build_status = 'QUEUED'
-            #
             logger.info('Build status for pipeline <%s>: %s' % (pipeline_repo, build_status))
             reason = 'Triggered the existing Jenkins job'
-        # else:
-        #    raise SQAaaSAPIException('Could not build job')
+        else:
+            _reason = 'Could not trigger build job'
+            logger.error(_reason)
+            raise SQAaaSAPIException(_reason)
     else:
         jk_utils.scan_organization()
         scan_org_wait = True
