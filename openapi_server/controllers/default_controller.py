@@ -847,7 +847,8 @@ async def _get_output(pipeline_id, validate=False):
     :type validate: bool
     """
     build_url, build_status = await _update_status(pipeline_id)
-
+    
+    pipeline_data = db.get_entry(pipeline_id)
     jenkins_info = pipeline_data['jenkins']
     build_info = jenkins_info['build_info']
 
