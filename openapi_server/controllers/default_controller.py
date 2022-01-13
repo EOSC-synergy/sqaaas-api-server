@@ -629,8 +629,7 @@ async def _update_status(pipeline_id, triggered_by_run=False):
         else:
             logger.debug('Job still waiting for scan organization to end')
             build_status = 'WAITING_SCAN_ORG'
-
-    if not build_no:
+    elif not build_no:
         build_data = {}
         # Keep looping if triggered by /run, but do not if triggered
         # by /status or /output
