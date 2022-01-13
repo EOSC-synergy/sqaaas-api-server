@@ -549,9 +549,13 @@ def process_extra_data(config_json, composer_json, report_to_stdout=False):
     if 'project_repos' in config_json['config'].keys():
         project_repos_final = {}
         for project_repo in config_json['config']['project_repos']:
+            # Check for empty values
+            project_repo = del_empty_keys(project_repo)
+            # Set repo name
             repo_url = project_repo.pop('repo')
             repo_name_generated = get_short_repo_name(
                 repo_url, include_netloc=True)
+            # Compose final <project_repos>
             project_repos_final[repo_name_generated] = {
                 'repo': repo_url,
                 **project_repo
