@@ -1185,6 +1185,9 @@ async def _badgeclass_matchmaking(pipeline_id, badge_type, criteria_fulfilled_li
             )
             badge_awarded_badgeclass_name = badgeclass_name
 
+    if badge_awarded_badgeclass_name:
+        logger.debug('Badgeclass to use for badge issuance: %s' % badge_awarded_badgeclass_name)
+
     return badge_awarded_badgeclass_name
 
 
