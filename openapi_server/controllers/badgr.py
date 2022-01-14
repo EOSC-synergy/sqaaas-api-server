@@ -7,17 +7,6 @@ import time
 from urllib.parse import urljoin
 
 
-SW_CRITERIA_MAP = {
-    'QC.Sty': 'https://indigo-dc.github.io/sqa-baseline/#code-style-qc.sty',
-    'QC.uni': 'https://indigo-dc.github.io/sqa-baseline/#unit-testing-qc.uni',
-    'QC.Fun': 'https://indigo-dc.github.io/sqa-baseline/#functional-testing-qc.fun',
-    'QC.Doc': 'https://indigo-dc.github.io/sqa-baseline/#documentation-qc.doc',
-    'QC.Sec': 'https://indigo-dc.github.io/sqa-baseline/#security-qc.sec'
-}
-SRV_CRITERIA_MAP = {
-}
-
-
 class BadgrUtils(object):
     """Class for handling requests to Badgr API."""
     def __init__(self, endpoint, access_user, access_pass, issuer_name):
@@ -185,25 +174,13 @@ class BadgrUtils(object):
             'Content-Type': 'application/json'
         }
         # Assertion data
-        narrative = {
-            'Software': '\n'.join([
-                '- [%s](%s)\n' % (criterion, SW_CRITERIA_MAP[criterion])
-                    for criterion in sw_criteria]),
-            'Service': '\n'.join([
-                '- [%s](%s)\n' % (criterion, SRV_CRITERIA_MAP[criterion])
-                    for criterion in srv_criteria])
-        }
         assertion_data = json.dumps({
             'recipient': {
               'identity': commit_url,
               'hashed': True,
               'type': 'url'
             },
-            'narrative': '\n\n'.join([
-                '\n'.join(['Source code change (SHA: [%s](%s)) have passed successfully the ' % (commit_id, commit_url),
-                           'validation of the following %s QA criteria:' % criteria_type, criteria_msg])
-                    for criteria_type, criteria_msg in narrative.items() if criteria_msg
-            ]),
+            'narrative': 'Tracking source code SHA: [%s](%s)' % (commit_id, commit_url),
             'evidence': [
               {
                 'url': ci_build_url,
