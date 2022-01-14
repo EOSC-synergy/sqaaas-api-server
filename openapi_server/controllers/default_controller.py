@@ -1161,7 +1161,7 @@ async def _badgeclass_matchmaking(pipeline_id, badge_type, criteria_fulfilled_li
     """
     badge_awarded_badgeclass_name = None
     for badge_category in ['bronze', 'silver', 'gold']:
-        logger.info('Matching given criteria against defined %s criteria for %s' % (
+        logger.debug('Matching given criteria against defined %s criteria for %s' % (
             badge_category.upper(), badge_type.upper())
         )
 
