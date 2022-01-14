@@ -1166,8 +1166,9 @@ async def _badgeclass_matchmaking(pipeline_id, badge_type, criteria_fulfilled_li
         )
 
         # Get badge type's config values
+        badge_section = ':'.join([badge_type, badge_category])
         badgeclass_name = config.get_badge_sub(
-            badge_type, 'badgeclass'
+            badge_section, 'badgeclass'
         )
         criteria_to_fulfill_list = config.get_badge_sub(
             ':'.join([badge_type, badge_category]), 'criteria'
