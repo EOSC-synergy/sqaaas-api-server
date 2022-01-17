@@ -5,6 +5,7 @@ import time
 from urllib.parse import urljoin
 from urllib.parse import quote_plus
 
+from bs4 import BeautifulSoup
 import jenkins
 
 from openapi_server.exception import SQAaaSAPIException
@@ -137,7 +138,19 @@ class JenkinsUtils(object):
                 self.logger.error(_reason)
                 raise SQAaaSAPIException(502, _reason)
 
+        def get_text(html_text):
+            soup = BeautifulSoup(html_text, 'html.parser')
+            console_tags = soup.find_all('pre', class_='console-output')
+            if len(console_tags) > 1:
+                self.logger.warn((
+                    'Detected multiple <pre class="console-output"> tags!'
+                    'Falling back to the first one, ignoring the rest'
+                ))
+            console_output = console_tags[0]
+            return console_output.getText()
+
         def process_stdout(stdout):
+            stdout = stdout.strip()
             lines = stdout.split('\n')
             cmd = lines.pop(0)
             if not cmd.startswith('+'):
@@ -162,9 +175,12 @@ class JenkinsUtils(object):
             name = data['name']
             criterion = name.split()[0]
             status = data['status']
-            log_endpoint = data['stageFlowNodes'][0]['_links']['log']['href']
-            data = do_request(log_endpoint)
-            stdout = data['text']
+            # Use 'console' endpoint to be subsequently parsed with
+            # beautifulsoup4. Unexpected syntaxes have been seen when using
+            # instead <text> property from 'log' endpoint
+            console_log_endpoint = data['stageFlowNodes'][0]['_links']['console']['href']
+            data = do_request(console_log_endpoint)
+            stdout = get_text(data.text)
             cmd, output_text = process_stdout(stdout)
             if not cmd:
                 _reason = (

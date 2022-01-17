@@ -13,6 +13,7 @@ deepdiff
 namegenerator
 GitPython
 stevedore
+beautifulsoup4
 # report2sqaaas == 1.0.0
 git+https://github.com/EOSC-synergy/sqaaas-reporting@main#egg=report2sqaaas
 # report2sqaaas-plugin-markdownlint = 1.0.0
