@@ -120,7 +120,7 @@ class JenkinsUtils(object):
         items = list(map('/job/'.__add__, job_name.split('/')))
         jenkins_job_name = ''.join(items)
 
-        def do_request(path, append=False):
+        def do_request(path, append=False, json_payload=True):
             if append:
                 target_path = '%s/%s/%s' % (jenkins_job_name, build_no, path)
             else:
@@ -131,12 +131,17 @@ class JenkinsUtils(object):
                 auth=(self.access_user, self.access_token),
                 verify=False
             )
-            try:
-                return r.json()
-            except ValueError:
-                _reason = 'Could not obtain a JSON response payload from Jenkins path: %s' % target_path
-                self.logger.error(_reason)
-                raise SQAaaSAPIException(502, _reason)
+            if json_payload:
+                try:
+                    out = r.json()
+                except ValueError:
+                    _reason = 'Could not obtain a JSON response payload from Jenkins path: %s' % target_path
+                    self.logger.error(_reason)
+                    raise SQAaaSAPIException(502, _reason)
+            else:
+                out = r
+
+            return out
 
         def get_text(html_text):
             soup = BeautifulSoup(html_text, 'html.parser')
@@ -179,7 +184,7 @@ class JenkinsUtils(object):
             # beautifulsoup4. Unexpected syntaxes have been seen when using
             # instead <text> property from 'log' endpoint
             console_log_endpoint = data['stageFlowNodes'][0]['_links']['console']['href']
-            data = do_request(console_log_endpoint)
+            data = do_request(console_log_endpoint, json_payload=False)
             stdout = get_text(data.text)
             cmd, output_text = process_stdout(stdout)
             if not cmd:
