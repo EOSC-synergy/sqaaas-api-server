@@ -414,7 +414,7 @@ class ProcessExtraData(object):
                     else:
                         if arg['selectable'] and not arg['value']:
                             continue
-                        if arg['repeatable']:
+                        if arg.get('repeatable', False):
                             cmd_list.extend(process_value(arg, commands_builder=commands_builder, option_no_flag=arg['option']))
                             continue
                     cmd_list.append(arg['option'])
