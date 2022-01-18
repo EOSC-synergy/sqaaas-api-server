@@ -81,22 +81,20 @@ class GitUtils(object):
         2 keys: {'repo': 'https://example.org/foo', 'branch': None}
         """
         @functools.wraps(f)
-        def decorated_function(f):
-            def wrapper(*args, **kwargs):
-                repo = kwargs['repo']
-                source_repo = repo['repo']
-                source_repo_branch = repo.get('branch', None)
-                with tempfile.TemporaryDirectory() as dirpath:
-                    try:
-                        if source_repo_branch:
-                            repo = Repo.clone_from(source_repo, dirpath, single_branch=True, b=source_repo_branch)
-                        else:
-                            repo = Repo.clone_from(source_repo, dirpath)
-                    except GitCommandError as e:
-                        raise SQAaaSAPIException(422, e)
+        def decorated_function(*args, **kwargs):
+            repo = kwargs['repo']
+            source_repo = repo['repo']
+            source_repo_branch = repo.get('branch', None)
+            with tempfile.TemporaryDirectory() as dirpath:
+                try:
+                    if source_repo_branch:
+                        repo = Repo.clone_from(source_repo, dirpath, single_branch=True, b=source_repo_branch)
                     else:
-                        # Perform the actual work
-                        ret = f(*args, **kwargs)
-                        return ret
-            return wrapper
+                        repo = Repo.clone_from(source_repo, dirpath)
+                except GitCommandError as e:
+                    raise SQAaaSAPIException(422, e)
+                else:
+                    # Perform the actual work
+                    ret = f(*args, **kwargs)
+                    return ret
         return decorated_function
