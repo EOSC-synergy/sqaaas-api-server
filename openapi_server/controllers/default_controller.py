@@ -183,7 +183,9 @@ async def _get_tooling_for_assessment(
                         logger.info((
                             'Not adding tool <%s> for the assessment. '
                             'Language <%s> not applicable based on the '
-                            'contents of the repository' % (tool, lang)
+                            'contents of the repository <%s>' % (
+                                tool, lang, repo['repo']
+                            )
                         ))
                         matching_file_extensions = False
                 if matching_file_extensions:
