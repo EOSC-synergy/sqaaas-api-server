@@ -10,8 +10,9 @@ from git.exc import GitCommandError
 from openapi_server.exception import SQAaaSAPIException
 
 
-REMOTE_NAME = 'sqaaas'
+logger = logging.getLogger('sqaaas.api.git')
 
+REMOTE_NAME = 'sqaaas'
 
 class GitUtils(object):
     """Class for handling Git commands.
@@ -24,7 +25,6 @@ class GitUtils(object):
         :param access_token: Access token to access the remote Git repository
         """
         self.access_token = access_token
-        self.logger = logging.getLogger('sqaaas.api.git')
 
     def setup_env(self, dirpath):
         """Setups the environment for handling remote repositories.
@@ -37,7 +37,7 @@ class GitUtils(object):
         os.chmod(helper_path, stat.S_IEXEC)
         os.environ['GIT_ASKPASS'] = helper_path
         os.environ['GIT_PASSWORD'] = self.access_token
-        self.logger.debug('Git environment set: askpass helper & env vars')
+        logger.debug('Git environment set: askpass helper & env vars')
 
     def clone_and_push(self, source_repo, target_repo, source_repo_branch=None):
         """Copies the source Git repository into the target one.
@@ -64,17 +64,17 @@ class GitUtils(object):
             try:
                 sqaaas.fetch()
                 sqaaas.pull()
-                self.logger.debug('Repository updated: %s' % repo.remotes.sqaaas.url)
+                logger.debug('Repository updated: %s' % repo.remotes.sqaaas.url)
             except GitCommandError as e:
-                self.logger.warning('Could not fetch&pull from target repository: %s (git msg: %s)' % (target_repo, e))
+                logger.warning('Could not fetch&pull from target repository: %s (git msg: %s)' % (target_repo, e))
             finally:
                 sqaaas.push(force=True)
-                self.logger.debug('Repository pushed to remote: %s' % repo.remotes.sqaaas.url)
+                logger.debug('Repository pushed to remote: %s' % repo.remotes.sqaaas.url)
             default_branch = repo.active_branch
         return sqaaas.url, default_branch.name
 
-    @classmethod
-    def do_git_work(cls, f):
+    @staticmethod
+    def do_git_work(f):
         """Decorator to perform some git work inside a cloned repository.
 
         The decorated method MUST have a kwarg 'repo' of type dict with
@@ -96,10 +96,10 @@ class GitUtils(object):
                         repo = Repo.clone_from(
                             source_repo, dirpath
                         )
-                    cls.logger.debug((
+                    logger.debug((
                         'Performing %s method work on cloned git repository: '
                         '%s (branch: %s)' % (
-                            dir(f), source_repo, source_repo_branch
+                            f.__name__, source_repo, source_repo_branch
                         )
                     ))
                 except GitCommandError as e:
