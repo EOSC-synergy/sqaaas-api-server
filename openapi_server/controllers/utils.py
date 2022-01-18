@@ -571,6 +571,7 @@ def process_extra_data(config_json, composer_json, report_to_stdout=False):
     # CONFIG:SQA_CRITERIA
     # - Array-to-Object conversion for repos
     # - Set 'context' to the appropriate checkout path for building the Dockerfile
+    stage_name_mapping = {} # mapping with the last increment of a given <stage_name>
     commands_script_list = []
     tool_criteria_map = {}
     service_images_curated_list = [] # services processed by curate_service_image_properties()
@@ -629,7 +630,14 @@ def process_extra_data(config_json, composer_json, report_to_stdout=False):
                     stage_name = project_repos_mapping[repo_url]['name']
 
                 if stage_name in list(repos_new):
-                    stage_name = JePLUtils.generate_stage_name(stage_name)
+                    stage_name_last = stage_name_mapping.get(
+                        stage_name, stage_name
+                    )
+                    stage_name_new = JePLUtils.generate_stage_name(
+                        stage_name_last
+                    )
+                    stage_name_mapping[stage_name] = stage_name_new
+                    stage_name = stage_name_new
                 repos_new[stage_name] = repo
 
                 if repo_url:
