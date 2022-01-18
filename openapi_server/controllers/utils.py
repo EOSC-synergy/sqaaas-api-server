@@ -835,7 +835,7 @@ def get_lang_extensions(lang):
         else:
             if lang not in list(data):
                 logger.warn((
-                    'Language <%s> is not supported: not found in language '
+                    'File extensions for language <%s> not found in language '
                     'metadata file (%s)' % (lang, language_metadata_file)
                 ))
             else:

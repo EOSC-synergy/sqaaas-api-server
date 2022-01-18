@@ -143,7 +143,8 @@ async def _get_tooling_for_assessment(
     criteria_data_list = await _sort_tooling_by_criteria(tooling_metadata_json)
     criteria_data_list_filtered = []
     for criterion_data in criteria_data_list:
-        if criterion_data['id'] in ['QC.Doc'] and repo_docs:
+        criterion_id = criterion_data['id']
+        if criterion_id in ['QC.Doc'] and repo_docs:
             repo = repo_docs
         else:
             repo = repo_code
@@ -166,9 +167,15 @@ async def _get_tooling_for_assessment(
             if account_tool:
                 # Check if tool's language is applicable based on the presence
                 # of associated language's file extensions
+                matching_file_extensions = True
                 lang = tool['lang']
                 extensions = ctls_utils.get_lang_extensions(lang)
-                if extensions:
+                if not extensions:
+                    logger.debug((
+                        'Skipping file extension matching for language <%s>: '
+                        'tool <%s> is accounted for assessment' % (lang, tool)
+                    ))
+                else:
                     files_found = ctls_utils.find_files_by_language(
                         extensions, repo=repo
                     )
@@ -178,9 +185,9 @@ async def _get_tooling_for_assessment(
                             'Language <%s> not applicable based on the '
                             'contents of the repository' % (tool, lang)
                         ))
-                ####
-                toolset_for_reporting.append(tool)
-        criterion_id = criterion_data['id']
+                        matching_file_extensions = False
+                if matching_file_extensions:
+                    toolset_for_reporting.append(tool)
         if not toolset_for_reporting:
             logger.debug('No tool defined for assessment (missing <reporting> property) in <%s> criterion' % criterion_id)
         else:
