@@ -3,6 +3,7 @@ import functools
 import itertools
 import logging
 import namegenerator
+from pathlib import Path
 import os
 import re
 import uuid
@@ -809,3 +810,23 @@ def del_empty_keys(data):
             props_to_remove.append(prop)
     [data.pop(prop) for prop in props_to_remove]
     return data
+
+
+def find_files_by_extension(extensions, path='.'):
+    """Finds files in the current path that match the given list of
+    extensions.
+
+    :param extensions: list of file extensions to look for
+    :param path: look for file extensions in the given path
+    """
+    if type(extensions) not in [list]:
+        _reason = 'Bad argument provided: <extensions> is not a list!'
+        logger.error(_reason)
+    else:
+        files_found = []
+        for extension in extensions:
+            file_list = sorted(Path(path).rglob('*'+extension))
+            files_found.extend([str(file_name) for file_name in file_list])
+        logger.debug('Files found in path matching required extensions: %s' % files_found)
+
+    return files_found
