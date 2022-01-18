@@ -105,6 +105,8 @@ class GitUtils(object):
                 except GitCommandError as e:
                     raise SQAaaSAPIException(422, e)
                 else:
+                    # Set path to the temporary directory
+                    kwargs['path'] = dirpath
                     # Perform the actual work
                     ret = f(*args, **kwargs)
                     return ret

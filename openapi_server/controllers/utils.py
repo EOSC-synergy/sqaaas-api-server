@@ -857,7 +857,6 @@ def find_files_by_language(extensions, repo, path='.'):
         _reason = 'Bad argument provided: <extensions> is not a list!'
         logger.error(_reason)
     else:
-
         files_found = []
         for extension in extensions:
             file_list = sorted(Path(path).rglob('*'+extension))
