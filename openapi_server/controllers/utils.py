@@ -812,13 +812,45 @@ def del_empty_keys(data):
     return data
 
 
-def find_files_by_extension(extensions, path='.'):
+def _get_lang_extensions(lang):
+    """Get the list of extensions from the given language.
+
+    :param lang: name of the language (compliant with <linguist> tool language
+                 definition)
+    """
+    language_metadata_file = config.get
+        'language_metadata_file',
+        fallback='etc/languages.yml'
+    )
+    extensions = []
+    with open(language_metadata_file) as yaml_file:
+        try:
+            data = yaml.safe_load(yaml_file)
+        except yaml.YAMLError as e:
+            _reason = 'Could not load <%s> file: %s' % (
+                language_metadata_file, str(e)
+            )
+            logger.error(_reason)
+        else:
+            if lang not in list(data):
+                logger.warn((
+                    'Language <%s> not found in language metadata file (%s)' %
+                    (lang, language_metadata_file)
+                ))
+            else:
+                extensions = data[lang]['extensions']
+
+    return extensions
+
+
+def find_files_by_language(lang, path='.'):
     """Finds files in the current path that match the given list of
     extensions.
 
-    :param extensions: list of file extensions to look for
+    :param lang: name of the language (matches names from <linguist> tool)
     :param path: look for file extensions in the given path
     """
+    extensions = _get_lang_extensions(lang)
     if type(extensions) not in [list]:
         _reason = 'Bad argument provided: <extensions> is not a list!'
         logger.error(_reason)
