@@ -17,6 +17,10 @@ repository_backend = github
 # tooling_repo_branch = main
 ## - Criteria tooling: metadata (relative path from <tooling_repo_url>)
 # tooling_metadata_file = tooling.json
+## - File extensions for supported languages, following the same structure
+##   as GitHub's <linguist> tool:
+##      https://github.com/github/linguist/blob/master/lib/linguist/languages.yml
+# language_metadata_file = languages.yml
 
 [jenkins]
 ## -------------------- ##
