@@ -123,9 +123,17 @@ async def add_pipeline(request: web.Request, body, report_to_stdout=None) -> web
     return web.json_response(r, status=201)
 
 
-async def _get_tooling_for_assessment(optional_tools=[]):
+async def _get_tooling_for_assessment(
+    repo_code,
+    repo_docs=None,
+    optional_tools=[]
+):
     """Returns per-criterion tooling metadata filtered for assessment.
 
+    :param repo_code: code repository object (URL & branch)
+    :type repo_code: dict
+    :param repo_docs: optional docs repository object (URL & branch)
+    :type repo_docs: dict
     :param optional_tools: Optional tools that shall be accounted
     :type optional_tools: list
     """
@@ -135,11 +143,15 @@ async def _get_tooling_for_assessment(optional_tools=[]):
     criteria_data_list = await _sort_tooling_by_criteria(tooling_metadata_json)
     criteria_data_list_filtered = []
     for criterion_data in criteria_data_list:
+        if criterion_data['id'] in ['QC.Doc'] and repo_docs:
+            repo = repo_docs
+        else:
+            repo = repo_code
+        # NOTE Filter tools according to <reporting:requirement_level> property
         criterion_data_copy = copy.deepcopy(criterion_data)
         toolset_for_reporting = []
         for tool in criterion_data['tools']:
             account_tool = False
-            # NOTE!! Filtered based on the availability of the <reporting:requirement_level> property
             try:
                 level = tool['reporting']['requirement_level']
                 if level in levels_for_assessment:
@@ -152,6 +164,21 @@ async def _get_tooling_for_assessment(optional_tools=[]):
             except KeyError:
                 logger.debug('Could not get reporting data from tooling for tool <%s>' % tool)
             if account_tool:
+                # Check if tool's language is applicable based on the presence
+                # of associated language's file extensions
+                lang = tool['lang']
+                extensions = ctls_utils.get_lang_extensions(lang)
+                if extensions:
+                    files_found = ctls_utils.find_files_by_language(
+                        extensions, repo=repo
+                    )
+                    if not files_found:
+                        logger.info((
+                            'Not adding tool <%s> for the assessment. '
+                            'Language <%s> not applicable based on the '
+                            'contents of the repository' % (tool, lang)
+                        ))
+                ####
                 toolset_for_reporting.append(tool)
         criterion_id = criterion_data['id']
         if not toolset_for_reporting:
@@ -186,7 +213,11 @@ async def add_pipeline_for_assessment(request: web.Request, body, optional_tools
 
     #0 Filter per-criterion tools that will take part in the assessment
     try:
-        criteria_data_list = await _get_tooling_for_assessment(optional_tools=optional_tools)
+        criteria_data_list = await _get_tooling_for_assessment(
+            repo_code=repo_code,
+            repo_docs=repo_docs,
+            optional_tools=optional_tools
+        )
         logger.debug('Gathered tooling data enabled for assessment: %s' % criteria_data_list)
     except SQAaaSAPIException as e:
         return web.Response(status=e.http_code, reason=e.message, text=e.message)

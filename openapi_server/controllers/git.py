@@ -1,3 +1,4 @@
+import functools
 import logging
 import os
 import stat
@@ -71,3 +72,31 @@ class GitUtils(object):
                 self.logger.debug('Repository pushed to remote: %s' % repo.remotes.sqaaas.url)
             default_branch = repo.active_branch
         return sqaaas.url, default_branch.name
+
+    @staticmethod
+    def do_git_work(f):
+        """Decorator to perform some git work inside a cloned repository.
+
+        The decorated method MUST have a kwarg 'repo' of type dict with
+        2 keys: {'repo': 'https://example.org/foo', 'branch': None}
+        """
+        @functools.wraps(f)
+        def decorated_function(f):
+            def wrapper(*args, **kwargs):
+                repo = kwargs['repo']
+                source_repo = repo['repo']
+                source_repo_branch = repo.get('branch', None)
+                with tempfile.TemporaryDirectory() as dirpath:
+                    try:
+                        if source_repo_branch:
+                            repo = Repo.clone_from(source_repo, dirpath, single_branch=True, b=source_repo_branch)
+                        else:
+                            repo = Repo.clone_from(source_repo, dirpath)
+                    except GitCommandError as e:
+                        raise SQAaaSAPIException(422, e)
+                    else:
+                        # Perform the actual work
+                        ret = f(*args, **kwargs)
+                        return ret
+            return wrapper
+        return decorated_function

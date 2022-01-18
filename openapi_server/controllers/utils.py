@@ -15,6 +15,7 @@ from urllib.parse import ParseResult
 
 from openapi_server import config
 from openapi_server.controllers import db
+from openapi_server.controllers.git import GitUtils
 from openapi_server.controllers.jepl import JePLUtils
 
 from github.GithubException import GithubException
@@ -812,13 +813,13 @@ def del_empty_keys(data):
     return data
 
 
-def _get_lang_extensions(lang):
+def get_lang_extensions(lang):
     """Get the list of extensions from the given language.
 
     :param lang: name of the language (compliant with <linguist> tool language
                  definition)
     """
-    language_metadata_file = config.get
+    language_metadata_file = config.get(
         'language_metadata_file',
         fallback='etc/languages.yml'
     )
@@ -834,8 +835,8 @@ def _get_lang_extensions(lang):
         else:
             if lang not in list(data):
                 logger.warn((
-                    'Language <%s> not found in language metadata file (%s)' %
-                    (lang, language_metadata_file)
+                    'Language <%s> is not supported: not found in language '
+                    'metadata file (%s)' % (lang, language_metadata_file)
                 ))
             else:
                 extensions = data[lang]['extensions']
@@ -843,18 +844,20 @@ def _get_lang_extensions(lang):
     return extensions
 
 
-def find_files_by_language(lang, path='.'):
+@GitUtils.do_git_work
+def find_files_by_language(extensions, repo, path='.'):
     """Finds files in the current path that match the given list of
     extensions.
 
-    :param lang: name of the language (matches names from <linguist> tool)
-    :param path: look for file extensions in the given path
+    :param extensions: list of extensions (compliant with <linguist> tool)
+    :param repo: repository object (URL & branch)
+    :param path: look for file extensions in the given repo path
     """
-    extensions = _get_lang_extensions(lang)
     if type(extensions) not in [list]:
         _reason = 'Bad argument provided: <extensions> is not a list!'
         logger.error(_reason)
     else:
+
         files_found = []
         for extension in extensions:
             file_list = sorted(Path(path).rglob('*'+extension))
