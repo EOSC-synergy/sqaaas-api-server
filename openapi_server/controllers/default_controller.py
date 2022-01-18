@@ -157,13 +157,26 @@ async def _get_tooling_for_assessment(
                 level = tool['reporting']['requirement_level']
                 if level in levels_for_assessment:
                     account_tool = True
-                    logger.debug('Accounting for assessment the REQUIRED/RECOMMENDED tool: %s' % tool)
+                    logger.debug((
+                        'Accounting for QAA the tool <%s> (reason: '
+                        'REQUIRED/RECOMMENDED): %s' % (
+                            tool['name'], tool
+                        )
+                    ))
                 else:
                     if tool in optional_tools:
                         account_tool = True
-                        logger.debug('Accounting the requested OPTIONAL tool <%s>' % tool)
+                        logger.debug((
+                            'Accounting for QAA the tool <%s> (reason: '
+                            'requested as OPTIONAL tool): %s' % (
+                                tool['name'], tool
+                            )
+                        ))
             except KeyError:
-                logger.debug('Could not get reporting data from tooling for tool <%s>' % tool)
+                logger.debug((
+                    'Skipping tool <%s> as it does not have reporting data '
+                    'defined: %s' % (tool['name'], tool)
+                ))
             if account_tool:
                 # Check if tool's language is applicable based on the presence
                 # of associated language's file extensions
@@ -173,7 +186,9 @@ async def _get_tooling_for_assessment(
                 if not extensions:
                     logger.debug((
                         'Skipping file extension matching for language <%s>: '
-                        'tool <%s> is accounted for assessment' % (lang, tool)
+                        'tool <%s> is accounted for assessment' % (
+                            lang, tool['name']
+                        )
                     ))
                 else:
                     files_found = ctls_utils.find_files_by_language(
@@ -191,10 +206,17 @@ async def _get_tooling_for_assessment(
                 if matching_file_extensions:
                     toolset_for_reporting.append(tool)
         if not toolset_for_reporting:
-            logger.debug('No tool defined for assessment (missing <reporting> property) in <%s> criterion' % criterion_id)
+            logger.info((
+                'No tool defined for assessment (missing <reporting> '
+                'property) in <%s> criterion' % criterion_id
+            ))
         else:
-            logger.debug('Found %s tool/s for assessment of criterion <%s>: %s' % (
-                len(toolset_for_reporting), criterion_id, [tool['name'] for tool in toolset_for_reporting]))
+            logger.info((
+                'Found %s tool/s for assessment of criterion <%s>: %s' % (
+                    len(toolset_for_reporting),
+                    criterion_id,
+                    [tool['name'] for tool in toolset_for_reporting])
+            ))
             criterion_data_copy['tools'] = toolset_for_reporting
             criteria_data_list_filtered.append(criterion_data_copy)
 

@@ -73,8 +73,8 @@ class GitUtils(object):
             default_branch = repo.active_branch
         return sqaaas.url, default_branch.name
 
-    @staticmethod
-    def do_git_work(f):
+    @classmethod
+    def do_git_work(cls, f):
         """Decorator to perform some git work inside a cloned repository.
 
         The decorated method MUST have a kwarg 'repo' of type dict with
@@ -88,9 +88,20 @@ class GitUtils(object):
             with tempfile.TemporaryDirectory() as dirpath:
                 try:
                     if source_repo_branch:
-                        repo = Repo.clone_from(source_repo, dirpath, single_branch=True, b=source_repo_branch)
+                        repo = Repo.clone_from(
+                            source_repo, dirpath,
+                            single_branch=True, b=source_repo_branch
+                        )
                     else:
-                        repo = Repo.clone_from(source_repo, dirpath)
+                        repo = Repo.clone_from(
+                            source_repo, dirpath
+                        )
+                    cls.logger.debug((
+                        'Performing %s method work on cloned git repository: '
+                        '%s (branch: %s)' % (
+                            dir(f), source_repo, source_repo_branch
+                        )
+                    ))
                 except GitCommandError as e:
                     raise SQAaaSAPIException(422, e)
                 else:
