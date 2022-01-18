@@ -1364,8 +1364,12 @@ async def _get_tooling_metadata():
         fallback='tooling.json'
     )
 
-    logger.debug('Getting supported tools from <%s> repo (metadata file: %s)' % (
-        tooling_repo_url, tooling_metadata_file))
+    logger.debug((
+        'Getting supported tools from <%s> repo (branch: %s, metadata file: '
+        '%s)' % (
+            tooling_repo_url, tooling_repo_branch, tooling_metadata_file
+        )
+    ))
     platform = ctls_utils.supported_git_platform(
         tooling_repo_url, platforms=SUPPORTED_PLATFORMS)
     tooling_metadata_json = {}
