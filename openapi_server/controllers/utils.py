@@ -627,7 +627,10 @@ def process_extra_data(config_json, composer_json, report_to_stdout=False):
                     # Use 'this_repo' as the placeholder for current repo & version
                     stage_name = 'this_repo'
                 else:
-                    stage_name = project_repos_mapping[repo_url]['name']
+                    stage_name = ' '.join([
+                        project_repos_mapping[repo_url]['name'],
+                        tool['name']
+                    ])
 
                 if stage_name in list(repos_new):
                     stage_name_last = stage_name_mapping.get(
