@@ -182,27 +182,36 @@ async def _get_tooling_for_assessment(
                 # of associated language's file extensions
                 matching_file_extensions = True
                 lang = tool['lang']
-                extensions = ctls_utils.get_lang_extensions(lang)
+                files_found = []
+                extensions = ctls_utils.get_from_lang(lang, field='extensions')
                 if not extensions:
-                    logger.debug((
-                        'Skipping file extension matching for language <%s>: '
-                        'tool <%s> is accounted for assessment' % (
-                            lang, tool['name']
-                        )
-                    ))
-                else:
-                    files_found = ctls_utils.find_files_by_language(
-                        extensions, repo=repo
-                    )
-                    if not files_found:
-                        logger.info((
-                            'Not adding tool <%s> for the assessment. '
-                            'Language <%s> not applicable based on the '
-                            'contents of the repository <%s>' % (
-                                tool, lang, repo['repo']
+                    # Try with 'filenames' property
+                    filenames = ctls_utils.get_from_lang(lang, field='filenames')
+                    if not filenames:
+                        logger.debug((
+                            'Skipping file extension matching for language <%s>: '
+                            'tool <%s> is accounted for assessment' % (
+                                lang, tool['name']
                             )
                         ))
-                        matching_file_extensions = False
+                    else:
+                        files_found = ctls_utils.find_files_by_language(
+                            field='filenames', value=filenames, repo=repo
+                        )
+                else:
+                    files_found = ctls_utils.find_files_by_language(
+                        field='extensions', value=extensions, repo=repo
+                    )
+
+                if not files_found:
+                    logger.info((
+                        'Not adding tool <%s> for the assessment. '
+                        'Language <%s> not applicable based on the '
+                        'contents of the repository <%s>' % (
+                            tool, lang, repo['repo']
+                        )
+                    ))
+                    matching_file_extensions = False
                 if matching_file_extensions:
                     toolset_for_reporting.append(tool)
         if not toolset_for_reporting:

@@ -7218,3 +7218,16 @@ xBase:
   tm_scope: source.harbour
   ace_mode: text
   language_id: 421
+#############################
+## SQAaaS custom languages ##
+#############################
+CodeMeta:
+  type: data
+  filenames:
+  - codemeta.json
+Citation File Format:
+  type: data
+  extensions:
+    - ".cff"
+  filenames:
+  - CITATION.cff

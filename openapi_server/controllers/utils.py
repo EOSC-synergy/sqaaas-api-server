@@ -824,17 +824,20 @@ def del_empty_keys(data):
     return data
 
 
-def get_lang_extensions(lang):
-    """Get the list of extensions from the given language.
+def get_from_lang(lang, field):
+    """Get the given field's value from the given language definition inside
+    languages.yml.
 
     :param lang: name of the language (compliant with <linguist> tool language
+                 definition)
+    :param field: name of the field (compliant with <linguist> tool language
                  definition)
     """
     language_metadata_file = config.get(
         'language_metadata_file',
         fallback='etc/languages.yml'
     )
-    extensions = []
+    field_value = []
     with open(language_metadata_file) as yaml_file:
         try:
             data = yaml.safe_load(yaml_file)
@@ -846,32 +849,42 @@ def get_lang_extensions(lang):
         else:
             if lang not in list(data):
                 logger.warn((
-                    'File extensions for language <%s> not found in language '
-                    'metadata file (%s)' % (lang, language_metadata_file)
+                    'Language <%s> not found in language metadata file '
+                    '(%s)' % (lang, language_metadata_file)
                 ))
             else:
-                extensions = data[lang]['extensions']
+                field_value = data[lang].get(field, None)
 
-    return extensions
+    return field_value
 
 
 @GitUtils.do_git_work
-def find_files_by_language(extensions, repo, path='.'):
+def find_files_by_language(field, value, repo, path='.'):
     """Finds files in the current path that match the given list of
     extensions.
 
-    :param extensions: list of extensions (compliant with <linguist> tool)
+    :param field: field name (compliant with <linguist> tool).
+                  Choices are ('extensions', 'filenames')
+    :param value: field value (compliant with <linguist> tool)
     :param repo: repository object (URL & branch)
     :param path: look for file extensions in the given repo path
     """
-    if type(extensions) not in [list]:
-        _reason = 'Bad argument provided: <extensions> is not a list!'
-        logger.error(_reason)
-    else:
-        files_found = []
-        for extension in extensions:
+    files_found = []
+    if field in ['extensions']:
+        for extension in value:
             file_list = sorted(Path(path).rglob('*'+extension))
             files_found.extend([str(file_name) for file_name in file_list])
-        logger.debug('Files found in path matching required extensions: %s' % files_found)
+    elif field in ['filenames']:
+        for filename in value:
+            if Path(filename).exists():
+                files_found.append(filename)
+    else:
+        logger.warn((
+            'Language field <%s> (from languages.yml) not supported!' % field
+        ))
+    if files_found:
+        logger.debug('Files found in path matching required %s: %s' % (
+            field, files_found)
+        )
 
     return files_found
