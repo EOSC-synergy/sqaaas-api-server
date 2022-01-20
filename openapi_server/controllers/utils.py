@@ -648,12 +648,12 @@ def process_extra_data(config_json, composer_json, report_to_stdout=False):
             criterion_data_copy['repos'] = repos_new
         config_json['sqa_criteria'][criterion_name] = criterion_data_copy
 
-    # CONFIG:ENVIRONMENT
-    ## JPL_KEEPGOING
-    logger.debug('Enabling JPL_KEEPGOING flag (default behaviour)')
-    if not 'environment' in config_json.keys():
-        config_json['environment'] = {}
-    config_json['environment']['JPL_KEEPGOING'] = True
+    # Default CONFIG:ENVIRONMENT
+    for jpl_envvar in ['JPL_DOCKERFORCEBUILD', 'JPL_KEEPGOING']:
+        logger.debug('Enabling <%s> flag (default behaviour)' % jpl_envvar)
+        if not 'environment' in config_json.keys():
+            config_json['environment'] = {}
+        config_json['environment'][jpl_envvar] = 'enabled'
 
     # COMPOSER (Docker Compose specific)
     for srv_name, srv_data in composer_json['services'].items():
