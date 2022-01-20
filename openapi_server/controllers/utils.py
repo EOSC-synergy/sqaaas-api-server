@@ -824,20 +824,17 @@ def del_empty_keys(data):
     return data
 
 
-def get_from_lang(lang, field):
-    """Get the given field's value from the given language definition inside
-    languages.yml.
+def get_language_entry(lang):
+    """Get the entry for the given language in the language's metadata file.
 
     :param lang: name of the language (compliant with <linguist> tool language
-                 definition)
-    :param field: name of the field (compliant with <linguist> tool language
                  definition)
     """
     language_metadata_file = config.get(
         'language_metadata_file',
         fallback='etc/languages.yml'
     )
-    field_value = []
+    lang_entry = None
     with open(language_metadata_file) as yaml_file:
         try:
             data = yaml.safe_load(yaml_file)
@@ -853,9 +850,9 @@ def get_from_lang(lang, field):
                     '(%s)' % (lang, language_metadata_file)
                 ))
             else:
-                field_value = data[lang].get(field, None)
+                lang_entry = data[lang]
 
-    return field_value
+    return lang_entry
 
 
 @GitUtils.do_git_work

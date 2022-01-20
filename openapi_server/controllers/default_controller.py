@@ -152,11 +152,11 @@ async def _get_tooling_for_assessment(
         criterion_data_copy = copy.deepcopy(criterion_data)
         toolset_for_reporting = []
         for tool in criterion_data['tools']:
-            account_tool = False
+            account_tool_by_requirement_level = False
             try:
                 level = tool['reporting']['requirement_level']
                 if level in levels_for_assessment:
-                    account_tool = True
+                    account_tool_by_requirement_level = True
                     logger.debug((
                         'Accounting for QAA the tool <%s> (reason: '
                         'REQUIRED/RECOMMENDED): %s' % (
@@ -165,7 +165,7 @@ async def _get_tooling_for_assessment(
                     ))
                 else:
                     if tool in optional_tools:
-                        account_tool = True
+                        account_tool_by_requirement_level = True
                         logger.debug((
                             'Accounting for QAA the tool <%s> (reason: '
                             'requested as OPTIONAL tool): %s' % (
@@ -177,43 +177,69 @@ async def _get_tooling_for_assessment(
                     'Skipping tool <%s> as it does not have reporting data '
                     'defined: %s' % (tool['name'], tool)
                 ))
-            if account_tool:
-                # Check if tool's language is applicable based on the presence
-                # of associated language's file extensions
-                matching_file_extensions = True
+            if account_tool_by_requirement_level:
+                account_tool = False
                 lang = tool['lang']
-                files_found = []
-                extensions = ctls_utils.get_from_lang(lang, field='extensions')
-                if not extensions:
-                    # Try with 'filenames' property
-                    filenames = ctls_utils.get_from_lang(lang, field='filenames')
-                    if not filenames:
-                        logger.debug((
-                            'Skipping file extension matching for language <%s>: '
-                            'tool <%s> is accounted for assessment' % (
-                                lang, tool['name']
-                            )
-                        ))
-                    else:
-                        files_found = ctls_utils.find_files_by_language(
-                            field='filenames', value=filenames, repo=repo
-                        )
-                else:
-                    files_found = ctls_utils.find_files_by_language(
-                        field='extensions', value=extensions, repo=repo
-                    )
-
-                if not files_found:
-                    logger.info((
-                        'Not adding tool <%s> for the assessment. '
-                        'Language <%s> not applicable based on the '
-                        'contents of the repository <%s>' % (
-                            tool, lang, repo['repo']
+                lang_entry = ctls_utils.get_language_entry(lang)
+                if not lang_entry:
+                    account_tool = True
+                    logger.debug((
+                        'Skipping file matching for tool <%s>: entry for '
+                        'language <%s> has not been found in metadata file' % (
+                            tool['name'], lang
                         )
                     ))
-                    matching_file_extensions = False
-                if matching_file_extensions:
+                else:
+                    field = None
+                    value = None
+                    # Look for extensions first
+                    for field_name in ['extensions', 'filenames']:
+                        value = lang_entry.get(field_name, None)
+                        if value:
+                            field = field_name
+                            logger.debug(
+                                'Field <%s> found for language <%s>: %s' % (
+                                    field_name, lang, value
+                                )
+                            )
+                            break
+                    if field:
+                        logger.debug('Matching repo files by field <%s>' % field)
+                        files_found = ctls_utils.find_files_by_language(
+                            field, value, repo=repo
+                        )
+                        if files_found:
+                            account_tool = True
+                            logger.debug(
+                                'Found matching files in repository: '
+                                '%s' % files_found
+                            )
+                        else:
+                            logger.debug(
+                                'No matching files found in repository'
+                            )
+                    else:
+                        account_tool = True
+                        logger.debug((
+                            'Skipping file matching for tool <%s>: '
+                            'language <%s> metadata has neither '
+                            'extensions nor filenames defined' % (
+                                tool['name'], lang
+                            )
+                        ))
+                if account_tool:
+                    logger.info(
+                        'Tool <%s> accounted for assessment' % tool['name']
+                    )
                     toolset_for_reporting.append(tool)
+                else:
+                    logger.info((
+                        'Not adding tool <%s> for the assessment. No matching '
+                        'files (language: %s) found in the repository <%s>' % (
+                            tool['name'], lang, repo['repo']
+                        )
+                    ))
+
         if not toolset_for_reporting:
             logger.info((
                 'No tool defined for assessment (missing <reporting> '
