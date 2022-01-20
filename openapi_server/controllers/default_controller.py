@@ -241,7 +241,7 @@ async def _get_tooling_for_assessment(
                     ))
 
         if not toolset_for_reporting:
-            logger.info((
+            logger.warn((
                 'No tool defined for assessment (missing <reporting> '
                 'property) in <%s> criterion' % criterion_id
             ))
