@@ -617,6 +617,13 @@ def process_extra_data(config_json, composer_json):
             criterion_data_copy['repos'] = repos_new
         config_json['sqa_criteria'][criterion_name] = criterion_data_copy
 
+    # CONFIG:ENVIRONMENT
+    ## JPL_DOCKERFORCEBUILD
+    logger.debug('Enabling JPL_DOCKERFORCEBUILD flag (default behaviour)')
+    if not 'environment' in config_json.keys():
+        config_json['environment'] = {}
+    config_json['environment']['JPL_DOCKERFORCEBUILD'] = 'enabled'
+
     # COMPOSER (Docker Compose specific)
     for srv_name, srv_data in composer_json['services'].items():
         if srv_name not in service_images_curated_list:
