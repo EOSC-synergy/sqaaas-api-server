@@ -998,23 +998,23 @@ async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Re
                 try:
                     if not badge_type in list(badge_data):
                         badge_data[badge_type] = {}
-                    badge_data[badge_type] = await _issue_badge(
+                    badge_obj = await _issue_badge(
                         pipeline_id,
                         badgeclass_name,
                     )
+                    badge_data[badge_type]['data'] = badge_obj
                 except SQAaaSAPIException as e:
                     return web.Response(status=e.http_code, reason=e.message, text=e.message)
+                else:
+                    # Generate & store share
+                    share_data = await _get_badge_share(badge_obj, build_info['commit_url'])
+                    badge_data[badge_type]['share'] = share_data
         # Store badge data in DB
         db.add_badge_data(pipeline_id, badge_data)
-        # Generate share
-        share_data = await _get_badge_share(badge_data, build_info['commit_url'])
 
     r = {
         'report': report_data,
-        'badge': {
-            'data': badge_data,
-            'share': share_data
-        }
+        'badge': badge_data
     }
     return web.json_response(r, status=200)
 
