@@ -1230,6 +1230,34 @@ async def _issue_badge(pipeline_id, badgeclass_name):
         return badge_data
 
 
+async def _get_badge_html(badge_data, commit_url):
+    """Gets badge data in HTML format
+
+    :param badge_data: Object with data obtained from Badgr
+    :type badge_data: dict
+    :param commit_url: Code repository commit URL
+    :type commit_url: str
+    """
+    env = Environment(
+        loader=PackageLoader('openapi_server', 'templates')
+    )
+    template = env.get_template('embed_badge.html')
+
+    dt = datetime.strptime(
+        badge_data['createdAt'],
+        '%Y-%m-%dT%H:%M:%S.%fZ'
+    )
+    html_rendered = template.render({
+        'openBadgeId': badge_data['openBadgeId'],
+        'commit_url': commit_url,
+        'image': badge_data['image'],
+        'badgr_badgeclass': badge_data['badgeClass'],
+        'award_month': calendar.month_name[dt.month],
+        'award_day': dt.day,
+        'award_year': dt.year,
+    })
+
+
 @ctls_utils.debug_request
 @ctls_utils.validate_request
 async def get_badge(request: web.Request, pipeline_id, share=None) -> web.Response:
@@ -1259,24 +1287,7 @@ async def get_badge(request: web.Request, pipeline_id, share=None) -> web.Respon
     logger.info('Badge <%s> found' % badge_data['openBadgeId'])
 
     if share == 'html':
-        env = Environment(
-            loader=PackageLoader('openapi_server', 'templates')
-        )
-        template = env.get_template('embed_badge.html')
-
-        dt = datetime.strptime(
-            badge_data['createdAt'],
-            '%Y-%m-%dT%H:%M:%S.%fZ'
-        )
-        html_rendered = template.render({
-            'openBadgeId': badge_data['openBadgeId'],
-            'commit_url': commit_url,
-            'image': badge_data['image'],
-            'badgr_badgeclass': badge_data['badgeClass'],
-            'award_month': calendar.month_name[dt.month],
-            'award_day': dt.day,
-            'award_year': dt.year,
-        })
+        html_rendered = _get_badge_html(badge_data, commit_url)
 
         return web.Response(
             text=html_rendered,
