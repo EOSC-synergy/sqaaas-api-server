@@ -1007,7 +1007,7 @@ async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Re
         # Store badge data in DB
         db.add_badge_data(pipeline_id, badge_data)
         # Generate share
-        share_data = _get_badge_share(badge_data, build_info['commit_url'])
+        share_data = await _get_badge_share(badge_data, build_info['commit_url'])
 
     r = {
         'report': report_data,
@@ -1296,7 +1296,7 @@ async def get_badge(request: web.Request, pipeline_id, share=None) -> web.Respon
     logger.info('Badge <%s> found' % badge_data['openBadgeId'])
 
     if share == 'html':
-        html_rendered = _get_badge_html(badge_data, commit_url)
+        html_rendered = await _get_badge_share(badge_data, commit_url)
 
         return web.Response(
             text=html_rendered,
