@@ -976,6 +976,7 @@ async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Re
 
     # Gather & format <badge> key
     badge_data = {}
+    share_data = None
     # List of fullfilled criteria per badge type (i.e. [software, services, fair])
     criteria_fulfilled_map = _get_criteria_per_badge_type(report_data)
     if criteria_fulfilled_map:
@@ -1005,8 +1006,16 @@ async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Re
                     return web.Response(status=e.http_code, reason=e.message, text=e.message)
         # Store badge data in DB
         db.add_badge_data(pipeline_id, badge_data)
+        # Generate share
+        share_data = _get_badge_share(badge_data, build_info['commit_url'])
 
-    r = {'report': report_data, 'badge': badge_data}
+    r = {
+        'report': report_data,
+        'badge': {
+            'data': badge_data,
+            'share': share_data
+        }
+    }
     return web.json_response(r, status=200)
 
 
@@ -1230,8 +1239,8 @@ async def _issue_badge(pipeline_id, badgeclass_name):
         return badge_data
 
 
-async def _get_badge_html(badge_data, commit_url):
-    """Gets badge data in HTML format
+async def _get_badge_share(badge_data, commit_url):
+    """Gets badge data for sharing.
 
     :param badge_data: Object with data obtained from Badgr
     :type badge_data: dict
