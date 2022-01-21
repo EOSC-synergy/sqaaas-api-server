@@ -781,7 +781,7 @@ async def _get_tool_from_command(tool_criterion_map, stdout_command):
         _reason = 'No matching tool found in command: %s' % stdout_command.replace('\n','')
         logger.error(_reason)
         raise SQAaaSAPIException(502, _reason)
-    
+
     return matched_tool
 
 
@@ -847,7 +847,7 @@ async def _get_output(pipeline_id, validate=False):
     :type validate: bool
     """
     build_url, build_status = await _update_status(pipeline_id)
-    
+
     pipeline_data = db.get_entry(pipeline_id)
     jenkins_info = pipeline_data['jenkins']
     build_info = jenkins_info['build_info']
@@ -914,10 +914,12 @@ async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Re
                 if level in ['REQUIRED'] and valid == False:
                     criterion_valid = False
                 # Compose criterion stage data
+                tool_data = {'name': tool}
+                tool_data.update(validation_data)
                 if level in list(level_data):
-                    level_data[level].append({tool: validation_data})
+                    level_data[level].append(tool_data)
                 else:
-                    level_data[level] = [{tool: validation_data}]
+                    level_data[level] = [tool_data]
             report_data[criterion_name]['valid'] = criterion_valid
             report_data[criterion_name]['data'] = level_data
         return report_data
