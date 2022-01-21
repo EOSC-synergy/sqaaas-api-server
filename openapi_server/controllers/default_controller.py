@@ -976,6 +976,7 @@ async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Re
 
     # Gather & format <badge> key
     badge_data = {}
+    share_data = None
     # List of fullfilled criteria per badge type (i.e. [software, services, fair])
     criteria_fulfilled_map = _get_criteria_per_badge_type(report_data)
     if criteria_fulfilled_map:
@@ -1005,8 +1006,16 @@ async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Re
                     return web.Response(status=e.http_code, reason=e.message, text=e.message)
         # Store badge data in DB
         db.add_badge_data(pipeline_id, badge_data)
+        # Generate share
+        share_data = _get_badge_share(badge_data, build_info['commit_url'])
 
-    r = {'report': report_data, 'badge': badge_data}
+    r = {
+        'report': report_data,
+        'badge': {
+            'data': badge_data,
+            'share': share_data
+        }
+    }
     return web.json_response(r, status=200)
 
 
@@ -1230,6 +1239,34 @@ async def _issue_badge(pipeline_id, badgeclass_name):
         return badge_data
 
 
+async def _get_badge_share(badge_data, commit_url):
+    """Gets badge data for sharing.
+
+    :param badge_data: Object with data obtained from Badgr
+    :type badge_data: dict
+    :param commit_url: Code repository commit URL
+    :type commit_url: str
+    """
+    env = Environment(
+        loader=PackageLoader('openapi_server', 'templates')
+    )
+    template = env.get_template('embed_badge.html')
+
+    dt = datetime.strptime(
+        badge_data['createdAt'],
+        '%Y-%m-%dT%H:%M:%S.%fZ'
+    )
+    html_rendered = template.render({
+        'openBadgeId': badge_data['openBadgeId'],
+        'commit_url': commit_url,
+        'image': badge_data['image'],
+        'badgr_badgeclass': badge_data['badgeClass'],
+        'award_month': calendar.month_name[dt.month],
+        'award_day': dt.day,
+        'award_year': dt.year,
+    })
+
+
 @ctls_utils.debug_request
 @ctls_utils.validate_request
 async def get_badge(request: web.Request, pipeline_id, share=None) -> web.Response:
@@ -1259,24 +1296,7 @@ async def get_badge(request: web.Request, pipeline_id, share=None) -> web.Respon
     logger.info('Badge <%s> found' % badge_data['openBadgeId'])
 
     if share == 'html':
-        env = Environment(
-            loader=PackageLoader('openapi_server', 'templates')
-        )
-        template = env.get_template('embed_badge.html')
-
-        dt = datetime.strptime(
-            badge_data['createdAt'],
-            '%Y-%m-%dT%H:%M:%S.%fZ'
-        )
-        html_rendered = template.render({
-            'openBadgeId': badge_data['openBadgeId'],
-            'commit_url': commit_url,
-            'image': badge_data['image'],
-            'badgr_badgeclass': badge_data['badgeClass'],
-            'award_month': calendar.month_name[dt.month],
-            'award_day': dt.day,
-            'award_year': dt.year,
-        })
+        html_rendered = _get_badge_html(badge_data, commit_url)
 
         return web.Response(
             text=html_rendered,

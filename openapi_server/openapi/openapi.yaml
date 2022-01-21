@@ -1525,45 +1525,9 @@ components:
     AssessmentOutput:
       example:
         badge:
-          software:
-            createdAt: 2021-04-07T10:34:02.96Z
-            image: https://api.eu.badgr.io/public/assertions/KSwijifTQ_-I1lb9FtX1bw/image
-            createdBy: e3h49VVbQRKQphuAAmxpgQ
-            recipient:
-              identity: sha256$5cb2939f3ae83961b31407fbfd2978e5c642177e50227eb0c7f550c0653803dc
-              hashed: true
-              plaintextIdentity: https://github.com/EOSC-synergy/test-sqaaas-web.sqaaas/commit/41a4a73505f407d57e7ed600dd5de7cf963feda3
-              type: email
-            openBadgeID: https://api.eu.badgr.io/public/assertions/KSwijifTQ_-I1lb9FtX1bw
-            badgeClass: sBS3EsJQRAC0ENTmvETtQw
-            issuer: aS1lWKgIR4u8bGjPZUzAyg
-            issuedOn: 2021-04-07T10:07:00Z
-          services:
-            createdAt: 2021-04-07T10:34:02.96Z
-            image: https://api.eu.badgr.io/public/assertions/KSwijifTQ_-I1lb9FtX1bw/image
-            createdBy: e3h49VVbQRKQphuAAmxpgQ
-            recipient:
-              identity: sha256$5cb2939f3ae83961b31407fbfd2978e5c642177e50227eb0c7f550c0653803dc
-              hashed: true
-              plaintextIdentity: https://github.com/EOSC-synergy/test-sqaaas-web.sqaaas/commit/41a4a73505f407d57e7ed600dd5de7cf963feda3
-              type: email
-            openBadgeID: https://api.eu.badgr.io/public/assertions/KSwijifTQ_-I1lb9FtX1bw
-            badgeClass: sBS3EsJQRAC0ENTmvETtQw
-            issuer: aS1lWKgIR4u8bGjPZUzAyg
-            issuedOn: 2021-04-07T10:07:00Z
-          fair:
-            createdAt: 2021-04-07T10:34:02.96Z
-            image: https://api.eu.badgr.io/public/assertions/KSwijifTQ_-I1lb9FtX1bw/image
-            createdBy: e3h49VVbQRKQphuAAmxpgQ
-            recipient:
-              identity: sha256$5cb2939f3ae83961b31407fbfd2978e5c642177e50227eb0c7f550c0653803dc
-              hashed: true
-              plaintextIdentity: https://github.com/EOSC-synergy/test-sqaaas-web.sqaaas/commit/41a4a73505f407d57e7ed600dd5de7cf963feda3
-              type: email
-            openBadgeID: https://api.eu.badgr.io/public/assertions/KSwijifTQ_-I1lb9FtX1bw
-            badgeClass: sBS3EsJQRAC0ENTmvETtQw
-            issuer: aS1lWKgIR4u8bGjPZUzAyg
-            issuedOn: 2021-04-07T10:07:00Z
+          software: '{}'
+          services: '{}'
+          fair: '{}'
         report:
           QC.Lic:
             valid: true
@@ -2036,51 +2000,33 @@ components:
       type: object
     AssessmentOutput_badge:
       example:
-        software:
-          createdAt: 2021-04-07T10:34:02.96Z
-          image: https://api.eu.badgr.io/public/assertions/KSwijifTQ_-I1lb9FtX1bw/image
-          createdBy: e3h49VVbQRKQphuAAmxpgQ
-          recipient:
-            identity: sha256$5cb2939f3ae83961b31407fbfd2978e5c642177e50227eb0c7f550c0653803dc
-            hashed: true
-            plaintextIdentity: https://github.com/EOSC-synergy/test-sqaaas-web.sqaaas/commit/41a4a73505f407d57e7ed600dd5de7cf963feda3
-            type: email
-          openBadgeID: https://api.eu.badgr.io/public/assertions/KSwijifTQ_-I1lb9FtX1bw
-          badgeClass: sBS3EsJQRAC0ENTmvETtQw
-          issuer: aS1lWKgIR4u8bGjPZUzAyg
-          issuedOn: 2021-04-07T10:07:00Z
-        services:
-          createdAt: 2021-04-07T10:34:02.96Z
-          image: https://api.eu.badgr.io/public/assertions/KSwijifTQ_-I1lb9FtX1bw/image
-          createdBy: e3h49VVbQRKQphuAAmxpgQ
-          recipient:
-            identity: sha256$5cb2939f3ae83961b31407fbfd2978e5c642177e50227eb0c7f550c0653803dc
-            hashed: true
-            plaintextIdentity: https://github.com/EOSC-synergy/test-sqaaas-web.sqaaas/commit/41a4a73505f407d57e7ed600dd5de7cf963feda3
-            type: email
-          openBadgeID: https://api.eu.badgr.io/public/assertions/KSwijifTQ_-I1lb9FtX1bw
-          badgeClass: sBS3EsJQRAC0ENTmvETtQw
-          issuer: aS1lWKgIR4u8bGjPZUzAyg
-          issuedOn: 2021-04-07T10:07:00Z
-        fair:
-          createdAt: 2021-04-07T10:34:02.96Z
-          image: https://api.eu.badgr.io/public/assertions/KSwijifTQ_-I1lb9FtX1bw/image
-          createdBy: e3h49VVbQRKQphuAAmxpgQ
-          recipient:
-            identity: sha256$5cb2939f3ae83961b31407fbfd2978e5c642177e50227eb0c7f550c0653803dc
-            hashed: true
-            plaintextIdentity: https://github.com/EOSC-synergy/test-sqaaas-web.sqaaas/commit/41a4a73505f407d57e7ed600dd5de7cf963feda3
-            type: email
-          openBadgeID: https://api.eu.badgr.io/public/assertions/KSwijifTQ_-I1lb9FtX1bw
-          badgeClass: sBS3EsJQRAC0ENTmvETtQw
-          issuer: aS1lWKgIR4u8bGjPZUzAyg
-          issuedOn: 2021-04-07T10:07:00Z
+        software: '{}'
+        services: '{}'
+        fair: '{}'
       properties:
         software:
-          $ref: '#/components/schemas/Badge'
+          properties:
+            data:
+              $ref: '#/components/schemas/Badge'
+            share:
+              title: share
+              type: string
+          title: software
         services:
-          $ref: '#/components/schemas/Badge'
+          properties:
+            data:
+              $ref: '#/components/schemas/Badge'
+            share:
+              title: share
+              type: string
+          title: services
         fair:
-          $ref: '#/components/schemas/Badge'
+          properties:
+            data:
+              $ref: '#/components/schemas/Badge'
+            share:
+              title: share
+              type: string
+          title: fair
       title: AssessmentOutput_badge
       type: object
