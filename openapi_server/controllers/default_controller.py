@@ -1266,6 +1266,8 @@ async def _get_badge_share(badge_data, commit_url):
         'award_year': dt.year,
     })
 
+    return html_rendered
+
 
 @ctls_utils.debug_request
 @ctls_utils.validate_request
