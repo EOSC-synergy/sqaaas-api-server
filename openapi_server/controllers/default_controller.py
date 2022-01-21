@@ -1260,7 +1260,7 @@ async def _get_badge_share(badge_data, commit_url):
         'openBadgeId': badge_data['openBadgeId'],
         'commit_url': commit_url,
         'image': badge_data['image'],
-        'badgr_badgeclass': badge_data['badgeClass'],
+        'badgr_badgeclass': badge_data['badgeclass'],
         'award_month': calendar.month_name[dt.month],
         'award_day': dt.day,
         'award_year': dt.year,
