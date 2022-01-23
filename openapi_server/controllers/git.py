@@ -96,10 +96,12 @@ class GitUtils(object):
                         repo = Repo.clone_from(
                             source_repo, dirpath
                         )
+                    branch = repo.active_branch
+                    branch = branch.name
                     logger.debug((
                         'Performing %s method work on cloned git repository: '
                         '%s (branch: %s)' % (
-                            f.__name__, source_repo, source_repo_branch
+                            f.__name__, source_repo, branch
                         )
                     ))
                 except GitCommandError as e:
