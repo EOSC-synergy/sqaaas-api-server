@@ -4,6 +4,7 @@ import itertools
 import logging
 import namegenerator
 from pathlib import Path
+from pathlib import PurePath
 import os
 import re
 import uuid
@@ -873,7 +874,7 @@ def find_files_by_language(field, value, repo, path='.'):
             files_found.extend([str(file_name) for file_name in file_list])
     elif field in ['filenames']:
         for filename in value:
-            if Path(filename).exists():
+            if Path(PurePath(path, filename)).exists():
                 files_found.append(filename)
     else:
         logger.warn((
