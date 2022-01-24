@@ -135,7 +135,7 @@ async def _get_tooling_for_assessment(
     - By matching files in the repo content, either by <extensions> or
     <filenames>
 
-    Whenever the criterion is filtered out, having REQUIRED or RECOMMENDED 
+    Whenever the criterion is filtered out, having REQUIRED or RECOMMENDED
     tools, a <filtered> property is added to the criterion dict that is
     returned by this method
 
@@ -1078,7 +1078,7 @@ async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Re
                     level_data[level] = [tool_data]
             report_data[criterion_name]['valid'] = criterion_valid
             report_data[criterion_name]['data'] = level_data
-        
+
         # Append filtered-out criteria
         report_data.update(criteria_filtered_out)
 
