@@ -1585,7 +1585,10 @@ async def get_criteria(request: web.Request, criterion_id=None) -> web.Response:
     :type criterion_id: str
 
     """
-    tooling_metadata_json = await _get_tooling_metadata()
+    try:
+        tooling_metadata_json = await _get_tooling_metadata()
+    except SQAaaSAPIException as e:
+        return web.Response(status=e.http_code, reason=e.message, text=e.message)
 
     criteria_id_list = []
     if criterion_id:

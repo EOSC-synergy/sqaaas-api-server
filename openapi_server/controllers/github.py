@@ -4,6 +4,8 @@ from github import Github
 from github.GithubException import GithubException
 from github.GithubException import UnknownObjectException
 
+from openapi_server.exception import SQAaaSAPIException
+
 
 class GitHubUtils(object):
     """Class for handling requests to GitHub API.
@@ -41,8 +43,15 @@ class GitHubUtils(object):
         repo = self.get_org_repository(repo_name)
         try:
             return repo.get_contents(file_name, ref=branch)
-        except (UnknownObjectException, GithubException):
-            return False
+        except (UnknownObjectException, GithubException) as e:
+            _reason = ((
+                'Could not get file <%s> from GitHub repo <%s> (branch <%s>): '
+                '%s' % (
+                    file_name, repo_name, branch, str(e)
+                )
+            ))
+            self.logger.error(_reason) 
+            raise SQAaaSAPIException(422, _reason)
 
     def push_file(self, file_name, file_data, commit_msg, repo_name, branch):
         """Pushes a file into GitHub repository.
