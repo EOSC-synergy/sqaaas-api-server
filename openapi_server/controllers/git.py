@@ -87,6 +87,11 @@ class GitUtils(object):
             source_repo_branch = repo.get('branch', None)
             with tempfile.TemporaryDirectory() as dirpath:
                 try:
+                    logger.debug((
+                        'Inspecting content of repo <%s> (branch %s)' % (
+                            source_repo, source_repo_branch
+                        )
+                    ))
                     if source_repo_branch:
                         repo = Repo.clone_from(
                             source_repo, dirpath,
