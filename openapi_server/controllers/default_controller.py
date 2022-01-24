@@ -1044,7 +1044,20 @@ async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Re
 
     def _format_report():
         report_data = {}
+        pipeline_data = db.get_entry(pipeline_id)
+        criteria_filtered_out = pipeline_data['qaa']
+
         for criterion_name, criterion_output_data_list in output_data.items():
+            # Health check: a given criterion MUST NOT be filtered and as part
+            # of the pipeline output the same time
+            if criterion_name in list(criteria_filtered_out):
+                _reason = ((
+                    'Criterion <%s> has been both filtered out and executed '
+                    'in the pipeline' % criterion_name
+                ))
+                logger.error(_reason)
+                raise SQAaaSAPIException(_reason)
+
             criterion_valid = True
             report_data[criterion_name] = {}
             level_data = {}
@@ -1065,6 +1078,10 @@ async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Re
                     level_data[level] = [tool_data]
             report_data[criterion_name]['valid'] = criterion_valid
             report_data[criterion_name]['data'] = level_data
+        
+        # Append filtered-out criteria
+        report_data.update(criteria_filtered_out)
+
         return report_data
 
     def _get_criteria_per_badge_type(report_data):
