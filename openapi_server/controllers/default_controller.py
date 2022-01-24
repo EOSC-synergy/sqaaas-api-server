@@ -237,7 +237,7 @@ async def _get_tooling_for_assessment(
                             ))
                             if criterion_has_required_level:
                                 filtered_required_tools.append({
-                                    'tool': tool['name'],
+                                    'name': tool['name'],
                                     'reason': _reason
                                 })
                             logger.debug(_reason)
@@ -269,7 +269,13 @@ async def _get_tooling_for_assessment(
                 'property) in <%s> criterion' % criterion_id
             ))
             if criterion_has_required_level:
-                criteria_filtered_out[criterion_id] = filtered_required_tools
+                # Use same syntax as _get_output()
+                criteria_filtered_out[criterion_id] = {
+                    'valid': False,
+                    'data': {
+                        'REQUIRED': filtered_required_tools
+                    }
+                }
                 logger.warn(_reason)
             else:
                 logger.debug(_reason)
