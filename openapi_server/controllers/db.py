@@ -165,7 +165,7 @@ def update_jenkins(
 
 
 def add_badge_data(pipeline_id, badge_data):
-    """Updates the Jenkins data in the DB for the given pipeline ID.
+    """Updates the Badgr data in the DB for the given pipeline ID.
 
     :param pipeline_id: UUID-format identifier for the pipeline.
     :param badge_data: Badge data for the pipeline.
