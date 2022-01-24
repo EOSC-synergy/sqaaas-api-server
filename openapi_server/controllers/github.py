@@ -31,7 +31,7 @@ class GitHubUtils(object):
         repo = self.get_org_repository(repo_name)
         return repo.get_dir_contents(path, ref=branch)
 
-    def get_file(self, file_name, repo_name, branch):
+    def get_file(self, file_name, repo_name, branch, fail_if_not_exists=False):
         """Gets the file's content from a GitHub repository.
 
         Returns a ContentFile object.
@@ -39,6 +39,8 @@ class GitHubUtils(object):
         :param file_name: Name of the file
         :param repo_name: Name of the repo (format: <user|org>/<repo_name>)
         :param branch: Name of the branch
+        :param fail_if_not_exists: Flag to indicate whether to fail if file is
+            not found
         """
         repo = self.get_org_repository(repo_name)
         try:
@@ -50,8 +52,13 @@ class GitHubUtils(object):
                     file_name, repo_name, branch, str(e)
                 )
             ))
-            self.logger.error(_reason) 
-            raise SQAaaSAPIException(422, _reason)
+            if fail_if_not_exists:
+                self.logger.error(_reason)
+                raise SQAaaSAPIException(422, _reason)
+            else:
+                self.logger.debug(_reason)
+                return False
+
 
     def push_file(self, file_name, file_data, commit_msg, repo_name, branch):
         """Pushes a file into GitHub repository.
