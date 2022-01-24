@@ -345,7 +345,10 @@ async def add_pipeline_for_assessment(request: web.Request, body, optional_tools
     pipeline_id = await _add_pipeline_to_db(json_data, report_to_stdout=True)
 
     #3 Store QAA data
-    db.add_assessment_data(criteria_filtered_out)
+    db.add_assessment_data(
+        pipeline_id,
+        criteria_filtered_out
+    )
 
     r = {'id': pipeline_id}
     return web.json_response(r, status=201)
