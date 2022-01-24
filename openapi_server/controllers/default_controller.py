@@ -308,6 +308,10 @@ async def add_pipeline_for_assessment(request: web.Request, body, optional_tools
     :type optional_tools: list
 
     """
+    # FIXME If it is applicable to every HTTP request, it shall be added as
+    # part of the validate_request() decorator
+    body = ctls_utils.del_empty_keys(body)
+
     repo_code = body['repo_code']
     repo_docs = body.get('repo_docs', {})
 
