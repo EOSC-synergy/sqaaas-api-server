@@ -1028,6 +1028,8 @@ async def get_pipeline_output(request: web.Request, pipeline_id, validate=False)
     return web.json_response(output_data, status=200)
 
 
+@ctls_utils.debug_request
+@ctls_utils.validate_request
 async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Response:
     """Get the assessment output
 
