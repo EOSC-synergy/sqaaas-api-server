@@ -130,6 +130,15 @@ async def _get_tooling_for_assessment(
 ):
     """Returns per-criterion tooling metadata filtered for assessment.
 
+    Two levels of filtering:
+    - By <requirement_level>
+    - By matching files in the repo content, either by <extensions> or
+    <filenames>
+
+    Whenever the criterion is filtered out, having REQUIRED or RECOMMENDED 
+    tools, a <filtered> property is added to the criterion dict that is
+    returned by this method
+
     :param repo_code: code repository object (URL & branch)
     :type repo_code: dict
     :param repo_docs: optional docs repository object (URL & branch)
@@ -142,7 +151,9 @@ async def _get_tooling_for_assessment(
     tooling_metadata_json = await _get_tooling_metadata()
     criteria_data_list = await _sort_tooling_by_criteria(tooling_metadata_json)
     criteria_data_list_filtered = []
+    criteria_filtered_out = {}
     for criterion_data in criteria_data_list:
+        criterion_has_required_level = False
         criterion_id = criterion_data['id']
         if criterion_id in ['QC.Doc'] and repo_docs:
             repo = repo_docs
@@ -151,6 +162,7 @@ async def _get_tooling_for_assessment(
         # NOTE Filter tools according to <reporting:requirement_level> property
         criterion_data_copy = copy.deepcopy(criterion_data)
         toolset_for_reporting = []
+        filtered_required_tools = []
         for tool in criterion_data['tools']:
             account_tool_by_requirement_level = False
             try:
@@ -163,6 +175,8 @@ async def _get_tooling_for_assessment(
                             tool['name'], tool
                         )
                     ))
+                    if level in ['REQUIRED']:
+                        criterion_has_required_level = True
                 else:
                     if tool in optional_tools:
                         account_tool_by_requirement_level = True
@@ -210,14 +224,23 @@ async def _get_tooling_for_assessment(
                         )
                         if files_found:
                             account_tool = True
-                            logger.debug(
+                            logger.debug((
                                 'Found matching files in repository: '
                                 '%s' % files_found
-                            )
+                            ))
                         else:
-                            logger.debug(
-                                'No matching files found in repository'
-                            )
+                            _reason = ((
+                                'No matching files found in repository: using '
+                                '%s <%s> for language <%s>' % (
+                                    field, value, lang
+                                )
+                            ))
+                            if criterion_has_required_level:
+                                filtered_required_tools.append({
+                                    'tool': tool['name'],
+                                    'reason': _reason
+                                })
+                            logger.debug(_reason)
                     else:
                         account_tool = True
                         logger.debug((
@@ -241,10 +264,15 @@ async def _get_tooling_for_assessment(
                     ))
 
         if not toolset_for_reporting:
-            logger.warn((
+            _reason = ((
                 'No tool defined for assessment (missing <reporting> '
                 'property) in <%s> criterion' % criterion_id
             ))
+            if criterion_has_required_level:
+                criteria_filtered_out[criterion_id] = filtered_required_tools
+                logger.warn(_reason)
+            else:
+                logger.debug(_reason)
         else:
             logger.info((
                 'Found %s tool/s for assessment of criterion <%s>: %s' % (
@@ -260,7 +288,7 @@ async def _get_tooling_for_assessment(
         logger.error(_reason)
         raise SQAaaSAPIException(422, _reason)
 
-    return criteria_data_list_filtered
+    return criteria_data_list_filtered, criteria_filtered_out
 
 
 async def add_pipeline_for_assessment(request: web.Request, body, optional_tools=[]) -> web.Response:
@@ -279,7 +307,7 @@ async def add_pipeline_for_assessment(request: web.Request, body, optional_tools
 
     #0 Filter per-criterion tools that will take part in the assessment
     try:
-        criteria_data_list = await _get_tooling_for_assessment(
+        criteria_data_list, criteria_filtered_out = await _get_tooling_for_assessment(
             repo_code=repo_code,
             repo_docs=repo_docs,
             optional_tools=optional_tools
@@ -309,6 +337,9 @@ async def add_pipeline_for_assessment(request: web.Request, body, optional_tools
 
     #2 Create pipeline
     pipeline_id = await _add_pipeline_to_db(json_data, report_to_stdout=True)
+
+    #3 Store QAA data
+    db.add_assessment_data(criteria_filtered_out)
 
     r = {'id': pipeline_id}
     return web.json_response(r, status=201)

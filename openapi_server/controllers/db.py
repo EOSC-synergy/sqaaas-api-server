@@ -174,3 +174,15 @@ def add_badge_data(pipeline_id, badge_data):
     db[pipeline_id]['badge'] = badge_data
     store_content(db)
     logger.debug('Badge data added for pipeline <%s>: %s' % (pipeline_id, db[pipeline_id]['badge']))
+
+
+def add_assessment_data(pipeline_id, assessment_data):
+    """Updates the QAA-related data in the DB for the given pipeline ID.
+
+    :param pipeline_id: UUID-format identifier for the pipeline.
+    :param assessment_data: Data use for the QAA module.
+    """
+    db = load_content()
+    db[pipeline_id]['qaa'] = assessment_data
+    store_content(db)
+    logger.debug('QAA data added in DB for pipeline <%s>: %s' % (pipeline_id, db[pipeline_id]['qaa']))
