@@ -3,6 +3,8 @@ import functools
 import itertools
 import logging
 import namegenerator
+from pathlib import Path
+from pathlib import PurePath
 import os
 import re
 import uuid
@@ -14,6 +16,7 @@ from urllib.parse import ParseResult
 
 from openapi_server import config
 from openapi_server.controllers import db
+from openapi_server.controllers.git import GitUtils
 from openapi_server.controllers.jepl import JePLUtils
 
 from github.GithubException import GithubException
@@ -569,6 +572,7 @@ def process_extra_data(config_json, composer_json, report_to_stdout=False):
     # CONFIG:SQA_CRITERIA
     # - Array-to-Object conversion for repos
     # - Set 'context' to the appropriate checkout path for building the Dockerfile
+    stage_name_mapping = {} # mapping with the last increment of a given <stage_name>
     commands_script_list = []
     tool_criteria_map = {}
     service_images_curated_list = [] # services processed by curate_service_image_properties()
@@ -624,10 +628,20 @@ def process_extra_data(config_json, composer_json, report_to_stdout=False):
                     # Use 'this_repo' as the placeholder for current repo & version
                     stage_name = 'this_repo'
                 else:
-                    stage_name = project_repos_mapping[repo_url]['name']
+                    stage_name = ' '.join([
+                        project_repos_mapping[repo_url]['name'],
+                        tool['name']
+                    ])
 
                 if stage_name in list(repos_new):
-                    stage_name = JePLUtils.generate_stage_name(stage_name)
+                    stage_name_last = stage_name_mapping.get(
+                        stage_name, stage_name
+                    )
+                    stage_name_new = JePLUtils.generate_stage_name(
+                        stage_name_last
+                    )
+                    stage_name_mapping[stage_name] = stage_name_new
+                    stage_name = stage_name_new
                 repos_new[stage_name] = repo
 
                 if repo_url:
@@ -809,3 +823,66 @@ def del_empty_keys(data):
             props_to_remove.append(prop)
     [data.pop(prop) for prop in props_to_remove]
     return data
+
+
+def get_language_entry(lang):
+    """Get the entry for the given language in the language's metadata file.
+
+    :param lang: name of the language (compliant with <linguist> tool language
+                 definition)
+    """
+    language_metadata_file = config.get(
+        'language_metadata_file',
+        fallback='etc/languages.yml'
+    )
+    lang_entry = None
+    with open(language_metadata_file) as yaml_file:
+        try:
+            data = yaml.safe_load(yaml_file)
+        except yaml.YAMLError as e:
+            _reason = 'Could not load <%s> file: %s' % (
+                language_metadata_file, str(e)
+            )
+            logger.error(_reason)
+        else:
+            if lang not in list(data):
+                logger.warn((
+                    'Language <%s> not found in language metadata file '
+                    '(%s)' % (lang, language_metadata_file)
+                ))
+            else:
+                lang_entry = data[lang]
+
+    return lang_entry
+
+
+@GitUtils.do_git_work
+def find_files_by_language(field, value, repo, path='.'):
+    """Finds files in the current path that match the given list of
+    extensions.
+
+    :param field: field name (compliant with <linguist> tool).
+                  Choices are ('extensions', 'filenames')
+    :param value: field value (compliant with <linguist> tool)
+    :param repo: repository object (URL & branch)
+    :param path: look for file extensions in the given repo path
+    """
+    files_found = []
+    if field in ['extensions']:
+        for extension in value:
+            file_list = sorted(Path(path).rglob('*'+extension))
+            files_found.extend([str(file_name) for file_name in file_list])
+    elif field in ['filenames']:
+        for filename in value:
+            if Path(PurePath(path, filename)).exists():
+                files_found.append(filename)
+    else:
+        logger.warn((
+            'Language field <%s> (from languages.yml) not supported!' % field
+        ))
+    if files_found:
+        logger.debug('Files found in path matching required %s: %s' % (
+            field, files_found)
+        )
+
+    return files_found

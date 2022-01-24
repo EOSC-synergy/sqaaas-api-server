@@ -123,9 +123,26 @@ async def add_pipeline(request: web.Request, body, report_to_stdout=None) -> web
     return web.json_response(r, status=201)
 
 
-async def _get_tooling_for_assessment(optional_tools=[]):
+async def _get_tooling_for_assessment(
+    repo_code,
+    repo_docs=None,
+    optional_tools=[]
+):
     """Returns per-criterion tooling metadata filtered for assessment.
 
+    Two levels of filtering:
+    - By <requirement_level>
+    - By matching files in the repo content, either by <extensions> or
+    <filenames>
+
+    Whenever the criterion is filtered out, having REQUIRED or RECOMMENDED
+    tools, a <filtered> property is added to the criterion dict that is
+    returned by this method
+
+    :param repo_code: code repository object (URL & branch)
+    :type repo_code: dict
+    :param repo_docs: optional docs repository object (URL & branch)
+    :type repo_docs: dict
     :param optional_tools: Optional tools that shall be accounted
     :type optional_tools: list
     """
@@ -134,31 +151,141 @@ async def _get_tooling_for_assessment(optional_tools=[]):
     tooling_metadata_json = await _get_tooling_metadata()
     criteria_data_list = await _sort_tooling_by_criteria(tooling_metadata_json)
     criteria_data_list_filtered = []
+    criteria_filtered_out = {}
     for criterion_data in criteria_data_list:
+        criterion_has_required_level = False
+        criterion_id = criterion_data['id']
+        if criterion_id in ['QC.Doc'] and repo_docs:
+            repo = repo_docs
+        else:
+            repo = repo_code
+        # NOTE Filter tools according to <reporting:requirement_level> property
         criterion_data_copy = copy.deepcopy(criterion_data)
         toolset_for_reporting = []
+        filtered_required_tools = []
         for tool in criterion_data['tools']:
-            account_tool = False
-            # NOTE!! Filtered based on the availability of the <reporting:requirement_level> property
+            account_tool_by_requirement_level = False
             try:
                 level = tool['reporting']['requirement_level']
                 if level in levels_for_assessment:
-                    account_tool = True
-                    logger.debug('Accounting for assessment the REQUIRED/RECOMMENDED tool: %s' % tool)
+                    account_tool_by_requirement_level = True
+                    logger.debug((
+                        'Accounting for QAA the tool <%s> (reason: '
+                        'REQUIRED/RECOMMENDED): %s' % (
+                            tool['name'], tool
+                        )
+                    ))
+                    if level in ['REQUIRED']:
+                        criterion_has_required_level = True
                 else:
                     if tool in optional_tools:
-                        account_tool = True
-                        logger.debug('Accounting the requested OPTIONAL tool <%s>' % tool)
+                        account_tool_by_requirement_level = True
+                        logger.debug((
+                            'Accounting for QAA the tool <%s> (reason: '
+                            'requested as OPTIONAL tool): %s' % (
+                                tool['name'], tool
+                            )
+                        ))
             except KeyError:
-                logger.debug('Could not get reporting data from tooling for tool <%s>' % tool)
-            if account_tool:
-                toolset_for_reporting.append(tool)
-        criterion_id = criterion_data['id']
+                logger.debug((
+                    'Skipping tool <%s> as it does not have reporting data '
+                    'defined: %s' % (tool['name'], tool)
+                ))
+            if account_tool_by_requirement_level:
+                account_tool = False
+                lang = tool['lang']
+                lang_entry = ctls_utils.get_language_entry(lang)
+                if not lang_entry:
+                    account_tool = True
+                    logger.debug((
+                        'Skipping file matching for tool <%s>: entry for '
+                        'language <%s> has not been found in metadata file' % (
+                            tool['name'], lang
+                        )
+                    ))
+                else:
+                    field = None
+                    value = None
+                    # Look for extensions first
+                    for field_name in ['extensions', 'filenames']:
+                        value = lang_entry.get(field_name, None)
+                        if value:
+                            field = field_name
+                            logger.debug(
+                                'Field <%s> found for language <%s>: %s' % (
+                                    field_name, lang, value
+                                )
+                            )
+                            break
+                    if field:
+                        logger.debug('Matching repo files by field <%s>' % field)
+                        files_found = ctls_utils.find_files_by_language(
+                            field, value, repo=repo
+                        )
+                        if files_found:
+                            account_tool = True
+                            logger.debug((
+                                'Found matching files in repository: '
+                                '%s' % files_found
+                            ))
+                        else:
+                            _reason = ((
+                                'No matching files found in repository: using '
+                                '%s <%s> for language <%s>' % (
+                                    field, value, lang
+                                )
+                            ))
+                            if criterion_has_required_level:
+                                filtered_required_tools.append({
+                                    'name': tool['name'],
+                                    'reason': _reason
+                                })
+                            logger.debug(_reason)
+                    else:
+                        account_tool = True
+                        logger.debug((
+                            'Skipping file matching for tool <%s>: '
+                            'language <%s> metadata has neither '
+                            'extensions nor filenames defined' % (
+                                tool['name'], lang
+                            )
+                        ))
+                if account_tool:
+                    logger.info(
+                        'Tool <%s> accounted for assessment' % tool['name']
+                    )
+                    toolset_for_reporting.append(tool)
+                else:
+                    logger.info((
+                        'Not adding tool <%s> for the assessment. No matching '
+                        'files (language: %s) found in the repository <%s>' % (
+                            tool['name'], lang, repo['repo']
+                        )
+                    ))
+
         if not toolset_for_reporting:
-            logger.debug('No tool defined for assessment (missing <reporting> property) in <%s> criterion' % criterion_id)
+            _reason = ((
+                'No tool defined for assessment (missing <reporting> '
+                'property) in <%s> criterion' % criterion_id
+            ))
+            if criterion_has_required_level:
+                # Use same syntax as _get_output()
+                criteria_filtered_out[criterion_id] = {
+                    'valid': False,
+                    'data': {
+                        'REQUIRED': filtered_required_tools
+                    }
+                }
+                logger.warn(_reason)
+            else:
+                logger.debug(_reason)
         else:
-            logger.debug('Found %s tool/s for assessment of criterion <%s>: %s' % (
-                len(toolset_for_reporting), criterion_id, [tool['name'] for tool in toolset_for_reporting]))
+            logger.info((
+                'Found %s tool/s for assessment of criterion <%s>: %s' % (
+                    len(toolset_for_reporting),
+                    criterion_id,
+                    [tool['name'] for tool in toolset_for_reporting])
+            ))
             criterion_data_copy['tools'] = toolset_for_reporting
             criteria_data_list_filtered.append(criterion_data_copy)
 
@@ -167,7 +294,7 @@ async def _get_tooling_for_assessment(optional_tools=[]):
         logger.error(_reason)
         raise SQAaaSAPIException(422, _reason)
 
-    return criteria_data_list_filtered
+    return criteria_data_list_filtered, criteria_filtered_out
 
 
 async def add_pipeline_for_assessment(request: web.Request, body, optional_tools=[]) -> web.Response:
@@ -186,7 +313,11 @@ async def add_pipeline_for_assessment(request: web.Request, body, optional_tools
 
     #0 Filter per-criterion tools that will take part in the assessment
     try:
-        criteria_data_list = await _get_tooling_for_assessment(optional_tools=optional_tools)
+        criteria_data_list, criteria_filtered_out = await _get_tooling_for_assessment(
+            repo_code=repo_code,
+            repo_docs=repo_docs,
+            optional_tools=optional_tools
+        )
         logger.debug('Gathered tooling data enabled for assessment: %s' % criteria_data_list)
     except SQAaaSAPIException as e:
         return web.Response(status=e.http_code, reason=e.message, text=e.message)
@@ -212,6 +343,12 @@ async def add_pipeline_for_assessment(request: web.Request, body, optional_tools
 
     #2 Create pipeline
     pipeline_id = await _add_pipeline_to_db(json_data, report_to_stdout=True)
+
+    #3 Store QAA data
+    db.add_assessment_data(
+        pipeline_id,
+        criteria_filtered_out
+    )
 
     r = {'id': pipeline_id}
     return web.json_response(r, status=201)
@@ -734,12 +871,18 @@ async def _run_validation(tool, stdout):
 
     allowed_validators = r2s_utils.get_validators()
     validator_name = reporting_data['validator']
-    if validator_name not in allowed_validators:
+    out = None
+    if validator_name in ['__STAGE_EXIT_STATUS__']:
+        stage_status = reporting_data['status']
+        out = {'valid': True if stage_status in ['SUCCESS'] else False}
+    elif validator_name not in allowed_validators:
         _reason = 'Could not find report2sqaaas validator plugin <%s> (found: %s)' % (validator_name, allowed_validators)
         logger.error(_reason)
         raise SQAaaSAPIException(422, _reason)
-    validator = r2s_utils.get_validator(validator_opts)
-    return (reporting_data, validator.driver.validate())
+    else:
+        validator = r2s_utils.get_validator(validator_opts)
+        out = validator.driver.validate()
+    return (reporting_data, out)
 
 
 async def _get_commands_from_script(stdout_command, commands_script_list):
@@ -885,6 +1028,8 @@ async def get_pipeline_output(request: web.Request, pipeline_id, validate=False)
     return web.json_response(output_data, status=200)
 
 
+@ctls_utils.debug_request
+@ctls_utils.validate_request
 async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Response:
     """Get the assessment output
 
@@ -901,7 +1046,20 @@ async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Re
 
     def _format_report():
         report_data = {}
+        pipeline_data = db.get_entry(pipeline_id)
+        criteria_filtered_out = pipeline_data['qaa']
+
         for criterion_name, criterion_output_data_list in output_data.items():
+            # Health check: a given criterion MUST NOT be filtered and as part
+            # of the pipeline output the same time
+            if criterion_name in list(criteria_filtered_out):
+                _reason = ((
+                    'Criterion <%s> has been both filtered out and executed '
+                    'in the pipeline' % criterion_name
+                ))
+                logger.error(_reason)
+                raise SQAaaSAPIException(_reason)
+
             criterion_valid = True
             report_data[criterion_name] = {}
             level_data = {}
@@ -922,6 +1080,10 @@ async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Re
                     level_data[level] = [tool_data]
             report_data[criterion_name]['valid'] = criterion_valid
             report_data[criterion_name]['data'] = level_data
+
+        # Append filtered-out criteria
+        report_data.update(criteria_filtered_out)
+
         return report_data
 
     def _get_criteria_per_badge_type(report_data):
@@ -1324,8 +1486,12 @@ async def _get_tooling_metadata():
         fallback='tooling.json'
     )
 
-    logger.debug('Getting supported tools from <%s> repo (metadata file: %s)' % (
-        tooling_repo_url, tooling_metadata_file))
+    logger.debug((
+        'Getting supported tools from <%s> repo (branch: %s, metadata file: '
+        '%s)' % (
+            tooling_repo_url, tooling_repo_branch, tooling_metadata_file
+        )
+    ))
     platform = ctls_utils.supported_git_platform(
         tooling_repo_url, platforms=SUPPORTED_PLATFORMS)
     tooling_metadata_json = {}
