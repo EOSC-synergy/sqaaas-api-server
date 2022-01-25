@@ -167,74 +167,94 @@ class JePLUtils(object):
         :param commands_script_list: List of generated scripts for the commands builder.
         :param branch: Name of the branch in the remote repository.
         """
-        # config
-        config_files_pushed = []
-        for config_data in config_data_list:
-            _file_name = config_data['file_name']
-            logger.debug('Pushing JePL config file to GitHub repository <%s>: %s' % (
-                repo, _file_name))
-            gh_utils.push_file(
-                _file_name,
-                config_data['data_yml'],
-                'Update %s' % _file_name,
-                repo,
-                branch
-            )
-            config_files_pushed.append(_file_name)
+        ## config
+        config_files_to_push = [
+            {
+                'file_name': config_data['file_name'],
+                'file_data': config_data['data_yml'],
+                'delete': False
+            }
+            for config_data in config_data_list
+        ]
         config_files_from_repo = [
             file_content.path
-                for file_content in cls.get_files('config', gh_utils, repo, branch)
+                for file_content in cls.get_files(
+                    'config', gh_utils, repo, branch
+                )
         ]
-        config_files_to_remove = set(config_files_from_repo).difference(set(config_files_pushed))
-        for config_file in config_files_to_remove:
-            logger.debug('Deleting no longer needed config.yml file: %s' % config_file)
-            gh_utils.delete_file(config_file, repo, branch)
-        # composer
-        logger.debug('Pushing composer file to GitHub repository <%s>: %s' % (
-            repo, composer_data['file_name']))
-        gh_utils.push_file(
-            composer_data['file_name'],
-            composer_data['data_yml'],
-            'Update %s' % composer_data['file_name'],
-            repo,
-            branch
+        config_files_to_push_names = [
+            file_dict['file_name']
+            for file_dict in config_files_to_push
+        ]
+        config_files_to_remove_set = set(config_files_from_repo).difference(
+            set(config_files_to_push_names)
         )
-        # jenkinsfile
-        logger.debug('Pushing Jenkinsfile to GitHub repository <%s>' % repo)
-        # FIXME Getting only the last commit as the representation for the whole
-        # set of JePL files. This HAS to be changed so that a unique commit is done
-        last_commit = gh_utils.push_file(
-            'Jenkinsfile',
-            jenkinsfile,
-            'Update Jenkinsfile',
-            repo,
-            branch
-        )
-        # commands' builder scripts
-        commands_scripts_pushed = []
-        for commands_script in commands_script_list:
-            logger.debug('Pushing script for commands builder to GitHub repository <%s>: %s' % (
-                repo, commands_script['file_name']))
-            gh_utils.push_file(
-                commands_script['file_name'],
-                commands_script['content'],
-                'Update %s' % commands_script['file_name'],
-                repo,
-                branch
-            )
-            commands_scripts_pushed.append(commands_script['file_name'])
+        config_files_to_remove = [
+            {
+                'file_name': config_file,
+                'delete': True
+            }
+            for config_file in config_files_to_remove_set
+        ]
+        ## composer
+        composer_files_to_push = [{
+            'file_name': composer_data['file_name'],
+            'file_data': composer_data['data_yml'],
+            'delete': False
+        }]
+        ## jenkinsfile
+        jenkinsfile_to_push = [{
+            'file_name': 'Jenkinsfile',
+            'file_data': jenkinsfile,
+            'delete': False
+        }]
+        ## commands' builder scripts
+        commands_scripts_to_push = [
+            {
+                'file_name': commands_script['file_name'],
+                'file_data': commands_script['content'],
+                'delete': False
+            }
+            for commands_script in commands_script_list
+        ]
         commands_scripts_from_repo = [
             file_content.path
-                for file_content in cls.get_files('commands_script', gh_utils, repo, branch)
+                for file_content in cls.get_files(
+                    'commands_script', gh_utils, repo, branch
+                )
         ]
-        commands_scripts_to_remove = set(commands_scripts_from_repo).difference(set(commands_scripts_pushed))
-        for script in commands_scripts_to_remove:
-            logger.debug('Deleting no longer needed commands\' builder script file: %s' % script)
-            gh_utils.delete_file(script, repo, branch)
+        commands_scripts_to_push_names = [
+            file_dict['file_name']
+            for file_dict in commands_scripts_to_push
+        ]
+        commands_scripts_to_remove_set = set(
+            commands_scripts_from_repo
+        ).difference(set(commands_scripts_to_push_names))
+        commands_scripts_to_remove = [
+            {
+                'file_name': script,
+                'delete': True
+            }
+            for script in commands_scripts_to_remove_set
+        ]
+        ## Merge & Push the definitive list of files
+        files_to_push = (
+            config_files_to_push + config_files_to_remove +
+            composer_files_to_push +
+            jenkinsfile_to_push +
+            commands_scripts_to_push + commands_scripts_to_remove)
+        commit = gh_utils.push_files(
+            files_to_push,
+            commit_msg='Add JePL file structure',
+            repo_name=repo,
+            branch=branch
+        )
+        logger.info((
+            'GitHub repository <%s> created with the JePL file '
+            'structure' % repo
+        ))
 
-        logger.info('GitHub repository <%s> created with the JePL file structure' % repo)
-
-        return last_commit
+        return commit
 
     def get_composer_service(
             name,
