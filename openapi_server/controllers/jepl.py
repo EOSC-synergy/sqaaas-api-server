@@ -224,10 +224,6 @@ class JePLUtils(object):
             }
             for script in commands_scripts_to_remove_set
         ]
-        # for script in commands_scripts_to_remove:
-        #     logger.debug('Deleting no longer needed commands\' builder script file: %s' % script)
-        #     gh_utils.delete_file(script, repo, branch)
-
         files_to_push = (
             config_files_to_push + config_files_to_remove +
             composer_files_to_push +
