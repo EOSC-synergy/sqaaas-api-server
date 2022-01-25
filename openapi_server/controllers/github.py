@@ -1,6 +1,7 @@
 import logging
 
 from github import Github
+from github import InputGitTreeElement
 from github.GithubException import GithubException
 from github.GithubException import UnknownObjectException
 
@@ -110,7 +111,7 @@ class GitHubUtils(object):
                 self.logger.debug((
                     'File <%s> added for the next commit' % file_name
                 ))
-            element_list.append(github.InputGitTreeElement(
+            element_list.append(InputGitTreeElement(
                 path=file_name, mode='100644', type='blob', sha=blob_sha
             ))
         branch_sha = repo.get_branch(branch).commit.sha
