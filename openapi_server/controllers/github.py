@@ -98,7 +98,7 @@ class GitHubUtils(object):
         element_list = []
         for file_dict in file_list:
             file_name = file_dict['file_name']
-            file_data = file_dict['file_data']
+            file_data = file_dict.get('file_data', None)
             to_delete = file_dict['delete']
             if to_delete:
                 blob_sha = None
