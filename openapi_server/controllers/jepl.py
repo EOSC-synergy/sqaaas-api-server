@@ -178,9 +178,17 @@ class JePLUtils(object):
         ]
         config_files_from_repo = [
             file_content.path
-                for file_content in cls.get_files('config', gh_utils, repo, branch)
+                for file_content in cls.get_files(
+                    'config', gh_utils, repo, branch
+                )
         ]
-        config_files_to_remove_set = set(config_files_from_repo).difference(set(config_files_pushed))
+        config_files_to_push_names = [
+            file_dict['file_name']
+            for file_dict in config_files_to_push
+        ]
+        config_files_to_remove_set = set(config_files_from_repo).difference(
+            set(config_files_to_push_names)
+        )
         config_files_to_remove = [
             {
                 'file_name': config_file,
@@ -189,15 +197,12 @@ class JePLUtils(object):
             for config_file in config_files_to_remove_set
         ]
         ## composer
-        logger.debug('Pushing composer file to GitHub repository <%s>: %s' % (
-            repo, composer_data['file_name']))
         composer_files_to_push = [{
             'file_name': composer_data['file_name'],
             'file_data': composer_data['data_yml'],
             'delete': False
         }]
         ## jenkinsfile
-        logger.debug('Pushing Jenkinsfile to GitHub repository <%s>' % repo)
         jenkinsfile_to_push = [{
             'file_name': 'Jenkinsfile',
             'file_data': jenkinsfile,
@@ -214,9 +219,17 @@ class JePLUtils(object):
         ]
         commands_scripts_from_repo = [
             file_content.path
-                for file_content in cls.get_files('commands_script', gh_utils, repo, branch)
+                for file_content in cls.get_files(
+                    'commands_script', gh_utils, repo, branch
+                )
         ]
-        commands_scripts_to_remove_set = set(commands_scripts_from_repo).difference(set(commands_scripts_pushed))
+        commands_scripts_to_push_names = [
+            file_dict['file_name']
+            for file_dict in commands_scripts_to_push
+        ]
+        commands_scripts_to_remove_set = set(
+            commands_scripts_from_repo
+        ).difference(set(commands_scripts_to_push_names))
         commands_scripts_to_remove = [
             {
                 'file_name': script,
@@ -224,6 +237,7 @@ class JePLUtils(object):
             }
             for script in commands_scripts_to_remove_set
         ]
+        ## Merge & Push the definitive list of files
         files_to_push = (
             config_files_to_push + config_files_to_remove +
             composer_files_to_push +
@@ -235,7 +249,10 @@ class JePLUtils(object):
             repo=repo,
             branch=branch
         )
-        logger.info('GitHub repository <%s> created with the JePL file structure' % repo)
+        logger.info((
+            'GitHub repository <%s> created with the JePL file '
+            'structure' % repo
+        ))
 
         return commit
 
