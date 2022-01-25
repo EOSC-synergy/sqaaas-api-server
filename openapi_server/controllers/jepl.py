@@ -228,10 +228,11 @@ class JePLUtils(object):
         #     logger.debug('Deleting no longer needed commands\' builder script file: %s' % script)
         #     gh_utils.delete_file(script, repo, branch)
 
-        files_to_push = config_files_to_push + config_files_to_remove +
-                        composer_files_to_push +
-                        jenkinsfile_to_push +
-                        commands_scripts_to_push + commands_scripts_to_remove
+        files_to_push = (
+            config_files_to_push + config_files_to_remove +
+            composer_files_to_push +
+            jenkinsfile_to_push +
+            commands_scripts_to_push + commands_scripts_to_remove)
         commit = gh_utils.push_files(
             files_to_push,
             commit_msg='Add JePL file structure',
