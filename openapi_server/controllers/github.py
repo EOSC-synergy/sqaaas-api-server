@@ -59,7 +59,6 @@ class GitHubUtils(object):
                 self.logger.debug(_reason)
                 return False
 
-
     def push_file(self, file_name, file_data, commit_msg, repo_name, branch):
         """Pushes a file into GitHub repository.
 
@@ -81,6 +80,53 @@ class GitHubUtils(object):
             self.logger.debug('File <%s> does not currently exist in the repository, creating..' % file_name)
             r = repo.create_file(file_name, commit_msg, file_data, branch)
         return r['commit'].sha
+
+    def push_files(self, file_list, commit_msg, repo_name, branch):
+        """Pushes multiple files into a GitHub repository.
+
+        Returns the commit ID (SHA format).
+
+        :param file_list: List of dicts with the file name (<file_name>) and
+            data (<file_data>)
+        :param commit_msg: Message to use in the commit
+        :param repo_name: Name of the repo to push (format:
+            <user|org>/<repo_name>)
+        :param branch: Branch to push
+        """
+        repo = self.get_org_repository(repo_name)
+        element_list = []
+        for file_dict in file_list:
+            file_name = file_dict['file_name']
+            file_data = file_dict['file_data']
+            to_delete = file_dict['delete']
+            if to_delete:
+                blob_sha = None
+                self.logger.debug((
+                    'File <%s> marked for deletion in the next '
+                    'commit' % file_name
+                ))
+            else:
+                blob_sha = repo.create_git_blob(file_data, "utf-8").sha
+                self.logger.debug((
+                    'File <%s> added for the next commit' % file_name
+                ))
+            element_list.append(github.InputGitTreeElement(
+                path=file_name, mode='100644', type='blob', sha=blob_sha
+            ))
+        branch_sha = repo.get_branch(branch).commit.sha
+        base_tree = repo.get_git_tree(sha=branch_sha)
+        tree = repo.create_git_tree(element_list, base_tree)
+        parent = repo.get_git_commit(sha=branch_sha)
+        commit = repo.create_git_commit(commit_msg, tree, [parent])
+        branch_refs = repo.get_git_ref("heads/%s" % branch)
+        branch_refs.edit(sha=commit.sha)
+        self.logger.debug((
+            'Files pushed to remote repository <%s> (branch: %s) with commit '
+            'SHA <%s>: %s' % (repo_name, branch, commit.sha, file_list)
+        ))
+
+        return commit.sha
+
 
     def delete_file(self, file_name, repo_name, branch):
         """Pushes a file into GitHub repository.
