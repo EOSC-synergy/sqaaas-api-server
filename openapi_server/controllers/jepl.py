@@ -246,7 +246,7 @@ class JePLUtils(object):
         commit = gh_utils.push_files(
             files_to_push,
             commit_msg='Add JePL file structure',
-            repo=repo,
+            repo_name=repo,
             branch=branch
         )
         logger.info((
