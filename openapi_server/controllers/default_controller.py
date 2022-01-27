@@ -1054,8 +1054,8 @@ async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Re
         criteria_filtered_out = pipeline_data['qaa']
 
         for criterion_name, criterion_output_data_list in output_data.items():
-            # Health check: a given criterion MUST NOT be filtered and as part
-            # of the pipeline output the same time
+            # Health check: a given criterion MUST NOT be present both in the
+            # filtered list and as part of the pipeline execution stages
             if criterion_name in list(criteria_filtered_out):
                 _reason = ((
                     'Criterion <%s> has been both filtered out and executed '
