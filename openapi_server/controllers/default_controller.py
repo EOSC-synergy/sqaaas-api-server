@@ -1052,6 +1052,7 @@ async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Re
         report_data = {}
         pipeline_data = db.get_entry(pipeline_id)
         criteria_filtered_out = pipeline_data['qaa']
+        criteria_tool_commands = pipeline_data['tools']
 
         for criterion_name, criterion_output_data_list in output_data.items():
             # Health check: a given criterion MUST NOT be present both in the
@@ -1070,7 +1071,17 @@ async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Re
             for criterion_output_data in criterion_output_data_list:
                 level = criterion_output_data['requirement_level']
                 tool = criterion_output_data['tool']
+                # CI data
+                ci_data = {
+                    'name': criterion_output_data['name'],
+                    'status': criterion_output_data['status'],
+                    'stdout_command': criteria_tool_commands[criterion_name][tool],
+                    'stdout_text': criterion_output_data['stdout_text'],
+                    'url': criterion_output_data['url']
+                }
+                # Validation data
                 validation_data = criterion_output_data['validation']
+                validation_data['validator'] = criterion_output_data['validator']
                 valid = validation_data.pop('valid')
                 # Check validity of the criterion output
                 if level in ['REQUIRED'] and valid == False:
@@ -1078,6 +1089,7 @@ async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Re
                 # Compose criterion stage data
                 tool_data = {'name': tool}
                 tool_data.update(validation_data)
+                tool_data.update({'ci': ci_data})
                 if level in list(level_data):
                     level_data[level].append(tool_data)
                 else:
