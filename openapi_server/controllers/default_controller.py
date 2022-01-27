@@ -1071,6 +1071,7 @@ async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Re
                 level = criterion_output_data['requirement_level']
                 tool = criterion_output_data['tool']
                 validation_data = criterion_output_data['validation']
+                validation_data['validator'] = criterion_output_data['validator']
                 valid = validation_data.pop('valid')
                 # Check validity of the criterion output
                 if level in ['REQUIRED'] and valid == False:
