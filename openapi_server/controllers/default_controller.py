@@ -1077,6 +1077,7 @@ async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Re
                     'status': criterion_output_data['status'],
                     'stdout_command': criteria_tool_commands[criterion_name][tool],
                     'stdout_text': criterion_output_data['stdout_text'],
+                    'url': criterion_output_data['url']
                 }
                 # Validation data
                 validation_data = criterion_output_data['validation']

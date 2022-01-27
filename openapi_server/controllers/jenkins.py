@@ -201,7 +201,8 @@ class JenkinsUtils(object):
                 'criterion': criterion,
                 'status': status,
                 'stdout_command': cmd,
-                'stdout_text': output_text
+                'stdout_text': output_text,
+                'url': urljoin(self.endpoint, console_log_endpoint)
             })
 
         return criteria_data_list
