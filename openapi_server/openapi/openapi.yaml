@@ -289,24 +289,12 @@ paths:
         schema:
           type: string
         style: simple
-      - description: Returns the shared version of the badge in a specific format
-        explode: true
-        in: query
-        name: share
-        required: false
-        schema:
-          enum:
-          - html
-          type: string
-        style: form
       responses:
         "200":
           content:
             application/json:
               schema:
-                items:
-                  $ref: '#/components/schemas/Badge'
-                type: array
+                $ref: '#/components/schemas/Badge'
           description: Successful operation
         "400":
           description: Invalid pipeline ID supplied
@@ -1516,7 +1504,7 @@ components:
           type: object
       title: AssessmentOutputTool
       type: object
-    Badge:
+    BadgeAssertion:
       example:
         createdAt: 2021-04-07T10:34:02.96Z
         image: https://api.eu.badgr.io/public/assertions/KSwijifTQ_-I1lb9FtX1bw/image
@@ -1559,13 +1547,13 @@ components:
           title: image
           type: string
         recipient:
-          $ref: '#/components/schemas/Badge_recipient'
+          $ref: '#/components/schemas/BadgeAssertion_recipient'
         issuedOn:
           example: 2021-04-07T10:07:00Z
           format: date-time
           title: issuedOn
           type: string
-      title: Badge
+      title: BadgeAssertion
       type: object
     AssessmentOutput:
       example:
@@ -1619,6 +1607,48 @@ components:
       - upstream_reason
       - upstream_status
       title: UpstreamError
+      type: object
+    Badge:
+      example:
+        software:
+          data:
+            createdAt: 2021-04-07T10:34:02.96Z
+            image: https://api.eu.badgr.io/public/assertions/KSwijifTQ_-I1lb9FtX1bw/image
+            createdBy: e3h49VVbQRKQphuAAmxpgQ
+            recipient:
+              identity: sha256$5cb2939f3ae83961b31407fbfd2978e5c642177e50227eb0c7f550c0653803dc
+              hashed: true
+              plaintextIdentity: https://github.com/EOSC-synergy/test-sqaaas-web.sqaaas/commit/41a4a73505f407d57e7ed600dd5de7cf963feda3
+              type: email
+            openBadgeID: https://api.eu.badgr.io/public/assertions/KSwijifTQ_-I1lb9FtX1bw
+            badgeClass: sBS3EsJQRAC0ENTmvETtQw
+            issuer: aS1lWKgIR4u8bGjPZUzAyg
+            issuedOn: 2021-04-07T10:07:00Z
+          share: <html>..</html>
+        services: '{}'
+        fair: '{}'
+      properties:
+        software:
+          $ref: '#/components/schemas/Badge_software'
+        services:
+          properties:
+            data:
+              $ref: '#/components/schemas/BadgeAssertion'
+            share:
+              example: <html>..</html>
+              title: share
+              type: string
+          title: services
+        fair:
+          properties:
+            data:
+              $ref: '#/components/schemas/BadgeAssertion'
+            share:
+              example: <html>..</html>
+              title: share
+              type: string
+          title: fair
+      title: Badge
       type: object
     CriterionOutput:
       additionalProperties:
@@ -1995,7 +2025,7 @@ components:
           $ref: '#/components/schemas/JePL_jenkinsfile_pipeline_config'
       title: JePL_jenkinsfile_stages
       type: object
-    Badge_recipient:
+    BadgeAssertion_recipient:
       example:
         identity: sha256$5cb2939f3ae83961b31407fbfd2978e5c642177e50227eb0c7f550c0653803dc
         hashed: true
@@ -2021,7 +2051,7 @@ components:
           example: https://github.com/EOSC-synergy/test-sqaaas-web.sqaaas/commit/41a4a73505f407d57e7ed600dd5de7cf963feda3
           title: plaintextIdentity
           type: string
-      title: Badge_recipient
+      title: BadgeAssertion_recipient
       type: object
     AssessmentOutput_badge:
       example:
@@ -2032,7 +2062,7 @@ components:
         software:
           properties:
             data:
-              $ref: '#/components/schemas/Badge'
+              $ref: '#/components/schemas/BadgeAssertion'
             share:
               title: share
               type: string
@@ -2040,7 +2070,7 @@ components:
         services:
           properties:
             data:
-              $ref: '#/components/schemas/Badge'
+              $ref: '#/components/schemas/BadgeAssertion'
             share:
               title: share
               type: string
@@ -2048,10 +2078,35 @@ components:
         fair:
           properties:
             data:
-              $ref: '#/components/schemas/Badge'
+              $ref: '#/components/schemas/BadgeAssertion'
             share:
               title: share
               type: string
           title: fair
       title: AssessmentOutput_badge
+      type: object
+    Badge_software:
+      example:
+        data:
+          createdAt: 2021-04-07T10:34:02.96Z
+          image: https://api.eu.badgr.io/public/assertions/KSwijifTQ_-I1lb9FtX1bw/image
+          createdBy: e3h49VVbQRKQphuAAmxpgQ
+          recipient:
+            identity: sha256$5cb2939f3ae83961b31407fbfd2978e5c642177e50227eb0c7f550c0653803dc
+            hashed: true
+            plaintextIdentity: https://github.com/EOSC-synergy/test-sqaaas-web.sqaaas/commit/41a4a73505f407d57e7ed600dd5de7cf963feda3
+            type: email
+          openBadgeID: https://api.eu.badgr.io/public/assertions/KSwijifTQ_-I1lb9FtX1bw
+          badgeClass: sBS3EsJQRAC0ENTmvETtQw
+          issuer: aS1lWKgIR4u8bGjPZUzAyg
+          issuedOn: 2021-04-07T10:07:00Z
+        share: <html>..</html>
+      properties:
+        data:
+          $ref: '#/components/schemas/BadgeAssertion'
+        share:
+          example: <html>..</html>
+          title: share
+          type: string
+      title: Badge_software
       type: object

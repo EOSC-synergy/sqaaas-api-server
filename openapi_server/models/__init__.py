@@ -6,7 +6,9 @@ from openapi_server.models.assessment_output_badge import AssessmentOutputBadge
 from openapi_server.models.assessment_output_tool import AssessmentOutputTool
 from openapi_server.models.assessment_output_tool_ci import AssessmentOutputToolCI
 from openapi_server.models.badge import Badge
-from openapi_server.models.badge_recipient import BadgeRecipient
+from openapi_server.models.badge_assertion import BadgeAssertion
+from openapi_server.models.badge_assertion_recipient import BadgeAssertionRecipient
+from openapi_server.models.badge_software import BadgeSoftware
 from openapi_server.models.creds_user_pass import CredsUserPass
 from openapi_server.models.criterion import Criterion
 from openapi_server.models.criterion_description import CriterionDescription

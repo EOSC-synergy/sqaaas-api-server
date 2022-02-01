@@ -1449,42 +1449,30 @@ async def _get_badge_share(badge_data, commit_url):
 
 @ctls_utils.debug_request
 @ctls_utils.validate_request
-async def get_badge(request: web.Request, pipeline_id, share=None) -> web.Response:
+async def get_badge(request: web.Request, pipeline_id) -> web.Response:
     """Gets badge data associated with the given pipeline
 
     Returns the badge data associated with the pipeline.
 
     :param pipeline_id: ID of the pipeline to get
     :type pipeline_id: str
-    :param share: Returns the badge in the specific format
-    :type share: str
-
     """
     pipeline_data = db.get_entry(pipeline_id)
 
     try:
-        build_info = pipeline_data['jenkins']['build_info']
-        commit_url = build_info['commit_url']
-        badge_data = build_info['badge']
-        if not badge_data:
+        badge_obj = pipeline_data['badge']
+        if not badge_obj:
             raise KeyError
     except KeyError:
         _reason = 'Badge not issued for pipeline <%s>' % pipeline_id
         logger.error(_reason)
         return web.Response(status=422, reason=_reason, text=_reason)
 
-    logger.info('Badge <%s> found' % badge_data['openBadgeId'])
+    logger.debug('Badge data found for pipeline <%s>: %s' % (
+        pipeline_id, badge_obj)
+    )
 
-    if share == 'html':
-        html_rendered = await _get_badge_share(badge_data, commit_url)
-
-        return web.Response(
-            text=html_rendered,
-            content_type='text/html',
-            status=200
-        )
-
-    return web.json_response(badge_data, status=200)
+    return web.json_response(badge_obj, status=200)
 
 
 async def _get_tooling_metadata():

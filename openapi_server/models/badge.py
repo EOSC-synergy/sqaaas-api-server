@@ -5,7 +5,7 @@ from datetime import date, datetime
 from typing import List, Dict, Type
 
 from openapi_server.models.base_model_ import Model
-from openapi_server.models.badge_recipient import BadgeRecipient
+from openapi_server.models.badge_software import BadgeSoftware
 from openapi_server import util
 
 
@@ -15,48 +15,28 @@ class Badge(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, open_badge_id: str=None, created_at: datetime=None, created_by: str=None, badge_class: str=None, issuer: str=None, image: str=None, recipient: BadgeRecipient=None, issued_on: datetime=None):
+    def __init__(self, software: BadgeSoftware=None, services: object=None, fair: object=None):
         """Badge - a model defined in OpenAPI
 
-        :param open_badge_id: The open_badge_id of this Badge.
-        :param created_at: The created_at of this Badge.
-        :param created_by: The created_by of this Badge.
-        :param badge_class: The badge_class of this Badge.
-        :param issuer: The issuer of this Badge.
-        :param image: The image of this Badge.
-        :param recipient: The recipient of this Badge.
-        :param issued_on: The issued_on of this Badge.
+        :param software: The software of this Badge.
+        :param services: The services of this Badge.
+        :param fair: The fair of this Badge.
         """
         self.openapi_types = {
-            'open_badge_id': str,
-            'created_at': datetime,
-            'created_by': str,
-            'badge_class': str,
-            'issuer': str,
-            'image': str,
-            'recipient': BadgeRecipient,
-            'issued_on': datetime
+            'software': BadgeSoftware,
+            'services': object,
+            'fair': object
         }
 
         self.attribute_map = {
-            'open_badge_id': 'openBadgeID',
-            'created_at': 'createdAt',
-            'created_by': 'createdBy',
-            'badge_class': 'badgeClass',
-            'issuer': 'issuer',
-            'image': 'image',
-            'recipient': 'recipient',
-            'issued_on': 'issuedOn'
+            'software': 'software',
+            'services': 'services',
+            'fair': 'fair'
         }
 
-        self._open_badge_id = open_badge_id
-        self._created_at = created_at
-        self._created_by = created_by
-        self._badge_class = badge_class
-        self._issuer = issuer
-        self._image = image
-        self._recipient = recipient
-        self._issued_on = issued_on
+        self._software = software
+        self._services = services
+        self._fair = fair
 
     @classmethod
     def from_dict(cls, dikt: dict) -> 'Badge':
@@ -68,169 +48,64 @@ class Badge(Model):
         return util.deserialize_model(dikt, cls)
 
     @property
-    def open_badge_id(self):
-        """Gets the open_badge_id of this Badge.
+    def software(self):
+        """Gets the software of this Badge.
 
 
-        :return: The open_badge_id of this Badge.
-        :rtype: str
+        :return: The software of this Badge.
+        :rtype: BadgeSoftware
         """
-        return self._open_badge_id
+        return self._software
 
-    @open_badge_id.setter
-    def open_badge_id(self, open_badge_id):
-        """Sets the open_badge_id of this Badge.
+    @software.setter
+    def software(self, software):
+        """Sets the software of this Badge.
 
 
-        :param open_badge_id: The open_badge_id of this Badge.
-        :type open_badge_id: str
+        :param software: The software of this Badge.
+        :type software: BadgeSoftware
         """
 
-        self._open_badge_id = open_badge_id
+        self._software = software
 
     @property
-    def created_at(self):
-        """Gets the created_at of this Badge.
+    def services(self):
+        """Gets the services of this Badge.
 
 
-        :return: The created_at of this Badge.
-        :rtype: datetime
+        :return: The services of this Badge.
+        :rtype: object
         """
-        return self._created_at
+        return self._services
 
-    @created_at.setter
-    def created_at(self, created_at):
-        """Sets the created_at of this Badge.
+    @services.setter
+    def services(self, services):
+        """Sets the services of this Badge.
 
 
-        :param created_at: The created_at of this Badge.
-        :type created_at: datetime
+        :param services: The services of this Badge.
+        :type services: object
         """
 
-        self._created_at = created_at
+        self._services = services
 
     @property
-    def created_by(self):
-        """Gets the created_by of this Badge.
+    def fair(self):
+        """Gets the fair of this Badge.
 
 
-        :return: The created_by of this Badge.
-        :rtype: str
+        :return: The fair of this Badge.
+        :rtype: object
         """
-        return self._created_by
+        return self._fair
 
-    @created_by.setter
-    def created_by(self, created_by):
-        """Sets the created_by of this Badge.
-
-
-        :param created_by: The created_by of this Badge.
-        :type created_by: str
-        """
-
-        self._created_by = created_by
-
-    @property
-    def badge_class(self):
-        """Gets the badge_class of this Badge.
+    @fair.setter
+    def fair(self, fair):
+        """Sets the fair of this Badge.
 
 
-        :return: The badge_class of this Badge.
-        :rtype: str
-        """
-        return self._badge_class
-
-    @badge_class.setter
-    def badge_class(self, badge_class):
-        """Sets the badge_class of this Badge.
-
-
-        :param badge_class: The badge_class of this Badge.
-        :type badge_class: str
+        :param fair: The fair of this Badge.
+        :type fair: object
         """
 
-        self._badge_class = badge_class
-
-    @property
-    def issuer(self):
-        """Gets the issuer of this Badge.
-
-
-        :return: The issuer of this Badge.
-        :rtype: str
-        """
-        return self._issuer
-
-    @issuer.setter
-    def issuer(self, issuer):
-        """Sets the issuer of this Badge.
-
-
-        :param issuer: The issuer of this Badge.
-        :type issuer: str
-        """
-
-        self._issuer = issuer
-
-    @property
-    def image(self):
-        """Gets the image of this Badge.
-
-
-        :return: The image of this Badge.
-        :rtype: str
-        """
-        return self._image
-
-    @image.setter
-    def image(self, image):
-        """Sets the image of this Badge.
-
-
-        :param image: The image of this Badge.
-        :type image: str
-        """
-
-        self._image = image
-
-    @property
-    def recipient(self):
-        """Gets the recipient of this Badge.
-
-
-        :return: The recipient of this Badge.
-        :rtype: BadgeRecipient
-        """
-        return self._recipient
-
-    @recipient.setter
-    def recipient(self, recipient):
-        """Sets the recipient of this Badge.
-
-
-        :param recipient: The recipient of this Badge.
-        :type recipient: BadgeRecipient
-        """
-
-        self._recipient = recipient
-
-    @property
-    def issued_on(self):
-        """Gets the issued_on of this Badge.
-
-
-        :return: The issued_on of this Badge.
-        :rtype: datetime
-        """
-        return self._issued_on
-
-    @issued_on.setter
-    def issued_on(self, issued_on):
-        """Sets the issued_on of this Badge.
-
-
-        :param issued_on: The issued_on of this Badge.
-        :type issued_on: datetime
-        """
-
-        self._issued_on = issued_on
+        self._fair = fair
