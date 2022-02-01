@@ -1163,6 +1163,7 @@ async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Re
         try:
             jenkins_info = pipeline_data['jenkins']
             build_info = jenkins_info['build_info']
+            commit_url = build_info['commit_url']
         except KeyError:
             _reason = 'Could not retrieve Jenkins job information: Pipeline has not ran yet'
             logger.error(_reason)
@@ -1185,8 +1186,20 @@ async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Re
                     return web.Response(status=e.http_code, reason=e.message, text=e.message)
                 else:
                     # Generate & store share
-                    share_data = await _get_badge_share(badge_obj, build_info['commit_url'])
+                    share_data = await _get_badge_share(badge_obj, commit_url)
                     badge_data[badge_type]['share'] = share_data
+                    # Generate verification URL
+                    openbadgeid = badge_obj['openBadgeId']
+                    openbadgeid_urlencode = urllib.parse.quote_plus(openbadgeid)
+                    commit_urlencode = urllib.parse.quote_plus(commit_url)
+                    embed_url = (
+                        '%(openbadgeid_urlencode)s?identity__url='
+                        '%(commit_urlencode)s&amp;identity__url='
+                        '%(commit_urlencode)s'
+                    )
+                    badge_data[badge_type]['verification_url'] = (
+                        'https://badgecheck.io/?url=%s' % embed_url
+                    )
         # Store badge data in DB
         db.add_badge_data(pipeline_id, badge_data)
 

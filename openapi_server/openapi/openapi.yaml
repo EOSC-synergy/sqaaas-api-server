@@ -1625,6 +1625,7 @@ components:
             issuer: aS1lWKgIR4u8bGjPZUzAyg
             issuedOn: 2021-04-07T10:07:00Z
           share: <html>..</html>
+          verification_url: https://openapi-generator.tech
         services: '{}'
         fair: '{}'
       properties:
@@ -1638,6 +1639,10 @@ components:
               example: <html>..</html>
               title: share
               type: string
+            verification_url:
+              format: uri
+              title: verification_url
+              type: string
           title: services
         fair:
           properties:
@@ -1646,6 +1651,10 @@ components:
             share:
               example: <html>..</html>
               title: share
+              type: string
+            verification_url:
+              format: uri
+              title: verification_url
               type: string
           title: fair
       title: Badge
@@ -2101,12 +2110,17 @@ components:
           issuer: aS1lWKgIR4u8bGjPZUzAyg
           issuedOn: 2021-04-07T10:07:00Z
         share: <html>..</html>
+        verification_url: https://openapi-generator.tech
       properties:
         data:
           $ref: '#/components/schemas/BadgeAssertion'
         share:
           example: <html>..</html>
           title: share
+          type: string
+        verification_url:
+          format: uri
+          title: verification_url
           type: string
       title: Badge_software
       type: object
