@@ -1193,9 +1193,9 @@ async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Re
                     openbadgeid_urlencode = urllib.parse.quote_plus(openbadgeid)
                     commit_urlencode = urllib.parse.quote_plus(commit_url)
                     embed_url = (
-                        '%(openbadgeid_urlencode)s?identity__url='
-                        '%(commit_urlencode)s&amp;identity__url='
-                        '%(commit_urlencode)s'
+                        f'{openbadgeid_urlencode}?identity__url='
+                        f'{commit_urlencode}&amp;identity__url='
+                        f'{commit_urlencode}'
                     )
                     badge_data[badge_type]['verification_url'] = (
                         'https://badgecheck.io/?url=%s' % embed_url
