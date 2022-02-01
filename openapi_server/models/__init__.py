@@ -3,6 +3,8 @@
 # import models into model package
 from openapi_server.models.assessment_output import AssessmentOutput
 from openapi_server.models.assessment_output_badge import AssessmentOutputBadge
+from openapi_server.models.assessment_output_tool import AssessmentOutputTool
+from openapi_server.models.assessment_output_tool_ci import AssessmentOutputToolCI
 from openapi_server.models.badge import Badge
 from openapi_server.models.badge_recipient import BadgeRecipient
 from openapi_server.models.creds_user_pass import CredsUserPass

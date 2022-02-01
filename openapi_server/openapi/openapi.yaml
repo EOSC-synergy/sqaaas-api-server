@@ -1471,6 +1471,51 @@ components:
       required:
       - repo_code
       type: object
+    AssessmentOutputToolCI:
+      properties:
+        name:
+          description: name of the stage the tool was executed
+          title: name
+          type: string
+        status:
+          description: string-like exit status of the stage where the tool ran
+          enum:
+          - SUCCESS
+          - FAILURE
+          title: status
+          type: string
+        stdout_command:
+          description: list of commands executed in the stage
+          items:
+            type: string
+          title: stdout_command
+          type: array
+        stdout_text:
+          description: string containing the output of the tool execution
+          title: stdout_text
+          type: string
+        url:
+          description: URL of the stage
+          format: uri
+          title: url
+          type: string
+      title: AssessmentOutputToolCI
+      type: object
+    AssessmentOutputTool:
+      properties:
+        name:
+          title: name
+          type: string
+        validator:
+          title: validator
+          type: string
+        ci:
+          $ref: '#/components/schemas/AssessmentOutputToolCI'
+        data_unstructured:
+          title: data_unstructured
+          type: object
+      title: AssessmentOutputTool
+      type: object
     Badge:
       example:
         createdAt: 2021-04-07T10:34:02.96Z
@@ -1529,12 +1574,8 @@ components:
           services: '{}'
           fair: '{}'
         report:
-          QC.Lic:
-            valid: true
-            data:
-              REQUIRED:
-              - name: licensee
-                data_unstructured: {}
+          key:
+            key: '{}'
       properties:
         report:
           additionalProperties:
@@ -1547,35 +1588,19 @@ components:
                   properties:
                     REQUIRED:
                       items:
-                        properties:
-                          name:
-                            type: string
-                        type: object
+                        $ref: '#/components/schemas/AssessmentOutputTool'
                       type: array
                     RECOMMENDED:
                       items:
-                        properties:
-                          name:
-                            type: string
-                        type: object
+                        $ref: '#/components/schemas/AssessmentOutputTool'
                       type: array
                     OPTIONAL:
                       items:
-                        properties:
-                          name:
-                            type: string
-                        type: object
+                        $ref: '#/components/schemas/AssessmentOutputTool'
                       type: array
                   type: object
               type: object
             type: object
-          example:
-            QC.Lic:
-              valid: true
-              data:
-                REQUIRED:
-                - name: licensee
-                  data_unstructured: {}
           title: report
           type: object
         badge:

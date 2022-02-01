@@ -14,7 +14,7 @@ class AssessmentOutputBadge(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, software: str=None, services: str=None, fair: str=None):
+    def __init__(self, software: object=None, services: object=None, fair: object=None):
         """AssessmentOutputBadge - a model defined in OpenAPI
 
         :param software: The software of this AssessmentOutputBadge.
@@ -22,9 +22,9 @@ class AssessmentOutputBadge(Model):
         :param fair: The fair of this AssessmentOutputBadge.
         """
         self.openapi_types = {
-            'software': str,
-            'services': str,
-            'fair': str
+            'software': object,
+            'services': object,
+            'fair': object
         }
 
         self.attribute_map = {
@@ -52,7 +52,7 @@ class AssessmentOutputBadge(Model):
 
 
         :return: The software of this AssessmentOutputBadge.
-        :rtype: str
+        :rtype: object
         """
         return self._software
 
@@ -62,14 +62,8 @@ class AssessmentOutputBadge(Model):
 
 
         :param software: The software of this AssessmentOutputBadge.
-        :type software: str
+        :type software: object
         """
-        allowed_values = ["BRONZE", "SILVER", "GOLD"]  # noqa: E501
-        if software not in allowed_values:
-            raise ValueError(
-                "Invalid value for `software` ({0}), must be one of {1}"
-                .format(software, allowed_values)
-            )
 
         self._software = software
 
@@ -79,7 +73,7 @@ class AssessmentOutputBadge(Model):
 
 
         :return: The services of this AssessmentOutputBadge.
-        :rtype: str
+        :rtype: object
         """
         return self._services
 
@@ -89,14 +83,8 @@ class AssessmentOutputBadge(Model):
 
 
         :param services: The services of this AssessmentOutputBadge.
-        :type services: str
+        :type services: object
         """
-        allowed_values = ["BRONZE", "SILVER", "GOLD"]  # noqa: E501
-        if services not in allowed_values:
-            raise ValueError(
-                "Invalid value for `services` ({0}), must be one of {1}"
-                .format(services, allowed_values)
-            )
 
         self._services = services
 
@@ -106,7 +94,7 @@ class AssessmentOutputBadge(Model):
 
 
         :return: The fair of this AssessmentOutputBadge.
-        :rtype: str
+        :rtype: object
         """
         return self._fair
 
@@ -116,13 +104,7 @@ class AssessmentOutputBadge(Model):
 
 
         :param fair: The fair of this AssessmentOutputBadge.
-        :type fair: str
+        :type fair: object
         """
-        allowed_values = ["BRONZE", "SILVER", "GOLD"]  # noqa: E501
-        if fair not in allowed_values:
-            raise ValueError(
-                "Invalid value for `fair` ({0}), must be one of {1}"
-                .format(fair, allowed_values)
-            )
 
         self._fair = fair
