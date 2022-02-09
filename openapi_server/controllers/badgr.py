@@ -15,7 +15,8 @@ class BadgrUtils(object):
         :param endpoint: Badgr endpoint URL
         :param access_user: Badgr's access user id
         :param access_pass: Badgr's user password
-        :param issuer_name: String that corresponds to the Issuer name (as it appears in Badgr web)
+        :param issuer_name: String that corresponds to the Issuer name (as it
+                            appears in Badgr web)
         """
         self.logger = logging.getLogger('sqaaas.api.badgr')
         self.endpoint = endpoint
@@ -42,13 +43,17 @@ class BadgrUtils(object):
         """
         path = 'o/token'
         if refresh:
-            self.logger.debug('Refreshing user token using Badgr API: \'POST %s\'' % path)
+            self.logger.debug(
+                'Refreshing user token using Badgr API: \'POST %s\'' % path
+            )
             data = {
                 'grant_type': 'refresh_token',
                 'refresh_token': self.refresh_token
             }
         else:
-            self.logger.debug('Getting user token from Badgr API: \'POST %s\'' % path)
+            self.logger.debug(
+                'Getting user token from Badgr API: \'POST %s\'' % path
+            )
             data = {
                 'username': self.access_user,
                 'password': self.access_pass
@@ -58,7 +63,9 @@ class BadgrUtils(object):
                 urljoin(self.endpoint, path),
                 data = data
             )
-            self.logger.debug('\'POST %s\' response content: %s' % (path, r.__dict__))
+            self.logger.debug('\'POST %s\' response content: %s' % (
+                path, r.__dict__)
+            )
             r.raise_for_status()
             r_json = r.json()
             return (
@@ -92,7 +99,9 @@ class BadgrUtils(object):
             urljoin(self.endpoint, path),
             headers=headers
         )
-        self.logger.debug('\'GET %s\' response content: %s' % (path, r.__dict__))
+        self.logger.debug('\'GET %s\' response content: %s' % (
+            path, r.__dict__)
+        )
         if r.ok:
             r_json = r.json()
             return r_json['result']
@@ -101,13 +110,16 @@ class BadgrUtils(object):
     def get_badgeclasses(self, issuer_id):
         """Gets all the BadgeClasses associated with the given Issuer.
 
-        :param issuer_id: entityID of the issuer where this BadgeClass belongs to.
+        :param issuer_id: issuer entityID to where this BadgeClass belongs.
         """
         path = 'v2/issuers/%s/badgeclasses' % issuer_id
         headers = {
             'Authorization': 'Bearer %s' % self.access_token
         }
-        self.logger.debug('Getting BadgeClasses for Issuer <%s> from Badgr API: \'GET %s\'' % (issuer_id, path))
+        self.logger.debug((
+            'Getting BadgeClasses for Issuer <%s> from Badgr API: '
+            '\'GET %s\'' % (issuer_id, path)
+        ))
         r = requests.get(
             urljoin(self.endpoint, path),
             headers=headers
@@ -120,7 +132,8 @@ class BadgrUtils(object):
     def _get_matching_entity_id(self, entity_name, entity_type, **kwargs):
         """Get the ID of the specified entity type that matches the given name.
 
-        :param entity_name: String that designates the entity (as it appears in Badgr web)
+        :param entity_name: String that designates the entity (as it appears
+            in Badgr web)
         :param entity_type: valid types are ('issuer', 'badgeclass')
         """
         if entity_type == 'issuer':
@@ -135,18 +148,33 @@ class BadgrUtils(object):
         ])
         entity_name_list = entity_name_dict.keys()
         if len(entity_name_list) > 1:
-            self.logger.warn('Number of matching entities (type: %s) bigger than one: %s' % (entity_type, entity_name_list))
-            raise Exception('Found more than one entity (type: %s) matching the given name' % entity_type)
+            self.logger.warn(
+                'Number of matching entities (type: %s) bigger than one: %s' % (
+                    entity_type, entity_name_list
+                )
+            )
+            raise Exception((
+                'Found more than one entity (type: %s) matching the given '
+                'name' % entity_type
+            ))
         if len(entity_name_list) == 0:
-            self.logger.warn('Found 0 matches for entity name <%s> (type: %s)' % (entity_name, entity_type))
-            raise Exception('No matching entity name found (type: %s)' % entity_type)
+            self.logger.warn(
+                'Found 0 matches for entity name <%s> (type: %s)' % (
+                    entity_name, entity_type
+                )
+            )
+            raise Exception(
+                'No matching entity name found (type: %s)' % entity_type
+            )
 
         return entity_name_dict[entity_name]
 
     def get_badgeclass_entity(self, badgeclass_name):
-        """Returns the BadgeClass entityID corresponding to the given Issuer and Badgeclass name combination.
+        """Returns the BadgeClass entityID corresponding to the given Issuer
+        and Badgeclass name combination.
 
-        :param badgeclass_name: String that corresponds to the BadgeClass name (as it appears in Badgr web).
+        :param badgeclass_name: String that corresponds to the BadgeClass name
+            (as it appears in Badgr web).
         """
         issuer_id = self._get_matching_entity_id(
             self.issuer_name,
@@ -160,21 +188,37 @@ class BadgrUtils(object):
         return badgeclass_id
 
     @refresh_token
-    def issue_badge(self, badgeclass_name, commit_id, commit_url, ci_build_url, sw_criteria=[], srv_criteria=[]):
+    def issue_badge(self,
+            badgeclass_name,
+            commit_id,
+            commit_url,
+            ci_build_url,
+            sw_criteria=[],
+            srv_criteria=[]
+        ):
         """Issues a badge (Badgr's assertion).
 
-        :param badgeclass_name: String that corresponds to the BadgeClass name (as it appears in Badgr web)
-        :param commit_id: Commit ID assigned by git as a result of pushing the JePL files.
-        :param commit_url: Absolute URL pointing to the commit that triggered the pipeline
-        :param ci_build_url: Absolute URL pointing to the build results of the pipeline
-        :param sw_criteria: List of fulfilled criteria codes from the Software baseline
-        :param srv_criteria: List of fulfilled criteria codes from the Service baseline
+        :param badgeclass_name: String that corresponds to the BadgeClass
+            name (as it appears in Badgr web)
+        :param commit_id: Commit ID assigned by git as a result of pushing
+            the JePL files.
+        :param commit_url: Absolute URL pointing to the commit that triggered
+            the pipeline
+        :param ci_build_url: Absolute URL pointing to the build results of the
+            pipeline
+        :param sw_criteria: List of fulfilled criteria codes from the Software
+            baseline
+        :param srv_criteria: List of fulfilled criteria codes from the Service
+            baseline
         """
         badgeclass_id = self.get_badgeclass_entity(badgeclass_name)
-        self.logger.info('BadgeClass entityId found for Issuer <%s> and BadgeClass <%s>: %s' % (
-            self.issuer_name,
-            badgeclass_name,
-            badgeclass_id
+        self.logger.info((
+            'BadgeClass entityId found for Issuer <%s> and BadgeClass '
+            '<%s>: %s' % (
+                self.issuer_name,
+                badgeclass_name,
+                badgeclass_id
+            )
         ))
         path = 'v2/badgeclasses/%s/assertions' % badgeclass_id
         headers = {
@@ -188,7 +232,9 @@ class BadgrUtils(object):
               'hashed': True,
               'type': 'url'
             },
-            'narrative': 'Tracking source code SHA: [%s](%s)' % (commit_id, commit_url),
+            'narrative': 'Tracking source code SHA: [%s](%s)' % (
+                commit_id, commit_url
+            ),
             'evidence': [
               {
                 'url': ci_build_url,
@@ -198,7 +244,10 @@ class BadgrUtils(object):
         })
         self.logger.debug('Assertion data: %s' % assertion_data)
 
-        self.logger.debug('Posting to get an Assertion of BadgeClass <%s> from Badgr API: \'POST %s\'' % (badgeclass_name, path))
+        self.logger.debug((
+            'Posting to get an Assertion of BadgeClass <%s> from Badgr API: '
+            '\'POST %s\'' % (badgeclass_name, path)
+        ))
         r = requests.post(
             urljoin(self.endpoint, path),
             headers=headers,
@@ -215,7 +264,12 @@ class BadgrUtils(object):
             return r_json['result'][0]
         else:
             if 'fieldErrors' in r_json.keys() and r_json['fieldErrors']:
-                self.logger.warn('Unsuccessful POST (Field errors): %s' % r_json['fieldErrors'])
+                self.logger.warn(
+                    'Unsuccessful POST (Field errors): %s' % r_json['fieldErrors']
+                )
             if 'validationErrors' in r_json.keys() and r_json['validationErrors']:
-                self.logger.warn('Unsuccessful POST (Validation errors): %s' % r_json['validationErrors'])
+                self.logger.warn((
+                    'Unsuccessful POST (Validation errors): '
+                    '%s' % r_json['validationErrors']
+                ))
             r.raise_for_status()
