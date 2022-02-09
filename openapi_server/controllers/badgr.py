@@ -41,14 +41,22 @@ class BadgrUtils(object):
         Return a (access_token, refresh_token, expires_in) tuple.
         """
         path = 'o/token'
-        self.logger.debug('Getting user token from Badgr API: \'POST %s\'' % path)
+        if refresh:
+            self.logger.debug('Refreshing user token using Badgr API: \'POST %s\'' % path)
+            data = {
+                'grant_type': 'refresh_token',
+                'refresh_token': self.refresh_token
+            }
+        else:
+            self.logger.debug('Getting user token from Badgr API: \'POST %s\'' % path)
+            data = {
+                'username': self.access_user,
+                'password': self.access_pass
+            }
         try:
             r = requests.post(
                 urljoin(self.endpoint, path),
-                data = {
-                    'username': self.access_user,
-                    'password': self.access_pass
-                }
+                data = data
             )
             self.logger.debug('\'POST %s\' response content: %s' % (path, r.__dict__))
             r.raise_for_status()
