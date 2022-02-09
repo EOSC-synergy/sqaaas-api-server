@@ -35,13 +35,13 @@ class BadgrUtils(object):
             # Give a small buffer of 100 seconds
             self.access_token_expiration = time.time() + expiry - 100
 
-    def get_token(self):
+    def get_token(self, refresh=False):
         """Obtains a Bearer-type token according to the provided credentials.
 
         Return a (access_token, refresh_token, expires_in) tuple.
         """
         path = 'o/token'
-        self.logger.debug('Getting user token from Badgr API: \'GET %s\'' % path)
+        self.logger.debug('Getting user token from Badgr API: \'POST %s\'' % path)
         try:
             r = requests.post(
                 urljoin(self.endpoint, path),
@@ -50,7 +50,7 @@ class BadgrUtils(object):
                     'password': self.access_pass
                 }
             )
-            self.logger.debug('\'GET %s\' response content: %s' % (path, r.__dict__))
+            self.logger.debug('\'POST %s\' response content: %s' % (path, r.__dict__))
             r.raise_for_status()
             r_json = r.json()
             return (
