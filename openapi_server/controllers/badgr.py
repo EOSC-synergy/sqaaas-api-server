@@ -83,7 +83,7 @@ class BadgrUtils(object):
         def decorated_function(cls, *args, **kwargs):
             if time.time() > cls.access_token_expiration:
                 cls.logger.debug('Reached token expiration date')
-                cls.get_token()
+                cls.get_token(refresh=True)
             return f(cls, *args, **kwargs)
         return decorated_function
 
