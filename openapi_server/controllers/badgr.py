@@ -43,13 +43,16 @@ class BadgrUtils(object):
         """
         path = 'o/token'
         if refresh:
-            self.logger.debug(
-                'Refreshing user token using Badgr API: \'POST %s\'' % path
-            )
-            data = {
-                'grant_type': 'refresh_token',
-                'refresh_token': self.refresh_token
-            }
+            if self.refresh_token:
+                self.logger.debug(
+                    'Refreshing user token using Badgr API: \'POST %s\'' % path
+                )
+                data = {
+                    'grant_type': 'refresh_token',
+                    'refresh_token': self.refresh_token
+                }
+            else:
+                self.logger.warn('No refresh token found, cannot renew token')
         else:
             self.logger.debug(
                 'Getting user token from Badgr API: \'POST %s\'' % path
@@ -83,7 +86,11 @@ class BadgrUtils(object):
         def decorated_function(cls, *args, **kwargs):
             if time.time() > cls.access_token_expiration:
                 cls.logger.debug('Reached token expiration date')
-                cls.access_token, cls.refresh_token, cls.expiry = cls.get_token()
+                access_token, refresh_token, expiry = cls.get_token()
+                cls.access_token = access_token
+                cls.refresh_token = refresh_token
+                # Give a small buffer of 100 seconds
+                cls.access_token_expiration = time.time() + expiry - 100
             return f(cls, *args, **kwargs)
         return decorated_function
 
