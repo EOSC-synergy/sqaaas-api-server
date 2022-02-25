@@ -3,6 +3,7 @@ import base64
 import calendar
 from datetime import datetime
 import copy
+from importlib.metadata import version
 import io
 import itertools
 import logging
@@ -886,6 +887,14 @@ async def _run_validation(tool, stdout):
     else:
         validator = r2s_utils.get_validator(validator_opts)
         out = validator.driver.validate()
+        validator_package_name = '-'.join([
+            'report2sqaaas-plugin', validator_name
+        ])
+        out.update({
+            'package_name': validator_package_name,
+            'package_version': version(validator_package_name)
+        })
+
     return (reporting_data, out)
 
 
