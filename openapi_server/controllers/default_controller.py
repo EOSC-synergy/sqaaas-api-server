@@ -1074,7 +1074,7 @@ async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Re
                 logger.error(_reason)
                 raise SQAaaSAPIException(_reason)
 
-            criterion_valid = True
+            valid_list = []
             report_data[criterion_name] = {}
             for criterion_output_data in criterion_output_data_list:
                 validator_data = criterion_output_data['validation']
@@ -1100,7 +1100,10 @@ async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Re
                     'ci': ci_data,
                     'level': criterion_output_data['requirement_level']
                 }
-            report_data[criterion_name]['valid'] = criterion_valid
+                # Criterion validity
+                _valid = validator_data.pop('valid')
+                valid_list.append(_valid)
+            report_data[criterion_name]['valid'] = all(valid_list)
             report_data[criterion_name]['validator_data'] = validator_data
 
         # Append filtered-out criteria
