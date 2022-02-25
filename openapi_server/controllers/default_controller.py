@@ -1069,9 +1069,8 @@ async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Re
             report_data[criterion_name] = {}
             level_data = {}
             for criterion_output_data in criterion_output_data_list:
-                level = criterion_output_data['requirement_level']
-                tool = criterion_output_data['tool']
-                # CI data
+                validator_data = criterion_output_data['validation']
+                # Tool data
                 ci_data = {
                     'name': criterion_output_data['name'],
                     'status': criterion_output_data['status'],
@@ -1079,23 +1078,13 @@ async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Re
                     'stdout_text': criterion_output_data['stdout_text'],
                     'url': criterion_output_data['url']
                 }
-                # Validation data
-                validation_data = criterion_output_data['validation']
-                validation_data['validator'] = criterion_output_data['validator']
-                valid = validation_data.pop('valid')
-                # Check validity of the criterion output
-                if level in ['REQUIRED'] and valid == False:
-                    criterion_valid = False
-                # Compose criterion stage data
-                tool_data = {'name': tool}
-                tool_data.update(validation_data)
-                tool_data.update({'ci': ci_data})
-                if level in list(level_data):
-                    level_data[level].append(tool_data)
-                else:
-                    level_data[level] = [tool_data]
+                validator_data['tool'] = {
+                    'name': criterion_output_data['tool'],
+                    'ci': ci_data,
+                    'level': criterion_output_data['requirement_level']
+                }
             report_data[criterion_name]['valid'] = criterion_valid
-            report_data[criterion_name]['data'] = level_data
+            report_data[criterion_name]['validator_data'] = level_data
 
         # Append filtered-out criteria
         report_data.update(criteria_filtered_out)
