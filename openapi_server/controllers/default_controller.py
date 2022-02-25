@@ -1078,6 +1078,14 @@ async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Re
             report_data[criterion_name] = {}
             for criterion_output_data in criterion_output_data_list:
                 validator_data = criterion_output_data['validation']
+                # Plugin data
+                package_name = validator_data.pop('package_name')
+                package_version = validator_data.pop('package_version')
+                plugin_data = {
+                    'name': package_name,
+                    'version': package_version
+                }
+                validator_data['plugin'] = plugin_data
                 # Tool data
                 tool = criterion_output_data['tool']
                 ci_data = {
