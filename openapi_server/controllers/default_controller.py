@@ -862,7 +862,7 @@ async def _run_validation(tool, stdout):
                 return data
 
     try:
-        # Obtain the report2sqaas input args (aka <opts>) from tooling
+        # Obtain the report2sqaaas input args (aka <opts>) from tooling
         reporting_data = _get_tool_reporting_data(tool)
     except KeyError as e:
         _reason = 'Cannot get reporting data for tool <%s>: %s' % (tool, e)
