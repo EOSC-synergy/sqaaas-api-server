@@ -1080,6 +1080,7 @@ async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Re
             for criterion_output_data in criterion_output_data_list:
                 validator_data = criterion_output_data['validation']
                 # Tool data
+                tool = criterion_output_data['tool']
                 ci_data = {
                     'name': criterion_output_data['name'],
                     'status': criterion_output_data['status'],
@@ -1088,7 +1089,7 @@ async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Re
                     'url': criterion_output_data['url']
                 }
                 validator_data['tool'] = {
-                    'name': criterion_output_data['tool'],
+                    'name': tool,
                     'ci': ci_data,
                     'level': criterion_output_data['requirement_level']
                 }
