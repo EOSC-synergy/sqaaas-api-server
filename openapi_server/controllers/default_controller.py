@@ -1076,7 +1076,6 @@ async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Re
 
             criterion_valid = True
             report_data[criterion_name] = {}
-            level_data = {}
             for criterion_output_data in criterion_output_data_list:
                 validator_data = criterion_output_data['validation']
                 # Tool data
@@ -1094,7 +1093,7 @@ async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Re
                     'level': criterion_output_data['requirement_level']
                 }
             report_data[criterion_name]['valid'] = criterion_valid
-            report_data[criterion_name]['validator_data'] = level_data
+            report_data[criterion_name]['validator_data'] = validator_data
 
         # Append filtered-out criteria
         report_data.update(criteria_filtered_out)
