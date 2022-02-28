@@ -3,6 +3,7 @@ import base64
 import calendar
 from datetime import datetime
 import copy
+from importlib.metadata import version
 import io
 import itertools
 import logging
@@ -862,7 +863,7 @@ async def _run_validation(tool, stdout):
                 return data
 
     try:
-        # Obtain the report2sqaas input args (aka <opts>) from tooling
+        # Obtain the report2sqaaas input args (aka <opts>) from tooling
         reporting_data = _get_tool_reporting_data(tool)
     except KeyError as e:
         _reason = 'Cannot get reporting data for tool <%s>: %s' % (tool, e)
@@ -886,6 +887,14 @@ async def _run_validation(tool, stdout):
     else:
         validator = r2s_utils.get_validator(validator_opts)
         out = validator.driver.validate()
+        validator_package_name = '-'.join([
+            'report2sqaaas-plugin', validator_name
+        ])
+        out.update({
+            'package_name': validator_package_name,
+            'package_version': version(validator_package_name)
+        })
+
     return (reporting_data, out)
 
 
@@ -1065,13 +1074,20 @@ async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Re
                 logger.error(_reason)
                 raise SQAaaSAPIException(_reason)
 
-            criterion_valid = True
+            valid_list = []
             report_data[criterion_name] = {}
-            level_data = {}
             for criterion_output_data in criterion_output_data_list:
-                level = criterion_output_data['requirement_level']
+                validator_data = criterion_output_data['validation']
+                # Plugin data
+                package_name = validator_data.pop('package_name')
+                package_version = validator_data.pop('package_version')
+                plugin_data = {
+                    'name': package_name,
+                    'version': package_version
+                }
+                validator_data['plugin'] = plugin_data
+                # Tool data
                 tool = criterion_output_data['tool']
-                # CI data
                 ci_data = {
                     'name': criterion_output_data['name'],
                     'status': criterion_output_data['status'],
@@ -1079,23 +1095,16 @@ async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Re
                     'stdout_text': criterion_output_data['stdout_text'],
                     'url': criterion_output_data['url']
                 }
-                # Validation data
-                validation_data = criterion_output_data['validation']
-                validation_data['validator'] = criterion_output_data['validator']
-                valid = validation_data.pop('valid')
-                # Check validity of the criterion output
-                if level in ['REQUIRED'] and valid == False:
-                    criterion_valid = False
-                # Compose criterion stage data
-                tool_data = {'name': tool}
-                tool_data.update(validation_data)
-                tool_data.update({'ci': ci_data})
-                if level in list(level_data):
-                    level_data[level].append(tool_data)
-                else:
-                    level_data[level] = [tool_data]
-            report_data[criterion_name]['valid'] = criterion_valid
-            report_data[criterion_name]['data'] = level_data
+                validator_data['tool'] = {
+                    'name': tool,
+                    'ci': ci_data,
+                    'level': criterion_output_data['requirement_level']
+                }
+                # Criterion validity
+                _valid = validator_data.pop('valid')
+                valid_list.append(_valid)
+            report_data[criterion_name]['valid'] = all(valid_list)
+            report_data[criterion_name]['validator_data'] = validator_data
 
         # Append filtered-out criteria
         report_data.update(criteria_filtered_out)
