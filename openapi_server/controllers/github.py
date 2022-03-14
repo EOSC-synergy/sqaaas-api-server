@@ -31,7 +31,12 @@ class GitHubUtils(object):
         :param branch: Name of the branch
         """
         repo = self.get_org_repository(repo_name)
-        return repo.get_dir_contents(path, ref=branch)
+        try:
+            contents = repo.get_dir_contents(path, ref=branch)
+        except (UnknownObjectException, GithubException) as e:
+            contents = []
+
+        return contents
 
     def get_file(self, file_name, repo_name, branch, fail_if_not_exists=False):
         """Gets the file's content from a GitHub repository.
