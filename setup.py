@@ -38,6 +38,7 @@ setup(
         'templates/embed_badge.html',
         'templates/commands_script.sh',
         'templates/pipeline_assessment.json',
+        'templates/README',
         '../etc/sqaaas.ini.sample']},
     include_package_data=False,
     entry_points={
