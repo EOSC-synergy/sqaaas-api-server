@@ -4,6 +4,7 @@ from github import Github
 from github import InputGitTreeElement
 from github.GithubException import GithubException
 from github.GithubException import UnknownObjectException
+from jinja2 import Environment, PackageLoader
 
 from openapi_server.exception import SQAaaSAPIException
 
@@ -30,7 +31,12 @@ class GitHubUtils(object):
         :param branch: Name of the branch
         """
         repo = self.get_org_repository(repo_name)
-        return repo.get_dir_contents(path, ref=branch)
+        try:
+            contents = repo.get_dir_contents(path, ref=branch)
+        except (UnknownObjectException, GithubException) as e:
+            contents = []
+
+        return contents
 
     def get_file(self, file_name, repo_name, branch, fail_if_not_exists=False):
         """Gets the file's content from a GitHub repository.
@@ -255,7 +261,7 @@ class GitHubUtils(object):
         except UnknownObjectException:
             return False
 
-    def create_org_repository(self, repo_name):
+    def create_org_repository(self, repo_name, include_readme=True):
         """Creates a GitHub repository for the current organization.
 
         Returns the Repository object.
@@ -268,6 +274,19 @@ class GitHubUtils(object):
             org = self.client.get_organization(_org_name)
             repo = org.create_repo(_repo_name)
             self.logger.debug('GitHub repository <%s> does not exist, creating..' % repo_name)
+            if include_readme:
+                # Get README
+                env = Environment(
+                    loader=PackageLoader('openapi_server', 'templates')
+                )
+                template = env.get_template('README')
+                file_data = template.render({
+                    'repo_name': repo_name
+                })
+                branch = repo.default_branch
+                self.push_file(
+                    'README.md', file_data, 'Add README', repo_name, branch
+                )
         else:
             self.logger.debug('GitHub repository <%s> already exists' % repo_name)
         return repo
