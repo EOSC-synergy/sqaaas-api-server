@@ -1074,10 +1074,11 @@ async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Re
                 logger.error(_reason)
                 raise SQAaaSAPIException(_reason)
 
-            valid_list = []
-            report_data[criterion_name] = {}
+            criterion_valid_list = []
+            subcriteria = {}
             for criterion_output_data in criterion_output_data_list:
                 validator_data = criterion_output_data['validation']
+                criterion_valid_list.append(validator_data['valid'])
                 # Plugin data
                 package_name = validator_data.pop('package_name')
                 package_version = validator_data.pop('package_version')
@@ -1095,17 +1096,44 @@ async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Re
                     'stdout_text': criterion_output_data['stdout_text'],
                     'url': criterion_output_data['url']
                 }
-                validator_data['tool'] = {
+                tool_data = {
                     'name': tool,
                     'ci': ci_data,
                     'level': criterion_output_data['requirement_level']
                 }
-                # Criterion validity
-                _valid = validator_data.pop('valid')
-                valid_list.append(_valid)
-            report_data[criterion_name]['valid'] = all(valid_list)
-            report_data[criterion_name]['validator_data'] = validator_data
 
+                # Compose subcriteria record
+                for subcriterion_data in validator_data['subcriteria']:
+                    subcriterion_id = subcriterion_data['id']
+                    if subcriterion_id not in list(subcriteria):
+                        subcriteria[subcriterion_id] = {
+                            'description': subcriterion_data['description'],
+                            'evidence': []
+                        }
+                    evidence_data = {
+                        'valid': subcriterion_data['valid'],
+                        'message': subcriterion_data['evidence'],
+                        'plugin': plugin_data,
+                        'tool': tool_data,
+                        'standard': validator_data['standard'],
+                        'data_unstructured': validator_data.get(
+                            'data_unstructured', {}
+                        )
+                    }
+                    subcriteria[subcriterion_id]['evidence'].append(
+                        evidence_data
+                    )
+                # Subcriterion validity
+                for subcriterion_id, subcriterion_data in subcriteria.items():
+                    valid = all(evidence['valid']
+                        for evidence in subcriterion_data['evidence'])
+                    subcriteria[subcriterion_id]['valid'] = valid
+            
+            report_data[criterion_name] = {
+                'valid': all(criterion_valid_list),
+                'subcriteria': subcriteria
+            }
+        
         # Append filtered-out criteria
         report_data.update(criteria_filtered_out)
 
