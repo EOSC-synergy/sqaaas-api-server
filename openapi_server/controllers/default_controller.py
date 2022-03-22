@@ -237,10 +237,7 @@ async def _get_tooling_for_assessment(
                                 )
                             ))
                             if criterion_has_required_level:
-                                filtered_required_tools.append({
-                                    'name': tool['name'],
-                                    'reason': _reason
-                                })
+                                filtered_required_tools.append(_reason)
                             logger.debug(_reason)
                     else:
                         account_tool = True
@@ -273,9 +270,8 @@ async def _get_tooling_for_assessment(
                 # Use same syntax as _get_output()
                 criteria_filtered_out[criterion_id] = {
                     'valid': False,
-                    'data': {
-                        'REQUIRED': filtered_required_tools
-                    }
+                    'filtered_reason': filtered_required_tools,
+                    'subcriteria': None
                 }
                 logger.warn(_reason)
             else:
