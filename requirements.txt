@@ -16,17 +16,17 @@ stevedore
 beautifulsoup4
 # report2sqaaas == 1.2.0-alpha1
 git+https://github.com/EOSC-synergy/sqaaas-reporting@1.2.0-alpha1#egg=report2sqaaas
-# report2sqaaas-plugin-markdownlint = 1.2.0-alpha1
-git+https://github.com/EOSC-synergy/sqaaas-reporting-plugins@1.2.0-alpha1#egg=report2sqaaas-plugin-markdownlint&subdirectory=qc_doc_markdownlint
-# report2sqaaas-plugin-find_doc_files = 1.2.0-alpha1
-git+https://github.com/EOSC-synergy/sqaaas-reporting-plugins@1.2.0-alpha1#egg=report2sqaaas-plugin-find_doc_files&subdirectory=qc_doc_find_doc_files
-# report2sqaaas-plugin-licensee = 1.2.0-alpha1
-git+https://github.com/EOSC-synergy/sqaaas-reporting-plugins@1.2.0-alpha1#egg=report2sqaaas-plugin-licensee&subdirectory=qc_lic_licensee
-# report2sqaaas-plugin-boolean = 1.2.0-alpha1
-git+https://github.com/EOSC-synergy/sqaaas-reporting-plugins@1.2.0-alpha1#egg=report2sqaaas-plugin-boolean&subdirectory=qc_ALL_boolean
-# report2sqaaas-plugin-json_not_empty = 1.2.0-alpha1
-git+https://github.com/EOSC-synergy/sqaaas-reporting-plugins@1.2.0-alpha1#egg=report2sqaaas-plugin-json_not_empty&subdirectory=qc_ALL_json_not_empty
-# report2sqaaas-plugin-flake8 = 1.2.0-alpha1
-git+https://github.com/EOSC-synergy/sqaaas-reporting-plugins@1.2.0-alpha1#egg=report2sqaaas-plugin-flake8&subdirectory=qc_sty_flake8
-# report2sqaaas-plugin-bandit = 1.2.0-alpha1
-git+https://github.com/EOSC-synergy/sqaaas-reporting-plugins@1.2.0-alpha1#egg=report2sqaaas-plugin-bandit&subdirectory=qc_sec_bandit
+# report2sqaaas-plugin-markdownlint = 1.2.0-alpha2
+git+https://github.com/EOSC-synergy/sqaaas-reporting-plugins@1.2.0-alpha2#egg=report2sqaaas-plugin-markdownlint&subdirectory=qc_doc_markdownlint
+# report2sqaaas-plugin-find_doc_files = 1.2.0-alpha2
+git+https://github.com/EOSC-synergy/sqaaas-reporting-plugins@1.2.0-alpha2#egg=report2sqaaas-plugin-find_doc_files&subdirectory=qc_doc_find_doc_files
+# report2sqaaas-plugin-licensee = 1.2.0-alpha2
+git+https://github.com/EOSC-synergy/sqaaas-reporting-plugins@1.2.0-alpha2#egg=report2sqaaas-plugin-licensee&subdirectory=qc_lic_licensee
+# report2sqaaas-plugin-boolean = 1.2.0-alpha2
+git+https://github.com/EOSC-synergy/sqaaas-reporting-plugins@1.2.0-alpha2#egg=report2sqaaas-plugin-boolean&subdirectory=qc_ALL_boolean
+# report2sqaaas-plugin-json_not_empty = 1.2.0-alpha2
+git+https://github.com/EOSC-synergy/sqaaas-reporting-plugins@1.2.0-alpha2#egg=report2sqaaas-plugin-json_not_empty&subdirectory=qc_ALL_json_not_empty
+# report2sqaaas-plugin-flake8 = 1.2.0-alpha2
+git+https://github.com/EOSC-synergy/sqaaas-reporting-plugins@1.2.0-alpha2#egg=report2sqaaas-plugin-flake8&subdirectory=qc_sty_flake8
+# report2sqaaas-plugin-bandit = 1.2.0-alpha2
+git+https://github.com/EOSC-synergy/sqaaas-reporting-plugins@1.2.0-alpha2#egg=report2sqaaas-plugin-bandit&subdirectory=qc_sec_bandit
