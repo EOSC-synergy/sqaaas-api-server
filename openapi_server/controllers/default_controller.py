@@ -873,10 +873,7 @@ async def _run_validation(tool, stdout):
     allowed_validators = r2s_utils.get_validators()
     validator_name = reporting_data['validator']
     out = None
-    if validator_name in ['__STAGE_EXIT_STATUS__']:
-        stage_status = reporting_data['status']
-        out = {'valid': True if stage_status in ['SUCCESS'] else False}
-    elif validator_name not in allowed_validators:
+    if validator_name not in allowed_validators:
         _reason = 'Could not find report2sqaaas validator plugin <%s> (found: %s)' % (validator_name, allowed_validators)
         logger.error(_reason)
         raise SQAaaSAPIException(422, _reason)
