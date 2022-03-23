@@ -5,7 +5,7 @@ from datetime import date, datetime
 from typing import List, Dict, Type
 
 from openapi_server.models.base_model_ import Model
-from openapi_server.models.badge_software import BadgeSoftware
+from openapi_server.models.badge_assertion import BadgeAssertion
 from openapi_server import util
 
 
@@ -15,28 +15,28 @@ class Badge(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, software: BadgeSoftware=None, services: object=None, fair: object=None):
+    def __init__(self, data: BadgeAssertion=None, share: str=None, verification_url: str=None):
         """Badge - a model defined in OpenAPI
 
-        :param software: The software of this Badge.
-        :param services: The services of this Badge.
-        :param fair: The fair of this Badge.
+        :param data: The data of this Badge.
+        :param share: The share of this Badge.
+        :param verification_url: The verification_url of this Badge.
         """
         self.openapi_types = {
-            'software': BadgeSoftware,
-            'services': object,
-            'fair': object
+            'data': BadgeAssertion,
+            'share': str,
+            'verification_url': str
         }
 
         self.attribute_map = {
-            'software': 'software',
-            'services': 'services',
-            'fair': 'fair'
+            'data': 'data',
+            'share': 'share',
+            'verification_url': 'verification_url'
         }
 
-        self._software = software
-        self._services = services
-        self._fair = fair
+        self._data = data
+        self._share = share
+        self._verification_url = verification_url
 
     @classmethod
     def from_dict(cls, dikt: dict) -> 'Badge':
@@ -48,64 +48,64 @@ class Badge(Model):
         return util.deserialize_model(dikt, cls)
 
     @property
-    def software(self):
-        """Gets the software of this Badge.
+    def data(self):
+        """Gets the data of this Badge.
 
 
-        :return: The software of this Badge.
-        :rtype: BadgeSoftware
+        :return: The data of this Badge.
+        :rtype: BadgeAssertion
         """
-        return self._software
+        return self._data
 
-    @software.setter
-    def software(self, software):
-        """Sets the software of this Badge.
+    @data.setter
+    def data(self, data):
+        """Sets the data of this Badge.
 
 
-        :param software: The software of this Badge.
-        :type software: BadgeSoftware
+        :param data: The data of this Badge.
+        :type data: BadgeAssertion
         """
 
-        self._software = software
+        self._data = data
 
     @property
-    def services(self):
-        """Gets the services of this Badge.
+    def share(self):
+        """Gets the share of this Badge.
 
 
-        :return: The services of this Badge.
-        :rtype: object
+        :return: The share of this Badge.
+        :rtype: str
         """
-        return self._services
+        return self._share
 
-    @services.setter
-    def services(self, services):
-        """Sets the services of this Badge.
+    @share.setter
+    def share(self, share):
+        """Sets the share of this Badge.
 
 
-        :param services: The services of this Badge.
-        :type services: object
+        :param share: The share of this Badge.
+        :type share: str
         """
 
-        self._services = services
+        self._share = share
 
     @property
-    def fair(self):
-        """Gets the fair of this Badge.
+    def verification_url(self):
+        """Gets the verification_url of this Badge.
 
 
-        :return: The fair of this Badge.
-        :rtype: object
+        :return: The verification_url of this Badge.
+        :rtype: str
         """
-        return self._fair
+        return self._verification_url
 
-    @fair.setter
-    def fair(self, fair):
-        """Sets the fair of this Badge.
+    @verification_url.setter
+    def verification_url(self, verification_url):
+        """Sets the verification_url of this Badge.
 
 
-        :param fair: The fair of this Badge.
-        :type fair: object
+        :param verification_url: The verification_url of this Badge.
+        :type verification_url: str
         """
 
-        self._fair = fair
+        self._verification_url = verification_url

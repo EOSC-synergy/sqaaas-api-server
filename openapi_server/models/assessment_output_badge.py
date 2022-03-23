@@ -5,6 +5,7 @@ from datetime import date, datetime
 from typing import List, Dict, Type
 
 from openapi_server.models.base_model_ import Model
+from openapi_server.models.badge import Badge
 from openapi_server import util
 
 
@@ -14,7 +15,7 @@ class AssessmentOutputBadge(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, software: object=None, services: object=None, fair: object=None):
+    def __init__(self, software: Badge=None, services: Badge=None, fair: Badge=None):
         """AssessmentOutputBadge - a model defined in OpenAPI
 
         :param software: The software of this AssessmentOutputBadge.
@@ -22,9 +23,9 @@ class AssessmentOutputBadge(Model):
         :param fair: The fair of this AssessmentOutputBadge.
         """
         self.openapi_types = {
-            'software': object,
-            'services': object,
-            'fair': object
+            'software': Badge,
+            'services': Badge,
+            'fair': Badge
         }
 
         self.attribute_map = {
@@ -52,7 +53,7 @@ class AssessmentOutputBadge(Model):
 
 
         :return: The software of this AssessmentOutputBadge.
-        :rtype: object
+        :rtype: Badge
         """
         return self._software
 
@@ -62,7 +63,7 @@ class AssessmentOutputBadge(Model):
 
 
         :param software: The software of this AssessmentOutputBadge.
-        :type software: object
+        :type software: Badge
         """
 
         self._software = software
@@ -73,7 +74,7 @@ class AssessmentOutputBadge(Model):
 
 
         :return: The services of this AssessmentOutputBadge.
-        :rtype: object
+        :rtype: Badge
         """
         return self._services
 
@@ -83,7 +84,7 @@ class AssessmentOutputBadge(Model):
 
 
         :param services: The services of this AssessmentOutputBadge.
-        :type services: object
+        :type services: Badge
         """
 
         self._services = services
@@ -94,7 +95,7 @@ class AssessmentOutputBadge(Model):
 
 
         :return: The fair of this AssessmentOutputBadge.
-        :rtype: object
+        :rtype: Badge
         """
         return self._fair
 
@@ -104,7 +105,7 @@ class AssessmentOutputBadge(Model):
 
 
         :param fair: The fair of this AssessmentOutputBadge.
-        :type fair: object
+        :type fair: Badge
         """
 
         self._fair = fair

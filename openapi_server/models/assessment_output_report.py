@@ -5,7 +5,7 @@ from datetime import date, datetime
 from typing import List, Dict, Type
 
 from openapi_server.models.base_model_ import Model
-from openapi_server.models.assessment_output_data import AssessmentOutputData
+from openapi_server.models.assessment_output_subcriteria import AssessmentOutputSubcriteria
 from openapi_server import util
 
 
@@ -15,24 +15,28 @@ class AssessmentOutputReport(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, valid: bool=False, data: AssessmentOutputData=None):
+    def __init__(self, valid: bool=False, filtered_reason: List[str]=[], subcriteria: Dict[str, AssessmentOutputSubcriteria]=None):
         """AssessmentOutputReport - a model defined in OpenAPI
 
         :param valid: The valid of this AssessmentOutputReport.
-        :param data: The data of this AssessmentOutputReport.
+        :param filtered_reason: The filtered_reason of this AssessmentOutputReport.
+        :param subcriteria: The subcriteria of this AssessmentOutputReport.
         """
         self.openapi_types = {
             'valid': bool,
-            'data': AssessmentOutputData
+            'filtered_reason': List[str],
+            'subcriteria': Dict[str, AssessmentOutputSubcriteria]
         }
 
         self.attribute_map = {
             'valid': 'valid',
-            'data': 'data'
+            'filtered_reason': 'filtered_reason',
+            'subcriteria': 'subcriteria'
         }
 
         self._valid = valid
-        self._data = data
+        self._filtered_reason = filtered_reason
+        self._subcriteria = subcriteria
 
     @classmethod
     def from_dict(cls, dikt: dict) -> 'AssessmentOutputReport':
@@ -65,22 +69,45 @@ class AssessmentOutputReport(Model):
         self._valid = valid
 
     @property
-    def data(self):
-        """Gets the data of this AssessmentOutputReport.
+    def filtered_reason(self):
+        """Gets the filtered_reason of this AssessmentOutputReport.
 
+        Contains the reason why the criterion was filtered out
 
-        :return: The data of this AssessmentOutputReport.
-        :rtype: AssessmentOutputData
+        :return: The filtered_reason of this AssessmentOutputReport.
+        :rtype: List[str]
         """
-        return self._data
+        return self._filtered_reason
 
-    @data.setter
-    def data(self, data):
-        """Sets the data of this AssessmentOutputReport.
+    @filtered_reason.setter
+    def filtered_reason(self, filtered_reason):
+        """Sets the filtered_reason of this AssessmentOutputReport.
 
+        Contains the reason why the criterion was filtered out
 
-        :param data: The data of this AssessmentOutputReport.
-        :type data: AssessmentOutputData
+        :param filtered_reason: The filtered_reason of this AssessmentOutputReport.
+        :type filtered_reason: List[str]
         """
 
-        self._data = data
+        self._filtered_reason = filtered_reason
+
+    @property
+    def subcriteria(self):
+        """Gets the subcriteria of this AssessmentOutputReport.
+
+
+        :return: The subcriteria of this AssessmentOutputReport.
+        :rtype: Dict[str, AssessmentOutputSubcriteria]
+        """
+        return self._subcriteria
+
+    @subcriteria.setter
+    def subcriteria(self, subcriteria):
+        """Sets the subcriteria of this AssessmentOutputReport.
+
+
+        :param subcriteria: The subcriteria of this AssessmentOutputReport.
+        :type subcriteria: Dict[str, AssessmentOutputSubcriteria]
+        """
+
+        self._subcriteria = subcriteria
