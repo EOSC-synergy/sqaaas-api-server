@@ -126,6 +126,7 @@ class JenkinsUtils(object):
             else:
                 target_path = path
             self.logger.debug('Request to <%s>' % target_path)
+            requests.packages.urllib3.disable_warnings()
             r = requests.post(
                 urljoin(self.endpoint, target_path),
                 auth=(self.access_user, self.access_token),
