@@ -13,6 +13,7 @@ from openapi_server.models.assessment_output_validator_tool import AssessmentOut
 from openapi_server.models.badge import Badge
 from openapi_server.models.badge_assertion import BadgeAssertion
 from openapi_server.models.badge_assertion_recipient import BadgeAssertionRecipient
+from openapi_server.models.badge_criteria import BadgeCriteria
 from openapi_server.models.creds_user_pass import CredsUserPass
 from openapi_server.models.criterion import Criterion
 from openapi_server.models.criterion_description import CriterionDescription

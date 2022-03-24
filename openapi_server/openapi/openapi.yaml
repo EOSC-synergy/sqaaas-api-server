@@ -3,10 +3,10 @@ info:
   description: OpenAPI specification for the Software and Service Quality Assurance
     as a Service (SQAaaS) component.
   license:
-    name: Apache 2.0
-    url: https://www.apache.org/licenses/LICENSE-2.0.html
+    name: GPLv3
+    url: https://www.gnu.org/licenses/gpl-3.0.txt
   title: SQAaaS API
-  version: 1.1.0
+  version: 2.0.0
 servers:
 - description: Main (production) API server
   url: http://api.sqaaas.eosc-synergy.eu/v1
@@ -1460,6 +1460,14 @@ components:
       - repo_code
       type: object
     AssessmentOutputToolCI:
+      example:
+        stdout_command:
+        - stdout_command
+        - stdout_command
+        name: name
+        stdout_text: stdout_text
+        url: https://openapi-generator.tech
+        status: SUCCESS
       properties:
         name:
           description: name of the stage the tool was executed
@@ -1489,20 +1497,166 @@ components:
           type: string
       title: AssessmentOutputToolCI
       type: object
-    AssessmentOutputTool:
+    AssessmentOutputValidatorTool:
+      example:
+        level: REQUIRED
+        ci:
+          stdout_command:
+          - stdout_command
+          - stdout_command
+          name: name
+          stdout_text: stdout_text
+          url: https://openapi-generator.tech
+          status: SUCCESS
+        name: licensee
       properties:
         name:
+          example: licensee
           title: name
-          type: string
-        validator:
-          title: validator
           type: string
         ci:
           $ref: '#/components/schemas/AssessmentOutputToolCI'
+        level:
+          enum:
+          - REQUIRED
+          - RECOMMENDED
+          - OPTIONAL
+          title: level
+          type: string
+      title: AssessmentOutputValidatorTool
+      type: object
+    AssessmentOutputValidatorStandard:
+      example:
+        title: A set of Common Software Quality Assurance Baseline Criteria for Research
+          Projects
+        version: v4.0
+        url: https://indigo-dc.github.io/sqa-baseline/
+      properties:
+        title:
+          example: A set of Common Software Quality Assurance Baseline Criteria for
+            Research Projects
+          title: title
+          type: string
+        version:
+          example: v4.0
+          title: version
+          type: string
+        url:
+          example: https://indigo-dc.github.io/sqa-baseline/
+          format: uri
+          title: url
+          type: string
+      title: AssessmentOutputValidatorStandard
+      type: object
+    AssessmentOutputValidator:
+      example:
+        valid: true
+        standard:
+          title: A set of Common Software Quality Assurance Baseline Criteria for
+            Research Projects
+          version: v4.0
+          url: https://indigo-dc.github.io/sqa-baseline/
+        plugin:
+          name: report2sqaaas-plugin-licensee
+          version: 1.0.0
+        message: README file does not exist
+        data_unstructured: '{}'
+        tool:
+          level: REQUIRED
+          ci:
+            stdout_command:
+            - stdout_command
+            - stdout_command
+            name: name
+            stdout_text: stdout_text
+            url: https://openapi-generator.tech
+            status: SUCCESS
+          name: licensee
+      properties:
+        valid:
+          description: <true> if the subcriterion is valid
+          title: valid
+          type: boolean
+        message:
+          description: Evidence message
+          example: README file does not exist
+          title: message
+          type: string
+        plugin:
+          $ref: '#/components/schemas/AssessmentOutputValidator_plugin'
+        tool:
+          $ref: '#/components/schemas/AssessmentOutputValidatorTool'
+        standard:
+          $ref: '#/components/schemas/AssessmentOutputValidatorStandard'
         data_unstructured:
           title: data_unstructured
           type: object
-      title: AssessmentOutputTool
+      title: AssessmentOutputValidator
+      type: object
+    AssessmentOutputSubcriteria:
+      example:
+        valid: true
+        evidence:
+        - valid: true
+          standard:
+            title: A set of Common Software Quality Assurance Baseline Criteria for
+              Research Projects
+            version: v4.0
+            url: https://indigo-dc.github.io/sqa-baseline/
+          plugin:
+            name: report2sqaaas-plugin-licensee
+            version: 1.0.0
+          message: README file does not exist
+          data_unstructured: '{}'
+          tool:
+            level: REQUIRED
+            ci:
+              stdout_command:
+              - stdout_command
+              - stdout_command
+              name: name
+              stdout_text: stdout_text
+              url: https://openapi-generator.tech
+              status: SUCCESS
+            name: licensee
+        - valid: true
+          standard:
+            title: A set of Common Software Quality Assurance Baseline Criteria for
+              Research Projects
+            version: v4.0
+            url: https://indigo-dc.github.io/sqa-baseline/
+          plugin:
+            name: report2sqaaas-plugin-licensee
+            version: 1.0.0
+          message: README file does not exist
+          data_unstructured: '{}'
+          tool:
+            level: REQUIRED
+            ci:
+              stdout_command:
+              - stdout_command
+              - stdout_command
+              name: name
+              stdout_text: stdout_text
+              url: https://openapi-generator.tech
+              status: SUCCESS
+            name: licensee
+        description: All code repositories MUST have a README file
+      properties:
+        description:
+          example: All code repositories MUST have a README file
+          title: description
+          type: string
+        valid:
+          description: <true> if the subcriterion is valid
+          title: valid
+          type: boolean
+        evidence:
+          items:
+            $ref: '#/components/schemas/AssessmentOutputValidator'
+          title: evidence
+          type: array
+      title: AssessmentOutputSubcriteria
       type: object
     BadgeAssertion:
       example:
@@ -1555,40 +1709,195 @@ components:
           type: string
       title: BadgeAssertion
       type: object
+    Badge:
+      example:
+        data:
+          createdAt: 2021-04-07T10:34:02.96Z
+          image: https://api.eu.badgr.io/public/assertions/KSwijifTQ_-I1lb9FtX1bw/image
+          createdBy: e3h49VVbQRKQphuAAmxpgQ
+          recipient:
+            identity: sha256$5cb2939f3ae83961b31407fbfd2978e5c642177e50227eb0c7f550c0653803dc
+            hashed: true
+            plaintextIdentity: https://github.com/EOSC-synergy/test-sqaaas-web.sqaaas/commit/41a4a73505f407d57e7ed600dd5de7cf963feda3
+            type: email
+          openBadgeID: https://api.eu.badgr.io/public/assertions/KSwijifTQ_-I1lb9FtX1bw
+          badgeClass: sBS3EsJQRAC0ENTmvETtQw
+          issuer: aS1lWKgIR4u8bGjPZUzAyg
+          issuedOn: 2021-04-07T10:07:00Z
+        criteria:
+          key:
+            fulfilled:
+            - QC.Lic
+            - QC.Lic
+            missing:
+            - QC.Lic
+            - QC.Lic
+            to_fulfill:
+            - QC.Lic
+            - QC.Lic
+        share: <html>..</html>
+        verification_url: https://openapi-generator.tech
+      properties:
+        data:
+          $ref: '#/components/schemas/BadgeAssertion'
+        share:
+          example: <html>..</html>
+          title: share
+          type: string
+        verification_url:
+          format: uri
+          title: verification_url
+          type: string
+        criteria:
+          additionalProperties:
+            $ref: '#/components/schemas/Badge_criteria'
+          title: criteria
+          type: object
+      title: Badge
+      type: object
     AssessmentOutput:
       example:
         badge:
-          software: '{}'
-          services: '{}'
-          fair: '{}'
+          software:
+            data:
+              createdAt: 2021-04-07T10:34:02.96Z
+              image: https://api.eu.badgr.io/public/assertions/KSwijifTQ_-I1lb9FtX1bw/image
+              createdBy: e3h49VVbQRKQphuAAmxpgQ
+              recipient:
+                identity: sha256$5cb2939f3ae83961b31407fbfd2978e5c642177e50227eb0c7f550c0653803dc
+                hashed: true
+                plaintextIdentity: https://github.com/EOSC-synergy/test-sqaaas-web.sqaaas/commit/41a4a73505f407d57e7ed600dd5de7cf963feda3
+                type: email
+              openBadgeID: https://api.eu.badgr.io/public/assertions/KSwijifTQ_-I1lb9FtX1bw
+              badgeClass: sBS3EsJQRAC0ENTmvETtQw
+              issuer: aS1lWKgIR4u8bGjPZUzAyg
+              issuedOn: 2021-04-07T10:07:00Z
+            criteria:
+              key:
+                fulfilled:
+                - QC.Lic
+                - QC.Lic
+                missing:
+                - QC.Lic
+                - QC.Lic
+                to_fulfill:
+                - QC.Lic
+                - QC.Lic
+            share: <html>..</html>
+            verification_url: https://openapi-generator.tech
+          services:
+            data:
+              createdAt: 2021-04-07T10:34:02.96Z
+              image: https://api.eu.badgr.io/public/assertions/KSwijifTQ_-I1lb9FtX1bw/image
+              createdBy: e3h49VVbQRKQphuAAmxpgQ
+              recipient:
+                identity: sha256$5cb2939f3ae83961b31407fbfd2978e5c642177e50227eb0c7f550c0653803dc
+                hashed: true
+                plaintextIdentity: https://github.com/EOSC-synergy/test-sqaaas-web.sqaaas/commit/41a4a73505f407d57e7ed600dd5de7cf963feda3
+                type: email
+              openBadgeID: https://api.eu.badgr.io/public/assertions/KSwijifTQ_-I1lb9FtX1bw
+              badgeClass: sBS3EsJQRAC0ENTmvETtQw
+              issuer: aS1lWKgIR4u8bGjPZUzAyg
+              issuedOn: 2021-04-07T10:07:00Z
+            criteria:
+              key:
+                fulfilled:
+                - QC.Lic
+                - QC.Lic
+                missing:
+                - QC.Lic
+                - QC.Lic
+                to_fulfill:
+                - QC.Lic
+                - QC.Lic
+            share: <html>..</html>
+            verification_url: https://openapi-generator.tech
+          fair:
+            data:
+              createdAt: 2021-04-07T10:34:02.96Z
+              image: https://api.eu.badgr.io/public/assertions/KSwijifTQ_-I1lb9FtX1bw/image
+              createdBy: e3h49VVbQRKQphuAAmxpgQ
+              recipient:
+                identity: sha256$5cb2939f3ae83961b31407fbfd2978e5c642177e50227eb0c7f550c0653803dc
+                hashed: true
+                plaintextIdentity: https://github.com/EOSC-synergy/test-sqaaas-web.sqaaas/commit/41a4a73505f407d57e7ed600dd5de7cf963feda3
+                type: email
+              openBadgeID: https://api.eu.badgr.io/public/assertions/KSwijifTQ_-I1lb9FtX1bw
+              badgeClass: sBS3EsJQRAC0ENTmvETtQw
+              issuer: aS1lWKgIR4u8bGjPZUzAyg
+              issuedOn: 2021-04-07T10:07:00Z
+            criteria:
+              key:
+                fulfilled:
+                - QC.Lic
+                - QC.Lic
+                missing:
+                - QC.Lic
+                - QC.Lic
+                to_fulfill:
+                - QC.Lic
+                - QC.Lic
+            share: <html>..</html>
+            verification_url: https://openapi-generator.tech
         report:
           key:
-            key: '{}'
+            valid: false
+            subcriteria:
+              key:
+                valid: true
+                evidence:
+                - valid: true
+                  standard:
+                    title: A set of Common Software Quality Assurance Baseline Criteria
+                      for Research Projects
+                    version: v4.0
+                    url: https://indigo-dc.github.io/sqa-baseline/
+                  plugin:
+                    name: report2sqaaas-plugin-licensee
+                    version: 1.0.0
+                  message: README file does not exist
+                  data_unstructured: '{}'
+                  tool:
+                    level: REQUIRED
+                    ci:
+                      stdout_command:
+                      - stdout_command
+                      - stdout_command
+                      name: name
+                      stdout_text: stdout_text
+                      url: https://openapi-generator.tech
+                      status: SUCCESS
+                    name: licensee
+                - valid: true
+                  standard:
+                    title: A set of Common Software Quality Assurance Baseline Criteria
+                      for Research Projects
+                    version: v4.0
+                    url: https://indigo-dc.github.io/sqa-baseline/
+                  plugin:
+                    name: report2sqaaas-plugin-licensee
+                    version: 1.0.0
+                  message: README file does not exist
+                  data_unstructured: '{}'
+                  tool:
+                    level: REQUIRED
+                    ci:
+                      stdout_command:
+                      - stdout_command
+                      - stdout_command
+                      name: name
+                      stdout_text: stdout_text
+                      url: https://openapi-generator.tech
+                      status: SUCCESS
+                    name: licensee
+                description: All code repositories MUST have a README file
+            filtered_reason:
+            - "null"
+            - "null"
       properties:
         report:
           additionalProperties:
-            additionalProperties:
-              properties:
-                valid:
-                  default: false
-                  type: boolean
-                data:
-                  properties:
-                    REQUIRED:
-                      items:
-                        $ref: '#/components/schemas/AssessmentOutputTool'
-                      type: array
-                    RECOMMENDED:
-                      items:
-                        $ref: '#/components/schemas/AssessmentOutputTool'
-                      type: array
-                    OPTIONAL:
-                      items:
-                        $ref: '#/components/schemas/AssessmentOutputTool'
-                      type: array
-                  type: object
-              type: object
-            type: object
+            $ref: '#/components/schemas/AssessmentOutput_report'
           title: report
           type: object
         badge:
@@ -1607,57 +1916,6 @@ components:
       - upstream_reason
       - upstream_status
       title: UpstreamError
-      type: object
-    Badge:
-      example:
-        software:
-          data:
-            createdAt: 2021-04-07T10:34:02.96Z
-            image: https://api.eu.badgr.io/public/assertions/KSwijifTQ_-I1lb9FtX1bw/image
-            createdBy: e3h49VVbQRKQphuAAmxpgQ
-            recipient:
-              identity: sha256$5cb2939f3ae83961b31407fbfd2978e5c642177e50227eb0c7f550c0653803dc
-              hashed: true
-              plaintextIdentity: https://github.com/EOSC-synergy/test-sqaaas-web.sqaaas/commit/41a4a73505f407d57e7ed600dd5de7cf963feda3
-              type: email
-            openBadgeID: https://api.eu.badgr.io/public/assertions/KSwijifTQ_-I1lb9FtX1bw
-            badgeClass: sBS3EsJQRAC0ENTmvETtQw
-            issuer: aS1lWKgIR4u8bGjPZUzAyg
-            issuedOn: 2021-04-07T10:07:00Z
-          share: <html>..</html>
-          verification_url: https://openapi-generator.tech
-        services: '{}'
-        fair: '{}'
-      properties:
-        software:
-          $ref: '#/components/schemas/Badge_software'
-        services:
-          properties:
-            data:
-              $ref: '#/components/schemas/BadgeAssertion'
-            share:
-              example: <html>..</html>
-              title: share
-              type: string
-            verification_url:
-              format: uri
-              title: verification_url
-              type: string
-          title: services
-        fair:
-          properties:
-            data:
-              $ref: '#/components/schemas/BadgeAssertion'
-            share:
-              example: <html>..</html>
-              title: share
-              type: string
-            verification_url:
-              format: uri
-              title: verification_url
-              type: string
-          title: fair
-      title: Badge
       type: object
     CriterionOutput:
       additionalProperties:
@@ -2034,6 +2292,21 @@ components:
           $ref: '#/components/schemas/JePL_jenkinsfile_pipeline_config'
       title: JePL_jenkinsfile_stages
       type: object
+    AssessmentOutputValidator_plugin:
+      example:
+        name: report2sqaaas-plugin-licensee
+        version: 1.0.0
+      properties:
+        name:
+          example: report2sqaaas-plugin-licensee
+          title: name
+          type: string
+        version:
+          example: 1.0.0
+          title: version
+          type: string
+      title: AssessmentOutputValidator_plugin
+      type: object
     BadgeAssertion_recipient:
       example:
         identity: sha256$5cb2939f3ae83961b31407fbfd2978e5c642177e50227eb0c7f550c0653803dc
@@ -2062,65 +2335,204 @@ components:
           type: string
       title: BadgeAssertion_recipient
       type: object
+    Badge_criteria:
+      description: Badge category
+      example:
+        fulfilled:
+        - QC.Lic
+        - QC.Lic
+        missing:
+        - QC.Lic
+        - QC.Lic
+        to_fulfill:
+        - QC.Lic
+        - QC.Lic
+      properties:
+        to_fulfill:
+          items:
+            example: QC.Lic
+            type: string
+          title: to_fulfill
+          type: array
+        fulfilled:
+          items:
+            example: QC.Lic
+            type: string
+          title: fulfilled
+          type: array
+        missing:
+          items:
+            example: QC.Lic
+            type: string
+          title: missing
+          type: array
+      title: Badge_criteria
+      type: object
+    AssessmentOutput_report:
+      description: ID of the criterion
+      example:
+        valid: false
+        subcriteria:
+          key:
+            valid: true
+            evidence:
+            - valid: true
+              standard:
+                title: A set of Common Software Quality Assurance Baseline Criteria
+                  for Research Projects
+                version: v4.0
+                url: https://indigo-dc.github.io/sqa-baseline/
+              plugin:
+                name: report2sqaaas-plugin-licensee
+                version: 1.0.0
+              message: README file does not exist
+              data_unstructured: '{}'
+              tool:
+                level: REQUIRED
+                ci:
+                  stdout_command:
+                  - stdout_command
+                  - stdout_command
+                  name: name
+                  stdout_text: stdout_text
+                  url: https://openapi-generator.tech
+                  status: SUCCESS
+                name: licensee
+            - valid: true
+              standard:
+                title: A set of Common Software Quality Assurance Baseline Criteria
+                  for Research Projects
+                version: v4.0
+                url: https://indigo-dc.github.io/sqa-baseline/
+              plugin:
+                name: report2sqaaas-plugin-licensee
+                version: 1.0.0
+              message: README file does not exist
+              data_unstructured: '{}'
+              tool:
+                level: REQUIRED
+                ci:
+                  stdout_command:
+                  - stdout_command
+                  - stdout_command
+                  name: name
+                  stdout_text: stdout_text
+                  url: https://openapi-generator.tech
+                  status: SUCCESS
+                name: licensee
+            description: All code repositories MUST have a README file
+        filtered_reason:
+        - "null"
+        - "null"
+      properties:
+        valid:
+          default: false
+          title: valid
+          type: boolean
+        filtered_reason:
+          default: []
+          description: Contains the reason why the criterion was filtered out
+          items:
+            default: "null"
+            type: string
+          title: filtered_reason
+          type: array
+        subcriteria:
+          additionalProperties:
+            $ref: '#/components/schemas/AssessmentOutputSubcriteria'
+          title: subcriteria
+          type: object
+      title: AssessmentOutput_report
+      type: object
     AssessmentOutput_badge:
       example:
-        software: '{}'
-        services: '{}'
-        fair: '{}'
+        software:
+          data:
+            createdAt: 2021-04-07T10:34:02.96Z
+            image: https://api.eu.badgr.io/public/assertions/KSwijifTQ_-I1lb9FtX1bw/image
+            createdBy: e3h49VVbQRKQphuAAmxpgQ
+            recipient:
+              identity: sha256$5cb2939f3ae83961b31407fbfd2978e5c642177e50227eb0c7f550c0653803dc
+              hashed: true
+              plaintextIdentity: https://github.com/EOSC-synergy/test-sqaaas-web.sqaaas/commit/41a4a73505f407d57e7ed600dd5de7cf963feda3
+              type: email
+            openBadgeID: https://api.eu.badgr.io/public/assertions/KSwijifTQ_-I1lb9FtX1bw
+            badgeClass: sBS3EsJQRAC0ENTmvETtQw
+            issuer: aS1lWKgIR4u8bGjPZUzAyg
+            issuedOn: 2021-04-07T10:07:00Z
+          criteria:
+            key:
+              fulfilled:
+              - QC.Lic
+              - QC.Lic
+              missing:
+              - QC.Lic
+              - QC.Lic
+              to_fulfill:
+              - QC.Lic
+              - QC.Lic
+          share: <html>..</html>
+          verification_url: https://openapi-generator.tech
+        services:
+          data:
+            createdAt: 2021-04-07T10:34:02.96Z
+            image: https://api.eu.badgr.io/public/assertions/KSwijifTQ_-I1lb9FtX1bw/image
+            createdBy: e3h49VVbQRKQphuAAmxpgQ
+            recipient:
+              identity: sha256$5cb2939f3ae83961b31407fbfd2978e5c642177e50227eb0c7f550c0653803dc
+              hashed: true
+              plaintextIdentity: https://github.com/EOSC-synergy/test-sqaaas-web.sqaaas/commit/41a4a73505f407d57e7ed600dd5de7cf963feda3
+              type: email
+            openBadgeID: https://api.eu.badgr.io/public/assertions/KSwijifTQ_-I1lb9FtX1bw
+            badgeClass: sBS3EsJQRAC0ENTmvETtQw
+            issuer: aS1lWKgIR4u8bGjPZUzAyg
+            issuedOn: 2021-04-07T10:07:00Z
+          criteria:
+            key:
+              fulfilled:
+              - QC.Lic
+              - QC.Lic
+              missing:
+              - QC.Lic
+              - QC.Lic
+              to_fulfill:
+              - QC.Lic
+              - QC.Lic
+          share: <html>..</html>
+          verification_url: https://openapi-generator.tech
+        fair:
+          data:
+            createdAt: 2021-04-07T10:34:02.96Z
+            image: https://api.eu.badgr.io/public/assertions/KSwijifTQ_-I1lb9FtX1bw/image
+            createdBy: e3h49VVbQRKQphuAAmxpgQ
+            recipient:
+              identity: sha256$5cb2939f3ae83961b31407fbfd2978e5c642177e50227eb0c7f550c0653803dc
+              hashed: true
+              plaintextIdentity: https://github.com/EOSC-synergy/test-sqaaas-web.sqaaas/commit/41a4a73505f407d57e7ed600dd5de7cf963feda3
+              type: email
+            openBadgeID: https://api.eu.badgr.io/public/assertions/KSwijifTQ_-I1lb9FtX1bw
+            badgeClass: sBS3EsJQRAC0ENTmvETtQw
+            issuer: aS1lWKgIR4u8bGjPZUzAyg
+            issuedOn: 2021-04-07T10:07:00Z
+          criteria:
+            key:
+              fulfilled:
+              - QC.Lic
+              - QC.Lic
+              missing:
+              - QC.Lic
+              - QC.Lic
+              to_fulfill:
+              - QC.Lic
+              - QC.Lic
+          share: <html>..</html>
+          verification_url: https://openapi-generator.tech
       properties:
         software:
-          properties:
-            data:
-              $ref: '#/components/schemas/BadgeAssertion'
-            share:
-              title: share
-              type: string
-          title: software
+          $ref: '#/components/schemas/Badge'
         services:
-          properties:
-            data:
-              $ref: '#/components/schemas/BadgeAssertion'
-            share:
-              title: share
-              type: string
-          title: services
+          $ref: '#/components/schemas/Badge'
         fair:
-          properties:
-            data:
-              $ref: '#/components/schemas/BadgeAssertion'
-            share:
-              title: share
-              type: string
-          title: fair
+          $ref: '#/components/schemas/Badge'
       title: AssessmentOutput_badge
-      type: object
-    Badge_software:
-      example:
-        data:
-          createdAt: 2021-04-07T10:34:02.96Z
-          image: https://api.eu.badgr.io/public/assertions/KSwijifTQ_-I1lb9FtX1bw/image
-          createdBy: e3h49VVbQRKQphuAAmxpgQ
-          recipient:
-            identity: sha256$5cb2939f3ae83961b31407fbfd2978e5c642177e50227eb0c7f550c0653803dc
-            hashed: true
-            plaintextIdentity: https://github.com/EOSC-synergy/test-sqaaas-web.sqaaas/commit/41a4a73505f407d57e7ed600dd5de7cf963feda3
-            type: email
-          openBadgeID: https://api.eu.badgr.io/public/assertions/KSwijifTQ_-I1lb9FtX1bw
-          badgeClass: sBS3EsJQRAC0ENTmvETtQw
-          issuer: aS1lWKgIR4u8bGjPZUzAyg
-          issuedOn: 2021-04-07T10:07:00Z
-        share: <html>..</html>
-        verification_url: https://openapi-generator.tech
-      properties:
-        data:
-          $ref: '#/components/schemas/BadgeAssertion'
-        share:
-          example: <html>..</html>
-          title: share
-          type: string
-        verification_url:
-          format: uri
-          title: verification_url
-          type: string
-      title: Badge_software
       type: object
