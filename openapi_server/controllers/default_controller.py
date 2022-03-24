@@ -1412,12 +1412,11 @@ async def _badgeclass_matchmaking(pipeline_id, badge_type, criteria_fulfilled_li
         }
 
         # Get badge type's config values
-        badge_section = ':'.join([badge_type, badge_category])
-        badgeclass_name = config.get_badge_sub(
-            badge_section, 'badgeclass'
+        badgeclass_name = config.get_badge(
+            'badgeclass', subsection_list=[badge_type, badge_category]
         )
-        criteria_to_fulfill_list = config.get_badge_sub(
-            ':'.join([badge_type, badge_category]), 'criteria'
+        criteria_to_fulfill_list = config.get_badge(
+            'criteria', subsection_list=[badge_type, badge_category]
         ).split()
         criteria_summary[badge_category]['to_fulfill'] = criteria_to_fulfill_list
         # Matchmaking

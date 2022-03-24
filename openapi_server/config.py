@@ -66,9 +66,19 @@ def get_ci(key, fallback=None):
     return CONF.get(CI_SECTION, key, fallback=fallback)
 
 
-def get_badge(key, fallback=None):
-    return CONF.get(BADGE_SECTION, key, fallback=fallback)
+def get_badge(key, subsection_list=None, fallback=None):
+    """Get option values from 'badgr' sections.
 
-
-def get_badge_sub(subsection, key, fallback=None):
-    return CONF.get(':'.join([BADGE_SECTION, subsection]), key, fallback=fallback)
+    :param key: section's key name 
+    :type key: str
+    :param subsection_list: ordered subsection names to concat
+    :type subsection_list: list
+    :param fallback: fallback value 
+    :type fallback: str
+    """
+    if subsection_list:
+        subsection_list.insert(0, BADGE_SECTION)
+        section_name = '__'.join(subsection_list)
+    else:
+        section_name = BADGE_SECTION
+    return CONF.get(section_name, key, fallback=fallback)
