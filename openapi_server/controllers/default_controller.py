@@ -1200,13 +1200,21 @@ async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Re
             return web.Response(status=422, reason=_reason, text=_reason)
         # Get Badgr's badgeclass and proceed with badge issuance
         for badge_type, criteria_fulfilled_list in criteria_fulfilled_map.items():
-            badgeclass_name = await _badgeclass_matchmaking(
+            badgeclass_name, criteria_summary = await _badgeclass_matchmaking(
                 pipeline_id, badge_type, criteria_fulfilled_list
             )
+            # Generate criteria summary
+            criteria_summary_copy = copy.deepcopy(criteria_summary)
+            for _badge_category, _badge_category_data in criteria_summary_copy.items():
+                to_fulfill_set = set(_badge_category_data['to_fulfill'])
+                missing_set = set(_badge_category_data['missing'])
+                fulfilled_list = list(to_fulfill_set.difference(missing_set))
+                criteria_summary[_badge_category]['fulfilled'] = fulfilled_list
+            badge_data[badge_type] = {
+                'criteria': criteria_summary
+            }
             if badgeclass_name:
                 try:
-                    if not badge_type in list(badge_data):
-                        badge_data[badge_type] = {}
                     badge_obj = await _issue_badge(
                         pipeline_id,
                         badgeclass_name,
@@ -1392,10 +1400,16 @@ async def _badgeclass_matchmaking(pipeline_id, badge_type, criteria_fulfilled_li
     :type criteria_fulfilled_list: list
     """
     badge_awarded_badgeclass_name = None
+    criteria_summary = {}
     for badge_category in ['bronze', 'silver', 'gold']:
         logger.debug('Matching given criteria against defined %s criteria for %s' % (
             badge_category.upper(), badge_type.upper())
         )
+
+        criteria_summary[badge_category] = {
+            'to_fulfill': [],
+            'missing': []
+        }
 
         # Get badge type's config values
         badge_section = ':'.join([badge_type, badge_category])
@@ -1405,13 +1419,14 @@ async def _badgeclass_matchmaking(pipeline_id, badge_type, criteria_fulfilled_li
         criteria_to_fulfill_list = config.get_badge_sub(
             ':'.join([badge_type, badge_category]), 'criteria'
         ).split()
+        criteria_summary[badge_category]['to_fulfill'] = criteria_to_fulfill_list
         # Matchmaking
-        missing_criteria = set(criteria_to_fulfill_list).difference(criteria_fulfilled_list)
-        if missing_criteria:
+        missing_criteria_list = list(set(criteria_to_fulfill_list).difference(criteria_fulfilled_list))
+        criteria_summary[badge_category]['missing'] = missing_criteria_list
+        if missing_criteria_list:
             logger.warn('Pipeline <%s> not fulfilling %s criteria. Missing criteria: %s' % (
-                pipeline_id, badge_category.upper(), missing_criteria)
+                pipeline_id, badge_category.upper(), missing_criteria_list)
             )
-            break
         else:
             logger.info('Pipeline <%s> fulfills %s badge criteria!' % (
                 pipeline_id, badge_category.upper())
@@ -1421,7 +1436,7 @@ async def _badgeclass_matchmaking(pipeline_id, badge_type, criteria_fulfilled_li
     if badge_awarded_badgeclass_name:
         logger.debug('Badgeclass to use for badge issuance: %s' % badge_awarded_badgeclass_name)
 
-    return badge_awarded_badgeclass_name
+    return badge_awarded_badgeclass_name, criteria_summary 
 
 
 async def _issue_badge(pipeline_id, badgeclass_name):
