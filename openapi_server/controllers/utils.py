@@ -552,10 +552,15 @@ def process_extra_data(config_json, composer_json, report_to_stdout=False):
     if 'project_repos' in config_json['config'].keys():
         project_repos_final = {}
         for project_repo in config_json['config']['project_repos']:
+            repo_url = project_repo.pop('repo')
+            # Get default branch if None is defined
+            if not project_repo.get('branch', None):
+                project_repo['branch'] = GitUtils.get_remote_active_branch(
+                    repo_url
+                )
             # Check for empty values
             project_repo = del_empty_keys(project_repo)
             # Set repo name
-            repo_url = project_repo.pop('repo')
             repo_name_generated = get_short_repo_name(
                 repo_url, include_netloc=True)
             # Compose final <project_repos>
