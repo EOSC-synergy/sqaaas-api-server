@@ -74,31 +74,28 @@ class GitUtils(object):
         return sqaaas.url, default_branch.name
 
     @staticmethod
-    def get_remote_active_branch(remote_repo, remote_branch=None):
+    def get_remote_active_branch(remote_repo):
         """Gets active branch from remote repository.
 
         :param remote_repo: Absolute URL of the source repository (e.g. https://example.org)
-        :param remote_branch: Specific branch name to use from the source repository
         """
         branch = None
         with tempfile.TemporaryDirectory() as dirpath:
             try:
                 logger.debug((
-                    'Inspecting content of repo <%s> (branch %s)' % (
-                        remote_repo, remote_branch
+                    'Inspecting content of repo <%s>' % (
+                        remote_repo
                     )
                 ))
-                if branch:
-                    repo = Repo.clone_from(
-                        remote_repo, dirpath,
-                        single_branch=True, b=remote_branch
-                    )
-                else:
-                    repo = Repo.clone_from(
-                        remote_repo, dirpath
-                    )
+                repo = Repo.clone_from(
+                    remote_repo, dirpath
+                )
                 branch = repo.active_branch
                 branch = branch.name
+                logger.debug(
+                    'Active branch name from remote repository <%s>: %s' % (
+                        remote_repo, branch
+                ))
             except GitCommandError as e:
                 raise SQAaaSAPIException(422, e)
             else:
@@ -117,13 +114,28 @@ class GitUtils(object):
             source_repo = repo['repo']
             source_repo_branch = repo.get('branch', None)
             with tempfile.TemporaryDirectory() as dirpath:
-                # Get active branch from remote repository
-                branch = GitUtils.get_remote_active_branch(
-                    source_repo, source_repo_branch
-                )
-                # Set path to the temporary directory
-                kwargs['path'] = dirpath
-                # Perform the actual work
-                ret = f(*args, **kwargs)
-                return ret
+                try:
+                    msg = 'Cloning repository <%s>' % source_repo 
+                    if source_repo:
+                        msg += ' (branch %s)' % source_repo_branch
+                    logger.debug(msg)
+                    if source_repo_branch:
+                        repo = Repo.clone_from(
+                            source_repo, dirpath,
+                            single_branch=True, b=source_repo_branch
+                        )
+                    else:
+                        repo = Repo.clone_from(
+                            source_repo, dirpath
+                        )
+                    branch = repo.active_branch
+                    branch = branch.name
+                except GitCommandError as e:
+                    raise SQAaaSAPIException(422, e)
+                else:
+                    # Set path to the temporary directory
+                    kwargs['path'] = dirpath
+                    # Perform the actual work
+                    ret = f(*args, **kwargs)
+                    return ret
         return decorated_function
