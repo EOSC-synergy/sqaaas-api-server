@@ -69,7 +69,7 @@ class JePLUtils(object):
         template = env.get_template('commands_script.sh')
         return template.render({
             'checkout_dir': checkout_dir,
-            'commands': ' && '.join(cmd_list),
+            'commands': cmd_list,
             'template': template
         })
 
