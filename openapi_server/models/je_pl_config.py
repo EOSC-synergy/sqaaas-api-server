@@ -15,28 +15,32 @@ class JePLConfig(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, config: JePLConfigConfig=None, sqa_criteria: Dict[str, Dict[str, object]]=None, environment: Dict[str, str]=None):
+    def __init__(self, config: JePLConfigConfig=None, sqa_criteria: Dict[str, object]=None, environment: Dict[str, str]=None, timeout: int=None):
         """JePLConfig - a model defined in OpenAPI
 
         :param config: The config of this JePLConfig.
         :param sqa_criteria: The sqa_criteria of this JePLConfig.
         :param environment: The environment of this JePLConfig.
+        :param timeout: The timeout of this JePLConfig.
         """
         self.openapi_types = {
             'config': JePLConfigConfig,
-            'sqa_criteria': Dict[str, Dict[str, object]],
-            'environment': Dict[str, str]
+            'sqa_criteria': Dict[str, object],
+            'environment': Dict[str, str],
+            'timeout': int
         }
 
         self.attribute_map = {
             'config': 'config',
             'sqa_criteria': 'sqa_criteria',
-            'environment': 'environment'
+            'environment': 'environment',
+            'timeout': 'timeout'
         }
 
         self._config = config
         self._sqa_criteria = sqa_criteria
         self._environment = environment
+        self._timeout = timeout
 
     @classmethod
     def from_dict(cls, dikt: dict) -> 'JePLConfig':
@@ -74,7 +78,7 @@ class JePLConfig(Model):
 
 
         :return: The sqa_criteria of this JePLConfig.
-        :rtype: Dict[str, Dict[str, object]]
+        :rtype: Dict[str, object]
         """
         return self._sqa_criteria
 
@@ -84,7 +88,7 @@ class JePLConfig(Model):
 
 
         :param sqa_criteria: The sqa_criteria of this JePLConfig.
-        :type sqa_criteria: Dict[str, Dict[str, object]]
+        :type sqa_criteria: Dict[str, object]
         """
 
         self._sqa_criteria = sqa_criteria
@@ -109,3 +113,26 @@ class JePLConfig(Model):
         """
 
         self._environment = environment
+
+    @property
+    def timeout(self):
+        """Gets the timeout of this JePLConfig.
+
+
+        :return: The timeout of this JePLConfig.
+        :rtype: int
+        """
+        return self._timeout
+
+    @timeout.setter
+    def timeout(self, timeout):
+        """Sets the timeout of this JePLConfig.
+
+
+        :param timeout: The timeout of this JePLConfig.
+        :type timeout: int
+        """
+        if timeout is not None and timeout < 1:
+            raise ValueError("Invalid value for `timeout`, must be a value greater than or equal to `1`")
+
+        self._timeout = timeout

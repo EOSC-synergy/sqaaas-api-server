@@ -16,9 +16,10 @@ VERSION = "1.0.0"
 REQUIRES = [
     "connexion==2.6.0",
     "swagger-ui-bundle==0.0.6",
-    "aiohttp_jinja2==1.2.0",
     "PyGithub>=1.53",
-    "python-jenkins>=1.7.0"
+    "python-jenkins>=1.7.0",
+    "deepdiff>=5.2.3"
+    "GitPython>=3.1.17"
 ]
 
 setup(
@@ -26,7 +27,7 @@ setup(
     version=VERSION,
     description="SQAaaS API",
     author_email="orviz@ifca.unican.es",
-    url="",
+    url="https://github.com/eosc-synergy/sqaaas-api-server",
     keywords=["OpenAPI", "SQAaaS API"],
     install_requires=REQUIRES,
     packages=find_packages(),
@@ -34,6 +35,10 @@ setup(
         'LICENSE',
         'openapi/openapi.yaml',
         'templates/Jenkinsfile',
+        'templates/embed_badge.html',
+        'templates/commands_script.sh',
+        'templates/pipeline_assessment.json',
+        'templates/README',
         '../etc/sqaaas.ini.sample']},
     include_package_data=False,
     entry_points={

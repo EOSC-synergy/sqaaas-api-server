@@ -14,20 +14,24 @@ class InlineResponse2001(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, build_status: str=None):
+    def __init__(self, file_name: str=None, content: str=None):
         """InlineResponse2001 - a model defined in OpenAPI
 
-        :param build_status: The build_status of this InlineResponse2001.
+        :param file_name: The file_name of this InlineResponse2001.
+        :param content: The content of this InlineResponse2001.
         """
         self.openapi_types = {
-            'build_status': str
+            'file_name': str,
+            'content': str
         }
 
         self.attribute_map = {
-            'build_status': 'build_status'
+            'file_name': 'file_name',
+            'content': 'content'
         }
 
-        self._build_status = build_status
+        self._file_name = file_name
+        self._content = content
 
     @classmethod
     def from_dict(cls, dikt: dict) -> 'InlineResponse2001':
@@ -39,28 +43,43 @@ class InlineResponse2001(Model):
         return util.deserialize_model(dikt, cls)
 
     @property
-    def build_status(self):
-        """Gets the build_status of this InlineResponse2001.
+    def file_name(self):
+        """Gets the file_name of this InlineResponse2001.
 
 
-        :return: The build_status of this InlineResponse2001.
+        :return: The file_name of this InlineResponse2001.
         :rtype: str
         """
-        return self._build_status
+        return self._file_name
 
-    @build_status.setter
-    def build_status(self, build_status):
-        """Sets the build_status of this InlineResponse2001.
+    @file_name.setter
+    def file_name(self, file_name):
+        """Sets the file_name of this InlineResponse2001.
 
 
-        :param build_status: The build_status of this InlineResponse2001.
-        :type build_status: str
+        :param file_name: The file_name of this InlineResponse2001.
+        :type file_name: str
         """
-        allowed_values = ["success", "failure", "aborted", "not_built", "unstable"]  # noqa: E501
-        if build_status not in allowed_values:
-            raise ValueError(
-                "Invalid value for `build_status` ({0}), must be one of {1}"
-                .format(build_status, allowed_values)
-            )
 
-        self._build_status = build_status
+        self._file_name = file_name
+
+    @property
+    def content(self):
+        """Gets the content of this InlineResponse2001.
+
+
+        :return: The content of this InlineResponse2001.
+        :rtype: str
+        """
+        return self._content
+
+    @content.setter
+    def content(self, content):
+        """Sets the content of this InlineResponse2001.
+
+
+        :param content: The content of this InlineResponse2001.
+        :type content: str
+        """
+
+        self._content = content

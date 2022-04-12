@@ -6,7 +6,29 @@ connexion[aiohttp,swagger-ui] <= 2.3.0; python_version=="3.5" or python_version=
 # https://github.com/zalando/connexion/pull/1044
 werkzeug == 0.16.1; python_version=="3.5" or python_version=="3.4"
 swagger-ui-bundle == 0.0.6
-aiohttp_jinja2 == 1.2.0
 PyGithub
 Jinja2
 python-jenkins
+deepdiff
+namegenerator
+GitPython
+stevedore
+beautifulsoup4
+# report2sqaaas == 1.2.0
+git+https://github.com/EOSC-synergy/sqaaas-reporting@1.2.0#egg=report2sqaaas
+# report2sqaaas-plugin-markdownlint = 1.2.0
+git+https://github.com/EOSC-synergy/sqaaas-reporting-plugins@1.2.0#egg=report2sqaaas-plugin-markdownlint&subdirectory=qc_doc_markdownlint
+# report2sqaaas-plugin-find_doc_files = 1.2.0
+git+https://github.com/EOSC-synergy/sqaaas-reporting-plugins@1.2.0#egg=report2sqaaas-plugin-find_doc_files&subdirectory=qc_doc_find_doc_files
+# report2sqaaas-plugin-licensee = 1.2.0
+git+https://github.com/EOSC-synergy/sqaaas-reporting-plugins@1.2.0#egg=report2sqaaas-plugin-licensee&subdirectory=qc_lic_licensee
+# report2sqaaas-plugin-boolean = 1.2.0
+git+https://github.com/EOSC-synergy/sqaaas-reporting-plugins@1.2.0#egg=report2sqaaas-plugin-boolean&subdirectory=qc_ALL_boolean
+# report2sqaaas-plugin-json_not_empty = 1.2.0
+git+https://github.com/EOSC-synergy/sqaaas-reporting-plugins@1.2.0#egg=report2sqaaas-plugin-json_not_empty&subdirectory=qc_ALL_json_not_empty
+# report2sqaaas-plugin-flake8 = 1.2.0
+git+https://github.com/EOSC-synergy/sqaaas-reporting-plugins@1.2.0#egg=report2sqaaas-plugin-flake8&subdirectory=qc_sty_flake8
+# report2sqaaas-plugin-bandit = 1.2.0
+git+https://github.com/EOSC-synergy/sqaaas-reporting-plugins@1.2.0#egg=report2sqaaas-plugin-bandit&subdirectory=qc_sec_bandit
+# report2sqaaas-plugin-cff = 1.2.0
+git+https://github.com/EOSC-synergy/sqaaas-reporting-plugins@1.2.0#egg=report2sqaaas-plugin-cff&subdirectory=qc_met_cff

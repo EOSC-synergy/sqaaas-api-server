@@ -1,18 +1,47 @@
 openapi: 3.0.0
 info:
-  description: API for the Software and Service Quality Assurance as a Service (SQAaaS)
-    component.
+  description: OpenAPI specification for the Software and Service Quality Assurance
+    as a Service (SQAaaS) component.
   license:
     name: Apache 2.0
     url: https://www.apache.org/licenses/LICENSE-2.0.html
   title: SQAaaS API
-  version: 0.1.0
+  version: 1.1.0
 servers:
-- description: Optional server description, e.g. Main (production) server
+- description: Main (production) API server
   url: http://api.sqaaas.eosc-synergy.eu/v1
-- description: Optional server description, e.g. Internal staging server for testing
-  url: http://staging-api.sqaaas.eosc-synergy.eu
+- description: Staging API server for testing
+  url: https://api-staging.sqaaas.eosc-synergy.eu
+- description: Development API server (mock server)
+  url: https://api-dev.sqaaas.eosc-synergy.eu
 paths:
+  /criteria:
+    get:
+      operationId: get_criteria
+      parameters:
+      - description: Get data from a specific criterion
+        explode: true
+        in: query
+        name: criterion_id
+        required: false
+        schema:
+          type: string
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/Criterion'
+                type: array
+          description: Successful operation
+        "400":
+          description: Invalid criterion supplied
+        "404":
+          description: Criterion not found
+      summary: Returns data about criteria
+      x-openapi-router-controller: openapi_server.controllers.default_controller
   /pipeline:
     get:
       description: |
@@ -33,6 +62,17 @@ paths:
       description: |
         Provides a ready-to-use Jenkins pipeline based on the v2 series of jenkins-pipeline-library.
       operationId: add_pipeline
+      parameters:
+      - description: Flag to indicate whether the pipeline shall print via via stdout
+          the reports produced by the tools (required by QAA module)
+        explode: true
+        in: query
+        name: report_to_stdout
+        required: false
+        schema:
+          default: false
+          type: boolean
+        style: form
       requestBody:
         content:
           application/json:
@@ -56,9 +96,84 @@ paths:
               operationId: get_pipeline_by_id
               parameters:
                 pipeline_id: $response.body#/id
+        "400":
+          description: Request failed validation
       summary: Creates a pipeline.
       x-openapi-router-controller: openapi_server.controllers.default_controller
       x-codegen-request-body-name: body
+  /pipeline/assessment:
+    post:
+      description: |
+        Creates a pipeline for assessment (QAA module).
+      operationId: add_pipeline_for_assessment
+      parameters:
+      - description: Optional tools that shall be accounted
+        explode: true
+        in: query
+        name: optional_tools
+        required: false
+        schema:
+          items:
+            type: string
+          type: array
+        style: form
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Pipeline_assessment'
+        required: true
+        x-body-name: body
+      responses:
+        "201":
+          content:
+            application/json:
+              example:
+                id: dd7d8481-81a3-407f-95f0-a2f1cb382a4b
+              schema:
+                $ref: '#/components/schemas/inline_response_201'
+          description: Created
+          links:
+            get_pipeline_by_pipeline_id:
+              description: |
+                The `id` value returned in the response can be used as the `pipeline_id` parameter in `GET /pipeline/{pipeline_id}`.
+              operationId: get_pipeline_by_id
+              parameters:
+                pipeline_id: $response.body#/id
+        "400":
+          description: Request failed validation
+      summary: Creates a pipeline for assessment (QAA module).
+      x-openapi-router-controller: openapi_server.controllers.default_controller
+      x-codegen-request-body-name: body
+  /pipeline/assessment/{pipeline_id}/output:
+    get:
+      description: |
+        Returns the reporting and badging data from the execution of the assessment pipeline.
+      operationId: get_output_for_assessment
+      parameters:
+      - description: ID of the pipeline to get
+        explode: false
+        in: path
+        name: pipeline_id
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AssessmentOutput'
+          description: Successful operation
+        "400":
+          description: Invalid pipeline ID supplied
+        "404":
+          description: Pipeline not found
+        "422":
+          description: Pipeline has not been executed
+      summary: Get the assessment output (QAA module)
+      x-openapi-router-controller: openapi_server.controllers.default_controller
   /pipeline/{pipeline_id}:
     delete:
       operationId: delete_pipeline_by_id
@@ -75,9 +190,18 @@ paths:
         "204":
           description: Pipeline successfully deleted
         "400":
-          description: Invalid ID supplied
+          description: Request failed validation
         "404":
           description: Pipeline not found
+        "502":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UpstreamError'
+          description: |
+            The server while acting as a gateway or a proxy, received
+            an invalid response from the upstream server it accessed
+            in attempting to fulfill the request.
       summary: Delete pipeline by ID
       x-openapi-router-controller: openapi_server.controllers.default_controller
     get:
@@ -99,10 +223,86 @@ paths:
                 $ref: '#/components/schemas/Pipeline'
           description: Successful operation
         "400":
-          description: Invalid ID supplied
+          description: Invalid pipeline ID supplied
         "404":
           description: Pipeline not found
       summary: Find pipeline by ID
+      x-openapi-router-controller: openapi_server.controllers.default_controller
+    put:
+      operationId: update_pipeline_by_id
+      parameters:
+      - description: ID of the pipeline to get
+        explode: false
+        in: path
+        name: pipeline_id
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: Flag to indicate whether the pipeline shall print via via stdout
+          the reports produced by the tools (required by QAA module)
+        explode: true
+        in: query
+        name: report_to_stdout
+        required: false
+        schema:
+          default: false
+          type: boolean
+        style: form
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Pipeline'
+        required: true
+        x-body-name: body
+      responses:
+        "204":
+          description: Pipeline successfully updated
+        "400":
+          description: Invalid pipeline ID supplied
+        "404":
+          description: Pipeline not found
+        "502":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UpstreamError'
+          description: |
+            The server while acting as a gateway or a proxy, received
+            an invalid response from the upstream server it accessed
+            in attempting to fulfill the request.
+      summary: Update pipeline by ID
+      x-openapi-router-controller: openapi_server.controllers.default_controller
+      x-codegen-request-body-name: body
+  /pipeline/{pipeline_id}/badge:
+    get:
+      description: |
+        Returns the badge data associated with the pipeline.
+      operationId: get_badge
+      parameters:
+      - description: ID of the pipeline to get
+        explode: false
+        in: path
+        name: pipeline_id
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Badge'
+          description: Successful operation
+        "400":
+          description: Invalid pipeline ID supplied
+        "404":
+          description: Pipeline not found
+        "422":
+          description: Badge not issued
+      summary: Gets badge data associated with the given pipeline
       x-openapi-router-controller: openapi_server.controllers.default_controller
   /pipeline/{pipeline_id}/composer:
     get:
@@ -127,7 +327,38 @@ paths:
                   $ref: '#/components/schemas/JePL_composer'
                 type: array
           description: Successful operation
+        "400":
+          description: Invalid pipeline ID supplied
+        "404":
+          description: Pipeline not found
       summary: Gets composer configuration used by the pipeline.
+      x-openapi-router-controller: openapi_server.controllers.default_controller
+  /pipeline/{pipeline_id}/composer/jepl:
+    get:
+      description: |
+        Returns the content of JePL's composer file.
+      operationId: get_pipeline_composer_jepl
+      parameters:
+      - description: ID of the pipeline to get
+        explode: false
+        in: path
+        name: pipeline_id
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/inline_response_200_2'
+          description: Successful operation
+        "400":
+          description: Invalid pipeline ID supplied
+        "404":
+          description: Pipeline not found
+      summary: Gets JePL composer configuration for the given pipeline.
       x-openapi-router-controller: openapi_server.controllers.default_controller
   /pipeline/{pipeline_id}/compressed_files:
     get:
@@ -151,8 +382,10 @@ paths:
                 format: binary
                 type: string
           description: ZIP fle with JePL files
-        "403":
-          description: Unsuccessful operation
+        "400":
+          description: Invalid pipeline ID supplied
+        "404":
+          description: Pipeline not found
       summary: Get JePL files in compressed format.
       x-openapi-router-controller: openapi_server.controllers.default_controller
   /pipeline/{pipeline_id}/config:
@@ -178,7 +411,69 @@ paths:
                   $ref: '#/components/schemas/JePL_config'
                 type: array
           description: Successful operation
+        "400":
+          description: Invalid pipeline ID supplied
+        "404":
+          description: Pipeline not found
       summary: Gets pipeline's main configuration.
+      x-openapi-router-controller: openapi_server.controllers.default_controller
+  /pipeline/{pipeline_id}/config/jepl:
+    get:
+      description: |
+        Returns the content of JePL's config file.
+      operationId: get_pipeline_config_jepl
+      parameters:
+      - description: ID of the pipeline to get
+        explode: false
+        in: path
+        name: pipeline_id
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/inline_response_200'
+                type: array
+          description: Successful operation
+        "400":
+          description: Invalid pipeline ID supplied
+        "404":
+          description: Pipeline not found
+      summary: Gets JePL config configuration for the given pipeline.
+      x-openapi-router-controller: openapi_server.controllers.default_controller
+  /pipeline/{pipeline_id}/config/scripts:
+    get:
+      description: |
+        Returns the content of the list of scripts generated for the commands builder.
+      operationId: get_pipeline_commands_scripts
+      parameters:
+      - description: ID of the pipeline to get
+        explode: false
+        in: path
+        name: pipeline_id
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/inline_response_200_1'
+                type: array
+          description: Successful operation
+        "400":
+          description: Invalid pipeline ID supplied
+        "404":
+          description: Pipeline not found
+      summary: Gets the commands builder scripts
       x-openapi-router-controller: openapi_server.controllers.default_controller
   /pipeline/{pipeline_id}/jenkinsfile:
     get:
@@ -203,7 +498,77 @@ paths:
                   $ref: '#/components/schemas/JePL_jenkinsfile'
                 type: array
           description: Successful operation
+        "400":
+          description: Invalid pipeline ID supplied
+        "404":
+          description: Pipeline not found
       summary: Gets Jenkins pipeline definition used by the pipeline.
+      x-openapi-router-controller: openapi_server.controllers.default_controller
+  /pipeline/{pipeline_id}/jenkinsfile/jepl:
+    get:
+      description: |
+        Returns the content of Jenkinsfile file for the given pipeline.
+      operationId: get_pipeline_jenkinsfile_jepl
+      parameters:
+      - description: ID of the pipeline to get
+        explode: false
+        in: path
+        name: pipeline_id
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/inline_response_200_3'
+          description: Successful operation
+        "400":
+          description: Invalid pipeline ID supplied
+        "404":
+          description: Pipeline not found
+      summary: Gets Jenkins configuration for the given pipeline.
+      x-openapi-router-controller: openapi_server.controllers.default_controller
+  /pipeline/{pipeline_id}/output:
+    get:
+      description: |
+        Returns the console output from the pipeline execution.
+      operationId: get_pipeline_output
+      parameters:
+      - description: ID of the pipeline to get
+        explode: false
+        in: path
+        name: pipeline_id
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: Flag to indicate whether the returned output shall be validate
+          using sqaaas-reporting tool
+        explode: true
+        in: query
+        name: validate
+        required: false
+        schema:
+          default: false
+          type: boolean
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CriterionOutput'
+          description: Successful operation
+        "400":
+          description: Invalid pipeline ID supplied
+        "404":
+          description: Pipeline not found
+        "422":
+          description: Pipeline has not been executed
+      summary: Get output from pipeline execution
       x-openapi-router-controller: openapi_server.controllers.default_controller
   /pipeline/{pipeline_id}/pull_request:
     post:
@@ -229,6 +594,12 @@ paths:
                   description: URL of the upstream repo
                   format: uri
                   type: string
+                branch:
+                  description: Brach from the upstream repo used as the base for the
+                    pull request
+                  type: string
+              required:
+              - repo
               type: object
         required: true
         x-body-name: body
@@ -237,12 +608,23 @@ paths:
           content:
             application/json:
               example:
-                pull_request_url: https://github.com/EOSC-synergy/sqaaas-api-spec/pull/23
+                pull_request_url: https://github.com/eosc-synergy/sqaaas-api-spec/pull/23
               schema:
-                $ref: '#/components/schemas/inline_response_200_2'
+                $ref: '#/components/schemas/inline_response_200_5'
           description: Successful operation
-        "403":
-          description: Unsuccessful operation
+        "400":
+          description: Invalid pipeline ID supplied
+        "404":
+          description: Pipeline not found
+        "502":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UpstreamError'
+          description: |
+            The server while acting as a gateway or a proxy, received
+            an invalid response from the upstream server it accessed
+            in attempting to fulfill the request.
       summary: Creates pull request with JePL files.
       x-openapi-router-controller: openapi_server.controllers.default_controller
       x-codegen-request-body-name: body
@@ -260,17 +642,49 @@ paths:
         schema:
           type: string
         style: simple
+      - description: Flag to indicate whether a badge shall be issued if the pipeline
+          succeds
+        explode: true
+        in: query
+        name: issue_badge
+        required: false
+        schema:
+          default: false
+          type: boolean
+        style: form
+      - description: URL of the upstream repository to fetch the code from
+        explode: true
+        in: query
+        name: repo_url
+        required: false
+        schema:
+          format: uri
+          type: string
+        style: form
+      - description: Branch name of the upstream repository to fetch the code from
+        explode: true
+        in: query
+        name: repo_branch
+        required: false
+        schema:
+          type: string
+        style: form
       responses:
-        "200":
+        "204":
+          description: Successful operation
+        "400":
+          description: Invalid pipeline ID supplied
+        "404":
+          description: Pipeline not found
+        "502":
           content:
             application/json:
-              example:
-                build_url: https://jenkins.eosc-synergy.eu/job/eosc-synergy-org/job/sqaaas-api-spec
               schema:
-                $ref: '#/components/schemas/inline_response_200'
-          description: Successful operation
-        "403":
-          description: Unsuccessful operation
+                $ref: '#/components/schemas/UpstreamError'
+          description: |
+            The server while acting as a gateway or a proxy, received
+            an invalid response from the upstream server it accessed
+            in attempting to fulfill the request.
       summary: Runs pipeline.
       x-openapi-router-controller: openapi_server.controllers.default_controller
   /pipeline/{pipeline_id}/status:
@@ -292,10 +706,23 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_200_1'
+                $ref: '#/components/schemas/inline_response_200_4'
           description: Successful operation
-        "403":
-          description: Unsuccessful operation
+        "400":
+          description: Invalid pipeline ID supplied
+        "404":
+          description: Pipeline not found
+        "422":
+          description: Pipeline has not been executed
+        "502":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UpstreamError'
+          description: |
+            The server while acting as a gateway or a proxy, received
+            an invalid response from the upstream server it accessed
+            in attempting to fulfill the request.
       summary: Get pipeline status.
       x-openapi-router-controller: openapi_server.controllers.default_controller
 components:
@@ -306,22 +733,257 @@ components:
           schema:
             $ref: '#/components/schemas/inline_object'
       required: true
+  responses:
+    BadGateway:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/UpstreamError'
+      description: |
+        The server while acting as a gateway or a proxy, received
+        an invalid response from the upstream server it accessed
+        in attempting to fulfill the request.
   schemas:
-    Repository:
-      additionalProperties:
-        properties:
-          repo:
-            example: https://github.com/jenkins-docs/simple-java-maven-app
-            format: uri
-            type: string
-          branch:
-            example: master
-            type: string
-        type: object
+    ToolArg:
       example:
-        simple-java-maven-app:
-          repo: https://github.com/jenkins-docs/simple-java-maven-app
-          branch: master
+        summary: summary
+        args:
+        - null
+        - null
+        repeatable: false
+        selectable: true
+        format: string
+        description: Detect the license of the given project
+        type: subcommand
+        value: detect
+        option: option
+      properties:
+        type:
+          description: type of argument
+          enum:
+          - subcommand
+          - positional
+          - optional
+          title: type
+          type: string
+        description:
+          description: hint about what the command does
+          example: Detect the license of the given project
+          title: description
+          type: string
+        value:
+          description: Value for the argument (can be of any type)
+          example: detect
+          title: value
+        option:
+          description: Name of the option, in the event of optional arguments
+          title: option
+          type: string
+        summary:
+          description: very brief (2/3 words) description (to be rendered by web clients)
+          title: summary
+          type: string
+        format:
+          description: The value format (to be rendered by web clients)
+          enum:
+          - string
+          - array
+          title: format
+          type: string
+        selectable:
+          default: true
+          description: Whether the argument can be selected by the user (to be rendered
+            by web clients)
+          title: selectable
+          type: boolean
+        repeatable:
+          default: false
+          description: Whether the argument can be repeated (to be rendered by web
+            clients)
+          title: repeatable
+          type: boolean
+        args:
+          items:
+            $ref: '#/components/schemas/ToolArg'
+          title: args
+          type: array
+      required:
+      - description
+      - type
+      title: ToolArg
+      type: object
+    Tool:
+      example:
+        args:
+        - summary: summary
+          args:
+          - null
+          - null
+          repeatable: false
+          selectable: true
+          format: string
+          description: Detect the license of the given project
+          type: subcommand
+          value: detect
+          option: option
+        - summary: summary
+          args:
+          - null
+          - null
+          repeatable: false
+          selectable: true
+          format: string
+          description: Detect the license of the given project
+          type: subcommand
+          value: detect
+          option: option
+        docs: https://openapi-generator.tech
+        name: name
+        lang: lang
+        jepl_support: true
+        executable: executable
+        docker:
+          image: image
+          dockerfile: dockerfile
+          reviewed: 2000-01-23
+          oneshot: true
+      properties:
+        name:
+          title: name
+          type: string
+        lang:
+          title: lang
+          type: string
+        jepl_support:
+          title: jepl_support
+          type: boolean
+        docs:
+          format: uri
+          title: docs
+          type: string
+        docker:
+          $ref: '#/components/schemas/Tool_docker'
+        executable:
+          title: executable
+          type: string
+        args:
+          items:
+            $ref: '#/components/schemas/ToolArg'
+          title: args
+          type: array
+      required:
+      - docker
+      - docs
+      - lang
+      - name
+      title: Tool
+      type: object
+    Criterion:
+      example:
+        description:
+          msg: msg
+          docs: https://openapi-generator.tech
+          improves: improves
+        id: QC.Sty
+        tools:
+          key:
+          - args:
+            - summary: summary
+              args:
+              - null
+              - null
+              repeatable: false
+              selectable: true
+              format: string
+              description: Detect the license of the given project
+              type: subcommand
+              value: detect
+              option: option
+            - summary: summary
+              args:
+              - null
+              - null
+              repeatable: false
+              selectable: true
+              format: string
+              description: Detect the license of the given project
+              type: subcommand
+              value: detect
+              option: option
+            docs: https://openapi-generator.tech
+            name: name
+            lang: lang
+            jepl_support: true
+            executable: executable
+            docker:
+              image: image
+              dockerfile: dockerfile
+              reviewed: 2000-01-23
+              oneshot: true
+          - args:
+            - summary: summary
+              args:
+              - null
+              - null
+              repeatable: false
+              selectable: true
+              format: string
+              description: Detect the license of the given project
+              type: subcommand
+              value: detect
+              option: option
+            - summary: summary
+              args:
+              - null
+              - null
+              repeatable: false
+              selectable: true
+              format: string
+              description: Detect the license of the given project
+              type: subcommand
+              value: detect
+              option: option
+            docs: https://openapi-generator.tech
+            name: name
+            lang: lang
+            jepl_support: true
+            executable: executable
+            docker:
+              image: image
+              dockerfile: dockerfile
+              reviewed: 2000-01-23
+              oneshot: true
+      properties:
+        id:
+          example: QC.Sty
+          title: id
+          type: string
+        description:
+          $ref: '#/components/schemas/Criterion_description'
+        tools:
+          additionalProperties:
+            items:
+              $ref: '#/components/schemas/Tool'
+            type: array
+          title: tools
+          type: object
+      title: Criterion
+      type: object
+    Repository:
+      example:
+        repo: https://github.com/eosc-synergy/sqaaas-api-spec
+        branch: master
+      properties:
+        repo:
+          example: https://github.com/eosc-synergy/sqaaas-api-spec
+          format: uri
+          title: repo
+          type: string
+        branch:
+          example: master
+          title: branch
+          type: string
+      title: Repository
       type: object
     Creds_user_pass:
       example:
@@ -332,54 +994,109 @@ components:
       properties:
         id:
           example: my-dockerhub-token
+          title: id
           type: string
         type:
           enum:
           - username_password
+          title: type
           type: string
         username_var:
           example: GIT_USER
+          title: username_var
           type: string
         password_var:
           example: GIT_PASS
+          title: password_var
           type: string
       required:
       - id
       - password_var
       - username_var
+      title: Creds_user_pass
       type: object
-    Commands:
+    Commands_simplified:
+      example:
+      - mvn checkstyle:check
+      items:
+        minLength: 1
+        type: string
+      type: array
+    Tox_simplified:
       properties:
-        commands:
-          default: []
+        testenv:
+          default:
+          - ALL
           example:
-          - mvn checkstyle:check
+          - cover
           items:
+            minLength: 1
             type: string
+          title: testenv
           type: array
+        tox_file:
+          default: tox.ini
+          example: tox.ini
+          title: tox_file
+          type: string
+      title: Tox_simplified
       type: object
+    When_branch:
+      properties:
+        pattern:
+          example: release-\\d+
+          minLength: 1
+          title: pattern
+          type: string
+        comparator:
+          default: GLOB
+          enum:
+          - EQUALS
+          - GLOB
+          - REGEXP
+          title: comparator
+          type: string
+      required:
+      - pattern
+      title: When_branch
+      type: object
+    When_building_tag:
+      type: boolean
     CriterionBuild:
       additionalProperties:
-        additionalProperties:
-          properties:
-            repos:
-              additionalProperties:
-                additionalProperties:
-                  $ref: '#/components/schemas/Commands'
-                properties:
-                  container:
-                    type: string
-                type: object
-              type: object
-          type: object
-        type: object
-      example:
-        qc_style:
+        minProperties: 1
+        properties:
           repos:
-            simple-java-maven-app:
-              container: checkstyle
-              commands:
-              - mvn checkstyle:check
+            items:
+              additionalProperties: false
+              properties:
+                repo_url:
+                  example: https://github.com/eosc-synergy/sqaaas-api-spec
+                  format: uri
+                  type: string
+                container:
+                  example: testing
+                  type: string
+                commands:
+                  $ref: '#/components/schemas/Commands_simplified'
+                tox:
+                  $ref: '#/components/schemas/Tox_simplified'
+                tool:
+                  $ref: '#/components/schemas/Tool'
+              type: object
+            type: array
+          when:
+            additionalProperties: false
+            properties:
+              branch:
+                $ref: '#/components/schemas/When_branch'
+              building_tag:
+                $ref: '#/components/schemas/When_building_tag'
+            type: object
+        required:
+        - repos
+        type: object
+      title: sqa_criteria
       type: object
     Environment:
       additionalProperties:
@@ -387,6 +1104,7 @@ components:
       example:
         JPL_IGNOREFAILURES: defined
         JPL_DOCKERPUSH: docs service1 service4
+      title: environment
       type: object
     JePL_config:
       example:
@@ -394,17 +1112,13 @@ components:
           JPL_IGNOREFAILURES: defined
           JPL_DOCKERPUSH: docs service1 service4
         sqa_criteria:
-          qc_style:
-            repos:
-              simple-java-maven-app:
-                container: checkstyle
-                commands:
-                - mvn checkstyle:check
+          key: '{}'
         config:
           project_repos:
-            simple-java-maven-app:
-              repo: https://github.com/jenkins-docs/simple-java-maven-app
-              branch: master
+          - repo: https://github.com/eosc-synergy/sqaaas-api-spec
+            branch: master
+          - repo: https://github.com/eosc-synergy/sqaaas-api-spec
+            branch: master
           credentials:
           - password_var: GIT_PASS
             username_var: GIT_USER
@@ -414,31 +1128,45 @@ components:
             username_var: GIT_USER
             id: my-dockerhub-token
             type: username_password
+        timeout: 1
       properties:
         config:
           $ref: '#/components/schemas/JePL_config_config'
         sqa_criteria:
           additionalProperties:
-            additionalProperties:
-              properties:
-                repos:
-                  additionalProperties:
-                    additionalProperties:
-                      $ref: '#/components/schemas/Commands'
-                    properties:
-                      container:
-                        type: string
-                    type: object
-                  type: object
-              type: object
-            type: object
-          example:
-            qc_style:
+            minProperties: 1
+            properties:
               repos:
-                simple-java-maven-app:
-                  container: checkstyle
-                  commands:
-                  - mvn checkstyle:check
+                items:
+                  additionalProperties: false
+                  properties:
+                    repo_url:
+                      example: https://github.com/eosc-synergy/sqaaas-api-spec
+                      format: uri
+                      type: string
+                    container:
+                      example: testing
+                      type: string
+                    commands:
+                      $ref: '#/components/schemas/Commands_simplified'
+                    tox:
+                      $ref: '#/components/schemas/Tox_simplified'
+                    tool:
+                      $ref: '#/components/schemas/Tool'
+                  type: object
+                type: array
+              when:
+                additionalProperties: false
+                properties:
+                  branch:
+                    $ref: '#/components/schemas/When_branch'
+                  building_tag:
+                    $ref: '#/components/schemas/When_building_tag'
+                type: object
+            required:
+            - repos
+            type: object
+          title: sqa_criteria
           type: object
         environment:
           additionalProperties:
@@ -446,14 +1174,52 @@ components:
           example:
             JPL_IGNOREFAILURES: defined
             JPL_DOCKERPUSH: docs service1 service4
+          title: environment
           type: object
+        timeout:
+          minimum: 1
+          title: timeout
+          type: integer
+      title: JePL_config
       type: object
     ServiceDockerCompose:
       additionalProperties:
         properties:
+          build:
+            properties:
+              context:
+                example: ./dir
+                type: string
+              dockerfile:
+                example: Dockerfile-alternate
+                type: string
+              args:
+                additionalProperties:
+                  type: string
+                type: object
+            type: object
           image:
-            type: string
+            properties:
+              name:
+                example: eoscsynergy/sqaaas-api-spec:1.0.0
+                type: string
+              registry:
+                properties:
+                  push:
+                    type: boolean
+                  url:
+                    example: https://hub.docker.com/
+                    format: uri
+                    type: string
+                  credential_id:
+                    example: my-dockerhub-cred
+                    type: string
+                type: object
+            required:
+            - name
+            type: object
           hostname:
+            example: sqaaas-host
             type: string
           volumes:
             items:
@@ -463,46 +1229,72 @@ components:
                   - bind
                   type: string
                 source:
+                  example: ./
                   type: string
                 target:
+                  example: ./sqaaas-build
                   type: string
               type: object
             type: array
           command:
+            example: sleep 600000
             type: string
+          environment:
+            $ref: '#/components/schemas/Environment'
+          oneshot:
+            default: true
+            type: boolean
         type: object
-      example:
-        checkstyle:
-          image: checkstyle/maven-builder-image
-          hostname: checkstyle-host
-          volumes:
-          - source: ./
-            target: ./simple-java-app
-            type: bind
-          command: sleep 600000
+      title: services
       type: object
     JePL_composer:
       example:
         services:
-          checkstyle:
-            image: checkstyle/maven-builder-image
-            hostname: checkstyle-host
-            volumes:
-            - source: ./
-              target: ./simple-java-app
-              type: bind
-            command: sleep 600000
+          key: '{}'
         version: "3.7"
       properties:
         version:
           example: "3.7"
+          title: version
           type: string
         services:
           additionalProperties:
             properties:
+              build:
+                properties:
+                  context:
+                    example: ./dir
+                    type: string
+                  dockerfile:
+                    example: Dockerfile-alternate
+                    type: string
+                  args:
+                    additionalProperties:
+                      type: string
+                    type: object
+                type: object
               image:
-                type: string
+                properties:
+                  name:
+                    example: eoscsynergy/sqaaas-api-spec:1.0.0
+                    type: string
+                  registry:
+                    properties:
+                      push:
+                        type: boolean
+                      url:
+                        example: https://hub.docker.com/
+                        format: uri
+                        type: string
+                      credential_id:
+                        example: my-dockerhub-cred
+                        type: string
+                    type: object
+                required:
+                - name
+                type: object
               hostname:
+                example: sqaaas-host
                 type: string
               volumes:
                 items:
@@ -512,31 +1304,32 @@ components:
                       - bind
                       type: string
                     source:
+                      example: ./
                       type: string
                     target:
+                      example: ./sqaaas-build
                       type: string
                   type: object
                 type: array
               command:
+                example: sleep 600000
                 type: string
+              environment:
+                $ref: '#/components/schemas/Environment'
+              oneshot:
+                default: true
+                type: boolean
             type: object
-          example:
-            checkstyle:
-              image: checkstyle/maven-builder-image
-              hostname: checkstyle-host
-              volumes:
-              - source: ./
-                target: ./simple-java-app
-                type: bind
-              command: sleep 600000
+          title: services
           type: object
+      title: JePL_composer
       type: object
     JePL_jenkinsfile:
       example:
         stages:
         - pipeline_config:
             credentials_id: userpass_dockerhub
-            base_branch: https://github.com/jenkins-docs/simple-java-maven-app
+            base_branch: https://github.com/eosc-synergy/sqaaas-api-spec
             base_repository: master
             jepl_validator_docker_image: eoscsynergy/jpl-validator:1.1.0
             config_file: ./.sqa/config.yml
@@ -546,7 +1339,7 @@ components:
             - master
         - pipeline_config:
             credentials_id: userpass_dockerhub
-            base_branch: https://github.com/jenkins-docs/simple-java-maven-app
+            base_branch: https://github.com/eosc-synergy/sqaaas-api-spec
             base_repository: master
             jepl_validator_docker_image: eoscsynergy/jpl-validator:1.1.0
             config_file: ./.sqa/config.yml
@@ -558,7 +1351,9 @@ components:
         stages:
           items:
             $ref: '#/components/schemas/JePL_jenkinsfile_stages'
+          title: stages
           type: array
+      title: JePL_jenkinsfile
       type: object
     Pipeline:
       example:
@@ -567,17 +1362,13 @@ components:
             JPL_IGNOREFAILURES: defined
             JPL_DOCKERPUSH: docs service1 service4
           sqa_criteria:
-            qc_style:
-              repos:
-                simple-java-maven-app:
-                  container: checkstyle
-                  commands:
-                  - mvn checkstyle:check
+            key: '{}'
           config:
             project_repos:
-              simple-java-maven-app:
-                repo: https://github.com/jenkins-docs/simple-java-maven-app
-                branch: master
+            - repo: https://github.com/eosc-synergy/sqaaas-api-spec
+              branch: master
+            - repo: https://github.com/eosc-synergy/sqaaas-api-spec
+              branch: master
             credentials:
             - password_var: GIT_PASS
               username_var: GIT_USER
@@ -587,21 +1378,18 @@ components:
               username_var: GIT_USER
               id: my-dockerhub-token
               type: username_password
+          timeout: 1
         - environment:
             JPL_IGNOREFAILURES: defined
             JPL_DOCKERPUSH: docs service1 service4
           sqa_criteria:
-            qc_style:
-              repos:
-                simple-java-maven-app:
-                  container: checkstyle
-                  commands:
-                  - mvn checkstyle:check
+            key: '{}'
           config:
             project_repos:
-              simple-java-maven-app:
-                repo: https://github.com/jenkins-docs/simple-java-maven-app
-                branch: master
+            - repo: https://github.com/eosc-synergy/sqaaas-api-spec
+              branch: master
+            - repo: https://github.com/eosc-synergy/sqaaas-api-spec
+              branch: master
             credentials:
             - password_var: GIT_PASS
               username_var: GIT_USER
@@ -611,16 +1399,10 @@ components:
               username_var: GIT_USER
               id: my-dockerhub-token
               type: username_password
+          timeout: 1
         composer_data:
           services:
-            checkstyle:
-              image: checkstyle/maven-builder-image
-              hostname: checkstyle-host
-              volumes:
-              - source: ./
-                target: ./simple-java-app
-                type: bind
-              command: sleep 600000
+            key: '{}'
           version: "3.7"
         name: sqaaas-api-spec
         id: dd7d8481-81a3-407f-95f0-a2f1cb382a4b
@@ -628,7 +1410,7 @@ components:
           stages:
           - pipeline_config:
               credentials_id: userpass_dockerhub
-              base_branch: https://github.com/jenkins-docs/simple-java-maven-app
+              base_branch: https://github.com/eosc-synergy/sqaaas-api-spec
               base_repository: master
               jepl_validator_docker_image: eoscsynergy/jpl-validator:1.1.0
               config_file: ./.sqa/config.yml
@@ -638,7 +1420,7 @@ components:
               - master
           - pipeline_config:
               credentials_id: userpass_dockerhub
-              base_branch: https://github.com/jenkins-docs/simple-java-maven-app
+              base_branch: https://github.com/eosc-synergy/sqaaas-api-spec
               base_repository: master
               jepl_validator_docker_image: eoscsynergy/jpl-validator:1.1.0
               config_file: ./.sqa/config.yml
@@ -650,18 +1432,270 @@ components:
         id:
           example: dd7d8481-81a3-407f-95f0-a2f1cb382a4b
           readOnly: true
+          title: id
           type: string
         name:
           example: sqaaas-api-spec
+          format: '[A-Za-z0-9_.-]'
+          title: name
           type: string
         config_data:
           items:
             $ref: '#/components/schemas/JePL_config'
+          title: config_data
           type: array
         composer_data:
           $ref: '#/components/schemas/JePL_composer'
         jenkinsfile_data:
           $ref: '#/components/schemas/JePL_jenkinsfile'
+      title: Pipeline
+      type: object
+    Pipeline_assessment:
+      properties:
+        repo_code:
+          $ref: '#/components/schemas/Repository'
+        repo_docs:
+          $ref: '#/components/schemas/Repository'
+      required:
+      - repo_code
+      type: object
+    AssessmentOutputToolCI:
+      properties:
+        name:
+          description: name of the stage the tool was executed
+          title: name
+          type: string
+        status:
+          description: string-like exit status of the stage where the tool ran
+          enum:
+          - SUCCESS
+          - FAILURE
+          title: status
+          type: string
+        stdout_command:
+          description: list of commands executed in the stage
+          items:
+            type: string
+          title: stdout_command
+          type: array
+        stdout_text:
+          description: string containing the output of the tool execution
+          title: stdout_text
+          type: string
+        url:
+          description: URL of the stage
+          format: uri
+          title: url
+          type: string
+      title: AssessmentOutputToolCI
+      type: object
+    AssessmentOutputTool:
+      properties:
+        name:
+          title: name
+          type: string
+        validator:
+          title: validator
+          type: string
+        ci:
+          $ref: '#/components/schemas/AssessmentOutputToolCI'
+        data_unstructured:
+          title: data_unstructured
+          type: object
+      title: AssessmentOutputTool
+      type: object
+    BadgeAssertion:
+      example:
+        createdAt: 2021-04-07T10:34:02.96Z
+        image: https://api.eu.badgr.io/public/assertions/KSwijifTQ_-I1lb9FtX1bw/image
+        createdBy: e3h49VVbQRKQphuAAmxpgQ
+        recipient:
+          identity: sha256$5cb2939f3ae83961b31407fbfd2978e5c642177e50227eb0c7f550c0653803dc
+          hashed: true
+          plaintextIdentity: https://github.com/EOSC-synergy/test-sqaaas-web.sqaaas/commit/41a4a73505f407d57e7ed600dd5de7cf963feda3
+          type: email
+        openBadgeID: https://api.eu.badgr.io/public/assertions/KSwijifTQ_-I1lb9FtX1bw
+        badgeClass: sBS3EsJQRAC0ENTmvETtQw
+        issuer: aS1lWKgIR4u8bGjPZUzAyg
+        issuedOn: 2021-04-07T10:07:00Z
+      properties:
+        openBadgeID:
+          example: https://api.eu.badgr.io/public/assertions/KSwijifTQ_-I1lb9FtX1bw
+          format: uri
+          title: openBadgeID
+          type: string
+        createdAt:
+          example: 2021-04-07T10:34:02.96Z
+          format: date-time
+          title: createdAt
+          type: string
+        createdBy:
+          example: e3h49VVbQRKQphuAAmxpgQ
+          title: createdBy
+          type: string
+        badgeClass:
+          example: sBS3EsJQRAC0ENTmvETtQw
+          title: badgeClass
+          type: string
+        issuer:
+          example: aS1lWKgIR4u8bGjPZUzAyg
+          title: issuer
+          type: string
+        image:
+          example: https://api.eu.badgr.io/public/assertions/KSwijifTQ_-I1lb9FtX1bw/image
+          format: uri
+          title: image
+          type: string
+        recipient:
+          $ref: '#/components/schemas/BadgeAssertion_recipient'
+        issuedOn:
+          example: 2021-04-07T10:07:00Z
+          format: date-time
+          title: issuedOn
+          type: string
+      title: BadgeAssertion
+      type: object
+    AssessmentOutput:
+      example:
+        badge:
+          software: '{}'
+          services: '{}'
+          fair: '{}'
+        report:
+          key:
+            key: '{}'
+      properties:
+        report:
+          additionalProperties:
+            additionalProperties:
+              properties:
+                valid:
+                  default: false
+                  type: boolean
+                data:
+                  properties:
+                    REQUIRED:
+                      items:
+                        $ref: '#/components/schemas/AssessmentOutputTool'
+                      type: array
+                    RECOMMENDED:
+                      items:
+                        $ref: '#/components/schemas/AssessmentOutputTool'
+                      type: array
+                    OPTIONAL:
+                      items:
+                        $ref: '#/components/schemas/AssessmentOutputTool'
+                      type: array
+                  type: object
+              type: object
+            type: object
+          title: report
+          type: object
+        badge:
+          $ref: '#/components/schemas/AssessmentOutput_badge'
+      title: AssessmentOutput
+      type: object
+    UpstreamError:
+      properties:
+        upstream_status:
+          title: upstream_status
+          type: integer
+        upstream_reason:
+          title: upstream_reason
+          type: string
+      required:
+      - upstream_reason
+      - upstream_status
+      title: UpstreamError
+      type: object
+    Badge:
+      example:
+        software:
+          data:
+            createdAt: 2021-04-07T10:34:02.96Z
+            image: https://api.eu.badgr.io/public/assertions/KSwijifTQ_-I1lb9FtX1bw/image
+            createdBy: e3h49VVbQRKQphuAAmxpgQ
+            recipient:
+              identity: sha256$5cb2939f3ae83961b31407fbfd2978e5c642177e50227eb0c7f550c0653803dc
+              hashed: true
+              plaintextIdentity: https://github.com/EOSC-synergy/test-sqaaas-web.sqaaas/commit/41a4a73505f407d57e7ed600dd5de7cf963feda3
+              type: email
+            openBadgeID: https://api.eu.badgr.io/public/assertions/KSwijifTQ_-I1lb9FtX1bw
+            badgeClass: sBS3EsJQRAC0ENTmvETtQw
+            issuer: aS1lWKgIR4u8bGjPZUzAyg
+            issuedOn: 2021-04-07T10:07:00Z
+          share: <html>..</html>
+          verification_url: https://openapi-generator.tech
+        services: '{}'
+        fair: '{}'
+      properties:
+        software:
+          $ref: '#/components/schemas/Badge_software'
+        services:
+          properties:
+            data:
+              $ref: '#/components/schemas/BadgeAssertion'
+            share:
+              example: <html>..</html>
+              title: share
+              type: string
+            verification_url:
+              format: uri
+              title: verification_url
+              type: string
+          title: services
+        fair:
+          properties:
+            data:
+              $ref: '#/components/schemas/BadgeAssertion'
+            share:
+              example: <html>..</html>
+              title: share
+              type: string
+            verification_url:
+              format: uri
+              title: verification_url
+              type: string
+          title: fair
+      title: Badge
+      type: object
+    CriterionOutput:
+      additionalProperties:
+        items:
+          properties:
+            status:
+              enum:
+              - SUCCESS
+              - FAILED
+              type: string
+            stdout_command:
+              type: string
+            stdout_text:
+              type: string
+            tool:
+              type: string
+            validator:
+              type: string
+            validation:
+              properties:
+                valid:
+                  type: boolean
+                data_unstructured:
+                  type: object
+              type: object
+          type: object
+        type: array
+      example:
+        QC.Lic:
+        - status: SUCCESS
+          stdout_command: + docker-compose -f .sqa/docker-compose.yml --project-directory
+            /jenkins/workspace/ava-maven-app.assess.sqaaas_main/ exec -T qc.lic_boozy-smalt-maltese
+            /usr/bin/env sh .sqa/script.paltry-taupe-reindeer.sh
+          tool: licensee
+          validator: licensee
+          validation:
+            valid: true
+            data_unstructured: {}
       type: object
     inline_response_201:
       example:
@@ -669,20 +1703,165 @@ components:
       properties:
         id:
           description: UUID identifying the pipeline
+          title: id
           type: string
+      title: inline_response_201
       type: object
     inline_response_200:
       example:
+        file_name: '{"file_name":"config.yml"}'
+        content:
+          key: '{}'
+      properties:
+        file_name:
+          example: '{"file_name":"config.yml"}'
+          title: file_name
+          type: string
+        content:
+          additionalProperties:
+            minProperties: 1
+            properties:
+              repos:
+                items:
+                  additionalProperties: false
+                  properties:
+                    repo_url:
+                      example: https://github.com/eosc-synergy/sqaaas-api-spec
+                      format: uri
+                      type: string
+                    container:
+                      example: testing
+                      type: string
+                    commands:
+                      $ref: '#/components/schemas/Commands_simplified'
+                    tox:
+                      $ref: '#/components/schemas/Tox_simplified'
+                    tool:
+                      $ref: '#/components/schemas/Tool'
+                  type: object
+                type: array
+              when:
+                additionalProperties: false
+                properties:
+                  branch:
+                    $ref: '#/components/schemas/When_branch'
+                  building_tag:
+                    $ref: '#/components/schemas/When_building_tag'
+                type: object
+            required:
+            - repos
+            type: object
+          title: sqa_criteria
+          type: object
+      title: inline_response_200
+      type: object
+    inline_response_200_1:
+      example:
+        file_name: script.sh
+        content: |-
+          (
+          cd workdir ; npm install
+          )
+      properties:
+        file_name:
+          example: script.sh
+          title: file_name
+          type: string
+        content:
+          example: |-
+            (
+            cd workdir ; npm install
+            )
+          title: content
+          type: string
+      title: inline_response_200_1
+      type: object
+    inline_response_200_2:
+      example:
+        file_name: '{"file_name":"docker-compose.yml"}'
+        content:
+          services:
+            key: '{}'
+          version: "3.7"
+      properties:
+        file_name:
+          example: '{"file_name":"docker-compose.yml"}'
+          title: file_name
+          type: string
+        content:
+          $ref: '#/components/schemas/JePL_composer'
+      title: inline_response_200_2
+      type: object
+    inline_response_200_3:
+      example:
+        file_name: Jenkinsfile
+        content: |-
+          @Library(['github.com/indigo-dc/jenkins-pipeline-library@release/2.1.0']) _
+
+          def projectConfig
+
+          pipeline {
+              agent any
+
+              stages {
+                  stage('SQA baseline criterion: QC.Sty') {
+                      when {
+                          branch pattern: 'sqaaas', comparator: ''
+                      }
+                      steps {
+                          script {
+                              projectConfig = pipelineConfig(
+                                  configFile: '.sqa/config.yml',
+                                  scmConfigs: [ localBranch: true ]
+                              )
+                              buildStages(projectConfig)
+                          }
+                      }
+                      post {
+                          cleanup {
+                              cleanWs()
+                          }
+                      }
+                  }
+                  stage('SQA baseline criterion: QC.Doc') {
+                      when {
+                          branch pattern: 'build', comparator: ''
+                      }
+                      steps {
+                          script {
+                              projectConfig = pipelineConfig(
+                                  configFile: '.sqa/config.snappy-peach-chicken.yml',
+                                  scmConfigs: [ localBranch: true ]
+                              )
+                              buildStages(projectConfig)
+                          }
+                      }
+                      post {
+                          cleanup {
+                              cleanWs()
+                          }
+                      }
+                  }
+              }
+          }
+      properties:
+        file_name:
+          example: '{"file_name":"Jenkinsfile"}'
+          type: string
+        content:
+          type: string
+      title: inline_response_200_3
+      type: object
+    inline_response_200_4:
+      example:
+        openbadge_id: https://openapi-generator.tech
+        build_status: success
         build_url: https://openapi-generator.tech
       properties:
         build_url:
           format: uri
+          title: build_url
           type: string
-      type: object
-    inline_response_200_1:
-      example:
-        build_status: success
-      properties:
         build_status:
           enum:
           - success
@@ -690,7 +1869,14 @@ components:
           - aborted
           - not_built
           - unstable
+          - waiting_scan_org
+          title: build_status
           type: string
+        openbadge_id:
+          format: uri
+          title: openbadge_id
+          type: string
+      title: inline_response_200_4
       type: object
     inline_object:
       properties:
@@ -698,21 +1884,71 @@ components:
           description: URL of the upstream repo
           format: uri
           type: string
+        branch:
+          description: Brach from the upstream repo used as the base for the pull
+            request
+          type: string
+      required:
+      - repo
       type: object
-    inline_response_200_2:
+    inline_response_200_5:
       example:
         pull_request_url: https://openapi-generator.tech
       properties:
         pull_request_url:
           format: uri
+          title: pull_request_url
           type: string
+      title: inline_response_200_5
+      type: object
+    Tool_docker:
+      example:
+        image: image
+        dockerfile: dockerfile
+        reviewed: 2000-01-23
+        oneshot: true
+      properties:
+        image:
+          title: image
+          type: string
+        dockerfile:
+          title: dockerfile
+          type: string
+        reviewed:
+          format: date
+          title: reviewed
+          type: string
+        oneshot:
+          default: true
+          title: oneshot
+          type: boolean
+      title: Tool_docker
+      type: object
+    Criterion_description:
+      example:
+        msg: msg
+        docs: https://openapi-generator.tech
+        improves: improves
+      properties:
+        msg:
+          title: msg
+          type: string
+        improves:
+          title: improves
+          type: string
+        docs:
+          format: uri
+          title: docs
+          type: string
+      title: Criterion_description
       type: object
     JePL_config_config:
       example:
         project_repos:
-          simple-java-maven-app:
-            repo: https://github.com/jenkins-docs/simple-java-maven-app
-            branch: master
+        - repo: https://github.com/eosc-synergy/sqaaas-api-spec
+          branch: master
+        - repo: https://github.com/eosc-synergy/sqaaas-api-spec
+          branch: master
         credentials:
         - password_var: GIT_PASS
           username_var: GIT_USER
@@ -724,25 +1960,16 @@ components:
           type: username_password
       properties:
         project_repos:
-          additionalProperties:
-            properties:
-              repo:
-                example: https://github.com/jenkins-docs/simple-java-maven-app
-                format: uri
-                type: string
-              branch:
-                example: master
-                type: string
-            type: object
-          example:
-            simple-java-maven-app:
-              repo: https://github.com/jenkins-docs/simple-java-maven-app
-              branch: master
-          type: object
+          items:
+            $ref: '#/components/schemas/Repository'
+          title: project_repos
+          type: array
         credentials:
           items:
             $ref: '#/components/schemas/Creds_user_pass'
+          title: credentials
           type: array
+      title: JePL_config_config
       type: object
     JePL_jenkinsfile_when:
       example:
@@ -754,37 +1981,45 @@ components:
           items:
             example: master
             type: string
+          title: branches
           type: array
+      title: JePL_jenkinsfile_when
       type: object
     JePL_jenkinsfile_pipeline_config:
       example:
         credentials_id: userpass_dockerhub
-        base_branch: https://github.com/jenkins-docs/simple-java-maven-app
+        base_branch: https://github.com/eosc-synergy/sqaaas-api-spec
         base_repository: master
         jepl_validator_docker_image: eoscsynergy/jpl-validator:1.1.0
         config_file: ./.sqa/config.yml
       properties:
         config_file:
           example: ./.sqa/config.yml
+          title: config_file
           type: string
         base_repository:
           example: master
+          title: base_repository
           type: string
         base_branch:
-          example: https://github.com/jenkins-docs/simple-java-maven-app
+          example: https://github.com/eosc-synergy/sqaaas-api-spec
+          title: base_branch
           type: string
         credentials_id:
           example: userpass_dockerhub
+          title: credentials_id
           type: string
         jepl_validator_docker_image:
           example: eoscsynergy/jpl-validator:1.1.0
+          title: jepl_validator_docker_image
           type: string
+      title: JePL_jenkinsfile_pipeline_config
       type: object
     JePL_jenkinsfile_stages:
       example:
         pipeline_config:
           credentials_id: userpass_dockerhub
-          base_branch: https://github.com/jenkins-docs/simple-java-maven-app
+          base_branch: https://github.com/eosc-synergy/sqaaas-api-spec
           base_repository: master
           jepl_validator_docker_image: eoscsynergy/jpl-validator:1.1.0
           config_file: ./.sqa/config.yml
@@ -797,4 +2032,95 @@ components:
           $ref: '#/components/schemas/JePL_jenkinsfile_when'
         pipeline_config:
           $ref: '#/components/schemas/JePL_jenkinsfile_pipeline_config'
+      title: JePL_jenkinsfile_stages
+      type: object
+    BadgeAssertion_recipient:
+      example:
+        identity: sha256$5cb2939f3ae83961b31407fbfd2978e5c642177e50227eb0c7f550c0653803dc
+        hashed: true
+        plaintextIdentity: https://github.com/EOSC-synergy/test-sqaaas-web.sqaaas/commit/41a4a73505f407d57e7ed600dd5de7cf963feda3
+        type: email
+      properties:
+        identity:
+          example: sha256$5cb2939f3ae83961b31407fbfd2978e5c642177e50227eb0c7f550c0653803dc
+          title: identity
+          type: string
+        hashed:
+          title: hashed
+          type: boolean
+        type:
+          enum:
+          - email
+          - openBadgeId
+          - telephone
+          - url
+          title: type
+          type: string
+        plaintextIdentity:
+          example: https://github.com/EOSC-synergy/test-sqaaas-web.sqaaas/commit/41a4a73505f407d57e7ed600dd5de7cf963feda3
+          title: plaintextIdentity
+          type: string
+      title: BadgeAssertion_recipient
+      type: object
+    AssessmentOutput_badge:
+      example:
+        software: '{}'
+        services: '{}'
+        fair: '{}'
+      properties:
+        software:
+          properties:
+            data:
+              $ref: '#/components/schemas/BadgeAssertion'
+            share:
+              title: share
+              type: string
+          title: software
+        services:
+          properties:
+            data:
+              $ref: '#/components/schemas/BadgeAssertion'
+            share:
+              title: share
+              type: string
+          title: services
+        fair:
+          properties:
+            data:
+              $ref: '#/components/schemas/BadgeAssertion'
+            share:
+              title: share
+              type: string
+          title: fair
+      title: AssessmentOutput_badge
+      type: object
+    Badge_software:
+      example:
+        data:
+          createdAt: 2021-04-07T10:34:02.96Z
+          image: https://api.eu.badgr.io/public/assertions/KSwijifTQ_-I1lb9FtX1bw/image
+          createdBy: e3h49VVbQRKQphuAAmxpgQ
+          recipient:
+            identity: sha256$5cb2939f3ae83961b31407fbfd2978e5c642177e50227eb0c7f550c0653803dc
+            hashed: true
+            plaintextIdentity: https://github.com/EOSC-synergy/test-sqaaas-web.sqaaas/commit/41a4a73505f407d57e7ed600dd5de7cf963feda3
+            type: email
+          openBadgeID: https://api.eu.badgr.io/public/assertions/KSwijifTQ_-I1lb9FtX1bw
+          badgeClass: sBS3EsJQRAC0ENTmvETtQw
+          issuer: aS1lWKgIR4u8bGjPZUzAyg
+          issuedOn: 2021-04-07T10:07:00Z
+        share: <html>..</html>
+        verification_url: https://openapi-generator.tech
+      properties:
+        data:
+          $ref: '#/components/schemas/BadgeAssertion'
+        share:
+          example: <html>..</html>
+          title: share
+          type: string
+        verification_url:
+          format: uri
+          title: verification_url
+          type: string
+      title: Badge_software
       type: object

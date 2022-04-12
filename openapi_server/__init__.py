@@ -7,7 +7,7 @@ from openapi_server import config
 
 
 def set_log(debug=False):
-    logger = logging.getLogger('sqaaas_api')
+    logger = logging.getLogger('sqaaas.api')
     logger.setLevel(logging.DEBUG if debug else logging.INFO)
     ch = logging.StreamHandler()
     formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
