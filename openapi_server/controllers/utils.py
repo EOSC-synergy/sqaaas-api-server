@@ -616,13 +616,15 @@ def process_extra_data(config_json, composer_json, report_to_stdout=False):
                 # Set service_name in repo's <container> property
                 repo['container'] = service_name
 
-                # Compose command/s according to tooling metadata
-                tool_criterion_map = ProcessExtraData.set_tool_execution_command(
-                    tool, criterion_name, repo, config_json)
-                if criterion_name in list(tool_criteria_map):
-                    tool_criteria_map[criterion_name].update(tool_criterion_map)
-                else:
-                    tool_criteria_map[criterion_name] = tool_criterion_map
+                # NOTE: do not compose the command for tools with associated templates
+                if not tool.get('template', None):
+                    # Compose command/s according to tooling metadata
+                    tool_criterion_map = ProcessExtraData.set_tool_execution_command(
+                        tool, criterion_name, repo, config_json)
+                    if criterion_name in list(tool_criteria_map):
+                        tool_criteria_map[criterion_name].update(tool_criterion_map)
+                    else:
+                        tool_criteria_map[criterion_name] = tool_criterion_map
 
                 tox_checkout_dir = '.'
                 try:
