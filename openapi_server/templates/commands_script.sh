@@ -6,7 +6,7 @@
 cat <<EOF >> {{ checkout_dir }}/kustomization.yaml
 resources:
 {%- for cfile in k8s_config_files %}
-- {{ cfile }}
+- {{ checkout_dir }}/{{ cfile }}
 {%- endfor %}
 EOF
     {%- endif %}
