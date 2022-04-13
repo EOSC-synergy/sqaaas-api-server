@@ -57,7 +57,7 @@ class JePLUtils(object):
 
     @staticmethod
     def get_commands_script(
-            checkout_dir, cmd_list, template=None, template_kwargs={}):
+            checkout_dir, cmd_list, template='', template_kwargs={}):
         """Returns a String with the 'commands' builder script.
 
         :param checkout_dir: Directory to chdir to run the script
