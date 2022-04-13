@@ -56,12 +56,14 @@ class JePLUtils(object):
         return new_file_data_list
 
     @staticmethod
-    def get_commands_script(checkout_dir, cmd_list, template=None):
+    def get_commands_script(
+            checkout_dir, cmd_list, template=None, template_kwargs={}):
         """Returns a String with the 'commands' builder script.
 
         :param checkout_dir: Directory to chdir to run the script
         :param cmd_list: List of commands from the builder
         :param template: Native template for specific tool customizations
+        :param template_kwargs: Object required for template rendering
         """
         env = Environment(
             loader=PackageLoader('openapi_server', 'templates')
@@ -70,7 +72,8 @@ class JePLUtils(object):
         return template.render({
             'checkout_dir': checkout_dir,
             'commands': cmd_list,
-            'template': template
+            'template': template,
+            'template_kwargs': template_kwargs
         })
 
     def get_jenkinsfile(config_data_list):
