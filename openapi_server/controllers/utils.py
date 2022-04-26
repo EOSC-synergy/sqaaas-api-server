@@ -699,6 +699,28 @@ def process_extra_data(config_json, composer_json, report_to_stdout=False):
                             template_kwargs=template_kwargs
                         )
                     tox_checkout_dir = stage_name
+
+                    # Set credentials if the tool needs them
+                    tool_creds = []
+                    for arg in tool.get('args', []):
+                        creds = {}
+                        if arg['type'] in ['optional']:
+                            option = arg['option']
+                            if option.find('jenkins-credential-id') != -1:
+                                creds['id'] = arg['value']
+                            elif option.find(
+                                'jenkins-credential-variable') != -1:
+                                creds['variable'] = arg['value']
+                        tool_creds.append(creds)
+                    if tool_creds:
+                        logger.debug(
+                            'Found credentials for the tool <%s>: %s' % (
+                                tool['name'], tool_creds
+                            )
+                        )
+                        for cred in tool_creds:
+                            config_json['config']['credentials'].append(cred)
+
                 # FIXME Commented out until issue #154 gets resolved
                 # Modify Tox properties (chdir, defaults)
                 # ProcessExtraData.set_tox_env(tox_checkout_dir, repos_new)
