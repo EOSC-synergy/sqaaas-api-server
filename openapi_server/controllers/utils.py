@@ -711,7 +711,8 @@ def process_extra_data(config_json, composer_json, report_to_stdout=False):
                             elif option.find(
                                 'jenkins-credential-variable') != -1:
                                 creds['variable'] = arg['value']
-                        tool_creds.append(creds)
+                        if creds:
+                            tool_creds.append(creds)
                     if tool_creds:
                         logger.debug(
                             'Found credentials for the tool <%s>: %s' % (
