@@ -683,12 +683,13 @@ def process_extra_data(config_json, composer_json, report_to_stdout=False):
                         # template_kwargs
                         template_kwargs = {}
                         for arg in tool.get('args', []):
-                            # split(',') is required since some values might be
-                            # comma-separated
-                            _value = arg['value'].split(',')
-                            if len(_value) <= 1:
-                                _value = arg['value']
-                            template_kwargs[arg['id']] = _value
+                            if arg.get('id', None):
+                                # split(',') is required since some values might be
+                                # comma-separated
+                                _value = arg['value'].split(',')
+                                if len(_value) <= 1:
+                                    _value = arg['value']
+                                template_kwargs[arg['id']] = _value
                         ProcessExtraData.generate_script_for_commands(
                             stage_name=stage_name,
                             checkout_dir=checkout_dir,
