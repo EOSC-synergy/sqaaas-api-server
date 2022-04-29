@@ -506,7 +506,15 @@ class ProcessExtraData(object):
         return config_data_list
 
     @staticmethod
-    def generate_script_for_commands(stage_name, checkout_dir, commands_list, repos_data, commands_script_list):
+    def generate_script_for_commands(
+            stage_name,
+            checkout_dir,
+            commands_list,
+            repos_data,
+            commands_script_list,
+            template_name=None,
+            template_kwargs={}
+        ):
         """Generate the bash script including the received commands.
 
         :param stage_name: The stage name
@@ -514,11 +522,15 @@ class ProcessExtraData(object):
         :param commands_list: The list of shell commands
         :param repos_data: The individual repository data
         :param commands_script_list: Current list of strings that generate the command builder scripts
+        :param template_name: Name of the template used by the tool
+        :param template_kwargs: Dict with the relevant values for the template rendering
         """
         logger.debug('Call to ProcessExtraData.generate_script_for_commands() method')
         commands_script_data = JePLUtils.get_commands_script(
             checkout_dir,
-            commands_list
+            commands_list,
+            template_name=template_name,
+            template_kwargs=template_kwargs
         )
         commands_script_data = JePLUtils.append_file_name(
             'commands_script',
@@ -616,13 +628,16 @@ def process_extra_data(config_json, composer_json, report_to_stdout=False):
                 # Set service_name in repo's <container> property
                 repo['container'] = service_name
 
-                # Compose command/s according to tooling metadata
-                tool_criterion_map = ProcessExtraData.set_tool_execution_command(
-                    tool, criterion_name, repo, config_json)
-                if criterion_name in list(tool_criteria_map):
-                    tool_criteria_map[criterion_name].update(tool_criterion_map)
-                else:
-                    tool_criteria_map[criterion_name] = tool_criterion_map
+                # NOTE: do not compose the command for tools with associated templates
+                tool_has_template = tool.get('template', None)
+                if not tool_has_template:
+                    # Compose command/s according to tooling metadata
+                    tool_criterion_map = ProcessExtraData.set_tool_execution_command(
+                        tool, criterion_name, repo, config_json)
+                    if criterion_name in list(tool_criteria_map):
+                        tool_criteria_map[criterion_name].update(tool_criterion_map)
+                    else:
+                        tool_criteria_map[criterion_name] = tool_criterion_map
 
                 tox_checkout_dir = '.'
                 try:
@@ -649,7 +664,7 @@ def process_extra_data(config_json, composer_json, report_to_stdout=False):
                     stage_name = stage_name_new
                 repos_new[stage_name] = repo
 
-                if repo_url:
+                if repo_url or tool_has_template:
                     # Create script for 'commands' builder
                     # NOTE: This is a workaround -> a specific builder to tackle this will be implemented in JePL
                     if 'commands' in repo.keys():
@@ -660,7 +675,54 @@ def process_extra_data(config_json, composer_json, report_to_stdout=False):
                             repos_data=repos_new,
                             commands_script_list=commands_script_list
                         )
+                    elif tool_has_template:
+                        # checkout_dir
+                        checkout_dir = '.'
+                        if repo_url:
+                            checkout_dir = project_repos_mapping[repo_url]['name']
+                        # template_kwargs
+                        template_kwargs = {}
+                        for arg in tool.get('args', []):
+                            if arg.get('id', None):
+                                # split(',') is required since some values might be
+                                # comma-separated
+                                _value = arg['value'].split(',')
+                                if len(_value) <= 1:
+                                    _value = arg['value']
+                                template_kwargs[arg['id']] = _value
+                        ProcessExtraData.generate_script_for_commands(
+                            stage_name=stage_name,
+                            checkout_dir=checkout_dir,
+                            commands_list=[],
+                            repos_data=repos_new,
+                            commands_script_list=commands_script_list,
+                            template_name=tool['template'],
+                            template_kwargs=template_kwargs
+                        )
                     tox_checkout_dir = stage_name
+
+                    # Set credentials if the tool needs them
+                    tool_creds = []
+                    for arg in tool.get('args', []):
+                        creds = {}
+                        if arg['type'] in ['optional']:
+                            option = arg['option']
+                            if option.find('jenkins-credential-id') != -1:
+                                creds['id'] = arg['value']
+                            elif option.find(
+                                'jenkins-credential-variable') != -1:
+                                creds['variable'] = arg['value']
+                        if creds:
+                            tool_creds.append(creds)
+                    if tool_creds:
+                        logger.debug(
+                            'Found credentials for the tool <%s>: %s' % (
+                                tool['name'], tool_creds
+                            )
+                        )
+                        for cred in tool_creds:
+                            config_json['config']['credentials'].append(cred)
+
                 # FIXME Commented out until issue #154 gets resolved
                 # Modify Tox properties (chdir, defaults)
                 # ProcessExtraData.set_tox_env(tox_checkout_dir, repos_new)
