@@ -13,6 +13,7 @@ import yaml
 from aiohttp import web
 from urllib.parse import urlparse
 from urllib.parse import ParseResult
+from urllib3.util import parse_url
 
 from openapi_server import config
 from openapi_server.controllers import db
@@ -779,9 +780,10 @@ def process_extra_data(config_json, composer_json, report_to_stdout=False):
                         })
                 # JPL_DOCKERSERVER: current JePL 2.1.0 does not support 1-to-1 in image-to-registry
                 # so defaulting to the last match
-                if registry_data['url']:
-                    config_json['environment']['JPL_DOCKERSERVER'] = registry_data['url']
-                    logger.debug('Setting JPL_DOCKERSERVER environment value to <%s>' % registry_data['url'])
+                registry_url = get_docker_registry_from_image(srv_data['image']['name'])
+                if registry_url:
+                    config_json['environment']['JPL_DOCKERSERVER'] = registry_url
+                    logger.debug('Setting JPL_DOCKERSERVER environment value to <%s>' % registry_url)
             ## Set 'image' property as string (required by Docker Compose)
             srv_data['image'] = srv_data['image']['name']
             if use_default_dockerhub_org:
@@ -953,3 +955,22 @@ def find_files_by_language(field, value, repo, path='.'):
         )
 
     return files_found
+
+
+def get_registry_from_image(image_name):
+    """Returns the Docker host URL from the image (<None> if not included).
+
+    :param image_name: Docker image name (may include registry URL)
+    """
+    url_parsed = parse_url(image_name)
+    registry_url = url_parsed.host
+    if url_parsed.scheme:
+        registry_url = '://'.join([
+            url_parsed.scheme, registry_url
+        ])
+    if url_parsed.port:
+        registry_url = ':'.join([
+            registry_url, str(url_parsed.port)
+        ])
+
+    return registry_url
