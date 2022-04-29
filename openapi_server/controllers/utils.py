@@ -11,9 +11,8 @@ import uuid
 import yaml
 
 from aiohttp import web
-from urllib.parse import urlparse
-from urllib.parse import ParseResult
 from urllib3.util import parse_url
+from urllib3.util import Url
 
 from openapi_server import config
 from openapi_server.controllers import db
@@ -301,7 +300,7 @@ class ProcessExtraData(object):
         else:
             repo_data = {}
             repo_data['name'] = get_short_repo_name(
-                tooling_repo_url, include_netloc=True
+                tooling_repo_url, include_host=True
             )
             repo_data['branch'] = tooling_repo_branch
             project_repos_mapping[tooling_repo_url] = repo_data
@@ -575,7 +574,7 @@ def process_extra_data(config_json, composer_json, report_to_stdout=False):
             project_repo = del_empty_keys(project_repo)
             # Set repo name
             repo_name_generated = get_short_repo_name(
-                repo_url, include_netloc=True)
+                repo_url, include_host=True)
             # Compose final <project_repos>
             project_repos_final[repo_name_generated] = {
                 'repo': repo_url,
@@ -827,16 +826,16 @@ def format_git_url(repo_url):
 
     :param repo_url: URL of the git repository
     """
-    repo_url_parsed = urlparse(repo_url)
-    repo_url_final = ParseResult(
+    repo_url_parsed = parse_url(repo_url)
+    repo_url_final = Url(
         scheme=repo_url_parsed.scheme,
-        netloc=':@'+repo_url_parsed.netloc,
+        auth=repo_url_parsed.auth,
+        host=':@'+repo_url_parsed.host,
         path=repo_url_parsed.path,
-        params=repo_url_parsed.params,
         query=repo_url_parsed.query,
         fragment=repo_url_parsed.fragment
     )
-    return repo_url_final.geturl()
+    return repo_url_final.url
 
 
 def supported_git_platform(repo_url, platforms):
@@ -848,24 +847,28 @@ def supported_git_platform(repo_url, platforms):
     :param repo_url: URL of the git repository
     :param platforms: Dict with the git supported platforms (e.g {'github': 'https://github.com'})
     """
-    url_parsed = urlparse(repo_url)
-    netloc_without_extension = url_parsed.netloc.split('.')[0]
-    if not netloc_without_extension in list(platforms):
-        netloc_without_extension = None
-    return netloc_without_extension
+    url_parsed = parse_url(repo_url)
+    host_without_extension = url_parsed.host.split('.')[0]
+    if not host_without_extension in list(platforms):
+        host_without_extension = None
+    return host_without_extension
 
 
-def get_short_repo_name(repo_url, include_netloc=False):
+def get_short_repo_name(repo_url, include_host=False):
     """Returns the short name of the git repo, i.e. <user/org>/<repo_name>.
 
     :param repo_url: URL of the git repository
     """
-    url_parsed = urlparse(repo_url)
+    url_parsed = parse_url(repo_url)
     short_repo_name = url_parsed.path
-    if include_netloc:
+    if include_host:
+        host = url_parsed.host
+        if url_parsed.port:
+            host = ':'.join([
+                host, str(url_parsed.port)
+            ])
         short_repo_name = ''.join([
-            url_parsed.netloc,
-            url_parsed.path,
+            host, url_parsed.path,
         ])
     # cleanup
     short_repo_name = short_repo_name.lstrip('/')
