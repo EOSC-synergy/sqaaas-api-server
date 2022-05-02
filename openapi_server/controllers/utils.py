@@ -779,7 +779,7 @@ def process_extra_data(config_json, composer_json, report_to_stdout=False):
                         })
                 # JPL_DOCKERSERVER: current JePL 2.1.0 does not support 1-to-1 in image-to-registry
                 # so defaulting to the last match
-                registry_url = get_docker_registry_from_image(srv_data['image']['name'])
+                registry_url = get_registry_from_image(srv_data['image']['name'])
                 if registry_url:
                     config_json['environment']['JPL_DOCKERSERVER'] = registry_url
                     logger.debug('Setting JPL_DOCKERSERVER environment value to <%s>' % registry_url)
