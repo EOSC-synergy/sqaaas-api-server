@@ -51,6 +51,7 @@ class AssessmentOutputSubcriteria(Model):
     def description(self):
         """Gets the description of this AssessmentOutputSubcriteria.
 
+        Short statement about the goal of the given subcriterion
 
         :return: The description of this AssessmentOutputSubcriteria.
         :rtype: str
@@ -61,6 +62,7 @@ class AssessmentOutputSubcriteria(Model):
     def description(self, description):
         """Sets the description of this AssessmentOutputSubcriteria.
 
+        Short statement about the goal of the given subcriterion
 
         :param description: The description of this AssessmentOutputSubcriteria.
         :type description: str
@@ -72,7 +74,7 @@ class AssessmentOutputSubcriteria(Model):
     def valid(self):
         """Gets the valid of this AssessmentOutputSubcriteria.
 
-        <true> if the subcriterion is valid
+        Overall validity of the subcriterion
 
         :return: The valid of this AssessmentOutputSubcriteria.
         :rtype: bool
@@ -83,7 +85,7 @@ class AssessmentOutputSubcriteria(Model):
     def valid(self, valid):
         """Sets the valid of this AssessmentOutputSubcriteria.
 
-        <true> if the subcriterion is valid
+        Overall validity of the subcriterion
 
         :param valid: The valid of this AssessmentOutputSubcriteria.
         :type valid: bool
@@ -95,6 +97,7 @@ class AssessmentOutputSubcriteria(Model):
     def evidence(self):
         """Gets the evidence of this AssessmentOutputSubcriteria.
 
+        Evidence obtained by the tools for the given subcriterion
 
         :return: The evidence of this AssessmentOutputSubcriteria.
         :rtype: List[AssessmentOutputValidator]
@@ -105,6 +108,7 @@ class AssessmentOutputSubcriteria(Model):
     def evidence(self, evidence):
         """Sets the evidence of this AssessmentOutputSubcriteria.
 
+        Evidence obtained by the tools for the given subcriterion
 
         :param evidence: The evidence of this AssessmentOutputSubcriteria.
         :type evidence: List[AssessmentOutputValidator]

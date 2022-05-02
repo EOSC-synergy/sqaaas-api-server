@@ -5,7 +5,7 @@ from datetime import date, datetime
 from typing import List, Dict, Type
 
 from openapi_server.models.base_model_ import Model
-from openapi_server.models.je_pl_jenkinsfile_stages import JePLJenkinsfileStages
+from openapi_server.models.je_pl_jenkinsfile_stages_inner import JePLJenkinsfileStagesInner
 from openapi_server import util
 
 
@@ -15,13 +15,13 @@ class JePLJenkinsfile(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, stages: List[JePLJenkinsfileStages]=None):
+    def __init__(self, stages: List[JePLJenkinsfileStagesInner]=None):
         """JePLJenkinsfile - a model defined in OpenAPI
 
         :param stages: The stages of this JePLJenkinsfile.
         """
         self.openapi_types = {
-            'stages': List[JePLJenkinsfileStages]
+            'stages': List[JePLJenkinsfileStagesInner]
         }
 
         self.attribute_map = {
@@ -45,7 +45,7 @@ class JePLJenkinsfile(Model):
 
 
         :return: The stages of this JePLJenkinsfile.
-        :rtype: List[JePLJenkinsfileStages]
+        :rtype: List[JePLJenkinsfileStagesInner]
         """
         return self._stages
 
@@ -55,7 +55,7 @@ class JePLJenkinsfile(Model):
 
 
         :param stages: The stages of this JePLJenkinsfile.
-        :type stages: List[JePLJenkinsfileStages]
+        :type stages: List[JePLJenkinsfileStagesInner]
         """
 
         self._stages = stages

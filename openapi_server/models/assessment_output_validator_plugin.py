@@ -46,6 +46,7 @@ class AssessmentOutputValidatorPlugin(Model):
     def name(self):
         """Gets the name of this AssessmentOutputValidatorPlugin.
 
+        Name of the plugin
 
         :return: The name of this AssessmentOutputValidatorPlugin.
         :rtype: str
@@ -56,6 +57,7 @@ class AssessmentOutputValidatorPlugin(Model):
     def name(self, name):
         """Sets the name of this AssessmentOutputValidatorPlugin.
 
+        Name of the plugin
 
         :param name: The name of this AssessmentOutputValidatorPlugin.
         :type name: str
@@ -67,6 +69,7 @@ class AssessmentOutputValidatorPlugin(Model):
     def version(self):
         """Gets the version of this AssessmentOutputValidatorPlugin.
 
+        Version of the plugin
 
         :return: The version of this AssessmentOutputValidatorPlugin.
         :rtype: str
@@ -77,6 +80,7 @@ class AssessmentOutputValidatorPlugin(Model):
     def version(self, version):
         """Sets the version of this AssessmentOutputValidatorPlugin.
 
+        Version of the plugin
 
         :param version: The version of this AssessmentOutputValidatorPlugin.
         :type version: str

@@ -50,6 +50,7 @@ class AssessmentOutputValidatorStandard(Model):
     def title(self):
         """Gets the title of this AssessmentOutputValidatorStandard.
 
+        Standard title
 
         :return: The title of this AssessmentOutputValidatorStandard.
         :rtype: str
@@ -60,6 +61,7 @@ class AssessmentOutputValidatorStandard(Model):
     def title(self, title):
         """Sets the title of this AssessmentOutputValidatorStandard.
 
+        Standard title
 
         :param title: The title of this AssessmentOutputValidatorStandard.
         :type title: str
@@ -71,6 +73,7 @@ class AssessmentOutputValidatorStandard(Model):
     def version(self):
         """Gets the version of this AssessmentOutputValidatorStandard.
 
+        Standard version
 
         :return: The version of this AssessmentOutputValidatorStandard.
         :rtype: str
@@ -81,6 +84,7 @@ class AssessmentOutputValidatorStandard(Model):
     def version(self, version):
         """Sets the version of this AssessmentOutputValidatorStandard.
 
+        Standard version
 
         :param version: The version of this AssessmentOutputValidatorStandard.
         :type version: str
@@ -92,6 +96,7 @@ class AssessmentOutputValidatorStandard(Model):
     def url(self):
         """Gets the url of this AssessmentOutputValidatorStandard.
 
+        URL containing the standard's specification
 
         :return: The url of this AssessmentOutputValidatorStandard.
         :rtype: str
@@ -102,6 +107,7 @@ class AssessmentOutputValidatorStandard(Model):
     def url(self, url):
         """Sets the url of this AssessmentOutputValidatorStandard.
 
+        URL containing the standard's specification
 
         :param url: The url of this AssessmentOutputValidatorStandard.
         :type url: str

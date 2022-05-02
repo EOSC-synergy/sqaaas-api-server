@@ -48,6 +48,7 @@ class JePLConfigConfig(Model):
     def project_repos(self):
         """Gets the project_repos of this JePLConfigConfig.
 
+        Set of repositories to be fetched by the pipeline (may exclude the repository where the pipeline is stored)
 
         :return: The project_repos of this JePLConfigConfig.
         :rtype: List[Repository]
@@ -58,6 +59,7 @@ class JePLConfigConfig(Model):
     def project_repos(self, project_repos):
         """Sets the project_repos of this JePLConfigConfig.
 
+        Set of repositories to be fetched by the pipeline (may exclude the repository where the pipeline is stored)
 
         :param project_repos: The project_repos of this JePLConfigConfig.
         :type project_repos: List[Repository]
@@ -69,6 +71,7 @@ class JePLConfigConfig(Model):
     def credentials(self):
         """Gets the credentials of this JePLConfigConfig.
 
+        List of credentials required to access successfuly to the resources (such as repositories) managed by the pipeline
 
         :return: The credentials of this JePLConfigConfig.
         :rtype: List[CredsUserPass]
@@ -79,6 +82,7 @@ class JePLConfigConfig(Model):
     def credentials(self, credentials):
         """Sets the credentials of this JePLConfigConfig.
 
+        List of credentials required to access successfuly to the resources (such as repositories) managed by the pipeline
 
         :param credentials: The credentials of this JePLConfigConfig.
         :type credentials: List[CredsUserPass]

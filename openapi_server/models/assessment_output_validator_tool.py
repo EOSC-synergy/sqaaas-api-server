@@ -51,6 +51,7 @@ class AssessmentOutputValidatorTool(Model):
     def name(self):
         """Gets the name of this AssessmentOutputValidatorTool.
 
+        Name of the tool
 
         :return: The name of this AssessmentOutputValidatorTool.
         :rtype: str
@@ -61,6 +62,7 @@ class AssessmentOutputValidatorTool(Model):
     def name(self, name):
         """Sets the name of this AssessmentOutputValidatorTool.
 
+        Name of the tool
 
         :param name: The name of this AssessmentOutputValidatorTool.
         :type name: str
@@ -93,6 +95,7 @@ class AssessmentOutputValidatorTool(Model):
     def level(self):
         """Gets the level of this AssessmentOutputValidatorTool.
 
+        Level of criticality of the tool
 
         :return: The level of this AssessmentOutputValidatorTool.
         :rtype: str
@@ -103,6 +106,7 @@ class AssessmentOutputValidatorTool(Model):
     def level(self, level):
         """Sets the level of this AssessmentOutputValidatorTool.
 
+        Level of criticality of the tool
 
         :param level: The level of this AssessmentOutputValidatorTool.
         :type level: str

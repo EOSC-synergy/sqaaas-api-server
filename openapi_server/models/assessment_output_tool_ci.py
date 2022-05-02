@@ -58,7 +58,7 @@ class AssessmentOutputToolCI(Model):
     def name(self):
         """Gets the name of this AssessmentOutputToolCI.
 
-        name of the stage the tool was executed
+        Name of the stage the tool was executed
 
         :return: The name of this AssessmentOutputToolCI.
         :rtype: str
@@ -69,7 +69,7 @@ class AssessmentOutputToolCI(Model):
     def name(self, name):
         """Sets the name of this AssessmentOutputToolCI.
 
-        name of the stage the tool was executed
+        Name of the stage the tool was executed
 
         :param name: The name of this AssessmentOutputToolCI.
         :type name: str
@@ -81,7 +81,7 @@ class AssessmentOutputToolCI(Model):
     def status(self):
         """Gets the status of this AssessmentOutputToolCI.
 
-        string-like exit status of the stage where the tool ran
+        Exit status of the stage where the tool ran
 
         :return: The status of this AssessmentOutputToolCI.
         :rtype: str
@@ -92,7 +92,7 @@ class AssessmentOutputToolCI(Model):
     def status(self, status):
         """Sets the status of this AssessmentOutputToolCI.
 
-        string-like exit status of the stage where the tool ran
+        Exit status of the stage where the tool ran
 
         :param status: The status of this AssessmentOutputToolCI.
         :type status: str
@@ -110,7 +110,7 @@ class AssessmentOutputToolCI(Model):
     def stdout_command(self):
         """Gets the stdout_command of this AssessmentOutputToolCI.
 
-        list of commands executed in the stage
+        List of commands executed in the stage
 
         :return: The stdout_command of this AssessmentOutputToolCI.
         :rtype: List[str]
@@ -121,7 +121,7 @@ class AssessmentOutputToolCI(Model):
     def stdout_command(self, stdout_command):
         """Sets the stdout_command of this AssessmentOutputToolCI.
 
-        list of commands executed in the stage
+        List of commands executed in the stage
 
         :param stdout_command: The stdout_command of this AssessmentOutputToolCI.
         :type stdout_command: List[str]
@@ -133,7 +133,7 @@ class AssessmentOutputToolCI(Model):
     def stdout_text(self):
         """Gets the stdout_text of this AssessmentOutputToolCI.
 
-        string containing the output of the tool execution
+        Output of the tool execution
 
         :return: The stdout_text of this AssessmentOutputToolCI.
         :rtype: str
@@ -144,7 +144,7 @@ class AssessmentOutputToolCI(Model):
     def stdout_text(self, stdout_text):
         """Sets the stdout_text of this AssessmentOutputToolCI.
 
-        string containing the output of the tool execution
+        Output of the tool execution
 
         :param stdout_text: The stdout_text of this AssessmentOutputToolCI.
         :type stdout_text: str
@@ -156,7 +156,7 @@ class AssessmentOutputToolCI(Model):
     def url(self):
         """Gets the url of this AssessmentOutputToolCI.
 
-        URL of the stage
+        URL of the build's stage output
 
         :return: The url of this AssessmentOutputToolCI.
         :rtype: str
@@ -167,7 +167,7 @@ class AssessmentOutputToolCI(Model):
     def url(self, url):
         """Sets the url of this AssessmentOutputToolCI.
 
-        URL of the stage
+        URL of the build's stage output
 
         :param url: The url of this AssessmentOutputToolCI.
         :type url: str
