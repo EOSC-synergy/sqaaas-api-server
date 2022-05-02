@@ -1121,12 +1121,12 @@ async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Re
                     valid = all(evidence['valid']
                         for evidence in subcriterion_data['evidence'])
                     subcriteria[subcriterion_id]['valid'] = valid
-            
+
             report_data[criterion_name] = {
                 'valid': all(criterion_valid_list),
                 'subcriteria': subcriteria
             }
-        
+
         # Append filtered-out criteria
         report_data.update(criteria_filtered_out)
 
@@ -1435,7 +1435,7 @@ async def _badgeclass_matchmaking(pipeline_id, badge_type, criteria_fulfilled_li
     if badge_awarded_badgeclass_name:
         logger.debug('Badgeclass to use for badge issuance: %s' % badge_awarded_badgeclass_name)
 
-    return badge_awarded_badgeclass_name, criteria_summary 
+    return badge_awarded_badgeclass_name, criteria_summary
 
 
 async def _issue_badge(pipeline_id, badgeclass_name):
@@ -1634,6 +1634,7 @@ async def _sort_tooling_by_criteria(tooling_metadata_json, criteria_id_list=[]):
                 criterion, tooling_metadata_json)
             criteria_data_list.append({
                 'id': criterion,
+                'type': tooling_metadata_json['criteria'][criterion]['type'],
                 'description': tooling_metadata_json['criteria'][criterion]['description'],
                 'tools': tooling_data
             })
