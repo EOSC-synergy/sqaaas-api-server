@@ -4,6 +4,11 @@ import os
 
 import connexion
 
+from openapi_server import config
+
+
+CONF = config.init('etc/sqaaas.ini.sample')
+
 
 @pytest.fixture
 def client(loop, aiohttp_client):
