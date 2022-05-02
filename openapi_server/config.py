@@ -7,13 +7,16 @@ from configparser import ExtendedInterpolation
 
 logger = logging.getLogger('sqaaas.api.config')
 
-CONF = ConfigParser(interpolation=ExtendedInterpolation())
-REPO_BACKEND = None
+
 BADGE_SECTION = 'badgr'
 CI_SECTION = 'jenkins'
 
 
 def init(config_file):
+    global CONF
+    global REPO_BACKEND
+
+    CONF = ConfigParser(interpolation=ExtendedInterpolation())
     config_exists = CONF.read(config_file)
     if not config_exists:
         logger.error('Configuration file <%s> does not exist' % config_file)

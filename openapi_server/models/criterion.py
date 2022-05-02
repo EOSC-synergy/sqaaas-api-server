@@ -16,26 +16,30 @@ class Criterion(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, id: str=None, description: CriterionDescription=None, tools: Dict[str, List[Tool]]=None):
+    def __init__(self, id: str=None, type: str=None, description: CriterionDescription=None, tools: List[Tool]=None):
         """Criterion - a model defined in OpenAPI
 
         :param id: The id of this Criterion.
+        :param type: The type of this Criterion.
         :param description: The description of this Criterion.
         :param tools: The tools of this Criterion.
         """
         self.openapi_types = {
             'id': str,
+            'type': str,
             'description': CriterionDescription,
-            'tools': Dict[str, List[Tool]]
+            'tools': List[Tool]
         }
 
         self.attribute_map = {
             'id': 'id',
+            'type': 'type',
             'description': 'description',
             'tools': 'tools'
         }
 
         self._id = id
+        self._type = type
         self._description = description
         self._tools = tools
 
@@ -52,6 +56,7 @@ class Criterion(Model):
     def id(self):
         """Gets the id of this Criterion.
 
+        ID of the criterion
 
         :return: The id of this Criterion.
         :rtype: str
@@ -62,12 +67,42 @@ class Criterion(Model):
     def id(self, id):
         """Sets the id of this Criterion.
 
+        ID of the criterion
 
         :param id: The id of this Criterion.
         :type id: str
         """
 
         self._id = id
+
+    @property
+    def type(self):
+        """Gets the type of this Criterion.
+
+        Type of criterion
+
+        :return: The type of this Criterion.
+        :rtype: str
+        """
+        return self._type
+
+    @type.setter
+    def type(self, type):
+        """Sets the type of this Criterion.
+
+        Type of criterion
+
+        :param type: The type of this Criterion.
+        :type type: str
+        """
+        allowed_values = ["software", "service", "fair"]  # noqa: E501
+        if type not in allowed_values:
+            raise ValueError(
+                "Invalid value for `type` ({0}), must be one of {1}"
+                .format(type, allowed_values)
+            )
+
+        self._type = type
 
     @property
     def description(self):
@@ -94,9 +129,10 @@ class Criterion(Model):
     def tools(self):
         """Gets the tools of this Criterion.
 
+        Set of tools that are supported for the given criterion
 
         :return: The tools of this Criterion.
-        :rtype: Dict[str, List[Tool]]
+        :rtype: List[Tool]
         """
         return self._tools
 
@@ -104,9 +140,10 @@ class Criterion(Model):
     def tools(self, tools):
         """Sets the tools of this Criterion.
 
+        Set of tools that are supported for the given criterion
 
         :param tools: The tools of this Criterion.
-        :type tools: Dict[str, List[Tool]]
+        :type tools: List[Tool]
         """
 
         self._tools = tools

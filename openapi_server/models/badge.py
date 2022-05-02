@@ -6,7 +6,6 @@ from typing import List, Dict, Type
 
 from openapi_server.models.base_model_ import Model
 from openapi_server.models.badge_assertion import BadgeAssertion
-from openapi_server.models.badge_criteria import BadgeCriteria
 from openapi_server import util
 
 
@@ -16,32 +15,28 @@ class Badge(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, data: BadgeAssertion=None, share: str=None, verification_url: str=None, criteria: Dict[str, BadgeCriteria]=None):
+    def __init__(self, data: BadgeAssertion=None, share: str=None, verification_url: str=None):
         """Badge - a model defined in OpenAPI
 
         :param data: The data of this Badge.
         :param share: The share of this Badge.
         :param verification_url: The verification_url of this Badge.
-        :param criteria: The criteria of this Badge.
         """
         self.openapi_types = {
             'data': BadgeAssertion,
             'share': str,
-            'verification_url': str,
-            'criteria': Dict[str, BadgeCriteria]
+            'verification_url': str
         }
 
         self.attribute_map = {
             'data': 'data',
             'share': 'share',
-            'verification_url': 'verification_url',
-            'criteria': 'criteria'
+            'verification_url': 'verification_url'
         }
 
         self._data = data
         self._share = share
         self._verification_url = verification_url
-        self._criteria = criteria
 
     @classmethod
     def from_dict(cls, dikt: dict) -> 'Badge':
@@ -77,6 +72,7 @@ class Badge(Model):
     def share(self):
         """Gets the share of this Badge.
 
+        Badge's HTML block that can be embedded in websites
 
         :return: The share of this Badge.
         :rtype: str
@@ -87,6 +83,7 @@ class Badge(Model):
     def share(self, share):
         """Sets the share of this Badge.
 
+        Badge's HTML block that can be embedded in websites
 
         :param share: The share of this Badge.
         :type share: str
@@ -98,6 +95,7 @@ class Badge(Model):
     def verification_url(self):
         """Gets the verification_url of this Badge.
 
+        URL the portal where the badge can be verified
 
         :return: The verification_url of this Badge.
         :rtype: str
@@ -108,30 +106,10 @@ class Badge(Model):
     def verification_url(self, verification_url):
         """Sets the verification_url of this Badge.
 
+        URL the portal where the badge can be verified
 
         :param verification_url: The verification_url of this Badge.
         :type verification_url: str
         """
 
         self._verification_url = verification_url
-
-    @property
-    def criteria(self):
-        """Gets the criteria of this Badge.
-
-
-        :return: The criteria of this Badge.
-        :rtype: Dict[str, BadgeCriteria]
-        """
-        return self._criteria
-
-    @criteria.setter
-    def criteria(self, criteria):
-        """Sets the criteria of this Badge.
-
-
-        :param criteria: The criteria of this Badge.
-        :type criteria: Dict[str, BadgeCriteria]
-        """
-
-        self._criteria = criteria

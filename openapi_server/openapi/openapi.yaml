@@ -91,8 +91,8 @@ paths:
           description: Created
           links:
             get_pipeline_by_pipeline_id:
-              description: |
-                The `id` value returned in the response can be used as the `pipeline_id` parameter in `GET /pipeline/{pipeline_id}`.
+              description: "The `id` value returned in the response can be used as\
+                \ the `pipeline_id` parameter in `GET /pipeline/{pipeline_id}`.\n"
               operationId: get_pipeline_by_id
               parameters:
                 pipeline_id: $response.body#/id
@@ -135,8 +135,8 @@ paths:
           description: Created
           links:
             get_pipeline_by_pipeline_id:
-              description: |
-                The `id` value returned in the response can be used as the `pipeline_id` parameter in `GET /pipeline/{pipeline_id}`.
+              description: "The `id` value returned in the response can be used as\
+                \ the `pipeline_id` parameter in `GET /pipeline/{pipeline_id}`.\n"
               operationId: get_pipeline_by_id
               parameters:
                 pipeline_id: $response.body#/id
@@ -198,10 +198,9 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/UpstreamError'
-          description: |
-            The server while acting as a gateway or a proxy, received
-            an invalid response from the upstream server it accessed
-            in attempting to fulfill the request.
+          description: "The server while acting as a gateway or a proxy, received\n\
+            an invalid response from the upstream server it accessed\nin attempting\
+            \ to fulfill the request.\n"
       summary: Delete pipeline by ID
       x-openapi-router-controller: openapi_server.controllers.default_controller
     get:
@@ -268,10 +267,9 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/UpstreamError'
-          description: |
-            The server while acting as a gateway or a proxy, received
-            an invalid response from the upstream server it accessed
-            in attempting to fulfill the request.
+          description: "The server while acting as a gateway or a proxy, received\n\
+            an invalid response from the upstream server it accessed\nin attempting\
+            \ to fulfill the request.\n"
       summary: Update pipeline by ID
       x-openapi-router-controller: openapi_server.controllers.default_controller
       x-codegen-request-body-name: body
@@ -593,13 +591,16 @@ paths:
                 repo:
                   description: URL of the upstream repo
                   format: uri
+                  title: repo
                   type: string
                 branch:
                   description: Brach from the upstream repo used as the base for the
                     pull request
+                  title: branch
                   type: string
               required:
               - repo
+              title: inline_object
               type: object
         required: true
         x-body-name: body
@@ -621,10 +622,9 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/UpstreamError'
-          description: |
-            The server while acting as a gateway or a proxy, received
-            an invalid response from the upstream server it accessed
-            in attempting to fulfill the request.
+          description: "The server while acting as a gateway or a proxy, received\n\
+            an invalid response from the upstream server it accessed\nin attempting\
+            \ to fulfill the request.\n"
       summary: Creates pull request with JePL files.
       x-openapi-router-controller: openapi_server.controllers.default_controller
       x-codegen-request-body-name: body
@@ -681,10 +681,9 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/UpstreamError'
-          description: |
-            The server while acting as a gateway or a proxy, received
-            an invalid response from the upstream server it accessed
-            in attempting to fulfill the request.
+          description: "The server while acting as a gateway or a proxy, received\n\
+            an invalid response from the upstream server it accessed\nin attempting\
+            \ to fulfill the request.\n"
       summary: Runs pipeline.
       x-openapi-router-controller: openapi_server.controllers.default_controller
   /pipeline/{pipeline_id}/status:
@@ -719,10 +718,9 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/UpstreamError'
-          description: |
-            The server while acting as a gateway or a proxy, received
-            an invalid response from the upstream server it accessed
-            in attempting to fulfill the request.
+          description: "The server while acting as a gateway or a proxy, received\n\
+            an invalid response from the upstream server it accessed\nin attempting\
+            \ to fulfill the request.\n"
       summary: Get pipeline status.
       x-openapi-router-controller: openapi_server.controllers.default_controller
 components:
@@ -739,10 +737,9 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/UpstreamError'
-      description: |
-        The server while acting as a gateway or a proxy, received
-        an invalid response from the upstream server it accessed
-        in attempting to fulfill the request.
+      description: "The server while acting as a gateway or a proxy, received\nan\
+        \ invalid response from the upstream server it accessed\nin attempting to\
+        \ fulfill the request.\n"
   schemas:
     ToolArg:
       example:
@@ -776,7 +773,7 @@ components:
           example: detect
           title: value
         option:
-          description: Name of the option, in the event of optional arguments
+          description: "Name of the option, in the event of optional arguments"
           title: option
           type: string
         summary:
@@ -813,6 +810,7 @@ components:
       title: ToolArg
       type: object
     Tool:
+      description: Details about the tooling metadata (see https://github.com/eosc-synergy/sqaaas-tooling)
       example:
         args:
         - summary: summary
@@ -885,88 +883,96 @@ components:
           docs: https://openapi-generator.tech
           improves: improves
         id: QC.Sty
+        type: software
         tools:
-          key:
-          - args:
-            - summary: summary
-              args:
-              - null
-              - null
-              repeatable: false
-              selectable: true
-              format: string
-              description: Detect the license of the given project
-              type: subcommand
-              value: detect
-              option: option
-            - summary: summary
-              args:
-              - null
-              - null
-              repeatable: false
-              selectable: true
-              format: string
-              description: Detect the license of the given project
-              type: subcommand
-              value: detect
-              option: option
-            docs: https://openapi-generator.tech
-            name: name
-            lang: lang
-            jepl_support: true
-            executable: executable
-            docker:
-              image: image
-              dockerfile: dockerfile
-              reviewed: 2000-01-23
-              oneshot: true
-          - args:
-            - summary: summary
-              args:
-              - null
-              - null
-              repeatable: false
-              selectable: true
-              format: string
-              description: Detect the license of the given project
-              type: subcommand
-              value: detect
-              option: option
-            - summary: summary
-              args:
-              - null
-              - null
-              repeatable: false
-              selectable: true
-              format: string
-              description: Detect the license of the given project
-              type: subcommand
-              value: detect
-              option: option
-            docs: https://openapi-generator.tech
-            name: name
-            lang: lang
-            jepl_support: true
-            executable: executable
-            docker:
-              image: image
-              dockerfile: dockerfile
-              reviewed: 2000-01-23
-              oneshot: true
+        - args:
+          - summary: summary
+            args:
+            - null
+            - null
+            repeatable: false
+            selectable: true
+            format: string
+            description: Detect the license of the given project
+            type: subcommand
+            value: detect
+            option: option
+          - summary: summary
+            args:
+            - null
+            - null
+            repeatable: false
+            selectable: true
+            format: string
+            description: Detect the license of the given project
+            type: subcommand
+            value: detect
+            option: option
+          docs: https://openapi-generator.tech
+          name: name
+          lang: lang
+          jepl_support: true
+          executable: executable
+          docker:
+            image: image
+            dockerfile: dockerfile
+            reviewed: 2000-01-23
+            oneshot: true
+        - args:
+          - summary: summary
+            args:
+            - null
+            - null
+            repeatable: false
+            selectable: true
+            format: string
+            description: Detect the license of the given project
+            type: subcommand
+            value: detect
+            option: option
+          - summary: summary
+            args:
+            - null
+            - null
+            repeatable: false
+            selectable: true
+            format: string
+            description: Detect the license of the given project
+            type: subcommand
+            value: detect
+            option: option
+          docs: https://openapi-generator.tech
+          name: name
+          lang: lang
+          jepl_support: true
+          executable: executable
+          docker:
+            image: image
+            dockerfile: dockerfile
+            reviewed: 2000-01-23
+            oneshot: true
       properties:
         id:
+          description: ID of the criterion
           example: QC.Sty
           title: id
+          type: string
+        type:
+          description: Type of criterion
+          enum:
+          - software
+          - service
+          - fair
+          title: type
           type: string
         description:
           $ref: '#/components/schemas/Criterion_description'
         tools:
-          additionalProperties:
-            items:
-              $ref: '#/components/schemas/Tool'
-            type: array
+          description: Set of tools that are supported for the given criterion
+          items:
+            $ref: '#/components/schemas/Tool'
           title: tools
-          type: object
+          type: array
       title: Criterion
       type: object
     Repository:
@@ -975,11 +981,13 @@ components:
         branch: master
       properties:
         repo:
+          description: URL of the repository
           example: https://github.com/eosc-synergy/sqaaas-api-spec
           format: uri
           title: repo
           type: string
         branch:
+          description: Branch name
           example: master
           title: branch
           type: string
@@ -993,10 +1001,12 @@ components:
         type: username_password
       properties:
         id:
+          description: Credential ID (as defined in Jenkins)
           example: my-dockerhub-token
           title: id
           type: string
         type:
+          description: Credential type
           enum:
           - username_password
           title: type
@@ -1016,13 +1026,20 @@ components:
       title: Creds_user_pass
       type: object
     Commands_simplified:
+      description: List of commands to execute
       example:
       - mvn checkstyle:check
       items:
         minLength: 1
         type: string
+      title: Commands_simplified
       type: array
     Tox_simplified:
+      description: Details about Python's tox configuration
+      example:
+        tox_file: tox.ini
+        testenv:
+        - cover
       properties:
         testenv:
           default:
@@ -1042,6 +1059,9 @@ components:
       title: Tox_simplified
       type: object
     When_branch:
+      example:
+        comparator: GLOB
+        pattern: release-\\d+
       properties:
         pattern:
           example: release-\\d+
@@ -1061,58 +1081,121 @@ components:
       title: When_branch
       type: object
     When_building_tag:
+      title: When_building_tag
       type: boolean
     CriterionBuild:
       additionalProperties:
-        minProperties: 1
-        properties:
-          repos:
-            items:
-              additionalProperties: false
-              properties:
-                repo_url:
-                  example: https://github.com/eosc-synergy/sqaaas-api-spec
-                  format: uri
-                  type: string
-                container:
-                  example: testing
-                  type: string
-                commands:
-                  $ref: '#/components/schemas/Commands_simplified'
-                tox:
-                  $ref: '#/components/schemas/Tox_simplified'
-                tool:
-                  $ref: '#/components/schemas/Tool'
-              type: object
-            type: array
-          when:
-            additionalProperties: false
-            properties:
-              branch:
-                $ref: '#/components/schemas/When_branch'
-              building_tag:
-                $ref: '#/components/schemas/When_building_tag'
-            type: object
-        required:
-        - repos
-        type: object
+        $ref: '#/components/schemas/CriterionBuild_addl_props'
+      description: Definition of software and service criteria to be run by the pipeline
       title: sqa_criteria
       type: object
     Environment:
       additionalProperties:
         type: string
+      description: Environment variables to be used at pipeline runtime
       example:
         JPL_IGNOREFAILURES: defined
         JPL_DOCKERPUSH: docs service1 service4
-      title: environment
+      title: Environment
       type: object
     JePL_config:
+      description: Properties for a single JePL's config.yml file
       example:
         environment:
           JPL_IGNOREFAILURES: defined
           JPL_DOCKERPUSH: docs service1 service4
         sqa_criteria:
-          key: '{}'
+          key:
+            repos:
+            - container: testing
+              repo_url: https://github.com/eosc-synergy/sqaaas-api-spec
+              tox:
+                tox_file: tox.ini
+                testenv:
+                - cover
+              commands:
+              - mvn checkstyle:check
+              tool:
+                args:
+                - summary: summary
+                  args:
+                  - null
+                  - null
+                  repeatable: false
+                  selectable: true
+                  format: string
+                  description: Detect the license of the given project
+                  type: subcommand
+                  value: detect
+                  option: option
+                - summary: summary
+                  args:
+                  - null
+                  - null
+                  repeatable: false
+                  selectable: true
+                  format: string
+                  description: Detect the license of the given project
+                  type: subcommand
+                  value: detect
+                  option: option
+                docs: https://openapi-generator.tech
+                name: name
+                lang: lang
+                jepl_support: true
+                executable: executable
+                docker:
+                  image: image
+                  dockerfile: dockerfile
+                  reviewed: 2000-01-23
+                  oneshot: true
+            - container: testing
+              repo_url: https://github.com/eosc-synergy/sqaaas-api-spec
+              tox:
+                tox_file: tox.ini
+                testenv:
+                - cover
+              commands:
+              - mvn checkstyle:check
+              tool:
+                args:
+                - summary: summary
+                  args:
+                  - null
+                  - null
+                  repeatable: false
+                  selectable: true
+                  format: string
+                  description: Detect the license of the given project
+                  type: subcommand
+                  value: detect
+                  option: option
+                - summary: summary
+                  args:
+                  - null
+                  - null
+                  repeatable: false
+                  selectable: true
+                  format: string
+                  description: Detect the license of the given project
+                  type: subcommand
+                  value: detect
+                  option: option
+                docs: https://openapi-generator.tech
+                name: name
+                lang: lang
+                jepl_support: true
+                executable: executable
+                docker:
+                  image: image
+                  dockerfile: dockerfile
+                  reviewed: 2000-01-23
+                  oneshot: true
+            when:
+              building_tag: true
+              branch:
+                comparator: GLOB
+                pattern: release-\\d+
         config:
           project_repos:
           - repo: https://github.com/eosc-synergy/sqaaas-api-spec
@@ -1134,49 +1217,22 @@ components:
           $ref: '#/components/schemas/JePL_config_config'
         sqa_criteria:
           additionalProperties:
-            minProperties: 1
-            properties:
-              repos:
-                items:
-                  additionalProperties: false
-                  properties:
-                    repo_url:
-                      example: https://github.com/eosc-synergy/sqaaas-api-spec
-                      format: uri
-                      type: string
-                    container:
-                      example: testing
-                      type: string
-                    commands:
-                      $ref: '#/components/schemas/Commands_simplified'
-                    tox:
-                      $ref: '#/components/schemas/Tox_simplified'
-                    tool:
-                      $ref: '#/components/schemas/Tool'
-                  type: object
-                type: array
-              when:
-                additionalProperties: false
-                properties:
-                  branch:
-                    $ref: '#/components/schemas/When_branch'
-                  building_tag:
-                    $ref: '#/components/schemas/When_building_tag'
-                type: object
-            required:
-            - repos
-            type: object
+            $ref: '#/components/schemas/CriterionBuild_addl_props'
+          description: Definition of software and service criteria to be run by the
+            pipeline
           title: sqa_criteria
           type: object
         environment:
           additionalProperties:
             type: string
+          description: Environment variables to be used at pipeline runtime
           example:
             JPL_IGNOREFAILURES: defined
             JPL_DOCKERPUSH: docs service1 service4
-          title: environment
+          title: Environment
           type: object
         timeout:
+          description: Maximum timeframe for the pipeline execution
           minimum: 1
           title: timeout
           type: integer
@@ -1184,73 +1240,38 @@ components:
       type: object
     ServiceDockerCompose:
       additionalProperties:
-        properties:
-          build:
-            properties:
-              context:
-                example: ./dir
-                type: string
-              dockerfile:
-                example: Dockerfile-alternate
-                type: string
-              args:
-                additionalProperties:
-                  type: string
-                type: object
-            type: object
-          image:
-            properties:
-              name:
-                example: eoscsynergy/sqaaas-api-spec:1.0.0
-                type: string
-              registry:
-                properties:
-                  push:
-                    type: boolean
-                  url:
-                    example: https://hub.docker.com/
-                    format: uri
-                    type: string
-                  credential_id:
-                    example: my-dockerhub-cred
-                    type: string
-                type: object
-            required:
-            - name
-            type: object
-          hostname:
-            example: sqaaas-host
-            type: string
-          volumes:
-            items:
-              properties:
-                type:
-                  enum:
-                  - bind
-                  type: string
-                source:
-                  example: ./
-                  type: string
-                target:
-                  example: ./sqaaas-build
-                  type: string
-              type: object
-            type: array
-          command:
-            example: sleep 600000
-            type: string
-          environment:
-            $ref: '#/components/schemas/Environment'
-          oneshot:
-            default: true
-            type: boolean
-        type: object
+        $ref: '#/components/schemas/ServiceDockerCompose_addl_props'
       title: services
       type: object
     JePL_composer:
+      description: Details about the composition of the services required for the
+        pipeline execution
       example:
         services:
-          key: '{}'
+          key:
+            image:
+              registry:
+                push: true
+                credential_id: my-dockerhub-cred
+              name: eoscsynergy/sqaaas-api-spec:1.0.0
+            hostname: sqaaas-host
+            environment:
+              JPL_IGNOREFAILURES: defined
+              JPL_DOCKERPUSH: docs service1 service4
+            build:
+              args:
+                key: args
+              dockerfile: Dockerfile-alternate
+              context: ./dir
+            volumes:
+            - source: ./
+              type: bind
+              target: ./sqaaas-build
+            - source: ./
+              type: bind
+              target: ./sqaaas-build
+            oneshot: true
+            command: sleep 600000
         version: "3.7"
       properties:
         version:
@@ -1259,72 +1280,13 @@ components:
           type: string
         services:
           additionalProperties:
-            properties:
-              build:
-                properties:
-                  context:
-                    example: ./dir
-                    type: string
-                  dockerfile:
-                    example: Dockerfile-alternate
-                    type: string
-                  args:
-                    additionalProperties:
-                      type: string
-                    type: object
-                type: object
-              image:
-                properties:
-                  name:
-                    example: eoscsynergy/sqaaas-api-spec:1.0.0
-                    type: string
-                  registry:
-                    properties:
-                      push:
-                        type: boolean
-                      url:
-                        example: https://hub.docker.com/
-                        format: uri
-                        type: string
-                      credential_id:
-                        example: my-dockerhub-cred
-                        type: string
-                    type: object
-                required:
-                - name
-                type: object
-              hostname:
-                example: sqaaas-host
-                type: string
-              volumes:
-                items:
-                  properties:
-                    type:
-                      enum:
-                      - bind
-                      type: string
-                    source:
-                      example: ./
-                      type: string
-                    target:
-                      example: ./sqaaas-build
-                      type: string
-                  type: object
-                type: array
-              command:
-                example: sleep 600000
-                type: string
-              environment:
-                $ref: '#/components/schemas/Environment'
-              oneshot:
-                default: true
-                type: boolean
-            type: object
+            $ref: '#/components/schemas/ServiceDockerCompose_addl_props'
           title: services
           type: object
       title: JePL_composer
       type: object
     JePL_jenkinsfile:
+      description: Details about the Jenkins Pipeline as Code
       example:
         stages:
         - pipeline_config:
@@ -1350,7 +1312,7 @@ components:
       properties:
         stages:
           items:
-            $ref: '#/components/schemas/JePL_jenkinsfile_stages'
+            $ref: '#/components/schemas/JePL_jenkinsfile_stages_inner'
           title: stages
           type: array
       title: JePL_jenkinsfile
@@ -1362,7 +1324,97 @@ components:
             JPL_IGNOREFAILURES: defined
             JPL_DOCKERPUSH: docs service1 service4
           sqa_criteria:
-            key: '{}'
+            key:
+              repos:
+              - container: testing
+                repo_url: https://github.com/eosc-synergy/sqaaas-api-spec
+                tox:
+                  tox_file: tox.ini
+                  testenv:
+                  - cover
+                commands:
+                - mvn checkstyle:check
+                tool:
+                  args:
+                  - summary: summary
+                    args:
+                    - null
+                    - null
+                    repeatable: false
+                    selectable: true
+                    format: string
+                    description: Detect the license of the given project
+                    type: subcommand
+                    value: detect
+                    option: option
+                  - summary: summary
+                    args:
+                    - null
+                    - null
+                    repeatable: false
+                    selectable: true
+                    format: string
+                    description: Detect the license of the given project
+                    type: subcommand
+                    value: detect
+                    option: option
+                  docs: https://openapi-generator.tech
+                  name: name
+                  lang: lang
+                  jepl_support: true
+                  executable: executable
+                  docker:
+                    image: image
+                    dockerfile: dockerfile
+                    reviewed: 2000-01-23
+                    oneshot: true
+              - container: testing
+                repo_url: https://github.com/eosc-synergy/sqaaas-api-spec
+                tox:
+                  tox_file: tox.ini
+                  testenv:
+                  - cover
+                commands:
+                - mvn checkstyle:check
+                tool:
+                  args:
+                  - summary: summary
+                    args:
+                    - null
+                    - null
+                    repeatable: false
+                    selectable: true
+                    format: string
+                    description: Detect the license of the given project
+                    type: subcommand
+                    value: detect
+                    option: option
+                  - summary: summary
+                    args:
+                    - null
+                    - null
+                    repeatable: false
+                    selectable: true
+                    format: string
+                    description: Detect the license of the given project
+                    type: subcommand
+                    value: detect
+                    option: option
+                  docs: https://openapi-generator.tech
+                  name: name
+                  lang: lang
+                  jepl_support: true
+                  executable: executable
+                  docker:
+                    image: image
+                    dockerfile: dockerfile
+                    reviewed: 2000-01-23
+                    oneshot: true
+              when:
+                building_tag: true
+                branch:
+                  comparator: GLOB
+                  pattern: release-\\d+
           config:
             project_repos:
             - repo: https://github.com/eosc-synergy/sqaaas-api-spec
@@ -1383,7 +1435,97 @@ components:
             JPL_IGNOREFAILURES: defined
             JPL_DOCKERPUSH: docs service1 service4
           sqa_criteria:
-            key: '{}'
+            key:
+              repos:
+              - container: testing
+                repo_url: https://github.com/eosc-synergy/sqaaas-api-spec
+                tox:
+                  tox_file: tox.ini
+                  testenv:
+                  - cover
+                commands:
+                - mvn checkstyle:check
+                tool:
+                  args:
+                  - summary: summary
+                    args:
+                    - null
+                    - null
+                    repeatable: false
+                    selectable: true
+                    format: string
+                    description: Detect the license of the given project
+                    type: subcommand
+                    value: detect
+                    option: option
+                  - summary: summary
+                    args:
+                    - null
+                    - null
+                    repeatable: false
+                    selectable: true
+                    format: string
+                    description: Detect the license of the given project
+                    type: subcommand
+                    value: detect
+                    option: option
+                  docs: https://openapi-generator.tech
+                  name: name
+                  lang: lang
+                  jepl_support: true
+                  executable: executable
+                  docker:
+                    image: image
+                    dockerfile: dockerfile
+                    reviewed: 2000-01-23
+                    oneshot: true
+              - container: testing
+                repo_url: https://github.com/eosc-synergy/sqaaas-api-spec
+                tox:
+                  tox_file: tox.ini
+                  testenv:
+                  - cover
+                commands:
+                - mvn checkstyle:check
+                tool:
+                  args:
+                  - summary: summary
+                    args:
+                    - null
+                    - null
+                    repeatable: false
+                    selectable: true
+                    format: string
+                    description: Detect the license of the given project
+                    type: subcommand
+                    value: detect
+                    option: option
+                  - summary: summary
+                    args:
+                    - null
+                    - null
+                    repeatable: false
+                    selectable: true
+                    format: string
+                    description: Detect the license of the given project
+                    type: subcommand
+                    value: detect
+                    option: option
+                  docs: https://openapi-generator.tech
+                  name: name
+                  lang: lang
+                  jepl_support: true
+                  executable: executable
+                  docker:
+                    image: image
+                    dockerfile: dockerfile
+                    reviewed: 2000-01-23
+                    oneshot: true
+              when:
+                building_tag: true
+                branch:
+                  comparator: GLOB
+                  pattern: release-\\d+
           config:
             project_repos:
             - repo: https://github.com/eosc-synergy/sqaaas-api-spec
@@ -1402,7 +1544,30 @@ components:
           timeout: 1
         composer_data:
           services:
-            key: '{}'
+            key:
+              image:
+                registry:
+                  push: true
+                  credential_id: my-dockerhub-cred
+                name: eoscsynergy/sqaaas-api-spec:1.0.0
+              hostname: sqaaas-host
+              environment:
+                JPL_IGNOREFAILURES: defined
+                JPL_DOCKERPUSH: docs service1 service4
+              build:
+                args:
+                  key: args
+                dockerfile: Dockerfile-alternate
+                context: ./dir
+              volumes:
+              - source: ./
+                type: bind
+                target: ./sqaaas-build
+              - source: ./
+                type: bind
+                target: ./sqaaas-build
+              oneshot: true
+              command: sleep 600000
           version: "3.7"
         name: sqaaas-api-spec
         id: dd7d8481-81a3-407f-95f0-a2f1cb382a4b
@@ -1430,16 +1595,19 @@ components:
               - master
       properties:
         id:
+          description: ID of the criterion
           example: dd7d8481-81a3-407f-95f0-a2f1cb382a4b
           readOnly: true
           title: id
           type: string
         name:
+          description: Name that identifies the pipeline
           example: sqaaas-api-spec
-          format: '[A-Za-z0-9_.-]'
+          format: "[A-Za-z0-9_.-]"
           title: name
           type: string
         config_data:
+          description: Details about the pipeline configuration
           items:
             $ref: '#/components/schemas/JePL_config'
           title: config_data
@@ -1458,8 +1626,10 @@ components:
           $ref: '#/components/schemas/Repository'
       required:
       - repo_code
+      title: Pipeline_assessment
       type: object
     AssessmentOutputToolCI:
+      description: Details of the CI build where the tool was executed
       example:
         stdout_command:
         - stdout_command
@@ -1470,34 +1640,35 @@ components:
         status: SUCCESS
       properties:
         name:
-          description: name of the stage the tool was executed
+          description: Name of the stage the tool was executed
           title: name
           type: string
         status:
-          description: string-like exit status of the stage where the tool ran
+          description: Exit status of the stage where the tool ran
           enum:
           - SUCCESS
           - FAILURE
           title: status
           type: string
         stdout_command:
-          description: list of commands executed in the stage
+          description: List of commands executed in the stage
           items:
             type: string
           title: stdout_command
           type: array
         stdout_text:
-          description: string containing the output of the tool execution
+          description: Output of the tool execution
           title: stdout_text
           type: string
         url:
-          description: URL of the stage
+          description: URL of the build's stage output
           format: uri
           title: url
           type: string
       title: AssessmentOutputToolCI
       type: object
     AssessmentOutputValidatorTool:
+      description: Details about the tool
       example:
         level: REQUIRED
         ci:
@@ -1511,12 +1682,14 @@ components:
         name: licensee
       properties:
         name:
+          description: Name of the tool
           example: licensee
           title: name
           type: string
         ci:
           $ref: '#/components/schemas/AssessmentOutputToolCI'
         level:
+          description: Level of criticality of the tool
           enum:
           - REQUIRED
           - RECOMMENDED
@@ -1526,6 +1699,7 @@ components:
       title: AssessmentOutputValidatorTool
       type: object
     AssessmentOutputValidatorStandard:
+      description: Details about the quality standard that defines the given subcriterion
       example:
         title: A set of Common Software Quality Assurance Baseline Criteria for Research
           Projects
@@ -1533,15 +1707,18 @@ components:
         url: https://indigo-dc.github.io/sqa-baseline/
       properties:
         title:
+          description: Standard title
           example: A set of Common Software Quality Assurance Baseline Criteria for
             Research Projects
           title: title
           type: string
         version:
+          description: Standard version
           example: v4.0
           title: version
           type: string
         url:
+          description: URL containing the standard's specification
           example: https://indigo-dc.github.io/sqa-baseline/
           format: uri
           title: url
@@ -1560,7 +1737,7 @@ components:
           name: report2sqaaas-plugin-licensee
           version: 1.0.0
         message: README file does not exist
-        data_unstructured: '{}'
+        data_unstructured: "{}"
         tool:
           level: REQUIRED
           ci:
@@ -1574,11 +1751,11 @@ components:
           name: licensee
       properties:
         valid:
-          description: <true> if the subcriterion is valid
+          description: Validity of the subcriterion according to the tool
           title: valid
           type: boolean
         message:
-          description: Evidence message
+          description: Short statement about the evidence found
           example: README file does not exist
           title: message
           type: string
@@ -1589,11 +1766,13 @@ components:
         standard:
           $ref: '#/components/schemas/AssessmentOutputValidatorStandard'
         data_unstructured:
+          description: Any unstructured data provided by the tool
           title: data_unstructured
           type: object
       title: AssessmentOutputValidator
       type: object
     AssessmentOutputSubcriteria:
+      description: ID of the subcriterion
       example:
         valid: true
         evidence:
@@ -1607,7 +1786,7 @@ components:
             name: report2sqaaas-plugin-licensee
             version: 1.0.0
           message: README file does not exist
-          data_unstructured: '{}'
+          data_unstructured: "{}"
           tool:
             level: REQUIRED
             ci:
@@ -1629,7 +1808,7 @@ components:
             name: report2sqaaas-plugin-licensee
             version: 1.0.0
           message: README file does not exist
-          data_unstructured: '{}'
+          data_unstructured: "{}"
           tool:
             level: REQUIRED
             ci:
@@ -1644,14 +1823,16 @@ components:
         description: All code repositories MUST have a README file
       properties:
         description:
+          description: Short statement about the goal of the given subcriterion
           example: All code repositories MUST have a README file
           title: description
           type: string
         valid:
-          description: <true> if the subcriterion is valid
+          description: Overall validity of the subcriterion
           title: valid
           type: boolean
         evidence:
+          description: Evidence obtained by the tools for the given subcriterion
           items:
             $ref: '#/components/schemas/AssessmentOutputValidator'
           title: evidence
@@ -1659,6 +1840,7 @@ components:
       title: AssessmentOutputSubcriteria
       type: object
     BadgeAssertion:
+      description: Badge data as obtained from Open Badge's Badgr implementation
       example:
         createdAt: 2021-04-07T10:34:02.96Z
         image: https://api.eu.badgr.io/public/assertions/KSwijifTQ_-I1lb9FtX1bw/image
@@ -1724,35 +1906,21 @@ components:
           badgeClass: sBS3EsJQRAC0ENTmvETtQw
           issuer: aS1lWKgIR4u8bGjPZUzAyg
           issuedOn: 2021-04-07T10:07:00Z
-        criteria:
-          key:
-            fulfilled:
-            - QC.Lic
-            - QC.Lic
-            missing:
-            - QC.Lic
-            - QC.Lic
-            to_fulfill:
-            - QC.Lic
-            - QC.Lic
         share: <html>..</html>
         verification_url: https://openapi-generator.tech
       properties:
         data:
           $ref: '#/components/schemas/BadgeAssertion'
         share:
+          description: Badge's HTML block that can be embedded in websites
           example: <html>..</html>
           title: share
           type: string
         verification_url:
+          description: URL the portal where the badge can be verified
           format: uri
           title: verification_url
           type: string
-        criteria:
-          additionalProperties:
-            $ref: '#/components/schemas/Badge_criteria'
-          title: criteria
-          type: object
       title: Badge
       type: object
     AssessmentOutput:
@@ -1772,17 +1940,6 @@ components:
               badgeClass: sBS3EsJQRAC0ENTmvETtQw
               issuer: aS1lWKgIR4u8bGjPZUzAyg
               issuedOn: 2021-04-07T10:07:00Z
-            criteria:
-              key:
-                fulfilled:
-                - QC.Lic
-                - QC.Lic
-                missing:
-                - QC.Lic
-                - QC.Lic
-                to_fulfill:
-                - QC.Lic
-                - QC.Lic
             share: <html>..</html>
             verification_url: https://openapi-generator.tech
           services:
@@ -1799,17 +1956,6 @@ components:
               badgeClass: sBS3EsJQRAC0ENTmvETtQw
               issuer: aS1lWKgIR4u8bGjPZUzAyg
               issuedOn: 2021-04-07T10:07:00Z
-            criteria:
-              key:
-                fulfilled:
-                - QC.Lic
-                - QC.Lic
-                missing:
-                - QC.Lic
-                - QC.Lic
-                to_fulfill:
-                - QC.Lic
-                - QC.Lic
             share: <html>..</html>
             verification_url: https://openapi-generator.tech
           fair:
@@ -1826,17 +1972,6 @@ components:
               badgeClass: sBS3EsJQRAC0ENTmvETtQw
               issuer: aS1lWKgIR4u8bGjPZUzAyg
               issuedOn: 2021-04-07T10:07:00Z
-            criteria:
-              key:
-                fulfilled:
-                - QC.Lic
-                - QC.Lic
-                missing:
-                - QC.Lic
-                - QC.Lic
-                to_fulfill:
-                - QC.Lic
-                - QC.Lic
             share: <html>..</html>
             verification_url: https://openapi-generator.tech
         report:
@@ -1856,7 +1991,7 @@ components:
                     name: report2sqaaas-plugin-licensee
                     version: 1.0.0
                   message: README file does not exist
-                  data_unstructured: '{}'
+                  data_unstructured: "{}"
                   tool:
                     level: REQUIRED
                     ci:
@@ -1878,7 +2013,7 @@ components:
                     name: report2sqaaas-plugin-licensee
                     version: 1.0.0
                   message: README file does not exist
-                  data_unstructured: '{}'
+                  data_unstructured: "{}"
                   tool:
                     level: REQUIRED
                     ci:
@@ -1892,12 +2027,12 @@ components:
                     name: licensee
                 description: All code repositories MUST have a README file
             filtered_reason:
-            - "null"
-            - "null"
+            - filtered_reason
+            - filtered_reason
       properties:
         report:
           additionalProperties:
-            $ref: '#/components/schemas/AssessmentOutput_report'
+            $ref: '#/components/schemas/AssessmentOutput_report_addl_props'
           title: report
           type: object
         badge:
@@ -1920,28 +2055,7 @@ components:
     CriterionOutput:
       additionalProperties:
         items:
-          properties:
-            status:
-              enum:
-              - SUCCESS
-              - FAILED
-              type: string
-            stdout_command:
-              type: string
-            stdout_text:
-              type: string
-            tool:
-              type: string
-            validator:
-              type: string
-            validation:
-              properties:
-                valid:
-                  type: boolean
-                data_unstructured:
-                  type: object
-              type: object
-          type: object
+          $ref: '#/components/schemas/CriterionOutput_addl_props_inner'
         type: array
       example:
         QC.Lic:
@@ -1967,48 +2081,109 @@ components:
       type: object
     inline_response_200:
       example:
-        file_name: '{"file_name":"config.yml"}'
+        file_name: "{\"file_name\":\"config.yml\"}"
         content:
-          key: '{}'
+          key:
+            repos:
+            - container: testing
+              repo_url: https://github.com/eosc-synergy/sqaaas-api-spec
+              tox:
+                tox_file: tox.ini
+                testenv:
+                - cover
+              commands:
+              - mvn checkstyle:check
+              tool:
+                args:
+                - summary: summary
+                  args:
+                  - null
+                  - null
+                  repeatable: false
+                  selectable: true
+                  format: string
+                  description: Detect the license of the given project
+                  type: subcommand
+                  value: detect
+                  option: option
+                - summary: summary
+                  args:
+                  - null
+                  - null
+                  repeatable: false
+                  selectable: true
+                  format: string
+                  description: Detect the license of the given project
+                  type: subcommand
+                  value: detect
+                  option: option
+                docs: https://openapi-generator.tech
+                name: name
+                lang: lang
+                jepl_support: true
+                executable: executable
+                docker:
+                  image: image
+                  dockerfile: dockerfile
+                  reviewed: 2000-01-23
+                  oneshot: true
+            - container: testing
+              repo_url: https://github.com/eosc-synergy/sqaaas-api-spec
+              tox:
+                tox_file: tox.ini
+                testenv:
+                - cover
+              commands:
+              - mvn checkstyle:check
+              tool:
+                args:
+                - summary: summary
+                  args:
+                  - null
+                  - null
+                  repeatable: false
+                  selectable: true
+                  format: string
+                  description: Detect the license of the given project
+                  type: subcommand
+                  value: detect
+                  option: option
+                - summary: summary
+                  args:
+                  - null
+                  - null
+                  repeatable: false
+                  selectable: true
+                  format: string
+                  description: Detect the license of the given project
+                  type: subcommand
+                  value: detect
+                  option: option
+                docs: https://openapi-generator.tech
+                name: name
+                lang: lang
+                jepl_support: true
+                executable: executable
+                docker:
+                  image: image
+                  dockerfile: dockerfile
+                  reviewed: 2000-01-23
+                  oneshot: true
+            when:
+              building_tag: true
+              branch:
+                comparator: GLOB
+                pattern: release-\\d+
       properties:
         file_name:
-          example: '{"file_name":"config.yml"}'
+          example: "{\"file_name\":\"config.yml\"}"
           title: file_name
           type: string
         content:
           additionalProperties:
-            minProperties: 1
-            properties:
-              repos:
-                items:
-                  additionalProperties: false
-                  properties:
-                    repo_url:
-                      example: https://github.com/eosc-synergy/sqaaas-api-spec
-                      format: uri
-                      type: string
-                    container:
-                      example: testing
-                      type: string
-                    commands:
-                      $ref: '#/components/schemas/Commands_simplified'
-                    tox:
-                      $ref: '#/components/schemas/Tox_simplified'
-                    tool:
-                      $ref: '#/components/schemas/Tool'
-                  type: object
-                type: array
-              when:
-                additionalProperties: false
-                properties:
-                  branch:
-                    $ref: '#/components/schemas/When_branch'
-                  building_tag:
-                    $ref: '#/components/schemas/When_building_tag'
-                type: object
-            required:
-            - repos
-            type: object
+            $ref: '#/components/schemas/CriterionBuild_addl_props'
+          description: Definition of software and service criteria to be run by the
+            pipeline
           title: sqa_criteria
           type: object
       title: inline_response_200
@@ -2036,14 +2211,37 @@ components:
       type: object
     inline_response_200_2:
       example:
-        file_name: '{"file_name":"docker-compose.yml"}'
+        file_name: "{\"file_name\":\"docker-compose.yml\"}"
         content:
           services:
-            key: '{}'
+            key:
+              image:
+                registry:
+                  push: true
+                  credential_id: my-dockerhub-cred
+                name: eoscsynergy/sqaaas-api-spec:1.0.0
+              hostname: sqaaas-host
+              environment:
+                JPL_IGNOREFAILURES: defined
+                JPL_DOCKERPUSH: docs service1 service4
+              build:
+                args:
+                  key: args
+                dockerfile: Dockerfile-alternate
+                context: ./dir
+              volumes:
+              - source: ./
+                type: bind
+                target: ./sqaaas-build
+              - source: ./
+                type: bind
+                target: ./sqaaas-build
+              oneshot: true
+              command: sleep 600000
           version: "3.7"
       properties:
         file_name:
-          example: '{"file_name":"docker-compose.yml"}'
+          example: "{\"file_name\":\"docker-compose.yml\"}"
           title: file_name
           type: string
         content:
@@ -2051,60 +2249,29 @@ components:
       title: inline_response_200_2
       type: object
     inline_response_200_3:
-      example:
-        file_name: Jenkinsfile
-        content: |-
-          @Library(['github.com/indigo-dc/jenkins-pipeline-library@release/2.1.0']) _
-
-          def projectConfig
-
-          pipeline {
-              agent any
-
-              stages {
-                  stage('SQA baseline criterion: QC.Sty') {
-                      when {
-                          branch pattern: 'sqaaas', comparator: ''
-                      }
-                      steps {
-                          script {
-                              projectConfig = pipelineConfig(
-                                  configFile: '.sqa/config.yml',
-                                  scmConfigs: [ localBranch: true ]
-                              )
-                              buildStages(projectConfig)
-                          }
-                      }
-                      post {
-                          cleanup {
-                              cleanWs()
-                          }
-                      }
-                  }
-                  stage('SQA baseline criterion: QC.Doc') {
-                      when {
-                          branch pattern: 'build', comparator: ''
-                      }
-                      steps {
-                          script {
-                              projectConfig = pipelineConfig(
-                                  configFile: '.sqa/config.snappy-peach-chicken.yml',
-                                  scmConfigs: [ localBranch: true ]
-                              )
-                              buildStages(projectConfig)
-                          }
-                      }
-                      post {
-                          cleanup {
-                              cleanWs()
-                          }
-                      }
-                  }
-              }
-          }
+      example: "{\"file_name\":\"Jenkinsfile\",\"content\":\"@Library(['github.com/indigo-dc/jenkins-pipeline-library@release/2.1.0'])\
+        \ _\\n\\ndef projectConfig\\n\\npipeline {\\n    agent any\\n\\n    stages\
+        \ {\\n        stage('SQA baseline criterion: QC.Sty') {\\n            when\
+        \ {\\n                branch pattern: 'sqaaas', comparator: ''\\n        \
+        \    }\\n            steps {\\n                script {\\n               \
+        \     projectConfig = pipelineConfig(\\n                        configFile:\
+        \ '.sqa/config.yml',\\n                        scmConfigs: [ localBranch:\
+        \ true ]\\n                    )\\n                    buildStages(projectConfig)\\\
+        n                }\\n            }\\n            post {\\n               \
+        \ cleanup {\\n                    cleanWs()\\n                }\\n       \
+        \     }\\n        }\\n        stage('SQA baseline criterion: QC.Doc') {\\\
+        n            when {\\n                branch pattern: 'build', comparator:\
+        \ ''\\n            }\\n            steps {\\n                script {\\n \
+        \                   projectConfig = pipelineConfig(\\n                   \
+        \     configFile: '.sqa/config.snappy-peach-chicken.yml',\\n             \
+        \           scmConfigs: [ localBranch: true ]\\n                    )\\n \
+        \                   buildStages(projectConfig)\\n                }\\n    \
+        \        }\\n            post {\\n                cleanup {\\n           \
+        \         cleanWs()\\n                }\\n            }\\n        }\\n   \
+        \ }\\n}\"}"
       properties:
         file_name:
-          example: '{"file_name":"Jenkinsfile"}'
+          example: "{\"file_name\":\"Jenkinsfile\"}"
           type: string
         content:
           type: string
@@ -2141,13 +2308,16 @@ components:
         repo:
           description: URL of the upstream repo
           format: uri
+          title: repo
           type: string
         branch:
           description: Brach from the upstream repo used as the base for the pull
             request
+          title: branch
           type: string
       required:
       - repo
+      title: inline_object
       type: object
     inline_response_200_5:
       example:
@@ -2183,24 +2353,228 @@ components:
       title: Tool_docker
       type: object
     Criterion_description:
+      description: Details about the criterion
       example:
         msg: msg
         docs: https://openapi-generator.tech
         improves: improves
       properties:
         msg:
+          description: Short statemente about the criterion's goal
           title: msg
           type: string
         improves:
+          description: Comma-separated list of software/service characteristics addressed
+            by the given criterion
           title: improves
           type: string
         docs:
+          description: URL with additional information about the criterion
           format: uri
           title: docs
           type: string
       title: Criterion_description
       type: object
+    CriterionBuild_addl_props_repos_inner:
+      additionalProperties: false
+      example:
+        container: testing
+        repo_url: https://github.com/eosc-synergy/sqaaas-api-spec
+        tox:
+          tox_file: tox.ini
+          testenv:
+          - cover
+        commands:
+        - mvn checkstyle:check
+        tool:
+          args:
+          - summary: summary
+            args:
+            - null
+            - null
+            repeatable: false
+            selectable: true
+            format: string
+            description: Detect the license of the given project
+            type: subcommand
+            value: detect
+            option: option
+          - summary: summary
+            args:
+            - null
+            - null
+            repeatable: false
+            selectable: true
+            format: string
+            description: Detect the license of the given project
+            type: subcommand
+            value: detect
+            option: option
+          docs: https://openapi-generator.tech
+          name: name
+          lang: lang
+          jepl_support: true
+          executable: executable
+          docker:
+            image: image
+            dockerfile: dockerfile
+            reviewed: 2000-01-23
+            oneshot: true
+      properties:
+        repo_url:
+          description: URL of the repository
+          example: https://github.com/eosc-synergy/sqaaas-api-spec
+          format: uri
+          title: repo_url
+          type: string
+        container:
+          description: Container name as defined in the JePL composer's file (i.e.
+            docker-compose.yml)
+          example: testing
+          title: container
+          type: string
+        commands:
+          description: List of commands to execute
+          example:
+          - mvn checkstyle:check
+          items:
+            minLength: 1
+            type: string
+          title: Commands_simplified
+          type: array
+        tox:
+          $ref: '#/components/schemas/Tox_simplified'
+        tool:
+          $ref: '#/components/schemas/Tool'
+      title: CriterionBuild_addl_props_repos_inner
+      type: object
+    CriterionBuild_addl_props_when:
+      additionalProperties: false
+      description: "Requirements that should take into account to execute the pipeline,\
+        \ such as branch/tags names"
+      example:
+        building_tag: true
+        branch:
+          comparator: GLOB
+          pattern: release-\\d+
+      properties:
+        branch:
+          $ref: '#/components/schemas/When_branch'
+        building_tag:
+          title: When_building_tag
+          type: boolean
+      title: CriterionBuild_addl_props_when
+      type: object
+    CriterionBuild_addl_props:
+      description: ID of the criterion
+      example:
+        repos:
+        - container: testing
+          repo_url: https://github.com/eosc-synergy/sqaaas-api-spec
+          tox:
+            tox_file: tox.ini
+            testenv:
+            - cover
+          commands:
+          - mvn checkstyle:check
+          tool:
+            args:
+            - summary: summary
+              args:
+              - null
+              - null
+              repeatable: false
+              selectable: true
+              format: string
+              description: Detect the license of the given project
+              type: subcommand
+              value: detect
+              option: option
+            - summary: summary
+              args:
+              - null
+              - null
+              repeatable: false
+              selectable: true
+              format: string
+              description: Detect the license of the given project
+              type: subcommand
+              value: detect
+              option: option
+            docs: https://openapi-generator.tech
+            name: name
+            lang: lang
+            jepl_support: true
+            executable: executable
+            docker:
+              image: image
+              dockerfile: dockerfile
+              reviewed: 2000-01-23
+              oneshot: true
+        - container: testing
+          repo_url: https://github.com/eosc-synergy/sqaaas-api-spec
+          tox:
+            tox_file: tox.ini
+            testenv:
+            - cover
+          commands:
+          - mvn checkstyle:check
+          tool:
+            args:
+            - summary: summary
+              args:
+              - null
+              - null
+              repeatable: false
+              selectable: true
+              format: string
+              description: Detect the license of the given project
+              type: subcommand
+              value: detect
+              option: option
+            - summary: summary
+              args:
+              - null
+              - null
+              repeatable: false
+              selectable: true
+              format: string
+              description: Detect the license of the given project
+              type: subcommand
+              value: detect
+              option: option
+            docs: https://openapi-generator.tech
+            name: name
+            lang: lang
+            jepl_support: true
+            executable: executable
+            docker:
+              image: image
+              dockerfile: dockerfile
+              reviewed: 2000-01-23
+              oneshot: true
+        when:
+          building_tag: true
+          branch:
+            comparator: GLOB
+            pattern: release-\\d+
+      minProperties: 1
+      properties:
+        repos:
+          description: List of repositories (from config:project_repos) for which
+            the given criterion will be checked
+          items:
+            $ref: '#/components/schemas/CriterionBuild_addl_props_repos_inner'
+          title: repos
+          type: array
+        when:
+          $ref: '#/components/schemas/CriterionBuild_addl_props_when'
+      required:
+      - repos
+      title: CriterionBuild_addl_props
+      type: object
     JePL_config_config:
+      description: JePL's main configuration
       example:
         project_repos:
         - repo: https://github.com/eosc-synergy/sqaaas-api-spec
@@ -2218,18 +2592,154 @@ components:
           type: username_password
       properties:
         project_repos:
+          description: Set of repositories to be fetched by the pipeline (may exclude
+            the repository where the pipeline is stored)
           items:
             $ref: '#/components/schemas/Repository'
           title: project_repos
           type: array
         credentials:
+          description: List of credentials required to access successfuly to the resources
+            (such as repositories) managed by the pipeline
           items:
             $ref: '#/components/schemas/Creds_user_pass'
           title: credentials
           type: array
       title: JePL_config_config
       type: object
-    JePL_jenkinsfile_when:
+    ServiceDockerCompose_addl_props_build:
+      example:
+        args:
+          key: args
+        dockerfile: Dockerfile-alternate
+        context: ./dir
+      properties:
+        context:
+          example: ./dir
+          title: context
+          type: string
+        dockerfile:
+          example: Dockerfile-alternate
+          title: dockerfile
+          type: string
+        args:
+          additionalProperties:
+            type: string
+          title: args
+          type: object
+      title: ServiceDockerCompose_addl_props_build
+      type: object
+    ServiceDockerCompose_addl_props_image_registry:
+      example:
+        push: true
+        credential_id: my-dockerhub-cred
+      properties:
+        push:
+          title: push
+          type: boolean
+        credential_id:
+          example: my-dockerhub-cred
+          title: credential_id
+          type: string
+      title: ServiceDockerCompose_addl_props_image_registry
+      type: object
+    ServiceDockerCompose_addl_props_image:
+      example:
+        registry:
+          push: true
+          credential_id: my-dockerhub-cred
+        name: eoscsynergy/sqaaas-api-spec:1.0.0
+      properties:
+        name:
+          example: eoscsynergy/sqaaas-api-spec:1.0.0
+          title: name
+          type: string
+        registry:
+          $ref: '#/components/schemas/ServiceDockerCompose_addl_props_image_registry'
+      required:
+      - name
+      title: ServiceDockerCompose_addl_props_image
+      type: object
+    ServiceDockerCompose_addl_props_volumes_inner:
+      example:
+        source: ./
+        type: bind
+        target: ./sqaaas-build
+      properties:
+        type:
+          enum:
+          - bind
+          title: type
+          type: string
+        source:
+          example: ./
+          title: source
+          type: string
+        target:
+          example: ./sqaaas-build
+          title: target
+          type: string
+      title: ServiceDockerCompose_addl_props_volumes_inner
+      type: object
+    ServiceDockerCompose_addl_props:
+      example:
+        image:
+          registry:
+            push: true
+            credential_id: my-dockerhub-cred
+          name: eoscsynergy/sqaaas-api-spec:1.0.0
+        hostname: sqaaas-host
+        environment:
+          JPL_IGNOREFAILURES: defined
+          JPL_DOCKERPUSH: docs service1 service4
+        build:
+          args:
+            key: args
+          dockerfile: Dockerfile-alternate
+          context: ./dir
+        volumes:
+        - source: ./
+          type: bind
+          target: ./sqaaas-build
+        - source: ./
+          type: bind
+          target: ./sqaaas-build
+        oneshot: true
+        command: sleep 600000
+      properties:
+        build:
+          $ref: '#/components/schemas/ServiceDockerCompose_addl_props_build'
+        image:
+          $ref: '#/components/schemas/ServiceDockerCompose_addl_props_image'
+        hostname:
+          example: sqaaas-host
+          title: hostname
+          type: string
+        volumes:
+          items:
+            $ref: '#/components/schemas/ServiceDockerCompose_addl_props_volumes_inner'
+          title: volumes
+          type: array
+        command:
+          example: sleep 600000
+          title: command
+          type: string
+        environment:
+          additionalProperties:
+            type: string
+          description: Environment variables to be used at pipeline runtime
+          example:
+            JPL_IGNOREFAILURES: defined
+            JPL_DOCKERPUSH: docs service1 service4
+          title: Environment
+          type: object
+        oneshot:
+          default: true
+          title: oneshot
+          type: boolean
+      title: ServiceDockerCompose_addl_props
+      type: object
+    JePL_jenkinsfile_stagesItems_when:
       example:
         branches:
         - master
@@ -2241,9 +2751,9 @@ components:
             type: string
           title: branches
           type: array
-      title: JePL_jenkinsfile_when
+      title: JePL_jenkinsfile_stagesItems_when
       type: object
-    JePL_jenkinsfile_pipeline_config:
+    JePL_jenkinsfile_stagesItems_pipeline_config:
       example:
         credentials_id: userpass_dockerhub
         base_branch: https://github.com/eosc-synergy/sqaaas-api-spec
@@ -2271,9 +2781,9 @@ components:
           example: eoscsynergy/jpl-validator:1.1.0
           title: jepl_validator_docker_image
           type: string
-      title: JePL_jenkinsfile_pipeline_config
+      title: JePL_jenkinsfile_stagesItems_pipeline_config
       type: object
-    JePL_jenkinsfile_stages:
+    JePL_jenkinsfile_stages_inner:
       example:
         pipeline_config:
           credentials_id: userpass_dockerhub
@@ -2287,21 +2797,24 @@ components:
           - master
       properties:
         when:
-          $ref: '#/components/schemas/JePL_jenkinsfile_when'
+          $ref: '#/components/schemas/JePL_jenkinsfile_stagesItems_when'
         pipeline_config:
-          $ref: '#/components/schemas/JePL_jenkinsfile_pipeline_config'
-      title: JePL_jenkinsfile_stages
+          $ref: '#/components/schemas/JePL_jenkinsfile_stagesItems_pipeline_config'
+      title: JePL_jenkinsfile_stages_inner
       type: object
     AssessmentOutputValidator_plugin:
+      description: Details about the tool's validator plugin being executed
       example:
         name: report2sqaaas-plugin-licensee
         version: 1.0.0
       properties:
         name:
+          description: Name of the plugin
           example: report2sqaaas-plugin-licensee
           title: name
           type: string
         version:
+          description: Version of the plugin
           example: 1.0.0
           title: version
           type: string
@@ -2335,40 +2848,7 @@ components:
           type: string
       title: BadgeAssertion_recipient
       type: object
-    Badge_criteria:
-      description: Badge category
-      example:
-        fulfilled:
-        - QC.Lic
-        - QC.Lic
-        missing:
-        - QC.Lic
-        - QC.Lic
-        to_fulfill:
-        - QC.Lic
-        - QC.Lic
-      properties:
-        to_fulfill:
-          items:
-            example: QC.Lic
-            type: string
-          title: to_fulfill
-          type: array
-        fulfilled:
-          items:
-            example: QC.Lic
-            type: string
-          title: fulfilled
-          type: array
-        missing:
-          items:
-            example: QC.Lic
-            type: string
-          title: missing
-          type: array
-      title: Badge_criteria
-      type: object
-    AssessmentOutput_report:
+    AssessmentOutput_report_addl_props:
       description: ID of the criterion
       example:
         valid: false
@@ -2386,7 +2866,7 @@ components:
                 name: report2sqaaas-plugin-licensee
                 version: 1.0.0
               message: README file does not exist
-              data_unstructured: '{}'
+              data_unstructured: "{}"
               tool:
                 level: REQUIRED
                 ci:
@@ -2408,7 +2888,7 @@ components:
                 name: report2sqaaas-plugin-licensee
                 version: 1.0.0
               message: README file does not exist
-              data_unstructured: '{}'
+              data_unstructured: "{}"
               tool:
                 level: REQUIRED
                 ci:
@@ -2422,18 +2902,19 @@ components:
                 name: licensee
             description: All code repositories MUST have a README file
         filtered_reason:
-        - "null"
-        - "null"
+        - filtered_reason
+        - filtered_reason
       properties:
         valid:
           default: false
+          description: Overall validity of the criterion
           title: valid
           type: boolean
         filtered_reason:
           default: []
-          description: Contains the reason why the criterion was filtered out
+          description: Contains the reason why the criterion was filtered out (if
+            applicable)
           items:
-            default: "null"
             type: string
           title: filtered_reason
           type: array
@@ -2442,7 +2923,7 @@ components:
             $ref: '#/components/schemas/AssessmentOutputSubcriteria'
           title: subcriteria
           type: object
-      title: AssessmentOutput_report
+      title: AssessmentOutput_report_addl_props
       type: object
     AssessmentOutput_badge:
       example:
@@ -2460,17 +2941,6 @@ components:
             badgeClass: sBS3EsJQRAC0ENTmvETtQw
             issuer: aS1lWKgIR4u8bGjPZUzAyg
             issuedOn: 2021-04-07T10:07:00Z
-          criteria:
-            key:
-              fulfilled:
-              - QC.Lic
-              - QC.Lic
-              missing:
-              - QC.Lic
-              - QC.Lic
-              to_fulfill:
-              - QC.Lic
-              - QC.Lic
           share: <html>..</html>
           verification_url: https://openapi-generator.tech
         services:
@@ -2487,17 +2957,6 @@ components:
             badgeClass: sBS3EsJQRAC0ENTmvETtQw
             issuer: aS1lWKgIR4u8bGjPZUzAyg
             issuedOn: 2021-04-07T10:07:00Z
-          criteria:
-            key:
-              fulfilled:
-              - QC.Lic
-              - QC.Lic
-              missing:
-              - QC.Lic
-              - QC.Lic
-              to_fulfill:
-              - QC.Lic
-              - QC.Lic
           share: <html>..</html>
           verification_url: https://openapi-generator.tech
         fair:
@@ -2514,17 +2973,6 @@ components:
             badgeClass: sBS3EsJQRAC0ENTmvETtQw
             issuer: aS1lWKgIR4u8bGjPZUzAyg
             issuedOn: 2021-04-07T10:07:00Z
-          criteria:
-            key:
-              fulfilled:
-              - QC.Lic
-              - QC.Lic
-              missing:
-              - QC.Lic
-              - QC.Lic
-              to_fulfill:
-              - QC.Lic
-              - QC.Lic
           share: <html>..</html>
           verification_url: https://openapi-generator.tech
       properties:
@@ -2535,4 +2983,38 @@ components:
         fair:
           $ref: '#/components/schemas/Badge'
       title: AssessmentOutput_badge
+      type: object
+    CriterionOutput_addl_propsItems_validation:
+      properties:
+        valid:
+          title: valid
+          type: boolean
+        data_unstructured:
+          title: data_unstructured
+          type: object
+      title: CriterionOutput_addl_propsItems_validation
+      type: object
+    CriterionOutput_addl_props_inner:
+      properties:
+        status:
+          enum:
+          - SUCCESS
+          - FAILED
+          title: status
+          type: string
+        stdout_command:
+          title: stdout_command
+          type: string
+        stdout_text:
+          title: stdout_text
+          type: string
+        tool:
+          title: tool
+          type: string
+        validator:
+          title: validator
+          type: string
+        validation:
+          $ref: '#/components/schemas/CriterionOutput_addl_propsItems_validation'
+      title: CriterionOutput_addl_props_inner
       type: object

@@ -50,6 +50,7 @@ class CriterionDescription(Model):
     def msg(self):
         """Gets the msg of this CriterionDescription.
 
+        Short statemente about the criterion's goal
 
         :return: The msg of this CriterionDescription.
         :rtype: str
@@ -60,6 +61,7 @@ class CriterionDescription(Model):
     def msg(self, msg):
         """Sets the msg of this CriterionDescription.
 
+        Short statemente about the criterion's goal
 
         :param msg: The msg of this CriterionDescription.
         :type msg: str
@@ -71,6 +73,7 @@ class CriterionDescription(Model):
     def improves(self):
         """Gets the improves of this CriterionDescription.
 
+        Comma-separated list of software/service characteristics addressed by the given criterion
 
         :return: The improves of this CriterionDescription.
         :rtype: str
@@ -81,6 +84,7 @@ class CriterionDescription(Model):
     def improves(self, improves):
         """Sets the improves of this CriterionDescription.
 
+        Comma-separated list of software/service characteristics addressed by the given criterion
 
         :param improves: The improves of this CriterionDescription.
         :type improves: str
@@ -92,6 +96,7 @@ class CriterionDescription(Model):
     def docs(self):
         """Gets the docs of this CriterionDescription.
 
+        URL with additional information about the criterion
 
         :return: The docs of this CriterionDescription.
         :rtype: str
@@ -102,6 +107,7 @@ class CriterionDescription(Model):
     def docs(self, docs):
         """Sets the docs of this CriterionDescription.
 
+        URL with additional information about the criterion
 
         :param docs: The docs of this CriterionDescription.
         :type docs: str

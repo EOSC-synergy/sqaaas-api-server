@@ -46,6 +46,7 @@ class Repository(Model):
     def repo(self):
         """Gets the repo of this Repository.
 
+        URL of the repository
 
         :return: The repo of this Repository.
         :rtype: str
@@ -56,6 +57,7 @@ class Repository(Model):
     def repo(self, repo):
         """Sets the repo of this Repository.
 
+        URL of the repository
 
         :param repo: The repo of this Repository.
         :type repo: str
@@ -67,6 +69,7 @@ class Repository(Model):
     def branch(self):
         """Gets the branch of this Repository.
 
+        Branch name
 
         :return: The branch of this Repository.
         :rtype: str
@@ -77,6 +80,7 @@ class Repository(Model):
     def branch(self, branch):
         """Sets the branch of this Repository.
 
+        Branch name
 
         :param branch: The branch of this Repository.
         :type branch: str

@@ -61,6 +61,7 @@ class Pipeline(Model):
     def id(self):
         """Gets the id of this Pipeline.
 
+        ID of the criterion
 
         :return: The id of this Pipeline.
         :rtype: str
@@ -71,6 +72,7 @@ class Pipeline(Model):
     def id(self, id):
         """Sets the id of this Pipeline.
 
+        ID of the criterion
 
         :param id: The id of this Pipeline.
         :type id: str
@@ -82,6 +84,7 @@ class Pipeline(Model):
     def name(self):
         """Gets the name of this Pipeline.
 
+        Name that identifies the pipeline
 
         :return: The name of this Pipeline.
         :rtype: str
@@ -92,6 +95,7 @@ class Pipeline(Model):
     def name(self, name):
         """Sets the name of this Pipeline.
 
+        Name that identifies the pipeline
 
         :param name: The name of this Pipeline.
         :type name: str
@@ -103,6 +107,7 @@ class Pipeline(Model):
     def config_data(self):
         """Gets the config_data of this Pipeline.
 
+        Details about the pipeline configuration
 
         :return: The config_data of this Pipeline.
         :rtype: List[JePLConfig]
@@ -113,6 +118,7 @@ class Pipeline(Model):
     def config_data(self, config_data):
         """Sets the config_data of this Pipeline.
 
+        Details about the pipeline configuration
 
         :param config_data: The config_data of this Pipeline.
         :type config_data: List[JePLConfig]
