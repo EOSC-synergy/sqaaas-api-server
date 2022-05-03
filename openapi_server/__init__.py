@@ -4,6 +4,7 @@ import os
 import logging
 
 from openapi_server import config
+from openapi_server.controllers import default_controller
 
 
 def set_log(debug=False):
@@ -52,6 +53,7 @@ def main():
 
     set_log(options_cli.debug)
     config.init(options_cli.config_file)
+    default_controller.init_utils()
 
     specification_dir = os.path.join(os.path.dirname(__file__), 'openapi')
     app = connexion.AioHttpApp(__name__, specification_dir=specification_dir, options=options)

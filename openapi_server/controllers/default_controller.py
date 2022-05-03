@@ -57,24 +57,28 @@ BADGR_ISSUER = config.get_badge('issuer')
 
 logger = logging.getLogger('sqaaas.api.controller')
 
-# Instance of code repo backend object
-with open(TOKEN_GH_FILE,'r') as f:
-    token = f.read().strip()
-logger.debug('Loading GitHub token from local filesystem')
-gh_utils = GitHubUtils(token)
-git_utils = GitUtils(token)
 
-# Instance of CI system object
-with open(TOKEN_JK_FILE,'r') as f:
-    jk_token = f.read().strip()
-logger.debug('Loading Jenkins token from local filesystem')
-jk_utils = JenkinsUtils(JENKINS_URL, JENKINS_USER, jk_token)
+def init_utils():
+    global git_utils, gh_utils, jk_utils, badgr_utils
 
-# Instance of Badge issuing service object
-with open(TOKEN_BADGR_FILE,'r') as f:
-    badgr_token = f.read().strip()
-logger.debug('Loading Badgr password from local filesystem')
-badgr_utils = BadgrUtils(BADGR_URL, BADGR_USER, badgr_token, BADGR_ISSUER)
+    # Instance of code repo backend object
+    with open(TOKEN_GH_FILE,'r') as f:
+        token = f.read().strip()
+    logger.debug('Loading GitHub token from local filesystem')
+    gh_utils = GitHubUtils(token)
+    git_utils = GitUtils(token)
+
+    # Instance of CI system object
+    with open(TOKEN_JK_FILE,'r') as f:
+        jk_token = f.read().strip()
+    logger.debug('Loading Jenkins token from local filesystem')
+    jk_utils = JenkinsUtils(JENKINS_URL, JENKINS_USER, jk_token)
+
+    # Instance of Badge issuing service object
+    with open(TOKEN_BADGR_FILE,'r') as f:
+        badgr_token = f.read().strip()
+    logger.debug('Loading Badgr password from local filesystem')
+    badgr_utils = BadgrUtils(BADGR_URL, BADGR_USER, badgr_token, BADGR_ISSUER)
 
 
 async def _add_pipeline_to_db(body, report_to_stdout=False):
