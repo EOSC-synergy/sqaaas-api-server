@@ -26,7 +26,7 @@ from openapi_server.models.upstream_error import UpstreamError
 
 # async def test_add_pipeline(client):
 #     """Test case for add_pipeline
-# 
+#
 #     Creates a pipeline.
 #     """
 #     body = {
@@ -341,7 +341,7 @@ from openapi_server.models.upstream_error import UpstreamError
 #   }
 # }
 #     params = [('report_to_stdout', False)]
-#     headers = { 
+#     headers = {
 #         'Accept': 'application/json',
 #         'Content-Type': 'application/json',
 #     }
@@ -353,16 +353,16 @@ from openapi_server.models.upstream_error import UpstreamError
 #         params=params,
 #         )
 #     assert response.status == 200, 'Response body is : ' + (await response.read()).decode('utf-8')
-# 
-# 
+#
+#
 # async def test_add_pipeline_for_assessment(client):
 #     """Test case for add_pipeline_for_assessment
-# 
+#
 #     Creates a pipeline for assessment (QAA module).
 #     """
 #     body = openapi_server.PipelineAssessment()
 #     params = [('optional_tools', ['optional_tools_example'])]
-#     headers = { 
+#     headers = {
 #         'Accept': 'application/json',
 #         'Content-Type': 'application/json',
 #     }
@@ -374,15 +374,15 @@ from openapi_server.models.upstream_error import UpstreamError
 #         params=params,
 #         )
 #     assert response.status == 200, 'Response body is : ' + (await response.read()).decode('utf-8')
-# 
-# 
+#
+#
 # async def test_create_pull_request(client):
 #     """Test case for create_pull_request
-# 
+#
 #     Creates pull request with JePL files.
 #     """
 #     body = openapi_server.InlineObject()
-#     headers = { 
+#     headers = {
 #         'Accept': 'application/json',
 #         'Content-Type': 'application/json',
 #     }
@@ -393,14 +393,14 @@ from openapi_server.models.upstream_error import UpstreamError
 #         json=body,
 #         )
 #     assert response.status == 200, 'Response body is : ' + (await response.read()).decode('utf-8')
-# 
-# 
+#
+#
 # async def test_delete_pipeline_by_id(client):
 #     """Test case for delete_pipeline_by_id
-# 
+#
 #     Delete pipeline by ID
 #     """
-#     headers = { 
+#     headers = {
 #         'Accept': 'application/json',
 #     }
 #     response = await client.request(
@@ -409,14 +409,14 @@ from openapi_server.models.upstream_error import UpstreamError
 #         headers=headers,
 #         )
 #     assert response.status == 200, 'Response body is : ' + (await response.read()).decode('utf-8')
-# 
-# 
+#
+#
 # async def test_get_badge(client):
 #     """Test case for get_badge
-# 
+#
 #     Gets badge data associated with the given pipeline
 #     """
-#     headers = { 
+#     headers = {
 #         'Accept': 'application/json',
 #     }
 #     response = await client.request(
@@ -425,14 +425,14 @@ from openapi_server.models.upstream_error import UpstreamError
 #         headers=headers,
 #         )
 #     assert response.status == 200, 'Response body is : ' + (await response.read()).decode('utf-8')
-# 
-# 
+#
+#
 # async def test_get_compressed_files(client):
 #     """Test case for get_compressed_files
-# 
+#
 #     Get JePL files in compressed format.
 #     """
-#     headers = { 
+#     headers = {
 #         'Accept': 'application/zip',
 #     }
 #     response = await client.request(
@@ -443,36 +443,14 @@ from openapi_server.models.upstream_error import UpstreamError
 #     assert response.status == 200, 'Response body is : ' + (await response.read()).decode('utf-8')
 
 
-async def test_get_criteria(monkeypatch, client):
-    """Test case for get_criteria
-
-    Returns data about criteria
-    """
-    async def mock_get_tooling_metadata(*args, **kwargs):
-        return {"mock_key": "mock_response"}
-
-    monkeypatch.setattr("openapi_server.controllers.default_controller._get_tooling_metadata", mock_get_tooling_metadata)
-    monkeypatch.setattr("openapi_server.controllers.default_controller._sort_tooling_by_criteria", mock_get_tooling_metadata)
-
-    params = [('criterion_id', 'criterion_id_example')]
-    headers = { 
-        'Accept': 'application/json',
-    }
-    response = await client.request(
-        method='GET',
-        path='/v1/criteria',
-        headers=headers,
-        params=params,
-        )
-    assert response.status == 200, 'Response body is : ' + (await response.read()).decode('utf-8')
 
 
 # async def test_get_output_for_assessment(client):
 #     """Test case for get_output_for_assessment
-# 
+#
 #     Get the assessment output (QAA module)
 #     """
-#     headers = { 
+#     headers = {
 #         'Accept': 'application/json',
 #     }
 #     response = await client.request(
@@ -481,14 +459,14 @@ async def test_get_criteria(monkeypatch, client):
 #         headers=headers,
 #         )
 #     assert response.status == 200, 'Response body is : ' + (await response.read()).decode('utf-8')
-# 
-# 
+#
+#
 # async def test_get_pipeline_by_id(client):
 #     """Test case for get_pipeline_by_id
-# 
+#
 #     Find pipeline by ID
 #     """
-#     headers = { 
+#     headers = {
 #         'Accept': 'application/json',
 #     }
 #     response = await client.request(
@@ -497,14 +475,14 @@ async def test_get_criteria(monkeypatch, client):
 #         headers=headers,
 #         )
 #     assert response.status == 200, 'Response body is : ' + (await response.read()).decode('utf-8')
-# 
-# 
+#
+#
 # async def test_get_pipeline_commands_scripts(client):
 #     """Test case for get_pipeline_commands_scripts
-# 
+#
 #     Gets the commands builder scripts
 #     """
-#     headers = { 
+#     headers = {
 #         'Accept': 'application/json',
 #     }
 #     response = await client.request(
@@ -513,14 +491,14 @@ async def test_get_criteria(monkeypatch, client):
 #         headers=headers,
 #         )
 #     assert response.status == 200, 'Response body is : ' + (await response.read()).decode('utf-8')
-# 
-# 
+#
+#
 # async def test_get_pipeline_composer(client):
 #     """Test case for get_pipeline_composer
-# 
+#
 #     Gets composer configuration used by the pipeline.
 #     """
-#     headers = { 
+#     headers = {
 #         'Accept': 'application/json',
 #     }
 #     response = await client.request(
@@ -529,14 +507,14 @@ async def test_get_criteria(monkeypatch, client):
 #         headers=headers,
 #         )
 #     assert response.status == 200, 'Response body is : ' + (await response.read()).decode('utf-8')
-# 
-# 
+#
+#
 # async def test_get_pipeline_composer_jepl(client):
 #     """Test case for get_pipeline_composer_jepl
-# 
+#
 #     Gets JePL composer configuration for the given pipeline.
 #     """
-#     headers = { 
+#     headers = {
 #         'Accept': 'application/json',
 #     }
 #     response = await client.request(
@@ -545,14 +523,14 @@ async def test_get_criteria(monkeypatch, client):
 #         headers=headers,
 #         )
 #     assert response.status == 200, 'Response body is : ' + (await response.read()).decode('utf-8')
-# 
-# 
+#
+#
 # async def test_get_pipeline_config(client):
 #     """Test case for get_pipeline_config
-# 
+#
 #     Gets pipeline's main configuration.
 #     """
-#     headers = { 
+#     headers = {
 #         'Accept': 'application/json',
 #     }
 #     response = await client.request(
@@ -561,14 +539,14 @@ async def test_get_criteria(monkeypatch, client):
 #         headers=headers,
 #         )
 #     assert response.status == 200, 'Response body is : ' + (await response.read()).decode('utf-8')
-# 
-# 
+#
+#
 # async def test_get_pipeline_config_jepl(client):
 #     """Test case for get_pipeline_config_jepl
-# 
+#
 #     Gets JePL config configuration for the given pipeline.
 #     """
-#     headers = { 
+#     headers = {
 #         'Accept': 'application/json',
 #     }
 #     response = await client.request(
@@ -577,14 +555,14 @@ async def test_get_criteria(monkeypatch, client):
 #         headers=headers,
 #         )
 #     assert response.status == 200, 'Response body is : ' + (await response.read()).decode('utf-8')
-# 
-# 
+#
+#
 # async def test_get_pipeline_jenkinsfile(client):
 #     """Test case for get_pipeline_jenkinsfile
-# 
+#
 #     Gets Jenkins pipeline definition used by the pipeline.
 #     """
-#     headers = { 
+#     headers = {
 #         'Accept': 'application/json',
 #     }
 #     response = await client.request(
@@ -593,14 +571,14 @@ async def test_get_criteria(monkeypatch, client):
 #         headers=headers,
 #         )
 #     assert response.status == 200, 'Response body is : ' + (await response.read()).decode('utf-8')
-# 
-# 
+#
+#
 # async def test_get_pipeline_jenkinsfile_jepl(client):
 #     """Test case for get_pipeline_jenkinsfile_jepl
-# 
+#
 #     Gets Jenkins configuration for the given pipeline.
 #     """
-#     headers = { 
+#     headers = {
 #         'Accept': 'application/json',
 #     }
 #     response = await client.request(
@@ -609,15 +587,15 @@ async def test_get_criteria(monkeypatch, client):
 #         headers=headers,
 #         )
 #     assert response.status == 200, 'Response body is : ' + (await response.read()).decode('utf-8')
-# 
-# 
+#
+#
 # async def test_get_pipeline_output(client):
 #     """Test case for get_pipeline_output
-# 
+#
 #     Get output from pipeline execution
 #     """
 #     params = [('validate', False)]
-#     headers = { 
+#     headers = {
 #         'Accept': 'application/json',
 #     }
 #     response = await client.request(
@@ -627,14 +605,14 @@ async def test_get_criteria(monkeypatch, client):
 #         params=params,
 #         )
 #     assert response.status == 200, 'Response body is : ' + (await response.read()).decode('utf-8')
-# 
-# 
+#
+#
 # async def test_get_pipeline_status(client):
 #     """Test case for get_pipeline_status
-# 
+#
 #     Get pipeline status.
 #     """
-#     headers = { 
+#     headers = {
 #         'Accept': 'application/json',
 #     }
 #     response = await client.request(
@@ -643,14 +621,14 @@ async def test_get_criteria(monkeypatch, client):
 #         headers=headers,
 #         )
 #     assert response.status == 200, 'Response body is : ' + (await response.read()).decode('utf-8')
-# 
-# 
+#
+#
 # async def test_get_pipelines(client):
 #     """Test case for get_pipelines
-# 
+#
 #     Gets pipeline IDs.
 #     """
-#     headers = { 
+#     headers = {
 #         'Accept': 'application/json',
 #     }
 #     response = await client.request(
@@ -659,17 +637,17 @@ async def test_get_criteria(monkeypatch, client):
 #         headers=headers,
 #         )
 #     assert response.status == 200, 'Response body is : ' + (await response.read()).decode('utf-8')
-# 
-# 
+#
+#
 # async def test_run_pipeline(client):
 #     """Test case for run_pipeline
-# 
+#
 #     Runs pipeline.
 #     """
 #     params = [('issue_badge', False),
 #                     ('repo_url', 'repo_url_example'),
 #                     ('repo_branch', 'repo_branch_example')]
-#     headers = { 
+#     headers = {
 #         'Accept': 'application/json',
 #     }
 #     response = await client.request(
@@ -679,11 +657,11 @@ async def test_get_criteria(monkeypatch, client):
 #         params=params,
 #         )
 #     assert response.status == 200, 'Response body is : ' + (await response.read()).decode('utf-8')
-# 
-# 
+#
+#
 # async def test_update_pipeline_by_id(client):
 #     """Test case for update_pipeline_by_id
-# 
+#
 #     Update pipeline by ID
 #     """
 #     body = {
@@ -998,7 +976,7 @@ async def test_get_criteria(monkeypatch, client):
 #   }
 # }
 #     params = [('report_to_stdout', False)]
-#     headers = { 
+#     headers = {
 #         'Accept': 'application/json',
 #         'Content-Type': 'application/json',
 #     }
@@ -1010,4 +988,4 @@ async def test_get_criteria(monkeypatch, client):
 #         params=params,
 #         )
 #     assert response.status == 200, 'Response body is : ' + (await response.read()).decode('utf-8')
-# 
+#
