@@ -10,8 +10,19 @@ from openapi_server import config
 CONF = config.init('etc/sqaaas.ini.sample')
 
 
+class MockGitHubUtils:
+    @staticmethod
+    def get_file(*args, **kwargs):
+        return "file content"
+
+        
 @pytest.fixture
-def client(loop, aiohttp_client):
+def client(monkeypatch, loop, aiohttp_client):
+    def mock_init_utils():
+        return (None, MockGitHubUtils, None, None)
+
+    monkeypatch.setattr("openapi_server.controllers.init_utils", mock_init_utils)
+
     logging.getLogger('connexion.operation').setLevel('ERROR')
     options = {
         "swagger_ui": True
