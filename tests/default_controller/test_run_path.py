@@ -19,6 +19,6 @@ async def test_run_pipeline(mocker, client, mock_db):
         method='POST',
         path='/v1/pipeline/{pipeline_id}/run'.format(pipeline_id='dd7d8481-81a3-407f-95f0-a2f1cb382a4b'),
         headers=headers,
-        params=params,
+        # params=params,
     )
     assert response.status == 200, 'Response body is : ' + (await response.read()).decode('utf-8')
