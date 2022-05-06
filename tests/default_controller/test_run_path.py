@@ -1,13 +1,14 @@
 import pytest
 
 
-async def test_run_pipeline(mocker, client, mock_db):
+async def test_run_pipeline(mocker, client, mock_db, mock_jepl_utils):
     """Test case for run_pipeline
 
     Runs pipeline.
     """
     mocker.patch('openapi_server.controllers.utils.db', mock_db)
     mocker.patch('openapi_server.controllers.default_controller.db', mock_db)
+    mocker.patch('openapi_server.controllers.default_controller.JePLUtils', mock_jepl_utils)
 
     params = [('issue_badge', 'False'),
               ('repo_url', 'repo_url_example'),

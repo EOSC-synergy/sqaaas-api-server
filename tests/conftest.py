@@ -11,7 +11,8 @@ CONF = config.init('etc/sqaaas.ini.sample')
 
 
 pytest_plugins = [
-    'tests.fixtures.db'
+    'tests.fixtures.db',
+    'tests.fixtures.jepl'
 ]
 
 
