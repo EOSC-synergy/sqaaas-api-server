@@ -10,12 +10,17 @@ from openapi_server import config
 CONF = config.init('etc/sqaaas.ini.sample')
 
 
+pytest_plugins = [
+    'tests.fixtures.db'
+]
+
+
 class MockGitHubUtils:
     @staticmethod
     def get_file(*args, **kwargs):
         return "file content"
 
-        
+
 @pytest.fixture
 def client(monkeypatch, loop, aiohttp_client):
     def mock_init_utils():
