@@ -616,26 +616,6 @@ async def test_get_pipelines(client):
     assert response.status == 200, 'Response body is : ' + (await response.read()).decode('utf-8')
 
 
-async def test_run_pipeline(client):
-    """Test case for run_pipeline
-
-    Runs pipeline.
-    """
-    params = [('issue_badge', False),
-                    ('repo_url', 'repo_url_example'),
-                    ('repo_branch', 'repo_branch_example')]
-    headers = {
-        'Accept': 'application/json',
-    }
-    response = await client.request(
-        method='POST',
-        path='/v1/pipeline/{pipeline_id}/run'.format(pipeline_id='pipeline_id_example'),
-        headers=headers,
-        params=params,
-        )
-    assert response.status == 200, 'Response body is : ' + (await response.read()).decode('utf-8')
-
-
 async def test_update_pipeline_by_id(client):
     """Test case for update_pipeline_by_id
 
