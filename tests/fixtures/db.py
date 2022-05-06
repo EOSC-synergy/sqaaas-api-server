@@ -30,7 +30,8 @@ class MockDB:
                     'data_yml': '',
                     'file_name': '',
                 },
-                'jenkinsfile': ''
+                'jenkinsfile': '',
+                'commands_scripts': []
             }
         }
 
