@@ -1,11 +1,8 @@
 import pytest
 
 
-async def test_run_pipeline(mocker, client, mock_db, mock_jepl_utils):
-    """Test case for run_pipeline
-
-    Runs pipeline.
-    """
+async def test_run_pipeline_response_204(mocker, client, mock_db, mock_jepl_utils):
+    """Test case for checking 204 responses in run_pipeline."""
     mocker.patch('openapi_server.controllers.utils.db', mock_db)
     mocker.patch('openapi_server.controllers.default_controller.db', mock_db)
     mocker.patch('openapi_server.controllers.default_controller.JePLUtils', mock_jepl_utils)
