@@ -12,34 +12,19 @@ CONF = config.init('etc/sqaaas.ini.sample')
 
 pytest_plugins = [
     'tests.fixtures.db',
+    'tests.fixtures.github',
     'tests.fixtures.jepl',
     'tests.fixtures.jenkins',
 ]
 
 
-class MockGitHubRepo(object):
-    @staticmethod
-    def default_branch():
-        return 'main'
-
-class MockGitHubUtils:
-    @staticmethod
-    def get_file(*args, **kwargs):
-        return "file content"
-
-    @staticmethod
-    def get_repository(*args, **kwargs):
-        return MockGitHubRepo()
-
-    @staticmethod
-    def get_commit_url(*args, **kwargs):
-        return 'https://example.com/commit_url'
-
-
 @pytest.fixture
-def client(monkeypatch, loop, aiohttp_client, mock_jenkins_utils):
+def client(
+        monkeypatch, loop, aiohttp_client,
+        mock_github_utils, mock_jenkins_utils
+):
     def mock_init_utils():
-        return (None, MockGitHubUtils, mock_jenkins_utils, None)
+        return (None, mock_github_utils, mock_jenkins_utils, None)
 
     monkeypatch.setattr("openapi_server.controllers.init_utils", mock_init_utils)
 
