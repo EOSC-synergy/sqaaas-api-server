@@ -669,6 +669,15 @@ paths:
         schema:
           type: string
         style: form
+      - description: Flag to indicate that the pipeline will run until the end
+        explode: true
+        in: query
+        name: keepgoing
+        required: false
+        schema:
+          default: false
+          type: boolean
+        style: form
       responses:
         "204":
           description: Successful operation

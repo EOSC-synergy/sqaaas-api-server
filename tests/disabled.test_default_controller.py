@@ -355,27 +355,6 @@ async def test_add_pipeline(client):
     assert response.status == 200, 'Response body is : ' + (await response.read()).decode('utf-8')
 
 
-async def test_add_pipeline_for_assessment(client):
-    """Test case for add_pipeline_for_assessment
-
-    Creates a pipeline for assessment (QAA module).
-    """
-    body = openapi_server.PipelineAssessment()
-    params = [('optional_tools', ['optional_tools_example'])]
-    headers = {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
-    }
-    response = await client.request(
-        method='POST',
-        path='/v1/pipeline/assessment',
-        headers=headers,
-        json=body,
-        params=params,
-        )
-    assert response.status == 200, 'Response body is : ' + (await response.read()).decode('utf-8')
-
-
 async def test_create_pull_request(client):
     """Test case for create_pull_request
 
@@ -441,8 +420,6 @@ async def test_get_compressed_files(client):
         headers=headers,
         )
     assert response.status == 200, 'Response body is : ' + (await response.read()).decode('utf-8')
-
-
 
 
 async def test_get_output_for_assessment(client):
@@ -635,26 +612,6 @@ async def test_get_pipelines(client):
         method='GET',
         path='/v1/pipeline',
         headers=headers,
-        )
-    assert response.status == 200, 'Response body is : ' + (await response.read()).decode('utf-8')
-
-
-async def test_run_pipeline(client):
-    """Test case for run_pipeline
-
-    Runs pipeline.
-    """
-    params = [('issue_badge', False),
-                    ('repo_url', 'repo_url_example'),
-                    ('repo_branch', 'repo_branch_example')]
-    headers = {
-        'Accept': 'application/json',
-    }
-    response = await client.request(
-        method='POST',
-        path='/v1/pipeline/{pipeline_id}/run'.format(pipeline_id='pipeline_id_example'),
-        headers=headers,
-        params=params,
         )
     assert response.status == 200, 'Response body is : ' + (await response.read()).decode('utf-8')
 

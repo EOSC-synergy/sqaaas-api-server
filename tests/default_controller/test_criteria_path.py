@@ -1,13 +1,10 @@
-async def test_get_criteria(monkeypatch, client):
+async def test_get_criteria(mocker, client):
     """Test case for get_criteria
 
     Returns data about criteria
     """
-    async def mock_get_tooling_metadata(*args, **kwargs):
-        return {"mock_key": "mock_response"}
-
-    monkeypatch.setattr("openapi_server.controllers.default_controller._get_tooling_metadata", mock_get_tooling_metadata)
-    monkeypatch.setattr("openapi_server.controllers.default_controller._sort_tooling_by_criteria", mock_get_tooling_metadata)
+    mocker.patch("openapi_server.controllers.default_controller._get_tooling_metadata", return_value={"mock_key": "mock_response"})
+    mocker.patch("openapi_server.controllers.default_controller._sort_tooling_by_criteria", return_value={"mock_key": "mock_response"})
 
     params = [('criterion_id', 'criterion_id_example')]
     headers = {

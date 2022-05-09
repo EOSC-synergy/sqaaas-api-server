@@ -575,7 +575,7 @@ async def get_pipeline_jenkinsfile_jepl(request: web.Request, pipeline_id) -> we
 
 @ctls_utils.debug_request
 @ctls_utils.validate_request
-async def run_pipeline(request: web.Request, pipeline_id, issue_badge=False, repo_url=None, repo_branch=None) -> web.Response:
+async def run_pipeline(request: web.Request, pipeline_id, issue_badge=False, repo_url=None, repo_branch=None, keepgoing=False) -> web.Response:
     """Runs pipeline.
 
     Executes the given pipeline by means of the Jenkins API.
@@ -588,8 +588,13 @@ async def run_pipeline(request: web.Request, pipeline_id, issue_badge=False, rep
     :type repo_url: str
     :param repo_branch: Branch name of the upstream repository to fetch the code from
     :type repo_branch: str
+    :param keepgoing: Flag to indicate that the pipeline will run until the end
+    :type keepgoing: bool
 
     """
+    if keepgoing:
+        db.update_environment(pipeline_id, {'JPL_KEEPGOING': 'enabled'})
+
     pipeline_data = db.get_entry(pipeline_id)
     pipeline_repo = pipeline_data['pipeline_repo']
     pipeline_repo_url = pipeline_data['pipeline_repo_url']

@@ -2,6 +2,7 @@ import copy
 import json
 import logging
 import pathlib
+import yaml
 
 from openapi_server import config
 from openapi_server.controllers import utils as ctls_utils
@@ -186,3 +187,20 @@ def add_assessment_data(pipeline_id, assessment_data):
     db[pipeline_id]['qaa'] = assessment_data
     store_content(db)
     logger.debug('QAA data added in DB for pipeline <%s>: %s' % (pipeline_id, db[pipeline_id]['qaa']))
+
+
+def update_environment(pipeline_id, envvar_data):
+    """Updates the config.yml's environment data in the DB for the given pipeline ID.
+
+    :param pipeline_id: UUID-format identifier for the pipeline.
+    :param envvar_data: Dictionary containing new environment variables to set.
+    """
+    db = load_content()
+    for config_file in db[pipeline_id]['data']['config']:
+        if 'environment' not in list(config_file['data_json']):
+            config_file['data_json']['environment'] = envvar_data
+        else:
+            config_file['data_json']['environment'].update(envvar_data)
+        config_file['data_yml'] = yaml.dump(config_file['data_json'])
+    store_content(db)
+    logger.debug('config.yml\'s environment data updated in DB for pipeline <%s>: %s' % (pipeline_id, db[pipeline_id]['data']['config']))

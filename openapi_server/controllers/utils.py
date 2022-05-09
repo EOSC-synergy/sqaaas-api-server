@@ -730,7 +730,7 @@ def process_extra_data(config_json, composer_json, report_to_stdout=False):
         config_json['sqa_criteria'][criterion_name] = criterion_data_copy
 
     # Default CONFIG:ENVIRONMENT
-    for jpl_envvar in ['JPL_DOCKERFORCEBUILD', 'JPL_KEEPGOING']:
+    for jpl_envvar in ['JPL_DOCKERFORCEBUILD']:
         logger.debug('Enabling <%s> flag (default behaviour)' % jpl_envvar)
         if not 'environment' in config_json.keys():
             config_json['environment'] = {}
