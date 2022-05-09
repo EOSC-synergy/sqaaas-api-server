@@ -2,13 +2,7 @@ import pytest
 
 
 class MockDB:
-    @staticmethod
-    def load_content():
-        return {'dd7d8481-81a3-407f-95f0-a2f1cb382a4b': {}}
-
-    @staticmethod
-    def get_entry(*args, **kwargs):
-        return {
+    entry = {
             'pipeline_repo': 'org/repo_name',
             'pipeline_repo_url': 'https://example.com/org/repo_name',
             'data': {
@@ -34,6 +28,14 @@ class MockDB:
                 'commands_scripts': []
             }
         }
+
+    @staticmethod
+    def load_content():
+        return {'dd7d8481-81a3-407f-95f0-a2f1cb382a4b': MockDB.entry}
+
+    @staticmethod
+    def get_entry(cls, *args, **kwargs):
+        return MockDB.entry
 
     @staticmethod
     def update_jenkins(*args, **kwargs):
