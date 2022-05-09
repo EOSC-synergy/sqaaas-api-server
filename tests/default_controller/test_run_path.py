@@ -23,4 +23,4 @@ async def test_run_pipeline(mocker, client, mock_db, mock_jepl_utils):
         headers=headers,
         # params=params,
     )
-    assert response.status == 200, 'Response body is : ' + (await response.read()).decode('utf-8')
+    assert response.status == 204, 'Response body is : ' + (await response.read()).decode('utf-8')
