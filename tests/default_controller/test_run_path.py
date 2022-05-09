@@ -9,6 +9,7 @@ async def test_run_pipeline(mocker, client, mock_db, mock_jepl_utils):
     mocker.patch('openapi_server.controllers.utils.db', mock_db)
     mocker.patch('openapi_server.controllers.default_controller.db', mock_db)
     mocker.patch('openapi_server.controllers.default_controller.JePLUtils', mock_jepl_utils)
+    mocker.patch('openapi_server.controllers.default_controller._update_status', return_value=True)
 
     params = [('issue_badge', 'False'),
               ('repo_url', 'repo_url_example'),
