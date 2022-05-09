@@ -35,6 +35,10 @@ class MockDB:
             }
         }
 
+    @staticmethod
+    def update_jenkins(*args, **kwargs):
+        return True
+
 
 @pytest.fixture
 def mock_db():
