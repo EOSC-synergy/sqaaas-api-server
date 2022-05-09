@@ -12,7 +12,8 @@ CONF = config.init('etc/sqaaas.ini.sample')
 
 pytest_plugins = [
     'tests.fixtures.db',
-    'tests.fixtures.jepl'
+    'tests.fixtures.jepl',
+    'tests.fixtures.jenkins',
 ]
 
 
@@ -36,9 +37,9 @@ class MockGitHubUtils:
 
 
 @pytest.fixture
-def client(monkeypatch, loop, aiohttp_client):
+def client(monkeypatch, loop, aiohttp_client, mock_jenkins_utils):
     def mock_init_utils():
-        return (None, MockGitHubUtils, None, None)
+        return (None, MockGitHubUtils, mock_jenkins_utils, None)
 
     monkeypatch.setattr("openapi_server.controllers.init_utils", mock_init_utils)
 
