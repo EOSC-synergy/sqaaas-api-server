@@ -23,4 +23,5 @@ cd {{ checkout_dir }} &&
     {{ cmd }}{{"&&" if not loop.last}}
     {%- endfor %}
 {% endif %}
+{% endif %}
 )
