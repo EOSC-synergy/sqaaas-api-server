@@ -16,12 +16,11 @@ if ! kubectl rollout status -k {{ checkout_dir }} --timeout={{ k8s_rollout_statu
     kubectl rollout undo -k {{ checkout_dir }} --timeout={{ k8s_rollout_status_timeout }}
     kubectl rollout status -k {{ checkout_dir }} --timeout={{ k8s_rollout_status_timeout }}
 fi
-{% endif %}
+{%- endif %}
 {%- else %}
 cd {{ checkout_dir }} &&
     {%- for cmd in commands %}
     {{ cmd }}{{"&&" if not loop.last}}
     {%- endfor %}
-{% endif %}
-{% endif %}
+{%- endif %}
 )
