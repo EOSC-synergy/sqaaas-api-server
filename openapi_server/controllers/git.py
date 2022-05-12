@@ -115,10 +115,6 @@ class GitUtils(object):
             source_repo_branch = repo.get('branch', None)
             with tempfile.TemporaryDirectory() as dirpath:
                 try:
-                    msg = 'Cloning repository <%s>' % source_repo 
-                    if source_repo:
-                        msg += ' (branch %s)' % source_repo_branch
-                    logger.debug(msg)
                     if source_repo_branch:
                         repo = Repo.clone_from(
                             source_repo, dirpath,
@@ -130,6 +126,9 @@ class GitUtils(object):
                         )
                     branch = repo.active_branch
                     branch = branch.name
+                    msg = 'Repository <%s> was cloned (branch: %s)' % (
+                        source_repo, branch)
+                    logger.debug(msg)
                 except GitCommandError as e:
                     raise SQAaaSAPIException(422, e)
                 else:
