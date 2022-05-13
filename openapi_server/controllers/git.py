@@ -42,7 +42,7 @@ class GitUtils(object):
     def clone_and_push(self, source_repo, target_repo, source_repo_branch=None):
         """Copies the source Git repository into the target one.
 
-        Returns a tuple with the repository URL and default branch name.
+        Returns the target's branch name.
 
         :param source_repo: Absolute URL of the source repository (e.g. https://example.org)
         :param target_repo: Absolute URL of the target repository (e.g. https://github.com/org/example)
@@ -61,17 +61,10 @@ class GitUtils(object):
                 self.setup_env(dirpath)
 
             sqaaas = repo.create_remote(REMOTE_NAME, url=target_repo)
-            try:
-                sqaaas.fetch()
-                sqaaas.pull()
-                logger.debug('Repository updated: %s' % repo.remotes.sqaaas.url)
-            except GitCommandError as e:
-                logger.warning('Could not fetch&pull from target repository: %s (git msg: %s)' % (target_repo, e))
-            finally:
-                sqaaas.push(force=True)
-                logger.debug('Repository pushed to remote: %s' % repo.remotes.sqaaas.url)
-            default_branch = repo.active_branch
-        return sqaaas.url, default_branch.name
+            sqaaas.push(force=True)
+            logger.debug('Repository pushed to remote: %s' % repo.remotes.sqaaas.url)
+            default_branch = repo.active_branch.name
+        return default_branch
 
     @staticmethod
     def get_remote_active_branch(remote_repo):
