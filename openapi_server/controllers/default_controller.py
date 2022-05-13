@@ -624,11 +624,6 @@ async def run_pipeline(request: web.Request, pipeline_id, issue_badge=False, rep
             'Clone & Push source repository <%s> to target repository <%s>' % (
                 repo_url, pipeline_repo_url)
         )
-        _repo_url = ctls_utils.format_git_url(repo_url)
-        logger.debug((
-            'Format source repository URL to avoid git askpass when repo '
-            'does not exist: %s' % _repo_url
-        ))
         try:
             pipeline_repo_branch = git_utils.clone_and_push(
                 _repo_url, pipeline_repo_url, source_repo_branch=repo_branch)

@@ -26,6 +26,26 @@ class GitUtils(object):
         """
         self.access_token = access_token
 
+    def format_git_url(repo_url):
+        """Formats git URL to avoid asking for password when repos do not exist.
+
+        :param repo_url: URL of the git repository
+        """
+        logger.debug((
+            'Format source repository URL to avoid git askpass when repo '
+            'does not exist: %s' % repo_url
+        ))
+        repo_url_parsed = parse_url(repo_url)
+        repo_url_final = Url(
+            scheme=repo_url_parsed.scheme,
+            auth=repo_url_parsed.auth,
+            host=':@'+repo_url_parsed.host,
+            path=repo_url_parsed.path,
+            query=repo_url_parsed.query,
+            fragment=repo_url_parsed.fragment
+        )
+        return repo_url_final.url
+
     def setup_env(self, dirpath):
         """Setups the environment for handling remote repositories.
 
@@ -48,6 +68,7 @@ class GitUtils(object):
         :param target_repo: Absolute URL of the target repository (e.g. https://github.com/org/example)
         :param source_repo_branch: Specific branch name to use from the source repository
         """
+        target_repo = self.format_git_url(source_repo)
         with tempfile.TemporaryDirectory() as dirpath:
             repo = None
             try:
@@ -104,7 +125,7 @@ class GitUtils(object):
         @functools.wraps(f)
         def decorated_function(*args, **kwargs):
             repo = kwargs['repo']
-            source_repo = repo['repo']
+            source_repo = self.format_git_url(repo['repo'])
             source_repo_branch = repo.get('branch', None)
             with tempfile.TemporaryDirectory() as dirpath:
                 try:
