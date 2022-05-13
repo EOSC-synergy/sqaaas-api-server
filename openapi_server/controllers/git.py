@@ -7,6 +7,7 @@ import tempfile
 from git import Repo
 from git.exc import GitCommandError
 from urllib3.util import parse_url
+from urllib3.util import Url
 
 from openapi_server.exception import SQAaaSAPIException
 
