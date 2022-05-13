@@ -598,7 +598,7 @@ async def run_pipeline(request: web.Request, pipeline_id, issue_badge=False, rep
     pipeline_data = db.get_entry(pipeline_id)
     pipeline_repo = pipeline_data['pipeline_repo']
     pipeline_repo_url = pipeline_data['pipeline_repo_url']
-    pipeline_repo_branch = 'sqaaas'
+    pipeline_repo_branch = repo_branch
 
     config_data_list = pipeline_data['data']['config']
     composer_data = pipeline_data['data']['composer']
