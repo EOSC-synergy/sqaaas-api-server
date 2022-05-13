@@ -606,34 +606,54 @@ async def run_pipeline(request: web.Request, pipeline_id, issue_badge=False, rep
 
     if repo_url:
         if not ctls_utils.has_this_repo(config_data_list):
-            _reason = 'No criteria has been associated with the repository where the pipeline is meant to be added (aka \'this_repo\')'
+            _reason = ((
+                'No criteria has been associated with the provided '
+                'repository: %s' % repo_url
+            ))
             logger.error(_reason)
             return web.Response(status=422, reason=_reason, text=_reason)
-        _branch_msg = '(default branch)'
-        if repo_branch:
-            pipeline_repo_branch = repo_branch
-            _branch_msg = '(branch: %s)' % repo_branch
-        logger.info('Remote repository URL provided, cloning repository in %s organization: <%s> %s' % (GITHUB_ORG, repo_url, _branch_msg))
-        logger.debug('Creating pipeline repository in %s organization: %s' % (GITHUB_ORG, pipeline_repo_url))
+        logger.info((
+            'Remote repository <%s> provided, will fetch & push content into '
+            '<%s> organization: <%s> repository' % (
+                repo_url, GITHUB_ORG, pipeline_repo_url
+            )
+        ))
+        logger.debug('Create target repository: %s' % pipeline_repo_url)
         gh_utils.create_org_repository(pipeline_repo)
-        logger.debug('Cloning locally the source repository <%s> & Pushing to target repository: %s' % (repo_url, pipeline_repo_url))
+        logger.debug(
+            'Clone & Push source repository <%s> to target repository <%s>' % (
+                repo_url, pipeline_repo_url)
+        )
         _repo_url = ctls_utils.format_git_url(repo_url)
-        logger.debug('Formatting source repository URL to avoid git askpass when repo does not exist: %s' % _repo_url)
+        logger.debug((
+            'Format source repository URL to avoid git askpass when repo '
+            'does not exist: %s' % _repo_url
+        ))
         try:
             pipeline_repo_branch = git_utils.clone_and_push(
-                _repo_url, pipeline_repo_url, source_repo_branch=repo_branch)[-1]
+                _repo_url, pipeline_repo_url, source_repo_branch=repo_branch)
         except SQAaaSAPIException as e:
             logger.error(e.message)
-            _reason = 'Could not access to repository: %s (branch: %s)' % (_repo_url, repo_branch)
-            return web.Response(status=e.http_code, reason=_reason, text=_reason)
+            _reason = (
+                'Could not access to repository: %s (branch: %s)' % (
+                    _repo_url, repo_branch
+                )
+            )
+            return web.Response(
+                status=e.http_code, reason=_reason, text=_reason
+            )
         else:
-            logger.info(('Pipeline repository updated with the content from source: %s (branch: %s)' % (pipeline_repo, pipeline_repo_branch)))
+            logger.debug((
+                'Pipeline repository updated with the content from source: '
+                '%s (branch: %s)' % (pipeline_repo, pipeline_repo_branch)
+            ))
     else:
         repo_data = gh_utils.get_repository(pipeline_repo)
         if not repo_data:
             repo_data = gh_utils.create_org_repository(pipeline_repo)
         pipeline_repo_branch = repo_data.default_branch
-    logger.info('Using pipeline repository: %s (branch: %s)' % (
+
+    logger.debug('Using pipeline repository <%s> (branch: %s)' % (
         pipeline_repo, pipeline_repo_branch))
 
     commit_id = JePLUtils.push_files(
@@ -647,12 +667,17 @@ async def run_pipeline(request: web.Request, pipeline_id, issue_badge=False, rep
     )
     commit_url = gh_utils.get_commit_url(pipeline_repo, commit_id)
 
+    logger.info('Pipeline repository set up at <%s> (branch: %s)' % (
+        pipeline_repo, pipeline_repo_branch))
+
     _pipeline_repo_name = pipeline_repo.split('/')[-1]
     jk_job_name = '/'.join([
         JENKINS_GITHUB_ORG,
         _pipeline_repo_name,
         jk_utils.format_job_name(pipeline_repo_branch)
     ])
+
+    logger.info('Triggering pipeline in Jenkins CI: %s' % jk_job_name)
 
     build_item_no = None
     build_no = None
@@ -666,7 +691,9 @@ async def run_pipeline(request: web.Request, pipeline_id, issue_badge=False, rep
         build_item_no = jk_utils.build_job(jk_job_name)
         if build_item_no:
             build_status = 'QUEUED'
-            logger.info('Build status for pipeline <%s>: %s' % (pipeline_repo, build_status))
+            logger.info('Build status for pipeline <%s>: %s' % (
+                pipeline_repo, build_status
+            ))
             reason = 'Triggered the existing Jenkins job'
         else:
             _reason = 'Could not trigger build job'
@@ -679,7 +706,10 @@ async def run_pipeline(request: web.Request, pipeline_id, issue_badge=False, rep
         reason = 'Triggered scan organization for building the Jenkins job'
 
     if issue_badge:
-        logger.debug('Badge issuing (<issue_badge> flag) is requested for the current build: %s' % commit_id)
+        logger.debug((
+            'Badge issuing (<issue_badge> flag) is requested for the current '
+            'build: %s' % commit_id
+        ))
 
     # FIXME Just need to update build data:
     #   <build_status>, <build_item_no>, <scan_org_wait>, <issue_badge>?
