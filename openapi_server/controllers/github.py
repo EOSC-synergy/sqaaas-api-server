@@ -287,8 +287,15 @@ class GitHubUtils(object):
                 self.push_file(
                     'README.md', file_data, 'Add README', repo_name, branch
                 )
+            self.logger.debug(
+                'Created new repository <%s> (default branch: %s)' % (
+                    repo_name, branch)
+            )
         else:
-            self.logger.debug('GitHub repository <%s> already exists' % repo_name)
+            self.logger.debug((
+                'GitHub repository <%s> already exists (default '
+                'branch: %s)' % (repo_name, repo.default_branch)
+            ))
         return repo
 
     def delete_repo(self, repo_name):
