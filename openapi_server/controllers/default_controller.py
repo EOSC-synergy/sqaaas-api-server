@@ -671,7 +671,7 @@ async def run_pipeline(request: web.Request, pipeline_id, issue_badge=False, rep
         else:
             _reason = 'Could not trigger build job'
             logger.error(_reason)
-            raise SQAaaSAPIException(_reason)
+            raise SQAaaSAPIException(422, _reason)
     else:
         jk_utils.scan_organization()
         scan_org_wait = True
@@ -1042,7 +1042,7 @@ async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Re
                     'in the pipeline' % criterion_name
                 ))
                 logger.error(_reason)
-                raise SQAaaSAPIException(_reason)
+                raise SQAaaSAPIException(422, _reason)
 
             criterion_valid_list = []
             subcriteria = {}
