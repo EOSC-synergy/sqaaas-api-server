@@ -254,7 +254,7 @@ class JePLUtils(object):
             repo_name=repo,
             branch=branch
         )
-        logger.info((
+        logger.debug((
             'GitHub repository <%s> created with the JePL file '
             'structure' % repo
         ))
