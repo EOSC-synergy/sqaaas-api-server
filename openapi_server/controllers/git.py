@@ -125,7 +125,7 @@ class GitUtils(object):
         @functools.wraps(f)
         def decorated_function(*args, **kwargs):
             repo = kwargs['repo']
-            source_repo = self.format_git_url(repo['repo'])
+            source_repo = GitUtils.format_git_url(repo['repo'])
             source_repo_branch = repo.get('branch', None)
             with tempfile.TemporaryDirectory() as dirpath:
                 try:
