@@ -823,23 +823,6 @@ def has_this_repo(config_data_list):
     return this_repo
 
 
-def format_git_url(repo_url):
-    """Formats git URL to avoid asking for password when repos do not exist.
-
-    :param repo_url: URL of the git repository
-    """
-    repo_url_parsed = parse_url(repo_url)
-    repo_url_final = Url(
-        scheme=repo_url_parsed.scheme,
-        auth=repo_url_parsed.auth,
-        host=':@'+repo_url_parsed.host,
-        path=repo_url_parsed.path,
-        query=repo_url_parsed.query,
-        fragment=repo_url_parsed.fragment
-    )
-    return repo_url_final.url
-
-
 def supported_git_platform(repo_url, platforms):
     """Checks if the given repo_url belongs to any of the supported platforms.
 
