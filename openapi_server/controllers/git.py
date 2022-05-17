@@ -128,7 +128,7 @@ class GitUtils(object):
                 ))
             except GitCommandError as e:
                 raise SQAaaSAPIException(
-                    422, self._custom_exception_messages(e)
+                    422, GitUtils._custom_exception_messages(e)
                 )
             else:
                 return branch
@@ -163,7 +163,7 @@ class GitUtils(object):
                     logger.debug(msg)
                 except GitCommandError as e:
                     raise SQAaaSAPIException(
-                        422, self._custom_exception_messages(e)
+                        422, GitUtils._custom_exception_messages(e)
                     )
                 else:
                     # Set path to the temporary directory
