@@ -79,7 +79,7 @@ class GitUtils(object):
                 else:
                     repo = Repo.clone_from(source_repo, dirpath)
             except GitCommandError as e:
-                raise SQAaaSAPIException(422, e)
+                raise SQAaaSAPIException(422, str(e))
             else:
                 self.setup_env(dirpath)
 
@@ -113,7 +113,7 @@ class GitUtils(object):
                         remote_repo, branch
                 ))
             except GitCommandError as e:
-                raise SQAaaSAPIException(422, e)
+                raise SQAaaSAPIException(422, str(e))
             else:
                 return branch
 
@@ -146,7 +146,7 @@ class GitUtils(object):
                         source_repo, branch)
                     logger.debug(msg)
                 except GitCommandError as e:
-                    raise SQAaaSAPIException(422, e)
+                    raise SQAaaSAPIException(422, str(e))
                 else:
                     # Set path to the temporary directory
                     kwargs['path'] = dirpath
