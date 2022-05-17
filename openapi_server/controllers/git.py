@@ -28,6 +28,18 @@ class GitUtils(object):
         """
         self.access_token = access_token
 
+    def _custom_exception_messages(self, message):
+        """Returns more concised error messages from the ones returned by
+        GitPython.
+
+        :param message: GitCommandError message
+        """
+        message = str(e)
+        if message.find('remote: Repository not found') != -1:
+            message = 'Repository not found: %s' % repo['repo']
+
+        return message
+
     def format_git_url(repo_url):
         """Formats git URL to avoid asking for password when repos do not exist.
 
@@ -79,7 +91,9 @@ class GitUtils(object):
                 else:
                     repo = Repo.clone_from(source_repo, dirpath)
             except GitCommandError as e:
-                raise SQAaaSAPIException(422, str(e))
+                raise SQAaaSAPIException(
+                    422, self._custom_exception_messages(e)
+                )
             else:
                 self.setup_env(dirpath)
 
@@ -113,7 +127,9 @@ class GitUtils(object):
                         remote_repo, branch
                 ))
             except GitCommandError as e:
-                raise SQAaaSAPIException(422, str(e))
+                raise SQAaaSAPIException(
+                    422, self._custom_exception_messages(e)
+                )
             else:
                 return branch
 
@@ -146,7 +162,9 @@ class GitUtils(object):
                         source_repo, branch)
                     logger.debug(msg)
                 except GitCommandError as e:
-                    raise SQAaaSAPIException(422, str(e))
+                    raise SQAaaSAPIException(
+                        422, self._custom_exception_messages(e)
+                    )
                 else:
                     # Set path to the temporary directory
                     kwargs['path'] = dirpath
