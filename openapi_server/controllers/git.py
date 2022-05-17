@@ -40,7 +40,7 @@ class GitUtils(object):
 
         return message
 
-    def format_git_url(repo_url):
+    def _format_git_url(repo_url):
         """Formats git URL to avoid asking for password when repos do not exist.
 
         :param repo_url: URL of the git repository
@@ -82,7 +82,7 @@ class GitUtils(object):
         :param target_repo: Absolute URL of the target repository (e.g. https://github.com/org/example)
         :param source_repo_branch: Specific branch name to use from the source repository
         """
-        target_repo = self.format_git_url(source_repo)
+        target_repo = self._format_git_url(source_repo)
         with tempfile.TemporaryDirectory() as dirpath:
             repo = None
             try:
@@ -143,7 +143,7 @@ class GitUtils(object):
         @functools.wraps(f)
         def decorated_function(*args, **kwargs):
             repo = kwargs['repo']
-            source_repo = GitUtils.format_git_url(repo['repo'])
+            source_repo = GitUtils._format_git_url(repo['repo'])
             source_repo_branch = repo.get('branch', None)
             with tempfile.TemporaryDirectory() as dirpath:
                 try:
