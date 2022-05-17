@@ -881,14 +881,23 @@ async def _run_validation(tool, stdout):
         raise SQAaaSAPIException(422, _reason)
     else:
         validator = r2s_utils.get_validator(validator_opts)
-        out = validator.driver.validate()
-        validator_package_name = '-'.join([
-            'report2sqaaas-plugin', validator_name
-        ])
-        out.update({
-            'package_name': validator_package_name,
-            'package_version': version(validator_package_name)
-        })
+        try:
+            out = validator.driver.validate()
+        except Exception as e:
+            _reason = ((
+                'Error raised when validating tool <%s> with validator '
+                'plugin <%s>: %s' % (tool, validator_name, str(e))
+            ))
+            logger.error(_reason)
+            raise SQAaaSAPIException(422, _reason)
+        else:
+            validator_package_name = '-'.join([
+                'report2sqaaas-plugin', validator_name
+            ])
+            out.update({
+                'package_name': validator_package_name,
+                'package_version': version(validator_package_name)
+            })
 
     return (reporting_data, out)
 
