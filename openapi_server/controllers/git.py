@@ -28,15 +28,16 @@ class GitUtils(object):
         """
         self.access_token = access_token
 
-    def _custom_exception_messages(self, message):
+    @staticmethod
+    def _custom_exception_messages(exc, **kwargs):
         """Returns more concised error messages from the ones returned by
         GitPython.
 
-        :param message: GitCommandError message
+        :param exc: GitCommandError exception
         """
-        message = str(e)
+        message = str(exc)
         if message.find('remote: Repository not found') != -1:
-            message = 'Repository not found: %s' % repo['repo']
+            message = 'Repository not found: %s' % kwargs['repo']
 
         return message
 
@@ -92,7 +93,9 @@ class GitUtils(object):
                     repo = Repo.clone_from(source_repo, dirpath)
             except GitCommandError as e:
                 raise SQAaaSAPIException(
-                    422, self._custom_exception_messages(e)
+                    422, GitUtils._custom_exception_messages(
+                        e, repo=source_repo
+                    )
                 )
             else:
                 self.setup_env(dirpath)
@@ -128,7 +131,9 @@ class GitUtils(object):
                 ))
             except GitCommandError as e:
                 raise SQAaaSAPIException(
-                    422, GitUtils._custom_exception_messages(e)
+                    422, GitUtils._custom_exception_messages(
+                        e, repo=remote_repo
+                    )
                 )
             else:
                 return branch
@@ -163,7 +168,9 @@ class GitUtils(object):
                     logger.debug(msg)
                 except GitCommandError as e:
                     raise SQAaaSAPIException(
-                        422, GitUtils._custom_exception_messages(e)
+                        422, GitUtils._custom_exception_messages(
+                            e, repo=repo['repo']
+                        )
                     )
                 else:
                     # Set path to the temporary directory
