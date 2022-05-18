@@ -962,3 +962,18 @@ def get_registry_from_image(image_name):
         ])
 
     return registry_url
+
+
+def format_filtered_data(valid, reason_list, subcriteria=None):
+    """Returns the data as to be stored in the DB for filtered criteria.
+
+    :param valid: Boolean value setting the overall validity of the criterion
+    :param reason_list: List of per-criterion reasons of why this criterion
+        shall be filtered
+    :param subcriteria: Dict-like subcriteria data
+    """
+    return {
+        'valid': False,
+        'filtered_reason': reason_list,
+        'subcriteria': subcriteria
+    }

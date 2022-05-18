@@ -239,12 +239,11 @@ async def _get_tooling_for_assessment(
                 'property) in <%s> criterion' % criterion_id
             ))
             if criterion_has_required_level:
-                # Use same syntax as _get_output()
-                criteria_filtered_out[criterion_id] = {
-                    'valid': False,
-                    'filtered_reason': filtered_required_tools,
-                    'subcriteria': None
-                }
+                filtered_out_data = ctls_utils.format_filtered_data(
+                    False,
+                    filtered_required_tools
+                )
+                criteria_filtered_out[criterion_id] = filtered_out_data
                 logger.warn(_reason)
             else:
                 logger.debug(_reason)
