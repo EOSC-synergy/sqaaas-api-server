@@ -59,6 +59,10 @@ def get(key, fallback=None):
     return CONF.get('DEFAULT', key, fallback=fallback)
 
 
+def get_boolean(key, fallback=None):
+    return CONF.getboolean('DEFAULT', key, fallback=fallback)
+
+
 def get_repo(key, fallback=None):
     return CONF.get(REPO_BACKEND, key, fallback=fallback)
 

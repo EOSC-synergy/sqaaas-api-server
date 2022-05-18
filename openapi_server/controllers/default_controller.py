@@ -874,6 +874,7 @@ async def _run_validation(tool, stdout):
     allowed_validators = r2s_utils.get_validators()
     validator_name = reporting_data['validator']
     out = None
+    broken_validation_data = None
     if validator_name not in allowed_validators:
         _reason = 'Could not find report2sqaaas validator plugin <%s> (found: %s)' % (validator_name, allowed_validators)
         logger.error(_reason)
@@ -888,7 +889,22 @@ async def _run_validation(tool, stdout):
                 'plugin <%s>: %s' % (tool, validator_name, str(e))
             ))
             logger.error(_reason)
-            raise SQAaaSAPIException(422, _reason)
+
+            interrupt = config.get_boolean(
+                'interrupt_on_validation_error',
+                fallback=False
+            )
+            if interrupt:
+                logger.debug((
+                    'End execution since <interrupt_on_validation_error> flag '
+                    'is enabled'
+                ))
+                raise SQAaaSAPIException(422, _reason)
+            else:
+                broken_validation_data = ctls_utils.format_filtered_data(
+                    False,
+                    [_reason]
+                )
         else:
             validator_package_name = '-'.join([
                 'report2sqaaas-plugin', validator_name
@@ -898,7 +914,7 @@ async def _run_validation(tool, stdout):
                 'package_version': version(validator_package_name)
             })
 
-    return (reporting_data, out)
+    return (reporting_data, out, broken_validation_data)
 
 
 async def _get_commands_from_script(stdout_command, commands_script_list):
@@ -956,6 +972,7 @@ async def _validate_output(stage_data_list, pipeline_data):
     """
     logger.debug('Output validation has been requested')
     output_data = {}
+    broken_validation_data = {}
     for stage_data in stage_data_list:
         criterion_stage_data = copy.deepcopy(stage_data)
         criterion_name = criterion_stage_data['criterion']
@@ -981,7 +998,27 @@ async def _validate_output(stage_data_list, pipeline_data):
         criterion_stage_data['tool'] = matched_tool
 
         logger.debug('Validating output from criterion <%s>' % criterion_name)
-        reporting_data, out = await _run_validation(matched_tool, criterion_stage_data['stdout_text'])
+        reporting_data, out, broken_data = await _run_validation(
+            matched_tool, criterion_stage_data['stdout_text']
+        )
+
+        # If broken criterion, add to filtered criteria list
+        if broken_data:
+            # Health check: broken criteria should not be already in
+            # the list of filtered criteria
+            if criterion_name in list(pipeline_data['qaa']):
+                logger.error((
+                    'Broken criterion <%s> is already present in the list '
+                    'of filtered criteria. Overriding content..'
+                ))
+            broken_validation_data[criterion_name] = broken_data
+            logger.info(
+                'Add broken criterion <%s> to filtered criteria list' % (
+                    criterion_name
+                )
+            )
+            continue
+
         logger.debug('Output returned by <%s> tool validator: %s' % (matched_tool, out))
         criterion_stage_data.update(reporting_data)
         criterion_stage_data['validation'] = out
@@ -992,7 +1029,7 @@ async def _validate_output(stage_data_list, pipeline_data):
         else:
             output_data[criterion_name] = [criterion_stage_data]
 
-    return output_data
+    return (output_data, broken_validation_data)
 
 
 async def _get_output(pipeline_id, validate=False):
@@ -1018,7 +1055,16 @@ async def _get_output(pipeline_id, validate=False):
 
     output_data = stage_data_list
     if validate:
-        output_data = await _validate_output(stage_data_list, pipeline_data)
+        output_data, broken_validation_data = await _validate_output(
+            stage_data_list, pipeline_data
+        )
+        if broken_validation_data:
+            pipeline_data['qaa'].update(broken_validation_data)
+            db.add_assessment_data(pipeline_id, pipeline_data['qaa'])
+            logger.info((
+                'Updated broken criteria in DB\'s QAA assessment: '
+                '%s' % pipeline_data['qaa']
+            ))
 
     return output_data
 
