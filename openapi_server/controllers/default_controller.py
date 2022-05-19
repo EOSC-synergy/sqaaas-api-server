@@ -625,12 +625,12 @@ async def run_pipeline(request: web.Request, pipeline_id, issue_badge=False, rep
         )
         try:
             pipeline_repo_branch = git_utils.clone_and_push(
-                _repo_url, pipeline_repo_url, source_repo_branch=repo_branch)
+                repo_url, pipeline_repo_url, source_repo_branch=repo_branch)
         except SQAaaSAPIException as e:
             logger.error(e.message)
             _reason = (
                 'Could not access to repository: %s (branch: %s)' % (
-                    _repo_url, repo_branch
+                    repo_url, repo_branch
                 )
             )
             return web.Response(
