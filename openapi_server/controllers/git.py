@@ -84,7 +84,7 @@ class GitUtils(object):
         :param target_repo: Absolute URL of the target repository (e.g. https://github.com/org/example)
         :param source_repo_branch: Specific branch name to use from the source repository
         """
-        target_repo = GitUtils._format_git_url(source_repo)
+        source_repo = GitUtils._format_git_url(source_repo)
         with tempfile.TemporaryDirectory() as dirpath:
             repo = None
             try:
