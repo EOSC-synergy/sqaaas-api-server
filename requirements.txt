@@ -19,23 +19,23 @@ aiohttp>=3.8.1
 urllib3~=1.26
 # report2sqaaas == 1.3.0
 git+https://github.com/EOSC-synergy/sqaaas-reporting@1.3.0#egg=report2sqaaas
-# report2sqaaas-plugin-markdownlint = 1.4.0-alpha2
-git+https://github.com/EOSC-synergy/sqaaas-reporting-plugins@1.4.0-alpha2#egg=report2sqaaas-plugin-markdownlint&subdirectory=qc_doc_markdownlint
-# report2sqaaas-plugin-find_doc_files = 1.4.0-alpha2
-git+https://github.com/EOSC-synergy/sqaaas-reporting-plugins@1.4.0-alpha2#egg=report2sqaaas-plugin-find_doc_files&subdirectory=qc_doc_find_doc_files
-# report2sqaaas-plugin-licensee = 1.4.0-alpha2
-git+https://github.com/EOSC-synergy/sqaaas-reporting-plugins@1.4.0-alpha2#egg=report2sqaaas-plugin-licensee&subdirectory=qc_lic_licensee
-# report2sqaaas-plugin-boolean = 1.4.0-alpha2
-git+https://github.com/EOSC-synergy/sqaaas-reporting-plugins@1.4.0-alpha2#egg=report2sqaaas-plugin-boolean&subdirectory=qc_ALL_boolean
-# report2sqaaas-plugin-json_not_empty = 1.4.0-alpha2
-git+https://github.com/EOSC-synergy/sqaaas-reporting-plugins@1.4.0-alpha2#egg=report2sqaaas-plugin-json_not_empty&subdirectory=qc_ALL_json_not_empty
-# report2sqaaas-plugin-flake8 = 1.4.0-alpha2
-git+https://github.com/EOSC-synergy/sqaaas-reporting-plugins@1.4.0-alpha2#egg=report2sqaaas-plugin-flake8&subdirectory=qc_sty_flake8
-# report2sqaaas-plugin-bandit = 1.4.0-alpha2
-git+https://github.com/EOSC-synergy/sqaaas-reporting-plugins@1.4.0-alpha2#egg=report2sqaaas-plugin-bandit&subdirectory=qc_sec_bandit
-# report2sqaaas-plugin-cff = 1.4.0-alpha2
-git+https://github.com/EOSC-synergy/sqaaas-reporting-plugins@1.4.0-alpha2#egg=report2sqaaas-plugin-cff&subdirectory=qc_met_cff
-# report2sqaaas-plugin-fairEva = 1.4.0-alpha2
-git+https://github.com/EOSC-synergy/sqaaas-reporting-plugins@1.4.0-alpha2#egg=report2sqaaas-plugin-fairEva&subdirectory=qc_fair_fairEva
-# report2sqaaas-plugin-is_semver = 1.4.0-alpha2
-git+https://github.com/EOSC-synergy/sqaaas-reporting-plugins@1.4.0-alpha2#egg=report2sqaaas-plugin-is_semver&subdirectory=qc_ver_is_semver
+# report2sqaaas-plugin-markdownlint = 1.4.0-alpha7
+git+https://github.com/EOSC-synergy/sqaaas-reporting-plugins@1.4.0-alpha7#egg=report2sqaaas-plugin-markdownlint&subdirectory=qc_doc_markdownlint
+# report2sqaaas-plugin-find_doc_files = 1.4.0-alpha7
+git+https://github.com/EOSC-synergy/sqaaas-reporting-plugins@1.4.0-alpha7#egg=report2sqaaas-plugin-find_doc_files&subdirectory=qc_doc_find_doc_files
+# report2sqaaas-plugin-licensee = 1.4.0-alpha7
+git+https://github.com/EOSC-synergy/sqaaas-reporting-plugins@1.4.0-alpha7#egg=report2sqaaas-plugin-licensee&subdirectory=qc_lic_licensee
+# report2sqaaas-plugin-boolean = 1.4.0-alpha7
+git+https://github.com/EOSC-synergy/sqaaas-reporting-plugins@1.4.0-alpha7#egg=report2sqaaas-plugin-boolean&subdirectory=qc_ALL_boolean
+# report2sqaaas-plugin-json_not_empty = 1.4.0-alpha7
+git+https://github.com/EOSC-synergy/sqaaas-reporting-plugins@1.4.0-alpha7#egg=report2sqaaas-plugin-json_not_empty&subdirectory=qc_ALL_json_not_empty
+# report2sqaaas-plugin-flake8 = 1.4.0-alpha7
+git+https://github.com/EOSC-synergy/sqaaas-reporting-plugins@1.4.0-alpha7#egg=report2sqaaas-plugin-flake8&subdirectory=qc_sty_flake8
+# report2sqaaas-plugin-bandit = 1.4.0-alpha7
+git+https://github.com/EOSC-synergy/sqaaas-reporting-plugins@1.4.0-alpha7#egg=report2sqaaas-plugin-bandit&subdirectory=qc_sec_bandit
+# report2sqaaas-plugin-cff = 1.4.0-alpha7
+git+https://github.com/EOSC-synergy/sqaaas-reporting-plugins@1.4.0-alpha7#egg=report2sqaaas-plugin-cff&subdirectory=qc_met_cff
+# report2sqaaas-plugin-fairEva = 1.4.0-alpha7
+git+https://github.com/EOSC-synergy/sqaaas-reporting-plugins@1.4.0-alpha7#egg=report2sqaaas-plugin-fairEva&subdirectory=qc_fair_fairEva
+# report2sqaaas-plugin-is_semver = 1.4.0-alpha7
+git+https://github.com/EOSC-synergy/sqaaas-reporting-plugins@1.4.0-alpha7#egg=report2sqaaas-plugin-is_semver&subdirectory=qc_ver_is_semver
