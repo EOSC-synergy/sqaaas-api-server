@@ -65,7 +65,7 @@ class AssessmentOutputValidator(Model):
     def valid(self):
         """Gets the valid of this AssessmentOutputValidator.
 
-        <true> if the subcriterion is valid
+        Validity of the subcriterion according to the tool
 
         :return: The valid of this AssessmentOutputValidator.
         :rtype: bool
@@ -76,7 +76,7 @@ class AssessmentOutputValidator(Model):
     def valid(self, valid):
         """Sets the valid of this AssessmentOutputValidator.
 
-        <true> if the subcriterion is valid
+        Validity of the subcriterion according to the tool
 
         :param valid: The valid of this AssessmentOutputValidator.
         :type valid: bool
@@ -88,7 +88,7 @@ class AssessmentOutputValidator(Model):
     def message(self):
         """Gets the message of this AssessmentOutputValidator.
 
-        Evidence message
+        Short statement about the evidence found
 
         :return: The message of this AssessmentOutputValidator.
         :rtype: str
@@ -99,7 +99,7 @@ class AssessmentOutputValidator(Model):
     def message(self, message):
         """Sets the message of this AssessmentOutputValidator.
 
-        Evidence message
+        Short statement about the evidence found
 
         :param message: The message of this AssessmentOutputValidator.
         :type message: str
@@ -174,6 +174,7 @@ class AssessmentOutputValidator(Model):
     def data_unstructured(self):
         """Gets the data_unstructured of this AssessmentOutputValidator.
 
+        Any unstructured data provided by the tool
 
         :return: The data_unstructured of this AssessmentOutputValidator.
         :rtype: object
@@ -184,6 +185,7 @@ class AssessmentOutputValidator(Model):
     def data_unstructured(self, data_unstructured):
         """Sets the data_unstructured of this AssessmentOutputValidator.
 
+        Any unstructured data provided by the tool
 
         :param data_unstructured: The data_unstructured of this AssessmentOutputValidator.
         :type data_unstructured: object

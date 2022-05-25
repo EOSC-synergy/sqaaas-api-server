@@ -72,6 +72,7 @@ class Badge(Model):
     def share(self):
         """Gets the share of this Badge.
 
+        Badge's HTML block that can be embedded in websites
 
         :return: The share of this Badge.
         :rtype: str
@@ -82,6 +83,7 @@ class Badge(Model):
     def share(self, share):
         """Sets the share of this Badge.
 
+        Badge's HTML block that can be embedded in websites
 
         :param share: The share of this Badge.
         :type share: str
@@ -93,6 +95,7 @@ class Badge(Model):
     def verification_url(self):
         """Gets the verification_url of this Badge.
 
+        URL the portal where the badge can be verified
 
         :return: The verification_url of this Badge.
         :rtype: str
@@ -103,6 +106,7 @@ class Badge(Model):
     def verification_url(self, verification_url):
         """Sets the verification_url of this Badge.
 
+        URL the portal where the badge can be verified
 
         :param verification_url: The verification_url of this Badge.
         :type verification_url: str

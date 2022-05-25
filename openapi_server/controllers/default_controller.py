@@ -20,6 +20,7 @@ from deepdiff import DeepDiff
 import namegenerator
 
 from openapi_server import config
+from openapi_server import controllers
 from openapi_server.controllers import db
 from openapi_server.controllers.badgr import BadgrUtils
 from openapi_server.controllers.git import GitUtils
@@ -39,42 +40,13 @@ SUPPORTED_PLATFORMS = {
 REPOSITORY_BACKEND = config.get(
     'repository_backend'
 )
-TOKEN_GH_FILE = config.get_repo(
-    'token', fallback='/etc/sqaaas/.gh_token')
 GITHUB_ORG = config.get_repo('organization')
-
-TOKEN_JK_FILE = config.get_ci(
-    'token', fallback='/etc/sqaaas/.jk_token')
-JENKINS_URL = config.get_ci('url')
-JENKINS_USER = config.get_ci('user')
 JENKINS_GITHUB_ORG = config.get_ci('github_organization_name')
-
-TOKEN_BADGR_FILE = config.get_badge(
-    'token', fallback='/etc/sqaaas/.badgr_token')
-BADGR_URL = config.get_badge('url')
-BADGR_USER = config.get_badge('user')
-BADGR_ISSUER = config.get_badge('issuer')
 
 logger = logging.getLogger('sqaaas.api.controller')
 
-# Instance of code repo backend object
-with open(TOKEN_GH_FILE,'r') as f:
-    token = f.read().strip()
-logger.debug('Loading GitHub token from local filesystem')
-gh_utils = GitHubUtils(token)
-git_utils = GitUtils(token)
 
-# Instance of CI system object
-with open(TOKEN_JK_FILE,'r') as f:
-    jk_token = f.read().strip()
-logger.debug('Loading Jenkins token from local filesystem')
-jk_utils = JenkinsUtils(JENKINS_URL, JENKINS_USER, jk_token)
-
-# Instance of Badge issuing service object
-with open(TOKEN_BADGR_FILE,'r') as f:
-    badgr_token = f.read().strip()
-logger.debug('Loading Badgr password from local filesystem')
-badgr_utils = BadgrUtils(BADGR_URL, BADGR_USER, badgr_token, BADGR_ISSUER)
+git_utils, gh_utils, jk_utils, badgr_utils = controllers.init_utils()
 
 
 async def _add_pipeline_to_db(body, report_to_stdout=False):
@@ -267,12 +239,11 @@ async def _get_tooling_for_assessment(
                 'property) in <%s> criterion' % criterion_id
             ))
             if criterion_has_required_level:
-                # Use same syntax as _get_output()
-                criteria_filtered_out[criterion_id] = {
-                    'valid': False,
-                    'filtered_reason': filtered_required_tools,
-                    'subcriteria': None
-                }
+                filtered_out_data = ctls_utils.format_filtered_data(
+                    False,
+                    filtered_required_tools
+                )
+                criteria_filtered_out[criterion_id] = filtered_out_data
                 logger.warn(_reason)
             else:
                 logger.debug(_reason)
@@ -603,7 +574,7 @@ async def get_pipeline_jenkinsfile_jepl(request: web.Request, pipeline_id) -> we
 
 @ctls_utils.debug_request
 @ctls_utils.validate_request
-async def run_pipeline(request: web.Request, pipeline_id, issue_badge=False, repo_url=None, repo_branch=None) -> web.Response:
+async def run_pipeline(request: web.Request, pipeline_id, issue_badge=False, repo_url=None, repo_branch=None, keepgoing=False) -> web.Response:
     """Runs pipeline.
 
     Executes the given pipeline by means of the Jenkins API.
@@ -616,12 +587,17 @@ async def run_pipeline(request: web.Request, pipeline_id, issue_badge=False, rep
     :type repo_url: str
     :param repo_branch: Branch name of the upstream repository to fetch the code from
     :type repo_branch: str
+    :param keepgoing: Flag to indicate that the pipeline will run until the end
+    :type keepgoing: bool
 
     """
+    if keepgoing:
+        db.update_environment(pipeline_id, {'JPL_KEEPGOING': 'enabled'})
+
     pipeline_data = db.get_entry(pipeline_id)
     pipeline_repo = pipeline_data['pipeline_repo']
     pipeline_repo_url = pipeline_data['pipeline_repo_url']
-    pipeline_repo_branch = 'sqaaas'
+    pipeline_repo_branch = repo_branch
 
     config_data_list = pipeline_data['data']['config']
     composer_data = pipeline_data['data']['composer']
@@ -629,34 +605,49 @@ async def run_pipeline(request: web.Request, pipeline_id, issue_badge=False, rep
 
     if repo_url:
         if not ctls_utils.has_this_repo(config_data_list):
-            _reason = 'No criteria has been associated with the repository where the pipeline is meant to be added (aka \'this_repo\')'
+            _reason = ((
+                'No criteria has been associated with the provided '
+                'repository: %s' % repo_url
+            ))
             logger.error(_reason)
             return web.Response(status=422, reason=_reason, text=_reason)
-        _branch_msg = '(default branch)'
-        if repo_branch:
-            pipeline_repo_branch = repo_branch
-            _branch_msg = '(branch: %s)' % repo_branch
-        logger.info('Remote repository URL provided, cloning repository in %s organization: <%s> %s' % (GITHUB_ORG, repo_url, _branch_msg))
-        logger.debug('Creating pipeline repository in %s organization: %s' % (GITHUB_ORG, pipeline_repo_url))
+        logger.info((
+            'Remote repository <%s> provided, will fetch & push content into '
+            '<%s> organization: <%s> repository' % (
+                repo_url, GITHUB_ORG, pipeline_repo_url
+            )
+        ))
+        logger.debug('Create target repository: %s' % pipeline_repo_url)
         gh_utils.create_org_repository(pipeline_repo)
-        logger.debug('Cloning locally the source repository <%s> & Pushing to target repository: %s' % (repo_url, pipeline_repo_url))
-        _repo_url = ctls_utils.format_git_url(repo_url)
-        logger.debug('Formatting source repository URL to avoid git askpass when repo does not exist: %s' % _repo_url)
+        logger.debug(
+            'Clone & Push source repository <%s> to target repository <%s>' % (
+                repo_url, pipeline_repo_url)
+        )
         try:
             pipeline_repo_branch = git_utils.clone_and_push(
-                _repo_url, pipeline_repo_url, source_repo_branch=repo_branch)[-1]
+                repo_url, pipeline_repo_url, source_repo_branch=repo_branch)
         except SQAaaSAPIException as e:
             logger.error(e.message)
-            _reason = 'Could not access to repository: %s (branch: %s)' % (_repo_url, repo_branch)
-            return web.Response(status=e.http_code, reason=_reason, text=_reason)
+            _reason = (
+                'Could not access to repository: %s (branch: %s)' % (
+                    repo_url, repo_branch
+                )
+            )
+            return web.Response(
+                status=e.http_code, reason=_reason, text=_reason
+            )
         else:
-            logger.info(('Pipeline repository updated with the content from source: %s (branch: %s)' % (pipeline_repo, pipeline_repo_branch)))
+            logger.debug((
+                'Pipeline repository updated with the content from source: '
+                '%s (branch: %s)' % (pipeline_repo, pipeline_repo_branch)
+            ))
     else:
         repo_data = gh_utils.get_repository(pipeline_repo)
         if not repo_data:
             repo_data = gh_utils.create_org_repository(pipeline_repo)
         pipeline_repo_branch = repo_data.default_branch
-    logger.info('Using pipeline repository: %s (branch: %s)' % (
+
+    logger.debug('Using pipeline repository <%s> (branch: %s)' % (
         pipeline_repo, pipeline_repo_branch))
 
     commit_id = JePLUtils.push_files(
@@ -670,12 +661,17 @@ async def run_pipeline(request: web.Request, pipeline_id, issue_badge=False, rep
     )
     commit_url = gh_utils.get_commit_url(pipeline_repo, commit_id)
 
+    logger.info('Pipeline repository set up at <%s> (branch: %s)' % (
+        pipeline_repo, pipeline_repo_branch))
+
     _pipeline_repo_name = pipeline_repo.split('/')[-1]
     jk_job_name = '/'.join([
         JENKINS_GITHUB_ORG,
         _pipeline_repo_name,
         jk_utils.format_job_name(pipeline_repo_branch)
     ])
+
+    logger.info('Triggering pipeline in Jenkins CI: %s' % jk_job_name)
 
     build_item_no = None
     build_no = None
@@ -689,12 +685,14 @@ async def run_pipeline(request: web.Request, pipeline_id, issue_badge=False, rep
         build_item_no = jk_utils.build_job(jk_job_name)
         if build_item_no:
             build_status = 'QUEUED'
-            logger.info('Build status for pipeline <%s>: %s' % (pipeline_repo, build_status))
+            logger.info('Build status for pipeline <%s>: %s' % (
+                pipeline_repo, build_status
+            ))
             reason = 'Triggered the existing Jenkins job'
         else:
             _reason = 'Could not trigger build job'
             logger.error(_reason)
-            raise SQAaaSAPIException(_reason)
+            raise SQAaaSAPIException(422, _reason)
     else:
         jk_utils.scan_organization()
         scan_org_wait = True
@@ -702,7 +700,10 @@ async def run_pipeline(request: web.Request, pipeline_id, issue_badge=False, rep
         reason = 'Triggered scan organization for building the Jenkins job'
 
     if issue_badge:
-        logger.debug('Badge issuing (<issue_badge> flag) is requested for the current build: %s' % commit_id)
+        logger.debug((
+            'Badge issuing (<issue_badge> flag) is requested for the current '
+            'build: %s' % commit_id
+        ))
 
     # FIXME Just need to update build data:
     #   <build_status>, <build_item_no>, <scan_org_wait>, <issue_badge>?
@@ -873,22 +874,47 @@ async def _run_validation(tool, stdout):
     allowed_validators = r2s_utils.get_validators()
     validator_name = reporting_data['validator']
     out = None
+    broken_validation_data = None
     if validator_name not in allowed_validators:
         _reason = 'Could not find report2sqaaas validator plugin <%s> (found: %s)' % (validator_name, allowed_validators)
         logger.error(_reason)
         raise SQAaaSAPIException(422, _reason)
     else:
         validator = r2s_utils.get_validator(validator_opts)
-        out = validator.driver.validate()
-        validator_package_name = '-'.join([
-            'report2sqaaas-plugin', validator_name
-        ])
-        out.update({
-            'package_name': validator_package_name,
-            'package_version': version(validator_package_name)
-        })
+        try:
+            out = validator.driver.validate()
+        except Exception as e:
+            _reason = ((
+                'Error raised when validating tool <%s> with validator '
+                'plugin <%s>: %s' % (tool, validator_name, str(e))
+            ))
+            logger.error(_reason)
 
-    return (reporting_data, out)
+            interrupt = config.get_boolean(
+                'interrupt_on_validation_error',
+                fallback=False
+            )
+            if interrupt:
+                logger.debug((
+                    'End execution since <interrupt_on_validation_error> flag '
+                    'is enabled'
+                ))
+                raise SQAaaSAPIException(422, _reason)
+            else:
+                broken_validation_data = ctls_utils.format_filtered_data(
+                    False,
+                    [_reason]
+                )
+        else:
+            validator_package_name = '-'.join([
+                'report2sqaaas-plugin', validator_name
+            ])
+            out.update({
+                'package_name': validator_package_name,
+                'package_version': version(validator_package_name)
+            })
+
+    return (reporting_data, out, broken_validation_data)
 
 
 async def _get_commands_from_script(stdout_command, commands_script_list):
@@ -946,6 +972,7 @@ async def _validate_output(stage_data_list, pipeline_data):
     """
     logger.debug('Output validation has been requested')
     output_data = {}
+    broken_validation_data = {}
     for stage_data in stage_data_list:
         criterion_stage_data = copy.deepcopy(stage_data)
         criterion_name = criterion_stage_data['criterion']
@@ -971,7 +998,27 @@ async def _validate_output(stage_data_list, pipeline_data):
         criterion_stage_data['tool'] = matched_tool
 
         logger.debug('Validating output from criterion <%s>' % criterion_name)
-        reporting_data, out = await _run_validation(matched_tool, criterion_stage_data['stdout_text'])
+        reporting_data, out, broken_data = await _run_validation(
+            matched_tool, criterion_stage_data['stdout_text']
+        )
+
+        # If broken criterion, add to filtered criteria list
+        if broken_data:
+            # Health check: broken criteria should not be already in
+            # the list of filtered criteria
+            if criterion_name in list(pipeline_data['qaa']):
+                logger.error((
+                    'Broken criterion <%s> is already present in the list '
+                    'of filtered criteria. Overriding content..'
+                ))
+            broken_validation_data[criterion_name] = broken_data
+            logger.info(
+                'Add broken criterion <%s> to filtered criteria list' % (
+                    criterion_name
+                )
+            )
+            continue
+
         logger.debug('Output returned by <%s> tool validator: %s' % (matched_tool, out))
         criterion_stage_data.update(reporting_data)
         criterion_stage_data['validation'] = out
@@ -982,7 +1029,7 @@ async def _validate_output(stage_data_list, pipeline_data):
         else:
             output_data[criterion_name] = [criterion_stage_data]
 
-    return output_data
+    return (output_data, broken_validation_data)
 
 
 async def _get_output(pipeline_id, validate=False):
@@ -1008,7 +1055,16 @@ async def _get_output(pipeline_id, validate=False):
 
     output_data = stage_data_list
     if validate:
-        output_data = await _validate_output(stage_data_list, pipeline_data)
+        output_data, broken_validation_data = await _validate_output(
+            stage_data_list, pipeline_data
+        )
+        if broken_validation_data:
+            pipeline_data['qaa'].update(broken_validation_data)
+            db.add_assessment_data(pipeline_id, pipeline_data['qaa'])
+            logger.info((
+                'Updated broken criteria in DB\'s QAA assessment: '
+                '%s' % pipeline_data['qaa']
+            ))
 
     return output_data
 
@@ -1054,6 +1110,10 @@ async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Re
         report_data = {}
         pipeline_data = db.get_entry(pipeline_id)
         criteria_filtered_out = pipeline_data['qaa']
+        print('*'*20)
+        import json
+        print(json.dumps(criteria_filtered_out, indent=4))
+        print('*'*20)
         criteria_tool_commands = pipeline_data['tools']
 
         for criterion_name, criterion_output_data_list in output_data.items():
@@ -1065,7 +1125,7 @@ async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Re
                     'in the pipeline' % criterion_name
                 ))
                 logger.error(_reason)
-                raise SQAaaSAPIException(_reason)
+                raise SQAaaSAPIException(422, _reason)
 
             criterion_valid_list = []
             subcriteria = {}
@@ -1121,12 +1181,12 @@ async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Re
                     valid = all(evidence['valid']
                         for evidence in subcriterion_data['evidence'])
                     subcriteria[subcriterion_id]['valid'] = valid
-            
+
             report_data[criterion_name] = {
                 'valid': all(criterion_valid_list),
                 'subcriteria': subcriteria
             }
-        
+
         # Append filtered-out criteria
         report_data.update(criteria_filtered_out)
 
@@ -1176,11 +1236,14 @@ async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Re
     #         + Additional property provided by the validator plugin ---> <subcriteria>
     #         + If <subcriteria> is defined, then use these for the badge matchmaking (and not the criterion_name)
     # Format <report> key
-    report_data = _format_report()
-    if not report_data:
-        _reason = 'Could not gather reporting data. Exiting..'
-        logger.error(_reason)
-        return web.Response(status=422, reason=_reason, text=_reason)
+    try:
+        report_data = _format_report()
+        if not report_data:
+            _reason = 'Could not gather reporting data. Exiting..'
+            logger.error(_reason)
+            raise SQAaaSAPIException(422, _reason)
+    except SQAaaSAPIException as e:
+        return web.Response(status=e.http_code, reason=e.message, text=e.message)
 
     # Gather & format <badge> key
     badge_data = {}
@@ -1200,13 +1263,21 @@ async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Re
             return web.Response(status=422, reason=_reason, text=_reason)
         # Get Badgr's badgeclass and proceed with badge issuance
         for badge_type, criteria_fulfilled_list in criteria_fulfilled_map.items():
-            badgeclass_name = await _badgeclass_matchmaking(
+            badgeclass_name, criteria_summary = await _badgeclass_matchmaking(
                 pipeline_id, badge_type, criteria_fulfilled_list
             )
+            # Generate criteria summary
+            criteria_summary_copy = copy.deepcopy(criteria_summary)
+            for _badge_category, _badge_category_data in criteria_summary_copy.items():
+                to_fulfill_set = set(_badge_category_data['to_fulfill'])
+                missing_set = set(_badge_category_data['missing'])
+                fulfilled_list = list(to_fulfill_set.difference(missing_set))
+                criteria_summary[_badge_category]['fulfilled'] = fulfilled_list
+            badge_data[badge_type] = {
+                'criteria': criteria_summary
+            }
             if badgeclass_name:
                 try:
-                    if not badge_type in list(badge_data):
-                        badge_data[badge_type] = {}
                     badge_obj = await _issue_badge(
                         pipeline_id,
                         badgeclass_name,
@@ -1392,26 +1463,32 @@ async def _badgeclass_matchmaking(pipeline_id, badge_type, criteria_fulfilled_li
     :type criteria_fulfilled_list: list
     """
     badge_awarded_badgeclass_name = None
+    criteria_summary = {}
     for badge_category in ['bronze', 'silver', 'gold']:
         logger.debug('Matching given criteria against defined %s criteria for %s' % (
             badge_category.upper(), badge_type.upper())
         )
 
+        criteria_summary[badge_category] = {
+            'to_fulfill': [],
+            'missing': []
+        }
+
         # Get badge type's config values
-        badge_section = ':'.join([badge_type, badge_category])
-        badgeclass_name = config.get_badge_sub(
-            badge_section, 'badgeclass'
+        badgeclass_name = config.get_badge(
+            'badgeclass', subsection_list=[badge_type, badge_category]
         )
-        criteria_to_fulfill_list = config.get_badge_sub(
-            ':'.join([badge_type, badge_category]), 'criteria'
+        criteria_to_fulfill_list = config.get_badge(
+            'criteria', subsection_list=[badge_type, badge_category]
         ).split()
+        criteria_summary[badge_category]['to_fulfill'] = criteria_to_fulfill_list
         # Matchmaking
-        missing_criteria = set(criteria_to_fulfill_list).difference(criteria_fulfilled_list)
-        if missing_criteria:
+        missing_criteria_list = list(set(criteria_to_fulfill_list).difference(criteria_fulfilled_list))
+        criteria_summary[badge_category]['missing'] = missing_criteria_list
+        if missing_criteria_list:
             logger.warn('Pipeline <%s> not fulfilling %s criteria. Missing criteria: %s' % (
-                pipeline_id, badge_category.upper(), missing_criteria)
+                pipeline_id, badge_category.upper(), missing_criteria_list)
             )
-            break
         else:
             logger.info('Pipeline <%s> fulfills %s badge criteria!' % (
                 pipeline_id, badge_category.upper())
@@ -1421,7 +1498,7 @@ async def _badgeclass_matchmaking(pipeline_id, badge_type, criteria_fulfilled_li
     if badge_awarded_badgeclass_name:
         logger.debug('Badgeclass to use for badge issuance: %s' % badge_awarded_badgeclass_name)
 
-    return badge_awarded_badgeclass_name
+    return badge_awarded_badgeclass_name, criteria_summary
 
 
 async def _issue_badge(pipeline_id, badgeclass_name):
@@ -1620,6 +1697,7 @@ async def _sort_tooling_by_criteria(tooling_metadata_json, criteria_id_list=[]):
                 criterion, tooling_metadata_json)
             criteria_data_list.append({
                 'id': criterion,
+                'type': tooling_metadata_json['criteria'][criterion]['type'],
                 'description': tooling_metadata_json['criteria'][criterion]['description'],
                 'tools': tooling_data
             })

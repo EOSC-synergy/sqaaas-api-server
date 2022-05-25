@@ -5,6 +5,7 @@ from datetime import date, datetime
 from typing import List, Dict, Type
 
 from openapi_server.models.base_model_ import Model
+from openapi_server.models.criterion_build_addl_props import CriterionBuildAddlProps
 from openapi_server import util
 
 
@@ -14,7 +15,7 @@ class InlineResponse200(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, file_name: str=None, content: Dict[str, object]=None):
+    def __init__(self, file_name: str=None, content: Dict[str, CriterionBuildAddlProps]=None):
         """InlineResponse200 - a model defined in OpenAPI
 
         :param file_name: The file_name of this InlineResponse200.
@@ -22,7 +23,7 @@ class InlineResponse200(Model):
         """
         self.openapi_types = {
             'file_name': str,
-            'content': Dict[str, object]
+            'content': Dict[str, CriterionBuildAddlProps]
         }
 
         self.attribute_map = {
@@ -67,9 +68,10 @@ class InlineResponse200(Model):
     def content(self):
         """Gets the content of this InlineResponse200.
 
+        Definition of software and service criteria to be run by the pipeline
 
         :return: The content of this InlineResponse200.
-        :rtype: Dict[str, object]
+        :rtype: Dict[str, CriterionBuildAddlProps]
         """
         return self._content
 
@@ -77,9 +79,10 @@ class InlineResponse200(Model):
     def content(self, content):
         """Sets the content of this InlineResponse200.
 
+        Definition of software and service criteria to be run by the pipeline
 
         :param content: The content of this InlineResponse200.
-        :type content: Dict[str, object]
+        :type content: Dict[str, CriterionBuildAddlProps]
         """
 
         self._content = content

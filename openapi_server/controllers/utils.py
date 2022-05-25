@@ -11,8 +11,8 @@ import uuid
 import yaml
 
 from aiohttp import web
-from urllib.parse import urlparse
-from urllib.parse import ParseResult
+from urllib3.util import parse_url
+from urllib3.util import Url
 
 from openapi_server import config
 from openapi_server.controllers import db
@@ -300,7 +300,7 @@ class ProcessExtraData(object):
         else:
             repo_data = {}
             repo_data['name'] = get_short_repo_name(
-                tooling_repo_url, include_netloc=True
+                tooling_repo_url, include_host=True
             )
             repo_data['branch'] = tooling_repo_branch
             project_repos_mapping[tooling_repo_url] = repo_data
@@ -412,6 +412,8 @@ class ProcessExtraData(object):
                         if commands_builder:
                             return value_list
                 return list([' '.join(value_list)])
+            elif type(value) in [list]:
+                value = [value[0]] # note the type(list)
             return value
 
         def process_args(args, cmd_list=[]):
@@ -506,7 +508,15 @@ class ProcessExtraData(object):
         return config_data_list
 
     @staticmethod
-    def generate_script_for_commands(stage_name, checkout_dir, commands_list, repos_data, commands_script_list):
+    def generate_script_for_commands(
+            stage_name,
+            checkout_dir,
+            commands_list,
+            repos_data,
+            commands_script_list,
+            template_name=None,
+            template_kwargs={}
+        ):
         """Generate the bash script including the received commands.
 
         :param stage_name: The stage name
@@ -514,11 +524,15 @@ class ProcessExtraData(object):
         :param commands_list: The list of shell commands
         :param repos_data: The individual repository data
         :param commands_script_list: Current list of strings that generate the command builder scripts
+        :param template_name: Name of the template used by the tool
+        :param template_kwargs: Dict with the relevant values for the template rendering
         """
         logger.debug('Call to ProcessExtraData.generate_script_for_commands() method')
         commands_script_data = JePLUtils.get_commands_script(
             checkout_dir,
-            commands_list
+            commands_list,
+            template_name=template_name,
+            template_kwargs=template_kwargs
         )
         commands_script_data = JePLUtils.append_file_name(
             'commands_script',
@@ -562,7 +576,7 @@ def process_extra_data(config_json, composer_json, report_to_stdout=False):
             project_repo = del_empty_keys(project_repo)
             # Set repo name
             repo_name_generated = get_short_repo_name(
-                repo_url, include_netloc=True)
+                repo_url, include_host=True)
             # Compose final <project_repos>
             project_repos_final[repo_name_generated] = {
                 'repo': repo_url,
@@ -616,13 +630,16 @@ def process_extra_data(config_json, composer_json, report_to_stdout=False):
                 # Set service_name in repo's <container> property
                 repo['container'] = service_name
 
-                # Compose command/s according to tooling metadata
-                tool_criterion_map = ProcessExtraData.set_tool_execution_command(
-                    tool, criterion_name, repo, config_json)
-                if criterion_name in list(tool_criteria_map):
-                    tool_criteria_map[criterion_name].update(tool_criterion_map)
-                else:
-                    tool_criteria_map[criterion_name] = tool_criterion_map
+                # NOTE: do not compose the command for tools with associated templates
+                tool_has_template = tool.get('template', None)
+                if not tool_has_template:
+                    # Compose command/s according to tooling metadata
+                    tool_criterion_map = ProcessExtraData.set_tool_execution_command(
+                        tool, criterion_name, repo, config_json)
+                    if criterion_name in list(tool_criteria_map):
+                        tool_criteria_map[criterion_name].update(tool_criterion_map)
+                    else:
+                        tool_criteria_map[criterion_name] = tool_criterion_map
 
                 tox_checkout_dir = '.'
                 try:
@@ -649,7 +666,7 @@ def process_extra_data(config_json, composer_json, report_to_stdout=False):
                     stage_name = stage_name_new
                 repos_new[stage_name] = repo
 
-                if repo_url:
+                if repo_url or tool_has_template:
                     # Create script for 'commands' builder
                     # NOTE: This is a workaround -> a specific builder to tackle this will be implemented in JePL
                     if 'commands' in repo.keys():
@@ -660,7 +677,54 @@ def process_extra_data(config_json, composer_json, report_to_stdout=False):
                             repos_data=repos_new,
                             commands_script_list=commands_script_list
                         )
+                    elif tool_has_template:
+                        # checkout_dir
+                        checkout_dir = '.'
+                        if repo_url:
+                            checkout_dir = project_repos_mapping[repo_url]['name']
+                        # template_kwargs
+                        template_kwargs = {}
+                        for arg in tool.get('args', []):
+                            if arg.get('id', None):
+                                # split(',') is required since some values might be
+                                # comma-separated
+                                _value = arg['value'].split(',')
+                                if len(_value) <= 1:
+                                    _value = arg['value']
+                                template_kwargs[arg['id']] = _value
+                        ProcessExtraData.generate_script_for_commands(
+                            stage_name=stage_name,
+                            checkout_dir=checkout_dir,
+                            commands_list=[],
+                            repos_data=repos_new,
+                            commands_script_list=commands_script_list,
+                            template_name=tool['template'],
+                            template_kwargs=template_kwargs
+                        )
                     tox_checkout_dir = stage_name
+
+                    # Set credentials if the tool needs them
+                    tool_creds = []
+                    for arg in tool.get('args', []):
+                        creds = {}
+                        if arg['type'] in ['optional']:
+                            option = arg['option']
+                            if option.find('jenkins-credential-id') != -1:
+                                creds['id'] = arg['value']
+                            elif option.find(
+                                'jenkins-credential-variable') != -1:
+                                creds['variable'] = arg['value']
+                        if creds:
+                            tool_creds.append(creds)
+                    if tool_creds:
+                        logger.debug(
+                            'Found credentials for the tool <%s>: %s' % (
+                                tool['name'], tool_creds
+                            )
+                        )
+                        for cred in tool_creds:
+                            config_json['config']['credentials'].append(cred)
+
                 # FIXME Commented out until issue #154 gets resolved
                 # Modify Tox properties (chdir, defaults)
                 # ProcessExtraData.set_tox_env(tox_checkout_dir, repos_new)
@@ -668,7 +732,7 @@ def process_extra_data(config_json, composer_json, report_to_stdout=False):
         config_json['sqa_criteria'][criterion_name] = criterion_data_copy
 
     # Default CONFIG:ENVIRONMENT
-    for jpl_envvar in ['JPL_DOCKERFORCEBUILD', 'JPL_KEEPGOING']:
+    for jpl_envvar in ['JPL_DOCKERFORCEBUILD']:
         logger.debug('Enabling <%s> flag (default behaviour)' % jpl_envvar)
         if not 'environment' in config_json.keys():
             config_json['environment'] = {}
@@ -717,9 +781,10 @@ def process_extra_data(config_json, composer_json, report_to_stdout=False):
                         })
                 # JPL_DOCKERSERVER: current JePL 2.1.0 does not support 1-to-1 in image-to-registry
                 # so defaulting to the last match
-                if registry_data['url']:
-                    config_json['environment']['JPL_DOCKERSERVER'] = registry_data['url']
-                    logger.debug('Setting JPL_DOCKERSERVER environment value to <%s>' % registry_data['url'])
+                registry_url = get_registry_from_image(srv_data['image']['name'])
+                if registry_url:
+                    config_json['environment']['JPL_DOCKERSERVER'] = registry_url
+                    logger.debug('Setting JPL_DOCKERSERVER environment value to <%s>' % registry_url)
             ## Set 'image' property as string (required by Docker Compose)
             srv_data['image'] = srv_data['image']['name']
             if use_default_dockerhub_org:
@@ -758,23 +823,6 @@ def has_this_repo(config_data_list):
     return this_repo
 
 
-def format_git_url(repo_url):
-    """Formats git URL to avoid asking for password when repos do not exist.
-
-    :param repo_url: URL of the git repository
-    """
-    repo_url_parsed = urlparse(repo_url)
-    repo_url_final = ParseResult(
-        scheme=repo_url_parsed.scheme,
-        netloc=':@'+repo_url_parsed.netloc,
-        path=repo_url_parsed.path,
-        params=repo_url_parsed.params,
-        query=repo_url_parsed.query,
-        fragment=repo_url_parsed.fragment
-    )
-    return repo_url_final.geturl()
-
-
 def supported_git_platform(repo_url, platforms):
     """Checks if the given repo_url belongs to any of the supported platforms.
 
@@ -784,24 +832,28 @@ def supported_git_platform(repo_url, platforms):
     :param repo_url: URL of the git repository
     :param platforms: Dict with the git supported platforms (e.g {'github': 'https://github.com'})
     """
-    url_parsed = urlparse(repo_url)
-    netloc_without_extension = url_parsed.netloc.split('.')[0]
-    if not netloc_without_extension in list(platforms):
-        netloc_without_extension = None
-    return netloc_without_extension
+    url_parsed = parse_url(repo_url)
+    host_without_extension = url_parsed.host.split('.')[0]
+    if not host_without_extension in list(platforms):
+        host_without_extension = None
+    return host_without_extension
 
 
-def get_short_repo_name(repo_url, include_netloc=False):
+def get_short_repo_name(repo_url, include_host=False):
     """Returns the short name of the git repo, i.e. <user/org>/<repo_name>.
 
     :param repo_url: URL of the git repository
     """
-    url_parsed = urlparse(repo_url)
+    url_parsed = parse_url(repo_url)
     short_repo_name = url_parsed.path
-    if include_netloc:
+    if include_host:
+        host = url_parsed.host
+        if url_parsed.port:
+            host = ':'.join([
+                host, str(url_parsed.port)
+            ])
         short_repo_name = ''.join([
-            url_parsed.netloc,
-            url_parsed.path,
+            host, url_parsed.path,
         ])
     # cleanup
     short_repo_name = short_repo_name.lstrip('/')
@@ -891,3 +943,37 @@ def find_files_by_language(field, value, repo, path='.'):
         )
 
     return files_found
+
+
+def get_registry_from_image(image_name):
+    """Returns the Docker host URL from the image (<None> if not included).
+
+    :param image_name: Docker image name (may include registry URL)
+    """
+    url_parsed = parse_url(image_name)
+    registry_url = url_parsed.host
+    if url_parsed.scheme:
+        registry_url = '://'.join([
+            url_parsed.scheme, registry_url
+        ])
+    if url_parsed.port:
+        registry_url = ':'.join([
+            registry_url, str(url_parsed.port)
+        ])
+
+    return registry_url
+
+
+def format_filtered_data(valid, reason_list, subcriteria=None):
+    """Returns the data as to be stored in the DB for filtered criteria.
+
+    :param valid: Boolean value setting the overall validity of the criterion
+    :param reason_list: List of per-criterion reasons of why this criterion
+        shall be filtered
+    :param subcriteria: Dict-like subcriteria data
+    """
+    return {
+        'valid': False,
+        'filtered_reason': reason_list,
+        'subcriteria': subcriteria
+    }

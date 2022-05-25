@@ -17,7 +17,7 @@ The SQAaaS API uses Python's [Connexion](https://github.com/zalando/connexion) l
 The generator does not modify the set of files maintained in the [.openapi-generator-ignore](.openapi-generator-ignore).
 
 ## Requirements
-- Python 3.5.2+ 
+- Python 3.9.2+ 
 - Dependencies: [requirements.txt](requirements.txt)
 
 ## Usage

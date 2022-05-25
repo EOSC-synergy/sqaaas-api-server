@@ -54,6 +54,7 @@ class CredsUserPass(Model):
     def id(self):
         """Gets the id of this CredsUserPass.
 
+        Credential ID (as defined in Jenkins)
 
         :return: The id of this CredsUserPass.
         :rtype: str
@@ -64,6 +65,7 @@ class CredsUserPass(Model):
     def id(self, id):
         """Sets the id of this CredsUserPass.
 
+        Credential ID (as defined in Jenkins)
 
         :param id: The id of this CredsUserPass.
         :type id: str
@@ -77,6 +79,7 @@ class CredsUserPass(Model):
     def type(self):
         """Gets the type of this CredsUserPass.
 
+        Credential type
 
         :return: The type of this CredsUserPass.
         :rtype: str
@@ -87,6 +90,7 @@ class CredsUserPass(Model):
     def type(self, type):
         """Sets the type of this CredsUserPass.
 
+        Credential type
 
         :param type: The type of this CredsUserPass.
         :type type: str

@@ -4,9 +4,30 @@ import os
 
 import connexion
 
+from openapi_server import config
+
+
+CONF = config.init('etc/sqaaas.ini.sample')
+
+
+pytest_plugins = [
+    'tests.fixtures.db',
+    'tests.fixtures.github',
+    'tests.fixtures.jepl',
+    'tests.fixtures.jenkins',
+]
+
 
 @pytest.fixture
-def client(loop, aiohttp_client):
+def client(
+        monkeypatch, loop, aiohttp_client,
+        mock_github_utils, mock_jenkins_utils
+):
+    def mock_init_utils():
+        return (None, mock_github_utils, mock_jenkins_utils, None)
+
+    monkeypatch.setattr("openapi_server.controllers.init_utils", mock_init_utils)
+
     logging.getLogger('connexion.operation').setLevel('ERROR')
     options = {
         "swagger_ui": True

@@ -12,7 +12,7 @@ repository_backend = github
 ## - Path to the JSON file used as DB
 # db_file = /sqaaas/sqaaas.json
 ## - Criteria tooling: repository URL
-# tooling_repo_url = https://github.com/EOSC-synergy/sqa-composer-templates
+# tooling_repo_url = https://github.com/EOSC-synergy/sqaaas-tooling
 ## - Criteria tooling: repository branch
 # tooling_repo_branch = main
 ## - Criteria tooling: metadata (relative path from <tooling_repo_url>)
@@ -21,6 +21,8 @@ repository_backend = github
 ##   as GitHub's <linguist> tool:
 ##      https://github.com/github/linguist/blob/master/lib/linguist/languages.yml
 # language_metadata_file = languages.yml
+## - Interrupt execution and return a HTTP code error if any validation action fails
+# interrupt_on_validation_error = no
 
 [jenkins]
 ## -------------------- ##

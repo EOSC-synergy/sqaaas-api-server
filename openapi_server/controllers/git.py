@@ -6,6 +6,8 @@ import tempfile
 
 from git import Repo
 from git.exc import GitCommandError
+from urllib3.util import parse_url
+from urllib3.util import Url
 
 from openapi_server.exception import SQAaaSAPIException
 
@@ -26,6 +28,40 @@ class GitUtils(object):
         """
         self.access_token = access_token
 
+    @staticmethod
+    def _custom_exception_messages(exc, **kwargs):
+        """Returns more concised error messages from the ones returned by
+        GitPython.
+
+        :param exc: GitCommandError exception
+        """
+        message = str(exc)
+        if message.find('remote: Repository not found') != -1:
+            message = 'Repository not found: %s' % kwargs['repo']
+
+        return message
+
+    @staticmethod
+    def _format_git_url(repo_url):
+        """Formats git URL to avoid asking for password when repos do not exist.
+
+        :param repo_url: URL of the git repository
+        """
+        logger.debug((
+            'Format source repository URL to avoid git askpass when repo '
+            'does not exist: %s' % repo_url
+        ))
+        repo_url_parsed = parse_url(repo_url)
+        repo_url_final = Url(
+            scheme=repo_url_parsed.scheme,
+            auth=repo_url_parsed.auth,
+            host=':@'+repo_url_parsed.host,
+            path=repo_url_parsed.path,
+            query=repo_url_parsed.query,
+            fragment=repo_url_parsed.fragment
+        )
+        return repo_url_final.url
+
     def setup_env(self, dirpath):
         """Setups the environment for handling remote repositories.
 
@@ -42,12 +78,13 @@ class GitUtils(object):
     def clone_and_push(self, source_repo, target_repo, source_repo_branch=None):
         """Copies the source Git repository into the target one.
 
-        Returns a tuple with the repository URL and default branch name.
+        Returns the target's branch name.
 
         :param source_repo: Absolute URL of the source repository (e.g. https://example.org)
         :param target_repo: Absolute URL of the target repository (e.g. https://github.com/org/example)
         :param source_repo_branch: Specific branch name to use from the source repository
         """
+        source_repo = GitUtils._format_git_url(source_repo)
         with tempfile.TemporaryDirectory() as dirpath:
             repo = None
             try:
@@ -56,22 +93,19 @@ class GitUtils(object):
                 else:
                     repo = Repo.clone_from(source_repo, dirpath)
             except GitCommandError as e:
-                raise SQAaaSAPIException(422, e)
+                raise SQAaaSAPIException(
+                    422, GitUtils._custom_exception_messages(
+                        e, repo=source_repo
+                    )
+                )
             else:
                 self.setup_env(dirpath)
 
             sqaaas = repo.create_remote(REMOTE_NAME, url=target_repo)
-            try:
-                sqaaas.fetch()
-                sqaaas.pull()
-                logger.debug('Repository updated: %s' % repo.remotes.sqaaas.url)
-            except GitCommandError as e:
-                logger.warning('Could not fetch&pull from target repository: %s (git msg: %s)' % (target_repo, e))
-            finally:
-                sqaaas.push(force=True)
-                logger.debug('Repository pushed to remote: %s' % repo.remotes.sqaaas.url)
-            default_branch = repo.active_branch
-        return sqaaas.url, default_branch.name
+            sqaaas.push(force=True)
+            logger.debug('Repository pushed to remote: %s' % repo.remotes.sqaaas.url)
+            default_branch = repo.active_branch.name
+        return default_branch
 
     @staticmethod
     def get_remote_active_branch(remote_repo):
@@ -97,7 +131,11 @@ class GitUtils(object):
                         remote_repo, branch
                 ))
             except GitCommandError as e:
-                raise SQAaaSAPIException(422, e)
+                raise SQAaaSAPIException(
+                    422, GitUtils._custom_exception_messages(
+                        e, repo=remote_repo
+                    )
+                )
             else:
                 return branch
 
@@ -111,14 +149,10 @@ class GitUtils(object):
         @functools.wraps(f)
         def decorated_function(*args, **kwargs):
             repo = kwargs['repo']
-            source_repo = repo['repo']
+            source_repo = GitUtils._format_git_url(repo['repo'])
             source_repo_branch = repo.get('branch', None)
             with tempfile.TemporaryDirectory() as dirpath:
                 try:
-                    msg = 'Cloning repository <%s>' % source_repo 
-                    if source_repo:
-                        msg += ' (branch %s)' % source_repo_branch
-                    logger.debug(msg)
                     if source_repo_branch:
                         repo = Repo.clone_from(
                             source_repo, dirpath,
@@ -130,8 +164,15 @@ class GitUtils(object):
                         )
                     branch = repo.active_branch
                     branch = branch.name
+                    msg = 'Repository <%s> was cloned (branch: %s)' % (
+                        source_repo, branch)
+                    logger.debug(msg)
                 except GitCommandError as e:
-                    raise SQAaaSAPIException(422, e)
+                    raise SQAaaSAPIException(
+                        422, GitUtils._custom_exception_messages(
+                            e, repo=repo['repo']
+                        )
+                    )
                 else:
                     # Set path to the temporary directory
                     kwargs['path'] = dirpath
