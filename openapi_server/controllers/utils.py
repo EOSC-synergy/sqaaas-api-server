@@ -256,6 +256,20 @@ class ProcessExtraData(object):
             service_data['command'] = 'sleep 6000000'
 
     @staticmethod
+    def set_service_entrypoint(service_data):
+        """Set the given entrypoint.
+
+        :param service_data: Data of the DC service
+        """
+        logger.debug('Call to ProcessExtraData.set_service_entrypoint() method')
+        entrypoint = None
+        if 'entrypoint' in service_data.keys():
+            entrypoint = service_data.pop('entrypoint')
+        if entrypoint:
+            logger.debug('Setting required entrypoint: %s' % entrypoint)
+            service_data['entrypoint'] = entrypoint
+
+    @staticmethod
     def set_tox_env(repo_checkout_dir, repos_data):
         """Prepare the Tox environment for the given repo.
 
@@ -800,6 +814,8 @@ def process_extra_data(config_json, composer_json, report_to_stdout=False):
         ProcessExtraData.set_service_volume(srv_data)
         ## Handle 'oneshot' services
         ProcessExtraData.set_service_oneshot(srv_data)
+        ## Handle 'entrypoint' property
+        ProcessExtraData.set_service_entrypoint(srv_data)
 
     composer_data = {'data_json': composer_json}
 
