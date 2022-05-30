@@ -100,7 +100,7 @@ def get_service_deployment(iaas):
     iaas_section = ':'.join([
         'service_deployment', iaas
     ])
-    if not has_section(iaas_section):
+    if not CONF.has_section(iaas_section):
         raise SQAaaSAPIException(
             422, 'Could not find setting for IaaS site: %s' % iaas
         )
