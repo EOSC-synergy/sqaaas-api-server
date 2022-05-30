@@ -137,22 +137,18 @@ badgeclass = badgeclass_for_fair_gold
 criteria = ${badgr:fair:silver:criteria} rda_a1_2_01d rda_i2_01d rda_i3_01d rda_i3_02d rda_i3_02m rda_i3_04m rda_r1_2_02m
 
 [service_deployment]
-im_server = https://appsgrycap.i3m.upv.es:31443/im/
+im_server = https://im_endpoint.example.org/
 im_auth_file = /im/auth/auth.dat
 
-[service_deployment:ifca]
-openstack_site_id = ifca
-openstack_url = https://api.cloud.ifca.es
+[service_deployment:my_site]
+## -------------------- ##
+## Mandatory parameters ##
+## -------------------- ##
+openstack_site_id = my_site
+openstack_url = https://mysite.example.org
 openstack_port = 5000
 openstack_domain_name = default
 openstack_auth_version = 3.x_password
-
-[service_deployment:incd]
-openstack_site_id = incd
-openstack_url = https://stratus.ncg.ingrid.pt
-openstack_port = 5000
-openstack_domain_name = default
-openstack_auth_version = 3.x_password
-openstack_tenant_name = eosc-synergy
+openstack_tenant_name = my_openstack_tenant
 radl_image_id = 5336f60b-d4cc-4285-a573-1b706cbbe40b
-tosca_image_id = 97624935-200f-4670-9ea8-c65282adbe56
+tosca_image_id = 97624935-200f-4670-9ea8-c65282adbe5
