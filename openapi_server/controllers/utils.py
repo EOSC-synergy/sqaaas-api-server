@@ -345,7 +345,8 @@ class ProcessExtraData(object):
         dockerfile = None
         build_args = None
         oneshot = True
-        entrypoint = False
+        entrypoint = None
+        environment = []
         service_data = {} # existing service data
 
         if service_name:
@@ -367,7 +368,8 @@ class ProcessExtraData(object):
             )
             image = tool['docker'].get('image', '')
             oneshot = tool['docker'].get('oneshot', True)
-            entrypoint = tool['docker'].get('entrypoint', False)
+            entrypoint = tool['docker'].get('entrypoint', None)
+            environment = tool['docker'].get('environment', [])
 
         dockerfile = os.path.basename(dockerfile_path)
         service_image_properties = JePLUtils.get_composer_service(
@@ -377,7 +379,8 @@ class ProcessExtraData(object):
             dockerfile=dockerfile,
             build_args=build_args,
             oneshot=oneshot,
-            entrypoint=entrypoint
+            entrypoint=entrypoint,
+            environment=environment
         )
 
         if service_data:
