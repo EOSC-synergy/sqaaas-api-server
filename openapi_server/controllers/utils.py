@@ -240,9 +240,10 @@ class ProcessExtraData(object):
         ### NOTE!! Setting working_dir only makes sense when only one volume is expected!
         service_data['working_dir'] = service_data['volumes'][0]['target']
         logger.debug('Setting <working_dir> property to <%s>' % service_data['working_dir'])
+
     @staticmethod
     def set_service_oneshot(service_data):
-        """Set the default volume data.
+        """Set the sleep command if service is marked as oneshot.
 
         :param service_data: Data of the DC service
         """
