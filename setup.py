@@ -37,6 +37,7 @@ setup(
         'templates/Jenkinsfile',
         'templates/embed_badge.html',
         'templates/commands_script.sh',
+        'templates/commands_script_im.sh',
         'templates/pipeline_assessment.json',
         'templates/README',
         '../etc/sqaaas.ini.sample']},
