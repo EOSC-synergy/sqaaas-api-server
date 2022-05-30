@@ -4,6 +4,7 @@ import namegenerator
 
 from jinja2 import Environment, PackageLoader, select_autoescape
 
+from openapi_server import config
 from openapi_server.controllers import utils as ctls_utils
 
 
@@ -68,7 +69,14 @@ class JePLUtils(object):
         env = Environment(
             loader=PackageLoader('openapi_server', 'templates')
         )
-        template = env.get_template('commands_script.sh')
+        if template_name in ['im_client', 'ec3_client']:
+            template = env.get_template('commands_script_im.sh')
+            iaas = 'incd'
+            template_kwargs.update(
+                config.get_service_deployment(iaas)
+            )
+        else:
+            template = env.get_template('commands_script.sh')
         return template.render({
             'checkout_dir': checkout_dir,
             'commands': cmd_list,

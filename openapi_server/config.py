@@ -4,6 +4,8 @@ import sys
 from configparser import ConfigParser
 from configparser import ExtendedInterpolation
 
+from openapi_server.exceptions import SQAaaSAPIException
+
 
 logger = logging.getLogger('sqaaas.api.config')
 
@@ -74,11 +76,11 @@ def get_ci(key, fallback=None):
 def get_badge(key, subsection_list=None, fallback=None):
     """Get option values from 'badgr' sections.
 
-    :param key: section's key name 
+    :param key: section's key name
     :type key: str
     :param subsection_list: ordered subsection names to concat
     :type subsection_list: list
-    :param fallback: fallback value 
+    :param fallback: fallback value
     :type fallback: str
     """
     if subsection_list:
@@ -87,3 +89,23 @@ def get_badge(key, subsection_list=None, fallback=None):
     else:
         section_name = BADGE_SECTION
     return CONF.get(section_name, key, fallback=fallback)
+
+
+def get_service_deployment(iaas):
+    """Get all values from service_deployment and given IaaS.
+
+    :param iaas: iaas to get data from
+    :type iaas: str
+    """
+    iaas_section = ':'.join([
+        'service_deployment', iaas
+    ])
+    if not has_section(iaas_section):
+        raise SQAaaSAPIException(
+            422, 'Could not find setting for IaaS site: %s' % iaas
+        )
+
+    data = dict(CONF.items('service_deployment'))
+    data.update(dict(CONF.items(iaas_section)))
+
+    return data
