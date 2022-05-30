@@ -4,7 +4,7 @@ import sys
 from configparser import ConfigParser
 from configparser import ExtendedInterpolation
 
-from openapi_server.exceptions import SQAaaSAPIException
+from openapi_server.exception import SQAaaSAPIException
 
 
 logger = logging.getLogger('sqaaas.api.config')
