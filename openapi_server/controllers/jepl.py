@@ -275,7 +275,8 @@ class JePLUtils(object):
             context=None,
             dockerfile=None,
             build_args=None,
-            oneshot=True
+            oneshot=True,
+            entrypoint=False
     ):
         """Get service definition compliant with the composer file.
 
@@ -284,6 +285,7 @@ class JePLUtils(object):
         :param context: Context path when building is required.
         :param dockerfile: Path to the Dockerfile, when building is required.
         :param oneshot: Whether the Docker image is oneshot.
+        :param entrypoint: Entrypoint for the service.
         """
         srv_data = {}
         if image:
@@ -304,6 +306,10 @@ class JePLUtils(object):
         if not oneshot:
             srv_data['oneshot'] = oneshot
             logger.debug('Setting oneshot for service <%s>: %s' % (name, oneshot))
+        if entrypoint:
+            srv_data['entrypoint'] = entrypoint
+            logger.debug('Setting entrypoint for service <%s>: %s' % (name, entrypoint))
+
         return srv_data
 
 
