@@ -743,7 +743,7 @@ def process_extra_data(config_json, composer_json, report_to_stdout=False):
                         creds = {}
                         iaas = template_kwargs.get('openstack_site_id', '')
                         deployment_config = config.get_service_deployment(iaas)
-                        for cred in [
+                        for cred_id in [
                             'im_jenkins_credential_id',
                             'openstack_jenkins_credential_id'
                         ]:
