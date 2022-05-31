@@ -13,7 +13,13 @@
 {%- set openstack_tenant_name = template_kwargs.get("openstack_tenant_name") -%}
 {%- set openstack_domain_name = template_kwargs.get("openstack_domain_name") -%}
 {%- set openstack_auth_version = template_kwargs.get("openstack_auth_version") -%}
-printf "$(cat {{ im_auth_file }})" "${IM_USER}" "${IM_PASS}" {{ openstack_site_id }} "{{ openstack_url }}:{{ openstack_port }}" "${OPENSTACK_USER}" "${OPENSTACK_PASS}" {{ openstack_tenant_name }} {{ openstack_domain_name }} {{ openstack_auth_version }} > {{ im_auth_file }}
+cat <<EOF >> {{ im_auth_file }}
+# InfrastructureManager auth
+type = InfrastructureManager; username = %s; password = %q
+# OpenStack site using standard user, password, tenant format
+id = {{ openstack_site_id }}; type = OpenStack; host = {{ openstack_url }}:{{ openstack_port }}; username = %s; password = %q; tenant = {{ openstack_tenant_name }}; domain = {{ openstack_domain_name }}; auth_version = {{ openstack_auth_version }}
+EOF
+printf "$(cat {{ im_auth_file }})" "${IM_USER}" "${IM_PASS}" "${OPENSTACK_USER}" "${OPENSTACK_PASS}" > {{ im_auth_file }}
 echo "Generated auth.dat file:"
 ls -l {{ im_auth_file }}
 printf "$(cat {{im_config_file}})" "{{ openstack_url }}" "{{ radl_image_id }}" > /im/test-ost.{{ config_file_type }}
