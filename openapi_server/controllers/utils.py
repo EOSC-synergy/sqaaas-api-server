@@ -740,14 +740,26 @@ def process_extra_data(config_json, composer_json, report_to_stdout=False):
                             tool_creds.append(creds)
                     # creds in sqaaas.ini (i.e im_client)
                     if tool.get('template', '') in ['im_client']:
-                        creds = {}
                         iaas = template_kwargs.get('openstack_site_id', '')
                         deployment_config = config.get_service_deployment(iaas)
                         for cred_id in [
-                            'im_jenkins_credential_id',
-                            'openstack_jenkins_credential_id'
+                            (
+                                'im_jenkins_credential_id',
+                                'im_jenkins_credential_user_var',
+                                'im_jenkins_credential_pass_var'
+                            ),
+                            (
+                                'openstack_jenkins_credential_id',
+                                'openstack_jenkins_credential_user_var',
+                                'openstack_jenkins_credential_pass_var'
+                            )
                         ]:
-                            creds['id'] = deployment_config[cred_id]
+                            creds = {}
+                            creds['id'] = deployment_config[cred_id[0]]
+                            creds['username_var'] = deployment_config[cred_id[1]]
+                            creds['password_var'] = deployment_config[cred_id[2]]
+                            if creds:
+                                tool_creds.append(creds)
                     if tool_creds:
                         logger.debug(
                             'Found credentials for the tool <%s>: %s' % (
