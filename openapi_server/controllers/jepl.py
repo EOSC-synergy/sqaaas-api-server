@@ -71,7 +71,7 @@ class JePLUtils(object):
         )
         if template_name in ['im_client', 'ec3_client']:
             template = env.get_template('commands_script_im.sh')
-            iaas = 'incd'
+            iaas = template_kwargs.get('openstack_site_id', '')
             template_kwargs.update(
                 config.get_service_deployment(iaas)
             )
