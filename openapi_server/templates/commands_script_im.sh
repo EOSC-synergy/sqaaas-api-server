@@ -20,6 +20,10 @@ type = InfrastructureManager; username = %s; password = %q
 # OpenStack site using standard user, password, tenant format
 id = {{ openstack_site_id }}; type = OpenStack; host = {{ openstack_url }}:{{ openstack_port }}; username = %s; password = %q; tenant = {{ openstack_tenant_name }}; domain = {{ openstack_domain_name }}; auth_version = {{ openstack_auth_version }}
 EOF
+if [ -z "$IM_USER" ] || [ -z "$IM_PASS" ] || [ -z "$OPENSTACK_USER" ] || [ -z "$OPENSTACK_PASS" ]; then
+  echo 'One or more credential variables are undefined (required: IM_USER, IM_PASS, OPENSTACK_USER, OPENSTACK_PASS)'
+  exit 1
+fi
 printf "$(cat {{ im_auth_file }})" "${IM_USER}" "${IM_PASS}" "${OPENSTACK_USER}" "${OPENSTACK_PASS}" > {{ im_auth_file }}
 echo "Generated auth.dat file:"
 ls -l {{ im_auth_file }}
