@@ -12,8 +12,8 @@
 {%- set openstack_tenant_name = template_kwargs.get("openstack_tenant_name") -%}
 {%- set openstack_domain_name = template_kwargs.get("openstack_domain_name") -%}
 {%- set openstack_auth_version = template_kwargs.get("openstack_auth_version") -%}
-mkdir /im
 {%- set im_auth_file = "/im/auth.dat" -%}
+mkdir /im
 cat <<EOF >> {{ im_auth_file }}
 # InfrastructureManager auth
 type = InfrastructureManager; username = %s; password = %q
