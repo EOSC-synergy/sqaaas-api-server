@@ -138,7 +138,6 @@ criteria = ${badgr:fair:silver:criteria} rda_a1_2_01d rda_i2_01d rda_i3_01d rda_
 
 [service_deployment]
 im_server = https://im_endpoint.example.org/
-im_auth_file = /im/auth/auth.dat
 
 [service_deployment:my_site]
 ## -------------------- ##

@@ -5,7 +5,7 @@
 {%- else %}
 {%- set config_file_type = "tosca" -%}
 {%- endif %}
-{%- set im_auth_file = template_kwargs.get("im_auth_file") -%}
+{%- set im_auth_file = "auth.dat" -%}
 {%- set im_server = template_kwargs.get("im_server") -%}
 {%- set openstack_site_id = template_kwargs.get("openstack_site_id") -%}
 {%- set openstack_url = template_kwargs.get("openstack_url") -%}
