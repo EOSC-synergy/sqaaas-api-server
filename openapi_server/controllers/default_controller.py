@@ -1429,10 +1429,10 @@ async def get_compressed_files(request: web.Request, pipeline_id) -> web.Respons
         'Jenkinsfile', jenkinsfile
     )]
     if commands_scripts:
-        commands_scripts = [(
+        commands_scripts = [
             (data['file_name'], data['content'])
                 for data in commands_scripts
-        )]
+        ]
 
     binary_stream = io.BytesIO()
     with ZipFile(binary_stream, 'w') as zfile:
