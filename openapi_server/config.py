@@ -102,7 +102,7 @@ def get_service_deployment(iaas):
     ])
     if not CONF.has_section(iaas_section):
         raise SQAaaSAPIException(
-            422, 'Could not find setting for IaaS site: %s' % iaas
+            422, 'Could not find settings for IaaS site: %s' % iaas
         )
 
     data = dict(CONF.items('service_deployment'))
