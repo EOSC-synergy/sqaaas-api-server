@@ -29,12 +29,10 @@ fi
 printf "$(cat {{ im_auth_file }})" "${IM_USER}" "${IM_PASS}" "${OPENSTACK_USER}" "${OPENSTACK_PASS}" > {{ im_auth_file }}
 echo "Generated auth.dat file:"
 ls -l {{ im_auth_file }}
-
 {%- if im_config_file.endswith("radl") %}
 printf "$(cat {{im_config_file}})" "{{ openstack_url }}" "{{ image_id }}" > /im/test-ost.{{ config_file_type }}
 {%- else %}
 {%- endif %}
-
 echo "Printing {{ config_file_type }} file"
 cat /im/test-ost.{{ config_file_type }}
 echo
