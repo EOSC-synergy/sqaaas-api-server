@@ -6,6 +6,7 @@ from jinja2 import Environment, PackageLoader, select_autoescape
 
 from openapi_server import config
 from openapi_server.controllers import utils as ctls_utils
+from openapi_server.exception import SQAaaSAPIException
 
 
 logger = logging.getLogger('sqaaas.api.jepl')
@@ -72,6 +73,14 @@ class JePLUtils(object):
         if template_name in ['im_client', 'ec3_client']:
             template = env.get_template('commands_script_im.sh')
             iaas = template_kwargs.get('openstack_site_id', '')
+            if not iaas:
+                logger.debug((
+                    'Cannot find <openstack_site_id> for im_client in the '
+                    'configuration: %s' % template_kwargs
+                ))
+                raise SQAaaSAPIException(
+                    422, 'No IaaS site has been defined for im_client'
+                )
             template_kwargs.update(
                 config.get_service_deployment(iaas)
             )
