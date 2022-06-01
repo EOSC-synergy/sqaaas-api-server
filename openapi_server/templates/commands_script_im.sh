@@ -30,7 +30,7 @@ printf "$(cat {{ im_auth_file }})" "${IM_USER}" "${IM_PASS}" "${OPENSTACK_USER}"
 echo "Generated auth.dat file:"
 ls -l {{ im_auth_file }}
 {%- if im_config_file.endswith("radl") %}
-printf "$(cat {{im_config_file}})" "{{ openstack_url }}" "{{ image_id }}" > /im/test-ost.{{ config_file_type }}
+printf "$(cat {{im_config_file}})" "{{ openstack_url | domain }}" "{{ image_id }}" > /im/test-ost.{{ config_file_type }}
 {%- else %}
 {%- endif %}
 echo "Printing {{ config_file_type }} file"

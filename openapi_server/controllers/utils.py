@@ -916,6 +916,15 @@ def get_short_repo_name(repo_url, include_host=False):
     return short_repo_name
 
 
+def get_host_from_uri(uri):
+    """Returns the host part of a given URI.
+
+    :param uri: URI to parse
+    """
+    url_parsed = parse_url(uri)
+    return url_parsed.host
+
+
 def del_empty_keys(data):
     """Deletes the empty keys from a dict or json.
 

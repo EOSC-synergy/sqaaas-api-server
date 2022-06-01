@@ -68,8 +68,9 @@ class JePLUtils(object):
         :param template_kwargs: Object required for template rendering
         """
         env = Environment(
-            loader=PackageLoader('openapi_server', 'templates')
+            loader=PackageLoader('openapi_server', 'templates'),
         )
+        env.filters['domain'] = ctls_utils.get_host_from_uri
         if template_name in ['im_client', 'ec3_client']:
             template = env.get_template('commands_script_im.sh')
             iaas = template_kwargs.get('openstack_site_id', '')
