@@ -2,8 +2,10 @@
 {%- set im_config_file = template_kwargs.get("im_config_file", "") -%}
 {%- if im_config_file.endswith("radl") %}
 {%- set config_file_type = "radl" -%}
+{%- set image_id = template_kwargs.get("radl_image_id") -%}
 {%- else %}
 {%- set config_file_type = "tosca" -%}
+{%- set image_id = template_kwargs.get("tosca_image_id") -%}
 {%- endif %}
 {%- set im_server = template_kwargs.get("im_server") -%}
 {%- set openstack_site_id = template_kwargs.get("openstack_site_id") -%}
@@ -27,7 +29,12 @@ fi
 printf "$(cat {{ im_auth_file }})" "${IM_USER}" "${IM_PASS}" "${OPENSTACK_USER}" "${OPENSTACK_PASS}" > {{ im_auth_file }}
 echo "Generated auth.dat file:"
 ls -l {{ im_auth_file }}
-printf "$(cat {{im_config_file}})" "{{ openstack_url }}" "{{ radl_image_id }}" > /im/test-ost.{{ config_file_type }}
+
+{%- if im_config_file.endswith("radl") %}
+printf "$(cat {{im_config_file}})" "{{ openstack_url }}" "{{ image_id }}" > /im/test-ost.{{ config_file_type }}
+{%- else %}
+{%- endif %}
+
 echo "Printing {{ config_file_type }} file"
 cat /im/test-ost.{{ config_file_type }}
 echo
