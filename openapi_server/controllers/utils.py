@@ -688,6 +688,7 @@ def process_extra_data(config_json, composer_json, report_to_stdout=False):
                 repos_new[stage_name] = repo
 
                 if repo_url or tool_has_template:
+                    template_kwargs = {}
                     # Create script for 'commands' builder
                     # NOTE: This is a workaround -> a specific builder to tackle this will be implemented in JePL
                     if 'commands' in repo.keys():
@@ -704,7 +705,6 @@ def process_extra_data(config_json, composer_json, report_to_stdout=False):
                         if repo_url:
                             checkout_dir = project_repos_mapping[repo_url]['name']
                         # template_kwargs
-                        template_kwargs = {}
                         for arg in tool.get('args', []):
                             if arg.get('id', None):
                                 # split(',') is required since some values might be
@@ -726,6 +726,7 @@ def process_extra_data(config_json, composer_json, report_to_stdout=False):
 
                     # Set credentials if the tool needs them
                     tool_creds = []
+                    # creds in tooling's args
                     for arg in tool.get('args', []):
                         creds = {}
                         if arg['type'] in ['optional']:
@@ -737,6 +738,28 @@ def process_extra_data(config_json, composer_json, report_to_stdout=False):
                                 creds['variable'] = arg['value']
                         if creds:
                             tool_creds.append(creds)
+                    # creds in sqaaas.ini (i.e im_client)
+                    if tool.get('template', '') in ['im_client']:
+                        iaas = template_kwargs.get('openstack_site_id', '')
+                        deployment_config = config.get_service_deployment(iaas)
+                        for cred_id in [
+                            (
+                                'im_jenkins_credential_id',
+                                'im_jenkins_credential_user_var',
+                                'im_jenkins_credential_pass_var'
+                            ),
+                            (
+                                'openstack_jenkins_credential_id',
+                                'openstack_jenkins_credential_user_var',
+                                'openstack_jenkins_credential_pass_var'
+                            )
+                        ]:
+                            creds = {}
+                            creds['id'] = deployment_config[cred_id[0]]
+                            creds['username_var'] = deployment_config[cred_id[1]]
+                            creds['password_var'] = deployment_config[cred_id[2]]
+                            if creds:
+                                tool_creds.append(creds)
                     if tool_creds:
                         logger.debug(
                             'Found credentials for the tool <%s>: %s' % (

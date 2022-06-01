@@ -138,7 +138,9 @@ criteria = ${badgr:fair:silver:criteria} rda_a1_2_01d rda_i2_01d rda_i3_01d rda_
 
 [service_deployment]
 im_server = https://im_endpoint.example.org/
-im_auth_file = /im/auth/auth.dat
+im_jenkins_credential_id = my_im_cred
+im_jenkins_credential_user_var = IM_USER
+im_jenkins_credential_pass_var = IM_PASS
 
 [service_deployment:my_site]
 ## -------------------- ##
@@ -150,5 +152,8 @@ openstack_port = 5000
 openstack_domain_name = default
 openstack_auth_version = 3.x_password
 openstack_tenant_name = my_openstack_tenant
+openstack_jenkins_credential_id = my_openstack_cred
+openstack_jenkins_credential_user_var = OPENSTACK_USER
+openstack_jenkins_credential_pass_var = OPENSTACK_PASS
 radl_image_id = 5336f60b-d4cc-4285-a573-1b706cbbe40b
 tosca_image_id = 97624935-200f-4670-9ea8-c65282adbe5
