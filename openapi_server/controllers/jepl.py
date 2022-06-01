@@ -6,6 +6,7 @@ from jinja2 import Environment, PackageLoader, select_autoescape
 
 from openapi_server import config
 from openapi_server.controllers import utils as ctls_utils
+from openapi_server.exception import SQAaaSAPIException
 
 
 logger = logging.getLogger('sqaaas.api.jepl')
@@ -71,7 +72,15 @@ class JePLUtils(object):
         )
         if template_name in ['im_client', 'ec3_client']:
             template = env.get_template('commands_script_im.sh')
-            iaas = 'incd'
+            iaas = template_kwargs.get('openstack_site_id', '')
+            if not iaas:
+                logger.debug((
+                    'Cannot find <openstack_site_id> for im_client in the '
+                    'configuration: %s' % template_kwargs
+                ))
+                raise SQAaaSAPIException(
+                    422, 'No IaaS site has been defined for im_client'
+                )
             template_kwargs.update(
                 config.get_service_deployment(iaas)
             )
@@ -276,7 +285,8 @@ class JePLUtils(object):
             dockerfile=None,
             build_args=None,
             oneshot=True,
-            entrypoint=False
+            entrypoint=None,
+            environment=[]
     ):
         """Get service definition compliant with the composer file.
 
@@ -286,6 +296,7 @@ class JePLUtils(object):
         :param dockerfile: Path to the Dockerfile, when building is required.
         :param oneshot: Whether the Docker image is oneshot.
         :param entrypoint: Entrypoint for the service.
+        :param environment: Environment for the service.
         """
         srv_data = {}
         if image:
@@ -309,6 +320,9 @@ class JePLUtils(object):
         if entrypoint:
             srv_data['entrypoint'] = entrypoint
             logger.debug('Setting entrypoint for service <%s>: %s' % (name, entrypoint))
+        if environment:
+            srv_data['environment'] = environment
+            logger.debug('Setting environment for service <%s>: %s' % (name, environment))
 
         return srv_data
 
