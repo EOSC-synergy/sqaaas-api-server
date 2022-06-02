@@ -132,6 +132,10 @@ async def _get_tooling_for_assessment(
             repo = repo_docs
         else:
             repo = repo_code
+        logger.debug('Using repository <%s> for criterion <%s>' % (
+            repo['repo'], criterion_id)
+        )
+
         # NOTE Filter tools according to <reporting:requirement_level> property
         criterion_data_copy = copy.deepcopy(criterion_data)
         toolset_for_reporting = []
