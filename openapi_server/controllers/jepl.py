@@ -73,15 +73,24 @@ class JePLUtils(object):
         env.filters['domain'] = ctls_utils.get_host_from_uri
         if template_name in ['im_client', 'ec3_client']:
             template = env.get_template('commands_script_im.sh')
+            # RADL or TOSCA image id
+            im_config_file = template_kwargs.get('im_config_file', '')
+            if not im_config_file:
+                _reason = ((
+                    'No RADL or TOSCA config file provided for im_client: '
+                    '%s' % template_kwargs
+                ))
+                logger.debug(_reason)
+                raise SQAaaSAPIException(422, _reason)
+            # IaaS site selection
             iaas = template_kwargs.get('openstack_site_id', '')
             if not iaas:
-                logger.debug((
+                _reason = ((
                     'Cannot find <openstack_site_id> for im_client in the '
                     'configuration: %s' % template_kwargs
                 ))
-                raise SQAaaSAPIException(
-                    422, 'No IaaS site has been defined for im_client'
-                )
+                logger.debug(_reason)
+                raise SQAaaSAPIException(422, _reason)
             template_kwargs.update(
                 config.get_service_deployment(iaas)
             )
