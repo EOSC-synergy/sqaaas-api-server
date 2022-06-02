@@ -75,11 +75,22 @@ class JePLUtils(object):
             template = env.get_template('commands_script_im.sh')
             # RADL or TOSCA image id
             im_config_file = template_kwargs.get('im_config_file', '')
+            _reason = None
             if not im_config_file:
                 _reason = ((
                     'No RADL or TOSCA config file provided for im_client: '
                     '%s' % template_kwargs
                 ))
+            else:
+                if im_config_file.endswith('radl'):
+                    template_kwargs['im_config_file_type'] = 'radl'
+                elif im_config_file.endswith(('yaml', 'yml')):
+                    template_kwargs['im_config_file_type'] = 'yaml'
+                else:
+                    _reason = (
+                        'File <%s> not recognized as either TOSCA or RADL'
+                    )
+            if _reason:
                 logger.debug(_reason)
                 raise SQAaaSAPIException(422, _reason)
             # IaaS site selection

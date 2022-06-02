@@ -1,12 +1,11 @@
 (
 {%- set im_config_file = template_kwargs.get("im_config_file", "") -%}
 {%- if im_config_file.endswith("radl") %}
-{%- set config_file_type = "radl" -%}
 {%- set image_id = template_kwargs.get("radl_image_id") -%}
 {%- else %}
-{%- set config_file_type = "tosca" -%}
 {%- set image_id = template_kwargs.get("tosca_image_id") -%}
 {%- endif %}
+{%- set im_config_file_type = template_kwargs.get("im_config_file_type", "") -%}
 {%- set im_server = template_kwargs.get("im_server") -%}
 {%- set openstack_site_id = template_kwargs.get("openstack_site_id") -%}
 {%- set openstack_url = template_kwargs.get("openstack_url") -%}
@@ -30,22 +29,22 @@ printf "$(cat {{ im_auth_file }})" "${IM_USER}" "${IM_PASS}" "${OPENSTACK_USER}"
 echo "Generated auth.dat file:"
 ls -l {{ im_auth_file }}
 {%- if im_config_file.endswith("radl") %}
-printf "$(cat {{im_config_file}})" "{{ openstack_url | domain }}" "{{ image_id }}" > /im/test-ost.{{ config_file_type }}
+printf "$(cat {{im_config_file}})" "{{ openstack_url | domain }}" "{{ image_id }}" > /im/test-ost.{{ im_config_file_type }}
 {%- else %}
 {%- endif %}
-echo "Printing {{ config_file_type }} file"
-cat /im/test-ost.{{ config_file_type }}
+echo "Printing {{ im_config_file_type }} file"
+cat /im/test-ost.{{ im_config_file_type }}
 echo
-im_client.py -r "{{ im_server }}" -a "{{ im_auth_file }}" create_wait_outputs /im/test-ost.{{ config_file_type }} > ./im_{{ config_file_type }}.json
+im_client.py -r "{{ im_server }}" -a "{{ im_auth_file }}" create_wait_outputs /im/test-ost.{{ im_config_file_type }} > ./im_{{ im_config_file_type }}.json
 RETURN_CODE=$?
 echo "im_client.py create_wait_outputs return code: ${RETURN_CODE}"
 echo "Infrastructure Manager output:"
-cat ./im_{{ config_file_type }}.json
-awk "/\{/,/\}/ { print $1 }" ./im_{{ config_file_type }}.json > ./im_{{ config_file_type }}_aux.json
+cat ./im_{{ im_config_file_type }}.json
+awk "/\{/,/\}/ { print $1 }" ./im_{{ im_config_file_type }}.json > ./im_{{ im_config_file_type }}_aux.json
 echo "Infrastructure Manager output (only json part):"
-cat ./im_{{ config_file_type }}_aux.json
+cat ./im_{{ im_config_file_type }}_aux.json
 echo
-INFID=$(jq -r '[ .infid ] | .[]' ./im_{{ config_file_type }}_aux.json)
+INFID=$(jq -r '[ .infid ] | .[]' ./im_{{ im_config_file_type }}_aux.json)
 echo "INFID=${INFID}"
 if [ ${RETURN_CODE} -eq 0 ] && ! [[ -z "${INFID}" && "x${INFID}x" == "xnullx" ]]; then
   echo "Deployment finished with success. Logs:"
