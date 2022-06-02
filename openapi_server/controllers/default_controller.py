@@ -137,13 +137,16 @@ async def _get_tooling_for_assessment(
         if criterion_id in ['QC.Doc'] and repo_docs:
             repo = repo_docs
         elif criterion_id in ['SvcQC.Dep']:
-            if repo_deploy:
-                repo = repo_deploy
-            try:
-                criterion_data_copy['tools'] = [deployment['deploy_tool']]
-            except KeyError as e:
-                raise SQAaaSAPIException(422, str(e))
+            if not deployment:
+                logger.warning(
+                    'Missing required data for the service deployment. '
+                    'Skipping criterion SvcQC.Dep'
+                )
+                continue
             else:
+                if repo_deploy:
+                    repo = repo_deploy
+                criterion_data_copy['tools'] = [deployment['deploy_tool']]
                 logger.debug((
                     'Restricting SvcQC.Dep tools to the one choosen by the '
                     'user: %s' % criterion_data_copy['tools']
