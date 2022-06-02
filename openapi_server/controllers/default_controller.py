@@ -99,6 +99,7 @@ async def add_pipeline(request: web.Request, body, report_to_stdout=None) -> web
 async def _get_tooling_for_assessment(
     repo_code,
     repo_docs=None,
+    deployment={},
     optional_tools=[]
 ):
     """Returns per-criterion tooling metadata filtered for assessment.
@@ -116,59 +117,78 @@ async def _get_tooling_for_assessment(
     :type repo_code: dict
     :param repo_docs: optional docs repository object (URL & branch)
     :type repo_docs: dict
+    :param deployment: optional service deployment data (repo & tool)
+    :type deployment: dict
     :param optional_tools: Optional tools that shall be accounted
     :type optional_tools: list
     """
     levels_for_assessment = ['REQUIRED', 'RECOMMENDED']
-
     tooling_metadata_json = await _get_tooling_metadata()
     criteria_data_list = await _sort_tooling_by_criteria(tooling_metadata_json)
     criteria_data_list_filtered = []
     criteria_filtered_out = {}
+    filter_tool_by_requirement_level = True
+    repo_deploy = deployment.get('repo_deploy', {})
     for criterion_data in criteria_data_list:
+        criterion_data_copy = copy.deepcopy(criterion_data)
         criterion_has_required_level = False
-        criterion_id = criterion_data['id']
+        criterion_id = criterion_data_copy['id']
+        repo = repo_code
         if criterion_id in ['QC.Doc'] and repo_docs:
             repo = repo_docs
-        else:
-            repo = repo_code
-        logger.debug('Using repository <%s> for criterion <%s>' % (
+        elif criterion_id in ['SvcQC.Dep']:
+            if repo_deploy:
+                repo = repo_deploy
+            criterion_data_copy['tools'] = [deployment['deploy_tool']]
+            logger.debug((
+                'Restricting SvcQC.Dep tools to the one choosen by the '
+                'user: %s' % criterion_data_copy['tools']
+            ))
+            filter_tool_by_requirement_level = False
+        logger.info('Using repository <%s> for criterion <%s>' % (
             repo['repo'], criterion_id)
         )
 
-        # NOTE Filter tools according to <reporting:requirement_level> property
-        criterion_data_copy = copy.deepcopy(criterion_data)
         toolset_for_reporting = []
         filtered_required_tools = []
-        for tool in criterion_data['tools']:
-            account_tool_by_requirement_level = False
-            try:
-                level = tool['reporting']['requirement_level']
-                if level in levels_for_assessment:
-                    account_tool_by_requirement_level = True
-                    logger.debug((
-                        'Accounting for QAA the tool <%s> (reason: '
-                        'REQUIRED/RECOMMENDED): %s' % (
-                            tool['name'], tool
-                        )
-                    ))
-                    if level in ['REQUIRED']:
-                        criterion_has_required_level = True
-                else:
-                    if tool in optional_tools:
+        for tool in criterion_data_copy['tools']:
+            # Tool filter #1: <reporting:requirement_level> property
+            if filter_tool_by_requirement_level:
+                account_tool_by_requirement_level = False
+                try:
+                    level = tool['reporting']['requirement_level']
+                    if level in levels_for_assessment:
                         account_tool_by_requirement_level = True
                         logger.debug((
                             'Accounting for QAA the tool <%s> (reason: '
-                            'requested as OPTIONAL tool): %s' % (
+                            'REQUIRED/RECOMMENDED): %s' % (
                                 tool['name'], tool
                             )
                         ))
-            except KeyError:
-                logger.debug((
-                    'Skipping tool <%s> as it does not have reporting data '
-                    'defined: %s' % (tool['name'], tool)
-                ))
-            if account_tool_by_requirement_level:
+                        if level in ['REQUIRED']:
+                            criterion_has_required_level = True
+                    else:
+                        if tool in optional_tools:
+                            account_tool_by_requirement_level = True
+                            logger.debug((
+                                'Accounting for QAA the tool <%s> (reason: '
+                                'requested as OPTIONAL tool): %s' % (
+                                    tool['name'], tool
+                                )
+                            ))
+                except KeyError:
+                    logger.debug((
+                        'Skipping tool <%s> as it does not have reporting data '
+                        'defined: %s' % (tool['name'], tool)
+                    ))
+            else:
+                # NOTE: Setting this flag to true is a trick to make tools that
+                # have been requested not to be filtered-by-requirement-level
+                # can enter the next conditional block (lang files)
+                account_tool_by_requirement_level = True
+            # Tool filter #2: presence of file extensions or filenames in the
+            # repository based on the language
+            if account_tool_by_requirement_level :
                 account_tool = False
                 lang = tool['lang']
                 lang_entry = ctls_utils.get_language_entry(lang)
@@ -286,12 +306,14 @@ async def add_pipeline_for_assessment(request: web.Request, body, optional_tools
 
     repo_code = body['repo_code']
     repo_docs = body.get('repo_docs', {})
+    deployment = body.get('deployment', {})
 
     #0 Filter per-criterion tools that will take part in the assessment
     try:
         criteria_data_list, criteria_filtered_out = await _get_tooling_for_assessment(
             repo_code=repo_code,
             repo_docs=repo_docs,
+            deployment=deployment,
             optional_tools=optional_tools
         )
         logger.debug('Gathered tooling data enabled for assessment: %s' % criteria_data_list)
