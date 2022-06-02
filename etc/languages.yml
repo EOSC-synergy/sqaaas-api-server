@@ -7228,6 +7228,12 @@ CodeMeta:
 Citation File Format:
   type: data
   extensions:
-    - ".cff"
+  - ".cff"
   filenames:
   - CITATION.cff
+Infrastructure Manager:
+  type: data
+  extensions:
+  - ".radl"
+  - ".yml"
+  - ".yaml"
