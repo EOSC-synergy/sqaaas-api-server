@@ -39,3 +39,5 @@ git+https://github.com/EOSC-synergy/sqaaas-reporting-plugins@1.4.0#egg=report2sq
 git+https://github.com/EOSC-synergy/sqaaas-reporting-plugins@1.4.0#egg=report2sqaaas-plugin-fairEva&subdirectory=qc_fair_fairEva
 # report2sqaaas-plugin-is_semver = 1.4.0
 git+https://github.com/EOSC-synergy/sqaaas-reporting-plugins@1.4.0#egg=report2sqaaas-plugin-is_semver&subdirectory=qc_ver_is_semver
+# report2sqaaas-plugin-fuji = 1.4.0
+git+https://github.com/EOSC-synergy/sqaaas-reporting-plugins@1.4.0#egg=report2sqaaas-plugin-fuji&subdirectory=qc_fair_fuji
