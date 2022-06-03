@@ -20,7 +20,7 @@
         {%- for criterion_data in criteria_data_list %}
         "{{ criterion_data.id }}": {
           "repos": [
-            {%- for tool in criterion_data.tools %}
+            {%- for tool in criterion_data.tools + criterion_data.get(tooling_qaa_specific_key, []) %}
             {
               {%- if criterion_data.id in ["QC.Doc"] and repo_docs.repo %}
               "repo_url": "{{ repo_docs.repo }}",

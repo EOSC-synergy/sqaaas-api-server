@@ -342,7 +342,9 @@ async def add_pipeline_for_assessment(request: web.Request, body, optional_tools
         pipeline_name=pipeline_name,
         repo_code=repo_code,
         repo_docs=repo_docs,
-        criteria_data_list=criteria_data_list
+        repo_deploy=deployment.get('repo_deploy', {}),
+        criteria_data_list=criteria_data_list,
+        tooling_qaa_specific_key=TOOLING_QAA_SPECIFIC_KEY
     )
     json_data = json.loads(json_rendered)
     logger.debug('Generated JSON payload (from template) required to create the pipeline for the assessment: %s' % json_data)
