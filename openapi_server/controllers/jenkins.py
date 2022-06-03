@@ -195,7 +195,7 @@ class JenkinsUtils(object):
                     'Pipeline REST API Plugin\'s maxReturnChars property (see '
                     'https://github.com/jenkinsci/pipeline-stage-view-plugin)'
                 )
-                logger.error(_reason)
+                self.logger.error(_reason)
                 raise SQAaaSAPIException(502, _reason)
             criteria_data_list.append({
                 'name': name,
