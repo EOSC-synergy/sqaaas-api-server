@@ -127,13 +127,13 @@ async def _get_tooling_for_assessment(
     criteria_data_list = await _sort_tooling_by_criteria(tooling_metadata_json)
     criteria_data_list_filtered = []
     criteria_filtered_out = {}
-    filter_tool_by_requirement_level = True
     repo_deploy = deployment.get('repo_deploy', {})
     for criterion_data in criteria_data_list:
         criterion_data_copy = copy.deepcopy(criterion_data)
         criterion_has_required_level = False
         criterion_id = criterion_data_copy['id']
         repo = repo_code
+        filter_tool_by_requirement_level = True
         if criterion_id in ['QC.Doc'] and repo_docs:
             repo = repo_docs
         elif criterion_id in ['SvcQC.Dep']:
