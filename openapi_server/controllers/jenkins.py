@@ -185,6 +185,7 @@ class JenkinsUtils(object):
             # beautifulsoup4. Unexpected syntaxes have been seen when using
             # instead <text> property from 'log' endpoint
             console_log_endpoint = data['stageFlowNodes'][0]['_links']['console']['href']
+            console_log_endpoint += '?consoleFull'
             data = do_request(console_log_endpoint, json_payload=False)
             stdout = get_text(data.text)
             cmd, output_text = process_stdout(stdout)
