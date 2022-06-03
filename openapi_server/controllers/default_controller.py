@@ -42,6 +42,7 @@ REPOSITORY_BACKEND = config.get(
 )
 GITHUB_ORG = config.get_repo('organization')
 JENKINS_GITHUB_ORG = config.get_ci('github_organization_name')
+TOOLING_QAA_SPECIFIC_KEY = 'tools_qaa_specific'
 
 logger = logging.getLogger('sqaaas.api.controller')
 
@@ -1670,16 +1671,29 @@ async def _get_tooling_metadata():
     return tooling_metadata_json
 
 
-async def _get_criterion_tooling(criterion_id, tooling_metadata_json):
-    """Gets the criterion information as it is returned within the /criteria response.
+async def _get_criterion_tooling(
+        criterion_id,
+        tooling_metadata_json,
+        tools_qaa_specific=False
+    ):
+    """Gets the criterion information as it is returned within the
+    /criteria response.
 
     :param criterion_id: ID of the criterion
     :type criterion_id: str
     :param tooling_metadata_json: JSON with the metadata
     :type tooling_metadata_json: dict
+    :param tools_qaa_specific: Flag to enable qaa-specific tools lookup
+    :type tools_qaa_specific: boolean
     """
+    tool_key = 'tools'
+    add_default_tools = True
+    if tools_qaa_specific:
+        tool_key = TOOLING_QAA_SPECIFIC_KEY
+        add_default_tools = False
+
     try:
-        criterion_data = tooling_metadata_json['criteria'][criterion_id]['tools']
+        criterion_data = tooling_metadata_json['criteria'][criterion_id][tool_key]
     except Exception as e:
         _reason = 'Cannot find tooling information for criterion <%s> in metadata: %s' % (
             criterion_id, tooling_metadata_json)
@@ -1687,8 +1701,9 @@ async def _get_criterion_tooling(criterion_id, tooling_metadata_json):
         raise SQAaaSAPIException(502, _reason)
 
     # Add default tools
-    default_data = {"default": list(tooling_metadata_json["tools"]["default"])}
-    criterion_data.update(default_data)
+    if add_default_tools:
+        default_data = {"default": list(tooling_metadata_json["tools"]["default"])}
+        criterion_data.update(default_data)
 
     criterion_data_list = []
     for lang, tools in criterion_data.items():
@@ -1726,13 +1741,19 @@ async def _sort_tooling_by_criteria(tooling_metadata_json, criteria_id_list=[]):
     criteria_data_list = []
     try:
         for criterion in criteria_id_list:
+            criterion_data = tooling_metadata_json['criteria'][criterion]
             tooling_data = await _get_criterion_tooling(
                 criterion, tooling_metadata_json)
-            criterion_data = tooling_metadata_json['criteria'][criterion]
             criterion_data.update({
                 'id': criterion,
                 'tools': tooling_data
             })
+            # Get tooling data for qaa-specific tools property
+            if TOOLING_QAA_SPECIFIC_KEY in list(criterion_data):
+                tooling_data_qaa = await _get_criterion_tooling(
+                    criterion, tooling_metadata_json, tools_qaa_specific=True)
+                criterion_data[TOOLING_QAA_SPECIFIC_KEY] = tooling_data_qaa
+            
             criteria_data_list.append(criterion_data)
     except SQAaaSAPIException as e:
         return web.Response(status=e.http_code, reason=e.message, text=e.message)
