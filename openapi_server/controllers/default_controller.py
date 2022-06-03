@@ -1728,12 +1728,12 @@ async def _sort_tooling_by_criteria(tooling_metadata_json, criteria_id_list=[]):
         for criterion in criteria_id_list:
             tooling_data = await _get_criterion_tooling(
                 criterion, tooling_metadata_json)
-            criteria_data_list.append({
+            criterion_data = tooling_metadata_json['criteria'][criterion]
+            criterion_data.update({
                 'id': criterion,
-                'type': tooling_metadata_json['criteria'][criterion]['type'],
-                'description': tooling_metadata_json['criteria'][criterion]['description'],
                 'tools': tooling_data
             })
+            criteria_data_list.append(criterion_data)
     except SQAaaSAPIException as e:
         return web.Response(status=e.http_code, reason=e.message, text=e.message)
 
