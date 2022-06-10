@@ -875,17 +875,17 @@ async def get_pipeline_status(request: web.Request, pipeline_id) -> web.Response
     return web.json_response(r, status=200)
 
 
-async def _run_validation(tool, stdout, criterion_name):
+async def _run_validation(tool, criterion_name, **kwargs):
     """Validates the stdout using the sqaaas-reporting tool.
 
     Returns a (<tooling data>, <validation data>) tuple.
 
     :param tool: Tool name
     :type tool: str
-    :param stdout: Tool output
-    :type stdout: str
     :param criterion_name: ID of the criterion
     :type criterion_name: str
+    :param kwargs: Additional data to provide to the validator
+    :type kwargs: dict
 
     """
     tooling_metadata_json = await _get_tooling_metadata()
@@ -905,9 +905,10 @@ async def _run_validation(tool, stdout, criterion_name):
         logger.error(_reason)
         raise SQAaaSAPIException(422, _reason)
 
-    # Add output text and criterion as the report2sqaaas <stdout> input arg
+    # Add additional data for the validator plugin
     validator_opts = copy.deepcopy(reporting_data)
-    validator_opts['stdout'] = stdout
+    validator_opts['stdout'] = kwargs.get('stdout_text', None)
+    validator_opts['status'] = kwargs.get('status', None)
     validator_opts['criterion'] = criterion_name
 
     allowed_validators = r2s_utils.get_validators()
@@ -1038,7 +1039,7 @@ async def _validate_output(stage_data_list, pipeline_data):
 
         logger.debug('Validating output from criterion <%s>' % criterion_name)
         reporting_data, out, broken_data = await _run_validation(
-            matched_tool, criterion_stage_data['stdout_text'], criterion_name
+            matched_tool, criterion_name, **criterion_stage_data
         )
 
         # If broken criterion, add to filtered criteria list
