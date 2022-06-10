@@ -8,7 +8,7 @@ werkzeug == 0.16.1; python_version=="3.5" or python_version=="3.4"
 swagger-ui-bundle == 0.0.6
 PyGithub
 Jinja2
-# python-jenkins
+python-jenkins
 deepdiff
 namegenerator
 GitPython
