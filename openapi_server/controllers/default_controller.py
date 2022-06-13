@@ -875,19 +875,18 @@ async def get_pipeline_status(request: web.Request, pipeline_id) -> web.Response
     return web.json_response(r, status=200)
 
 
-async def _run_validation(tool, criterion_name, **kwargs):
+async def _run_validation(criterion_name, **kwargs):
     """Validates the stdout using the sqaaas-reporting tool.
 
     Returns a (<tooling data>, <validation data>) tuple.
 
-    :param tool: Tool name
-    :type tool: str
     :param criterion_name: ID of the criterion
     :type criterion_name: str
     :param kwargs: Additional data to provide to the validator
     :type kwargs: dict
 
     """
+    tool = kwargs.get('tool', None)
     tooling_metadata_json = await _get_tooling_metadata()
 
     def _get_tool_reporting_data(tool):
@@ -1039,7 +1038,7 @@ async def _validate_output(stage_data_list, pipeline_data):
 
         logger.debug('Validating output from criterion <%s>' % criterion_name)
         reporting_data, out, broken_data = await _run_validation(
-            matched_tool, criterion_name, **criterion_stage_data
+            criterion_name, **criterion_stage_data
         )
 
         # If broken criterion, add to filtered criteria list
