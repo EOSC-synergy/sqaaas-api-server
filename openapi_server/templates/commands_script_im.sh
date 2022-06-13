@@ -1,5 +1,5 @@
 (
-{%- set im_config_file = template_kwargs.get("im_config_file", "") -%}
+{%- set im_config_file = checkout_dir ~ "/" ~ template_kwargs.get("im_config_file", "") -%}
 {%- if im_config_file.endswith("radl") %}
 {%- set image_id = template_kwargs.get("radl_image_id") -%}
 {%- else %}
