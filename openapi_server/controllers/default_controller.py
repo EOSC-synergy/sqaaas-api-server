@@ -1149,10 +1149,6 @@ async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Re
         report_data = {}
         pipeline_data = db.get_entry(pipeline_id)
         criteria_filtered_out = pipeline_data['qaa']
-        print('*'*20)
-        import json
-        print(json.dumps(criteria_filtered_out, indent=4))
-        print('*'*20)
         criteria_tool_commands = pipeline_data['tools']
 
         for criterion_name, criterion_output_data_list in output_data.items():

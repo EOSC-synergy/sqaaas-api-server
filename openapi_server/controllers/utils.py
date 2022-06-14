@@ -843,16 +843,8 @@ def process_extra_data(config_json, composer_json, report_to_stdout=False):
         ProcessExtraData.set_service_volume(srv_data)
         ## Handle 'oneshot' services
         ProcessExtraData.set_service_oneshot(srv_data)
-        # print("-"*20)
-        # import json
-        # print(json.dumps(srv_data, indent=4))
-        # print("-"*20)
         ## Handle 'entrypoint' property
         ProcessExtraData.set_service_entrypoint(srv_data)
-        # print("+"*20)
-        # import json
-        # print(json.dumps(srv_data, indent=4))
-        # print("+"*20)
 
     composer_data = {'data_json': composer_json}
 
