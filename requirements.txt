@@ -43,4 +43,4 @@ git+https://github.com/EOSC-synergy/sqaaas-reporting-plugins@1.6.0-alpha#egg=rep
 # report2sqaaas-plugin-fuji = 1.6.0-alpha
 git+https://github.com/EOSC-synergy/sqaaas-reporting-plugins@1.6.0-alpha#egg=report2sqaaas-plugin-fuji&subdirectory=qc_fair_fuji
 # report2sqaaas-plugin-jenkins_exit_status = 1.6.0-alpha
-git+https://github.com/EOSC-synergy/sqaaas-reporting-plugins@1.6.0-alpha#egg=report2sqaaas-plugin-jenkins_exit_status&subdirectory=qc_all_jenkins_exit_status
+git+https://github.com/EOSC-synergy/sqaaas-reporting-plugins@1.6.0-alpha#egg=report2sqaaas-plugin-jenkins_exit_status&subdirectory=qc_ALL_jenkins_exit_status
