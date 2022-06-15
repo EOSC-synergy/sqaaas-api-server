@@ -17,6 +17,7 @@ beautifulsoup4
 namegenerator>=1.0.6
 aiohttp>=3.8.1
 urllib3~=1.26
+RADL~=1.2.0
 # report2sqaaas == 1.4.0
 git+https://github.com/EOSC-synergy/sqaaas-reporting@1.4.0#egg=report2sqaaas
 # report2sqaaas-plugin-markdownlint = 1.5.0

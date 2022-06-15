@@ -11,6 +11,7 @@ import uuid
 import yaml
 
 from aiohttp import web
+from radl import radl_parse
 from urllib3.util import parse_url
 from urllib3.util import Url
 
@@ -18,6 +19,7 @@ from openapi_server import config
 from openapi_server.controllers import db
 from openapi_server.controllers.git import GitUtils
 from openapi_server.controllers.jepl import JePLUtils
+from openapi_server.exception import SQAaaSAPIException
 
 from github.GithubException import GithubException
 from github.GithubException import UnknownObjectException
@@ -1031,4 +1033,67 @@ def format_filtered_data(valid, reason_list, subcriteria=None):
         'valid': False,
         'filtered_reason': reason_list,
         'subcriteria': subcriteria
+    }
+
+
+@GitUtils.do_git_work
+def add_image_to_im(im_config_file, image_id, openstack_url, repo, path='.'):
+    """Adds image_id (defined in sqaaas.ini) to TOSCA and RADL files used
+    by IM.
+
+    Returns a dict with the same format (<file_name> and <file_data> keys) as
+    the JePL files.
+
+    :param im_config_file: relative path to TOSCA or RADL file
+    :param image_id: ID of the image in the OpenStack site
+    :param openstack_url: URL of the OpenStack endpoint
+    :param repo: repository object (URL & branch)
+    :param path: look for file extensions in the given repo path
+    """
+    def _add_image_id_to_radl(data, image_id):
+        print(">>> Enters _add_image_id_to_radl() <<<")
+        radl = radl_parse.parse_radl(data)
+        for s in radl.systems:
+            s.setValue('disk.0.image.url', image_id)
+        return str(radl)
+
+    def _add_image_id_to_tosca(data, image_id):
+        for node in list(
+            data['topology_template']['node_templates'].values()
+        ):
+            if node['type'] in ['tosca.nodes.indigo.Compute']:
+                node['capabilities']['os']['properties']['image'] = image_id
+        return str(data)
+
+    openstack_host = get_host_from_uri(openstack_url)
+    ost_image_id = 'ost://%s/%s' % (openstack_host, image_id) 
+    data = None
+    _reason = None
+    if Path(PurePath(im_config_file, path)).exists():
+        with open(Path(PurePath(path, im_config_file)), 'r') as f:
+            if im_config_file.endswith('.radl'):
+                data = f.read()
+                data = _add_image_id_to_radl(data, ost_image_id)
+            elif im_config_file.endswith(('.yml', '.yaml')):
+                data = yaml.full_load(f)
+                data = _add_image_id_to_tosca(data, ost_image_id)
+            else:
+                _reason = (
+                    'IM config file type not supported: %s' % im_config_file
+                )
+    else:
+        _reason = 'IM config file <%s> does not exist!' % im_config_file
+
+    if not data:
+        if not _reason:
+            _reason = ((
+                'An unexpected error occurred while adding the image ID to IM '
+                'config file'
+            ))
+        logger.error(_reason)
+        raise SQAaaSAPIException(422, _reason)
+
+    return {
+        'file_name': im_config_file,
+        'file_data': data
     }
