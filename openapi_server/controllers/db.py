@@ -37,7 +37,14 @@ def print_content():
     logger.debug('Current DB content: %s' % list(db))
 
 
-def add_entry(pipeline_id, pipeline_repo, pipeline_repo_url, body, report_to_stdout=False):
+def add_entry(
+        pipeline_id,
+        pipeline_repo,
+        pipeline_repo_url,
+        body,
+        files_to_commit=[],
+        report_to_stdout=False
+    ):
     """Adds a standard entry in the DB.
 
     Each entry has both the raw data from the request and the
@@ -59,6 +66,7 @@ def add_entry(pipeline_id, pipeline_repo, pipeline_repo_url, body, report_to_std
                 |-- 'file_name'
             |-- 'jenkinsfile': [String] Jenkins-compliant pipeline.
             |-- 'commands_scripts': [List] Scripts generated for the commands builder.
+            |-- 'files_to_commit': [List] Additional files to commit to the pipeline repo.
         |-- 'raw_request': [Dict] API spec representation (from JSON request).
         |-- 'jenkins': [Dict] Jenkins-related data about the pipeline execution.
             |-- 'job_name'
@@ -85,7 +93,8 @@ def add_entry(pipeline_id, pipeline_repo, pipeline_repo_url, body, report_to_std
             'config': config_data_list,
             'composer': composer_data,
             'jenkinsfile': jenkinsfile,
-            'commands_scripts': commands_script_list
+            'commands_scripts': commands_script_list,
+            'files_to_commit': files_to_commit
         },
         'raw_request': raw_request,
         'tools': tool_criteria_map

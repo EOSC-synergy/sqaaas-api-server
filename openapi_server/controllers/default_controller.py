@@ -42,6 +42,7 @@ REPOSITORY_BACKEND = config.get(
 )
 GITHUB_ORG = config.get_repo('organization')
 JENKINS_GITHUB_ORG = config.get_ci('github_organization_name')
+TOOLING_QAA_SPECIFIC_KEY = 'tools_qaa_specific'
 
 logger = logging.getLogger('sqaaas.api.controller')
 
@@ -49,13 +50,15 @@ logger = logging.getLogger('sqaaas.api.controller')
 git_utils, gh_utils, jk_utils, badgr_utils = controllers.init_utils()
 
 
-async def _add_pipeline_to_db(body, report_to_stdout=False):
+async def _add_pipeline_to_db(body, files_to_commit=[], report_to_stdout=False):
     """Stores the pipeline into the database.
 
     Returns an UUID that identifies the pipeline in the database.
 
     :param body: JSON request payload, as defined in the spec when 'POST /pipeline'
     :type body: dict | bytes
+    :param files_to_commit: Additional files that need to be committed to the pipeline repo
+    :type files_to_commit: list
     :param report_to_stdout: Flag to indicate whether the pipeline shall print via via stdout the reports produced by the tools (required by QAA module)
     :type report_to_stdout: bool
     """
@@ -71,6 +74,7 @@ async def _add_pipeline_to_db(body, report_to_stdout=False):
         pipeline_repo,
         pipeline_repo_url,
         body,
+        files_to_commit=files_to_commit,
         report_to_stdout=report_to_stdout
     )
 
@@ -99,6 +103,7 @@ async def add_pipeline(request: web.Request, body, report_to_stdout=None) -> web
 async def _get_tooling_for_assessment(
     repo_code,
     repo_docs=None,
+    deployment={},
     optional_tools=[]
 ):
     """Returns per-criterion tooling metadata filtered for assessment.
@@ -116,55 +121,86 @@ async def _get_tooling_for_assessment(
     :type repo_code: dict
     :param repo_docs: optional docs repository object (URL & branch)
     :type repo_docs: dict
+    :param deployment: optional service deployment data (repo & tool)
+    :type deployment: dict
     :param optional_tools: Optional tools that shall be accounted
     :type optional_tools: list
     """
     levels_for_assessment = ['REQUIRED', 'RECOMMENDED']
-
     tooling_metadata_json = await _get_tooling_metadata()
     criteria_data_list = await _sort_tooling_by_criteria(tooling_metadata_json)
     criteria_data_list_filtered = []
     criteria_filtered_out = {}
+    files_to_commit = []
+    repo_deploy = deployment.get('repo_deploy', {})
     for criterion_data in criteria_data_list:
+        criterion_data_copy = copy.deepcopy(criterion_data)
         criterion_has_required_level = False
-        criterion_id = criterion_data['id']
+        criterion_id = criterion_data_copy['id']
+        repo = repo_code
+        filter_tool_by_requirement_level = True
         if criterion_id in ['QC.Doc'] and repo_docs:
             repo = repo_docs
-        else:
-            repo = repo_code
-        # NOTE Filter tools according to <reporting:requirement_level> property
-        criterion_data_copy = copy.deepcopy(criterion_data)
+        elif criterion_id in ['SvcQC.Dep']:
+            if not deployment:
+                logger.warning(
+                    'Missing required data for the service deployment. '
+                    'Skipping criterion SvcQC.Dep'
+                )
+                continue
+            else:
+                if repo_deploy:
+                    repo = repo_deploy
+                criterion_data_copy['tools'] = [deployment['deploy_tool']]
+                logger.debug((
+                    'Restricting SvcQC.Dep tools to the one choosen by the '
+                    'user: %s' % criterion_data_copy['tools']
+                ))
+                filter_tool_by_requirement_level = False
+        logger.info('Using repository <%s> for criterion <%s>' % (
+            repo['repo'], criterion_id)
+        )
+
         toolset_for_reporting = []
         filtered_required_tools = []
-        for tool in criterion_data['tools']:
-            account_tool_by_requirement_level = False
-            try:
-                level = tool['reporting']['requirement_level']
-                if level in levels_for_assessment:
-                    account_tool_by_requirement_level = True
-                    logger.debug((
-                        'Accounting for QAA the tool <%s> (reason: '
-                        'REQUIRED/RECOMMENDED): %s' % (
-                            tool['name'], tool
-                        )
-                    ))
-                    if level in ['REQUIRED']:
-                        criterion_has_required_level = True
-                else:
-                    if tool in optional_tools:
+        for tool in criterion_data_copy['tools']:
+            # Tool filter #1: <reporting:requirement_level> property
+            if filter_tool_by_requirement_level:
+                account_tool_by_requirement_level = False
+                try:
+                    level = tool['reporting']['requirement_level']
+                    if level in levels_for_assessment:
                         account_tool_by_requirement_level = True
                         logger.debug((
                             'Accounting for QAA the tool <%s> (reason: '
-                            'requested as OPTIONAL tool): %s' % (
+                            'REQUIRED/RECOMMENDED): %s' % (
                                 tool['name'], tool
                             )
                         ))
-            except KeyError:
-                logger.debug((
-                    'Skipping tool <%s> as it does not have reporting data '
-                    'defined: %s' % (tool['name'], tool)
-                ))
-            if account_tool_by_requirement_level:
+                        if level in ['REQUIRED']:
+                            criterion_has_required_level = True
+                    else:
+                        if tool in optional_tools:
+                            account_tool_by_requirement_level = True
+                            logger.debug((
+                                'Accounting for QAA the tool <%s> (reason: '
+                                'requested as OPTIONAL tool): %s' % (
+                                    tool['name'], tool
+                                )
+                            ))
+                except KeyError:
+                    logger.debug((
+                        'Skipping tool <%s> as it does not have reporting data '
+                        'defined: %s' % (tool['name'], tool)
+                    ))
+            else:
+                # NOTE: Setting this flag to true is a trick to make tools that
+                # have been requested not to be filtered-by-requirement-level
+                # can enter the next conditional block (lang files)
+                account_tool_by_requirement_level = True
+            # Tool filter #2: presence of file extensions or filenames in the
+            # repository based on the language
+            if account_tool_by_requirement_level :
                 account_tool = False
                 lang = tool['lang']
                 lang_entry = ctls_utils.get_language_entry(lang)
@@ -201,6 +237,28 @@ async def _get_tooling_for_assessment(
                                 'Found matching files in repository: '
                                 '%s' % files_found
                             ))
+                            if tool['name'] in ['im_client']:
+                                im_config_file, iaas = (None, None)
+                                for arg in tool['args']:
+                                    value = arg['value']
+                                    if arg['id'] in ['im_config_file']:
+                                        im_config_file = value
+                                    elif arg['id'] in ['openstack_site_id']:
+                                        iaas = value
+                                im_config = config.get_service_deployment(
+                                    iaas
+                                )
+                                image_id = im_config['im_image_id']
+                                openstack_url = im_config['openstack_url']
+                                im_config_data = ctls_utils.add_image_to_im(
+                                    im_config_file,
+                                    image_id,
+                                    openstack_url,
+                                    repo=repo
+                                )
+                                # Add modified IM config file to the commit
+                                # file list
+                                files_to_commit.append(im_config_data)
                         else:
                             _reason = ((
                                 'No matching files found in repository: using '
@@ -262,7 +320,7 @@ async def _get_tooling_for_assessment(
         logger.error(_reason)
         raise SQAaaSAPIException(422, _reason)
 
-    return criteria_data_list_filtered, criteria_filtered_out
+    return criteria_data_list_filtered, criteria_filtered_out, files_to_commit
 
 
 async def add_pipeline_for_assessment(request: web.Request, body, optional_tools=[]) -> web.Response:
@@ -282,15 +340,26 @@ async def add_pipeline_for_assessment(request: web.Request, body, optional_tools
 
     repo_code = body['repo_code']
     repo_docs = body.get('repo_docs', {})
+    deployment = body.get('deployment', {})
 
     #0 Filter per-criterion tools that will take part in the assessment
     try:
-        criteria_data_list, criteria_filtered_out = await _get_tooling_for_assessment(
-            repo_code=repo_code,
-            repo_docs=repo_docs,
-            optional_tools=optional_tools
-        )
-        logger.debug('Gathered tooling data enabled for assessment: %s' % criteria_data_list)
+        (
+            criteria_data_list,
+            criteria_filtered_out,
+            files_to_commit
+        ) = await _get_tooling_for_assessment(
+                repo_code=repo_code,
+                repo_docs=repo_docs,
+                deployment=deployment,
+                optional_tools=optional_tools
+            )
+        logger.debug((
+            'Gathered tooling data enabled for assessment'
+            ': %s' % criteria_data_list
+        ))
+        if files_to_commit:
+            logger.debug('Returned files to commit: %s' % files_to_commit)
     except SQAaaSAPIException as e:
         return web.Response(status=e.http_code, reason=e.message, text=e.message)
 
@@ -308,13 +377,19 @@ async def add_pipeline_for_assessment(request: web.Request, body, optional_tools
         pipeline_name=pipeline_name,
         repo_code=repo_code,
         repo_docs=repo_docs,
-        criteria_data_list=criteria_data_list
+        repo_deploy=deployment.get('repo_deploy', {}),
+        criteria_data_list=criteria_data_list,
+        tooling_qaa_specific_key=TOOLING_QAA_SPECIFIC_KEY
     )
     json_data = json.loads(json_rendered)
     logger.debug('Generated JSON payload (from template) required to create the pipeline for the assessment: %s' % json_data)
 
     #2 Create pipeline
-    pipeline_id = await _add_pipeline_to_db(json_data, report_to_stdout=True)
+    pipeline_id = await _add_pipeline_to_db(
+        json_data,
+        files_to_commit=files_to_commit,
+        report_to_stdout=True
+    )
 
     #3 Store QAA data
     db.add_assessment_data(
@@ -657,6 +732,7 @@ async def run_pipeline(request: web.Request, pipeline_id, issue_badge=False, rep
         composer_data,
         jenkinsfile,
         pipeline_data['data']['commands_scripts'],
+        pipeline_data['data']['files_to_commit'],
         branch=pipeline_repo_branch
     )
     commit_url = gh_utils.get_commit_url(pipeline_repo, commit_id)
@@ -839,17 +915,18 @@ async def get_pipeline_status(request: web.Request, pipeline_id) -> web.Response
     return web.json_response(r, status=200)
 
 
-async def _run_validation(tool, stdout):
+async def _run_validation(criterion_name, **kwargs):
     """Validates the stdout using the sqaaas-reporting tool.
 
     Returns a (<tooling data>, <validation data>) tuple.
 
-    :param tool: Tool name
-    :type tool: str
-    :param stdout: Tool output
-    :type stdout: str
+    :param criterion_name: ID of the criterion
+    :type criterion_name: str
+    :param kwargs: Additional data to provide to the validator
+    :type kwargs: dict
 
     """
+    tool = kwargs.get('tool', None)
     tooling_metadata_json = await _get_tooling_metadata()
 
     def _get_tool_reporting_data(tool):
@@ -867,9 +944,11 @@ async def _run_validation(tool, stdout):
         logger.error(_reason)
         raise SQAaaSAPIException(422, _reason)
 
-    # Add output text as the report2sqaaas <stdout> input arg
+    # Add additional data for the validator plugin
     validator_opts = copy.deepcopy(reporting_data)
-    validator_opts['stdout'] = stdout
+    validator_opts['stdout'] = kwargs.get('stdout_text', None)
+    validator_opts['status'] = kwargs.get('status', None)
+    validator_opts['criterion'] = criterion_name
 
     allowed_validators = r2s_utils.get_validators()
     validator_name = reporting_data['validator']
@@ -999,7 +1078,7 @@ async def _validate_output(stage_data_list, pipeline_data):
 
         logger.debug('Validating output from criterion <%s>' % criterion_name)
         reporting_data, out, broken_data = await _run_validation(
-            matched_tool, criterion_stage_data['stdout_text']
+            criterion_name, **criterion_stage_data
         )
 
         # If broken criterion, add to filtered criteria list
@@ -1110,10 +1189,6 @@ async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Re
         report_data = {}
         pipeline_data = db.get_entry(pipeline_id)
         criteria_filtered_out = pipeline_data['qaa']
-        print('*'*20)
-        import json
-        print(json.dumps(criteria_filtered_out, indent=4))
-        print('*'*20)
         criteria_tool_commands = pipeline_data['tools']
 
         for criterion_name, criterion_output_data_list in output_data.items():
@@ -1373,6 +1448,7 @@ async def create_pull_request(request: web.Request, pipeline_id, body) -> web.Re
         composer_data,
         jenkinsfile,
         pipeline_data['data']['commands_scripts'],
+        pipeline_data['data']['files_to_commit'],
         branch=source_branch_name)
     # step 3: create PR if it does not exist
     target_pr_data = [
@@ -1637,16 +1713,29 @@ async def _get_tooling_metadata():
     return tooling_metadata_json
 
 
-async def _get_criterion_tooling(criterion_id, tooling_metadata_json):
-    """Gets the criterion information as it is returned within the /criteria response.
+async def _get_criterion_tooling(
+        criterion_id,
+        tooling_metadata_json,
+        tools_qaa_specific=False
+    ):
+    """Gets the criterion information as it is returned within the
+    /criteria response.
 
     :param criterion_id: ID of the criterion
     :type criterion_id: str
     :param tooling_metadata_json: JSON with the metadata
     :type tooling_metadata_json: dict
+    :param tools_qaa_specific: Flag to enable qaa-specific tools lookup
+    :type tools_qaa_specific: boolean
     """
+    tool_key = 'tools'
+    add_default_tools = True
+    if tools_qaa_specific:
+        tool_key = TOOLING_QAA_SPECIFIC_KEY
+        add_default_tools = False
+
     try:
-        criterion_data = tooling_metadata_json['criteria'][criterion_id]['tools']
+        criterion_data = tooling_metadata_json['criteria'][criterion_id][tool_key]
     except Exception as e:
         _reason = 'Cannot find tooling information for criterion <%s> in metadata: %s' % (
             criterion_id, tooling_metadata_json)
@@ -1654,8 +1743,9 @@ async def _get_criterion_tooling(criterion_id, tooling_metadata_json):
         raise SQAaaSAPIException(502, _reason)
 
     # Add default tools
-    default_data = {"default": list(tooling_metadata_json["tools"]["default"])}
-    criterion_data.update(default_data)
+    if add_default_tools:
+        default_data = {"default": list(tooling_metadata_json["tools"]["default"])}
+        criterion_data.update(default_data)
 
     criterion_data_list = []
     for lang, tools in criterion_data.items():
@@ -1693,14 +1783,20 @@ async def _sort_tooling_by_criteria(tooling_metadata_json, criteria_id_list=[]):
     criteria_data_list = []
     try:
         for criterion in criteria_id_list:
+            criterion_data = tooling_metadata_json['criteria'][criterion]
             tooling_data = await _get_criterion_tooling(
                 criterion, tooling_metadata_json)
-            criteria_data_list.append({
+            criterion_data.update({
                 'id': criterion,
-                'type': tooling_metadata_json['criteria'][criterion]['type'],
-                'description': tooling_metadata_json['criteria'][criterion]['description'],
                 'tools': tooling_data
             })
+            # Get tooling data for qaa-specific tools property
+            if TOOLING_QAA_SPECIFIC_KEY in list(criterion_data):
+                tooling_data_qaa = await _get_criterion_tooling(
+                    criterion, tooling_metadata_json, tools_qaa_specific=True)
+                criterion_data[TOOLING_QAA_SPECIFIC_KEY] = tooling_data_qaa
+            
+            criteria_data_list.append(criterion_data)
     except SQAaaSAPIException as e:
         return web.Response(status=e.http_code, reason=e.message, text=e.message)
 

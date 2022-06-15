@@ -70,18 +70,37 @@ class JePLUtils(object):
         env = Environment(
             loader=PackageLoader('openapi_server', 'templates'),
         )
-        env.filters['domain'] = ctls_utils.get_host_from_uri
         if template_name in ['im_client', 'ec3_client']:
             template = env.get_template('commands_script_im.sh')
+            # RADL or TOSCA image id
+            im_config_file = template_kwargs.get('im_config_file', '')
+            _reason = None
+            if not im_config_file:
+                _reason = ((
+                    'No RADL or TOSCA config file provided for im_client: '
+                    '%s' % template_kwargs
+                ))
+            else:
+                if im_config_file.endswith('radl'):
+                    template_kwargs['im_config_file_type'] = 'radl'
+                elif im_config_file.endswith(('yaml', 'yml')):
+                    template_kwargs['im_config_file_type'] = 'yaml'
+                else:
+                    _reason = (
+                        'File <%s> not recognized as either TOSCA or RADL'
+                    )
+            if _reason:
+                logger.debug(_reason)
+                raise SQAaaSAPIException(422, _reason)
+            # IaaS site selection
             iaas = template_kwargs.get('openstack_site_id', '')
             if not iaas:
-                logger.debug((
+                _reason = ((
                     'Cannot find <openstack_site_id> for im_client in the '
                     'configuration: %s' % template_kwargs
                 ))
-                raise SQAaaSAPIException(
-                    422, 'No IaaS site has been defined for im_client'
-                )
+                logger.debug(_reason)
+                raise SQAaaSAPIException(422, _reason)
             template_kwargs.update(
                 config.get_service_deployment(iaas)
             )
@@ -178,6 +197,7 @@ class JePLUtils(object):
             composer_data,
             jenkinsfile,
             commands_script_list,
+            files_to_commit_list,
             branch):
         """Push the given JePL file structure to the given repo.
 
@@ -188,6 +208,7 @@ class JePLUtils(object):
         :param composer_data: Dict containing pipeline's JePL composer data.
         :param jenkinsfile: String containing the Jenkins configuration.
         :param commands_script_list: List of generated scripts for the commands builder.
+        :param files_to_commit_list: List of additional files that are needed.
         :param branch: Name of the branch in the remote repository.
         """
         ## config
@@ -260,12 +281,23 @@ class JePLUtils(object):
             }
             for script in commands_scripts_to_remove_set
         ]
+        ## Additional files to commit
+        additional_files_to_push = [
+            {
+                'file_name': additional_file['file_name'],
+                'file_data': additional_file['file_data'],
+                'delete': False
+            }
+            for additional_file in files_to_commit_list
+        ]
         ## Merge & Push the definitive list of files
         files_to_push = (
             config_files_to_push + config_files_to_remove +
             composer_files_to_push +
             jenkinsfile_to_push +
-            commands_scripts_to_push + commands_scripts_to_remove)
+            commands_scripts_to_push + commands_scripts_to_remove + 
+            additional_files_to_push
+        )
         commit = gh_utils.push_files(
             files_to_push,
             commit_msg='Add JePL file structure',
