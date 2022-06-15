@@ -1,5 +1,5 @@
 (
-{%- set im_config_file = checkout_dir ~ "/" ~ template_kwargs.get("im_config_file", "") -%}
+{%- set im_config_file = template_kwargs.get("im_config_file", "") -%}
 {%- if im_config_file.endswith("radl") %}
 {%- set image_id = template_kwargs.get("radl_image_id") -%}
 {%- else %}
@@ -28,14 +28,10 @@ fi
 printf "$(cat {{ im_auth_file }})" "${IM_USER}" "${IM_PASS}" "${OPENSTACK_USER}" "${OPENSTACK_PASS}" > {{ im_auth_file }}
 echo "Generated auth.dat file:"
 ls -l {{ im_auth_file }}
-{%- if im_config_file.endswith("radl") %}
-printf "$(cat {{im_config_file}})" "{{ openstack_url | domain }}" "{{ image_id }}" > /im/test-ost.{{ im_config_file_type }}
-{%- else %}
-{%- endif %}
-echo "Printing {{ im_config_file_type }} file"
-cat /im/test-ost.{{ im_config_file_type }}
+echo "Printing IM config file: {{ im_config_file }}"
+cat {{ im_config_file }}
 echo
-im_client.py -r "{{ im_server }}" -a "{{ im_auth_file }}" create_wait_outputs /im/test-ost.{{ im_config_file_type }} > ./im_{{ im_config_file_type }}.json
+im_client.py -r "{{ im_server }}" -a "{{ im_auth_file }}" create_wait_outputs {{ im_config_file }} > ./im_{{ im_config_file_type }}.json
 RETURN_CODE=$?
 echo "im_client.py create_wait_outputs return code: ${RETURN_CODE}"
 echo "Infrastructure Manager output:"

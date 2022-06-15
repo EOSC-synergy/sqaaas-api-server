@@ -157,3 +157,4 @@ openstack_jenkins_credential_user_var = OPENSTACK_USER
 openstack_jenkins_credential_pass_var = OPENSTACK_PASS
 radl_image_id = 5336f60b-d4cc-4285-a573-1b706cbbe40b
 tosca_image_id = 97624935-200f-4670-9ea8-c65282adbe5
+im_image_id = 97624935-200f-4670-9ea8-c65282adbe5
