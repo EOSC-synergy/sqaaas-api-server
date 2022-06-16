@@ -81,8 +81,17 @@ def add_entry(
     """
     raw_request = copy.deepcopy(body)
     config_json, composer_json, jenkinsfile_data = ctls_utils.get_pipeline_data(body)
-    config_data_list, composer_data, jenkinsfile, commands_script_list, tool_criteria_map = JePLUtils.compose_files(
-        config_json, composer_json, report_to_stdout=report_to_stdout
+    (
+        config_data_list,
+        composer_data,
+        jenkinsfile,
+        commands_script_list,
+        additional_files_to_commit,
+        tool_criteria_map
+    ) = JePLUtils.compose_files(
+        config_json,
+        composer_json,
+        report_to_stdout=report_to_stdout
     )
 
     db = load_content()
@@ -94,7 +103,7 @@ def add_entry(
             'composer': composer_data,
             'jenkinsfile': jenkinsfile,
             'commands_scripts': commands_script_list,
-            'files_to_commit': files_to_commit
+            'additional_files_to_commit': additional_files_to_commit
         },
         'raw_request': raw_request,
         'tools': tool_criteria_map

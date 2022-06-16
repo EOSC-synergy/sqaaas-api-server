@@ -618,6 +618,7 @@ def process_extra_data(config_json, composer_json, report_to_stdout=False):
     commands_script_list = []
     tool_criteria_map = {}
     service_images_curated_list = [] # services processed by curate_service_image_properties()
+    additional_files_to_commit = [] # mainly for image-modified IM config files
     for criterion_name, criterion_data in config_json['sqa_criteria'].items():
         logger.debug('Processing config data for criterion <%s>' % criterion_name)
         criterion_data_copy = copy.deepcopy(criterion_data)
@@ -740,10 +741,30 @@ def process_extra_data(config_json, composer_json, report_to_stdout=False):
                                 creds['variable'] = arg['value']
                         if creds:
                             tool_creds.append(creds)
-                    # creds in sqaaas.ini (i.e im_client)
                     if tool.get('template', '') in ['im_client']:
                         iaas = template_kwargs.get('openstack_site_id', '')
                         deployment_config = config.get_service_deployment(iaas)
+                        # Add image-modified IM config file to files_to_commit
+                        im_config_file = template_kwargs['im_config_file']
+                        image_id = template_kwargs['im_image_id']
+                        openstack_url = template_kwargs['openstack_url']
+                        repo, branch = (None, None)
+                        if repo_url:
+                            # repo object expects 'repo' key as current
+                            # project_repos_mapping's 'name' key
+                            _repo = {
+                                'repo': repo_url,
+                                'branch': project_repos_mapping[repo_url]['branch']
+                            }
+                            additional_files_to_commit.append(
+                                add_image_to_im(
+                                    im_config_file,
+                                    image_id,
+                                    openstack_url,
+                                    repo=_repo
+                                )
+                            )
+                        # creds in sqaaas.ini (i.e im_client)
                         for cred_id in [
                             (
                                 'im_jenkins_credential_id',
@@ -854,7 +875,13 @@ def process_extra_data(config_json, composer_json, report_to_stdout=False):
     # - Multiple stages/Jenkins when clause
     config_data_list = ProcessExtraData.set_config_when_clause(config_json)
 
-    return (config_data_list, composer_data, commands_script_list, tool_criteria_map)
+    return (
+        config_data_list,
+        composer_data,
+        commands_script_list,
+        additional_files_to_commit,
+        tool_criteria_map
+    )
 
 
 def has_this_repo(config_data_list):
@@ -1051,7 +1078,6 @@ def add_image_to_im(im_config_file, image_id, openstack_url, repo, path='.'):
     :param path: look for file extensions in the given repo path
     """
     def _add_image_id_to_radl(data, image_id):
-        print(">>> Enters _add_image_id_to_radl() <<<")
         radl = radl_parse.parse_radl(data)
         for s in radl.systems:
             s.setValue('disk.0.image.url', image_id)

@@ -138,7 +138,13 @@ class JePLUtils(object):
         """
         # Extract & process those data that are not directly translated into
         # the composer and JePL config
-        config_data_list, composer_data, commands_script_list, tool_criteria_map = ctls_utils.process_extra_data(
+        (
+            config_data_list,
+            composer_data,
+            commands_script_list,
+            additional_files_to_commit,
+            tool_criteria_map
+        ) = ctls_utils.process_extra_data(
             config_json,
             composer_json,
             report_to_stdout=report_to_stdout
@@ -158,7 +164,14 @@ class JePLUtils(object):
             'composer', [composer_data])[0]
         jenkinsfile = cls.get_jenkinsfile(config_data_list)
 
-        return (config_data_list, composer_data, jenkinsfile, commands_script_list, tool_criteria_map)
+        return (
+            config_data_list,
+            composer_data,
+            jenkinsfile,
+            commands_script_list,
+            additional_files_to_commit,
+            tool_criteria_map
+        )
 
     def get_files(
         file_type,
@@ -197,7 +210,7 @@ class JePLUtils(object):
             composer_data,
             jenkinsfile,
             commands_script_list,
-            files_to_commit_list,
+            additional_files_to_commit,
             branch):
         """Push the given JePL file structure to the given repo.
 
@@ -207,8 +220,9 @@ class JePLUtils(object):
         :param config_data_list: List of pipeline's JePL config data.
         :param composer_data: Dict containing pipeline's JePL composer data.
         :param jenkinsfile: String containing the Jenkins configuration.
-        :param commands_script_list: List of generated scripts for the commands builder.
-        :param files_to_commit_list: List of additional files that are needed.
+        :param commands_script_list: List of generated scripts for the commands
+               builder.
+        :param additional_files_to_commit: List of additional files that are needed.
         :param branch: Name of the branch in the remote repository.
         """
         ## config
@@ -288,7 +302,7 @@ class JePLUtils(object):
                 'file_data': additional_file['file_data'],
                 'delete': False
             }
-            for additional_file in files_to_commit_list
+            for additional_file in additional_files_to_commit
         ]
         ## Merge & Push the definitive list of files
         files_to_push = (

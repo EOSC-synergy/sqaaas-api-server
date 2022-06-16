@@ -50,15 +50,13 @@ logger = logging.getLogger('sqaaas.api.controller')
 git_utils, gh_utils, jk_utils, badgr_utils = controllers.init_utils()
 
 
-async def _add_pipeline_to_db(body, files_to_commit=[], report_to_stdout=False):
+async def _add_pipeline_to_db(body, report_to_stdout=False):
     """Stores the pipeline into the database.
 
     Returns an UUID that identifies the pipeline in the database.
 
     :param body: JSON request payload, as defined in the spec when 'POST /pipeline'
     :type body: dict | bytes
-    :param files_to_commit: Additional files that need to be committed to the pipeline repo
-    :type files_to_commit: list
     :param report_to_stdout: Flag to indicate whether the pipeline shall print via via stdout the reports produced by the tools (required by QAA module)
     :type report_to_stdout: bool
     """
@@ -74,7 +72,6 @@ async def _add_pipeline_to_db(body, files_to_commit=[], report_to_stdout=False):
         pipeline_repo,
         pipeline_repo_url,
         body,
-        files_to_commit=files_to_commit,
         report_to_stdout=report_to_stdout
     )
 
@@ -131,7 +128,6 @@ async def _get_tooling_for_assessment(
     criteria_data_list = await _sort_tooling_by_criteria(tooling_metadata_json)
     criteria_data_list_filtered = []
     criteria_filtered_out = {}
-    files_to_commit = []
     repo_deploy = deployment.get('repo_deploy', {})
     for criterion_data in criteria_data_list:
         criterion_data_copy = copy.deepcopy(criterion_data)
@@ -237,28 +233,6 @@ async def _get_tooling_for_assessment(
                                 'Found matching files in repository: '
                                 '%s' % files_found
                             ))
-                            if tool['name'] in ['im_client']:
-                                im_config_file, iaas = (None, None)
-                                for arg in tool['args']:
-                                    value = arg['value']
-                                    if arg['id'] in ['im_config_file']:
-                                        im_config_file = value
-                                    elif arg['id'] in ['openstack_site_id']:
-                                        iaas = value
-                                im_config = config.get_service_deployment(
-                                    iaas
-                                )
-                                image_id = im_config['im_image_id']
-                                openstack_url = im_config['openstack_url']
-                                im_config_data = ctls_utils.add_image_to_im(
-                                    im_config_file,
-                                    image_id,
-                                    openstack_url,
-                                    repo=repo
-                                )
-                                # Add modified IM config file to the commit
-                                # file list
-                                files_to_commit.append(im_config_data)
                         else:
                             _reason = ((
                                 'No matching files found in repository: using '
@@ -320,7 +294,7 @@ async def _get_tooling_for_assessment(
         logger.error(_reason)
         raise SQAaaSAPIException(422, _reason)
 
-    return criteria_data_list_filtered, criteria_filtered_out, files_to_commit
+    return criteria_data_list_filtered, criteria_filtered_out
 
 
 async def add_pipeline_for_assessment(request: web.Request, body, optional_tools=[]) -> web.Response:
@@ -346,8 +320,7 @@ async def add_pipeline_for_assessment(request: web.Request, body, optional_tools
     try:
         (
             criteria_data_list,
-            criteria_filtered_out,
-            files_to_commit
+            criteria_filtered_out
         ) = await _get_tooling_for_assessment(
                 repo_code=repo_code,
                 repo_docs=repo_docs,
@@ -358,8 +331,6 @@ async def add_pipeline_for_assessment(request: web.Request, body, optional_tools
             'Gathered tooling data enabled for assessment'
             ': %s' % criteria_data_list
         ))
-        if files_to_commit:
-            logger.debug('Returned files to commit: %s' % files_to_commit)
     except SQAaaSAPIException as e:
         return web.Response(status=e.http_code, reason=e.message, text=e.message)
 
@@ -387,7 +358,6 @@ async def add_pipeline_for_assessment(request: web.Request, body, optional_tools
     #2 Create pipeline
     pipeline_id = await _add_pipeline_to_db(
         json_data,
-        files_to_commit=files_to_commit,
         report_to_stdout=True
     )
 
@@ -649,7 +619,14 @@ async def get_pipeline_jenkinsfile_jepl(request: web.Request, pipeline_id) -> we
 
 @ctls_utils.debug_request
 @ctls_utils.validate_request
-async def run_pipeline(request: web.Request, pipeline_id, issue_badge=False, repo_url=None, repo_branch=None, keepgoing=False) -> web.Response:
+async def run_pipeline(
+        request: web.Request,
+        pipeline_id,
+        issue_badge=False,
+        repo_url=None,
+        repo_branch=None,
+        keepgoing=False
+    ) -> web.Response:
     """Runs pipeline.
 
     Executes the given pipeline by means of the Jenkins API.
@@ -678,6 +655,7 @@ async def run_pipeline(request: web.Request, pipeline_id, issue_badge=False, rep
     composer_data = pipeline_data['data']['composer']
     jenkinsfile = pipeline_data['data']['jenkinsfile']
 
+    has_checkout_dir = True
     if repo_url:
         if not ctls_utils.has_this_repo(config_data_list):
             _reason = ((
@@ -716,6 +694,8 @@ async def run_pipeline(request: web.Request, pipeline_id, issue_badge=False, rep
                 'Pipeline repository updated with the content from source: '
                 '%s (branch: %s)' % (pipeline_repo, pipeline_repo_branch)
             ))
+        # No need of checkout directory
+        has_checkout_dir = False
     else:
         repo_data = gh_utils.get_repository(pipeline_repo)
         if not repo_data:
@@ -732,8 +712,9 @@ async def run_pipeline(request: web.Request, pipeline_id, issue_badge=False, rep
         composer_data,
         jenkinsfile,
         pipeline_data['data']['commands_scripts'],
-        pipeline_data['data']['files_to_commit'],
-        branch=pipeline_repo_branch
+        pipeline_data['data']['additional_files_to_commit'],
+        branch=pipeline_repo_branch,
+        has_checkout_dir=has_checkout_dir
     )
     commit_url = gh_utils.get_commit_url(pipeline_repo, commit_id)
 
@@ -1448,8 +1429,9 @@ async def create_pull_request(request: web.Request, pipeline_id, body) -> web.Re
         composer_data,
         jenkinsfile,
         pipeline_data['data']['commands_scripts'],
-        pipeline_data['data']['files_to_commit'],
-        branch=source_branch_name)
+        pipeline_data['data']['additional_files_to_commit'],
+        branch=source_branch_name
+    )
     # step 3: create PR if it does not exist
     target_pr_data = [
         dict([['html_url', pr.html_url], ['data', (pr.head.repo.name, pr.head.ref)]])
