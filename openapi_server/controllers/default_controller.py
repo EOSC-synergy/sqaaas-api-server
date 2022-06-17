@@ -713,8 +713,7 @@ async def run_pipeline(
         jenkinsfile,
         pipeline_data['data']['commands_scripts'],
         pipeline_data['data']['additional_files_to_commit'],
-        branch=pipeline_repo_branch,
-        has_checkout_dir=has_checkout_dir
+        branch=pipeline_repo_branch
     )
     commit_url = gh_utils.get_commit_url(pipeline_repo, commit_id)
 
