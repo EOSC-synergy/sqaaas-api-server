@@ -746,7 +746,7 @@ def process_extra_data(config_json, composer_json, report_to_stdout=False):
                         deployment_config = config.get_service_deployment(iaas)
                         # Add image-modified IM config file to files_to_commit
                         im_config_file = template_kwargs['im_config_file']
-                        image_id = template_kwargs['im_image_id']
+                        im_image_id = template_kwargs['im_image_id']
                         openstack_url = template_kwargs['openstack_url']
                         repo, branch = (None, None)
                         if repo_url:
@@ -759,7 +759,7 @@ def process_extra_data(config_json, composer_json, report_to_stdout=False):
                             additional_files_to_commit.append(
                                 add_image_to_im(
                                     im_config_file,
-                                    image_id,
+                                    im_image_id,
                                     openstack_url,
                                     repo=_repo
                                 )
