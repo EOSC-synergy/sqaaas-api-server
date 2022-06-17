@@ -303,6 +303,7 @@ class JePLUtils(object):
                 'delete': False
             }
             for additional_file in additional_files_to_commit
+                if additional_file['file_data'] # ensure that has some content
         ]
         ## Merge & Push the definitive list of files
         files_to_push = (

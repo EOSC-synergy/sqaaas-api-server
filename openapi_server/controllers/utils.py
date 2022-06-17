@@ -763,6 +763,12 @@ def process_extra_data(config_json, composer_json, report_to_stdout=False):
                                     repo=_repo
                                 )
                             )
+                        else:
+                            additional_files_to_commit.append({
+                                'file_name': im_config_file,
+                                'file_data': None,
+                                'deployment': template_kwargs
+                            })
                         # creds in sqaaas.ini (i.e im_client)
                         for cred_id in [
                             (

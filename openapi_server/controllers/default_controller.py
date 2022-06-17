@@ -655,7 +655,9 @@ async def run_pipeline(
     composer_data = pipeline_data['data']['composer']
     jenkinsfile = pipeline_data['data']['jenkinsfile']
 
-    has_checkout_dir = True
+    additional_files_list = pipeline_data['data'].get(
+        'additional_files_to_commit', []
+    )
     if repo_url:
         if not ctls_utils.has_this_repo(config_data_list):
             _reason = ((
@@ -694,8 +696,27 @@ async def run_pipeline(
                 'Pipeline repository updated with the content from source: '
                 '%s (branch: %s)' % (pipeline_repo, pipeline_repo_branch)
             ))
-        # No need of checkout directory
-        has_checkout_dir = False
+        # Additional files to commit, i.e. IM config files: when repo_url is
+        # defined, data of the additional files is not defined because the repo
+        # URL is not known at pipeline creation time
+        additional_files_list_new = []
+        for additional_file in pipeline_data['data']['additional_files_to_commit']:
+            im_config_file = additional_file['file_name']
+            im_image_id = additional_file['deployment']['im_image_id']
+            openstack_url = additional_file['deployment']['openstack_url']
+            _repo = {
+                'repo': repo_url,
+                'branch': repo_branch
+            }
+            additional_files_list_new.append(
+                ctls_utils.add_image_to_im(
+                    im_config_file,
+                    im_image_id,
+                    openstack_url,
+                    repo=_repo
+                )
+            )
+        additional_files_list = additional_files_list_new
     else:
         repo_data = gh_utils.get_repository(pipeline_repo)
         if not repo_data:
@@ -712,7 +733,7 @@ async def run_pipeline(
         composer_data,
         jenkinsfile,
         pipeline_data['data']['commands_scripts'],
-        pipeline_data['data']['additional_files_to_commit'],
+        additional_files_list,
         branch=pipeline_repo_branch
     )
     commit_url = gh_utils.get_commit_url(pipeline_repo, commit_id)
