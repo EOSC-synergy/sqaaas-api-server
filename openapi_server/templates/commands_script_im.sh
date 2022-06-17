@@ -1,7 +1,7 @@
 (
 {%- set im_config_file_name = template_kwargs.get("im_config_file", "") -%}
 {%- set im_config_file = checkout_dir ~ "/" ~ im_config_file_name -%}
-{% if checkout_dir %}
+{% if checkout_dir not in ['.'] %}
 cp {{ im_config_file_name }} {{ im_config_file }}
 {% endif %}
 {%- if im_config_file.endswith("radl") %}
