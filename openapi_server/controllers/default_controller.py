@@ -617,6 +617,51 @@ async def get_pipeline_jenkinsfile_jepl(request: web.Request, pipeline_id) -> we
     return web.json_response(r, status=200)
 
 
+def _set_im_config_files_content(
+        additional_files_to_commit, repo_url, repo_branch
+    ):
+    """Iterates over the the list of additional files to commit (IM config
+    files) present in the DB and calls add_im_image_id() to fetch and modify
+    each one.
+
+    This method shall only be required when the content of the IM config files
+    is not available at pipeline-creation time, e.g. when the deployment files
+    are not present in the defined external repositories. Thus, the URL of the
+    repo is ONLY known when calling /run?repo_url, /pull_request or
+    /compressed_files paths.
+
+    :param additional_files_to_commit: List of
+        {'file_name': <file_name>, 'file_data': <file_data>} objects
+    :type additional_files_to_commit: list
+    :param repo_url: URL of the remote repository
+    :type repo_url: str
+    :param repo_branch: Branch name of the remote repository
+    :type repo_branch: str
+    """
+    # Additional files to commit, i.e. IM config files: when repo_url is
+    # defined, data of the additional files is not defined because the repo
+    # URL is not known at pipeline creation time
+    additional_files_list = []
+    for additional_file in additional_files_to_commit:
+        im_config_file = additional_file['file_name']
+        im_image_id = additional_file['deployment']['im_image_id']
+        openstack_url = additional_file['deployment']['openstack_url']
+        _repo = {
+            'repo': repo_url,
+            'branch': repo_branch
+        }
+        additional_files_list.append(
+            ctls_utils.add_image_to_im(
+                im_config_file,
+                im_image_id,
+                openstack_url,
+                repo=_repo
+            )
+        )
+
+    return additional_files_list
+
+
 @ctls_utils.debug_request
 @ctls_utils.validate_request
 async def run_pipeline(
@@ -696,27 +741,11 @@ async def run_pipeline(
                 'Pipeline repository updated with the content from source: '
                 '%s (branch: %s)' % (pipeline_repo, pipeline_repo_branch)
             ))
-        # Additional files to commit, i.e. IM config files: when repo_url is
-        # defined, data of the additional files is not defined because the repo
-        # URL is not known at pipeline creation time
-        additional_files_list_new = []
-        for additional_file in pipeline_data['data']['additional_files_to_commit']:
-            im_config_file = additional_file['file_name']
-            im_image_id = additional_file['deployment']['im_image_id']
-            openstack_url = additional_file['deployment']['openstack_url']
-            _repo = {
-                'repo': repo_url,
-                'branch': repo_branch
-            }
-            additional_files_list_new.append(
-                ctls_utils.add_image_to_im(
-                    im_config_file,
-                    im_image_id,
-                    openstack_url,
-                    repo=_repo
-                )
-            )
-        additional_files_list = additional_files_list_new
+        additional_files_list = _set_im_config_files_content(
+            pipeline_data['data']['additional_files_to_commit'],
+            repo_url,
+            repo_branch
+        )
     else:
         repo_data = gh_utils.get_repository(pipeline_repo)
         if not repo_data:
