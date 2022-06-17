@@ -741,6 +741,7 @@ async def run_pipeline(
                 'Pipeline repository updated with the content from source: '
                 '%s (branch: %s)' % (pipeline_repo, pipeline_repo_branch)
             ))
+        # Set IM config file content now that we know the remote repo URL
         additional_files_list = _set_im_config_files_content(
             pipeline_data['data']['additional_files_to_commit'],
             repo_url,
@@ -1471,6 +1472,12 @@ async def create_pull_request(request: web.Request, pipeline_id, body) -> web.Re
     logger.debug('Source repository (head) path: %s (branch: %s)' % (
        source_repo.full_name, source_branch_name))
     # step 2: push JePL files
+    #   Set IM config file content now that we know the remote repo URL
+    additional_files_list = _set_im_config_files_content(
+        pipeline_data['data']['additional_files_to_commit'],
+        body.repo,
+        body.branch
+    ) or []
     JePLUtils.push_files(
         gh_utils,
         source_repo.full_name,
@@ -1478,7 +1485,7 @@ async def create_pull_request(request: web.Request, pipeline_id, body) -> web.Re
         composer_data,
         jenkinsfile,
         pipeline_data['data']['commands_scripts'],
-        pipeline_data['data']['additional_files_to_commit'],
+        additional_files_list,
         branch=source_branch_name
     )
     # step 3: create PR if it does not exist
@@ -1543,7 +1550,12 @@ async def get_compressed_files(request: web.Request, pipeline_id) -> web.Respons
 
     binary_stream = io.BytesIO()
     with ZipFile(binary_stream, 'w') as zfile:
-        for t in config_yml_list + composer_yml + jenkinsfile + commands_scripts:
+        for t in (
+                config_yml_list +
+                composer_yml +
+                jenkinsfile +
+                commands_scripts
+            ):
             zinfo = ZipInfo(t[0])
             zfile.writestr(zinfo, t[1].encode('UTF-8'))
 
