@@ -643,21 +643,24 @@ def _set_im_config_files_content(
     # URL is not known at pipeline creation time
     additional_files_list = []
     for additional_file in additional_files_to_commit:
-        im_config_file = additional_file['file_name']
-        im_image_id = additional_file['deployment']['im_image_id']
-        openstack_url = additional_file['deployment']['openstack_url']
-        _repo = {
-            'repo': repo_url,
-            'branch': repo_branch
-        }
-        additional_files_list.append(
-            ctls_utils.add_image_to_im(
-                im_config_file,
-                im_image_id,
-                openstack_url,
-                repo=_repo
+        if additional_file['file_data']:
+            additional_files_list.append(additional_file)
+        else:
+            im_config_file = additional_file['file_name']
+            im_image_id = additional_file['deployment']['im_image_id']
+            openstack_url = additional_file['deployment']['openstack_url']
+            _repo = {
+                'repo': repo_url,
+                'branch': repo_branch
+            }
+            additional_files_list.append(
+                ctls_utils.add_image_to_im(
+                    im_config_file,
+                    im_image_id,
+                    openstack_url,
+                    repo=_repo
+                )
             )
-        )
 
     return additional_files_list
 
