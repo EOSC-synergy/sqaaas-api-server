@@ -743,7 +743,6 @@ def process_extra_data(config_json, composer_json, report_to_stdout=False):
                             tool_creds.append(creds)
                     if tool.get('template', '') in ['im_client']:
                         iaas = template_kwargs.get('openstack_site_id', '')
-                        deployment_config = config.get_service_deployment(iaas)
                         # Add image-modified IM config file to files_to_commit
                         im_config_file = template_kwargs['im_config_file']
                         im_image_id = template_kwargs['im_image_id']
@@ -778,9 +777,9 @@ def process_extra_data(config_json, composer_json, report_to_stdout=False):
                             )
                         ]:
                             creds = {}
-                            creds['id'] = deployment_config[cred_id[0]]
-                            creds['username_var'] = deployment_config[cred_id[1]]
-                            creds['password_var'] = deployment_config[cred_id[2]]
+                            creds['id'] = template_kwargs[cred_id[0]]
+                            creds['username_var'] = template_kwargs[cred_id[1]]
+                            creds['password_var'] = template_kwargs[cred_id[2]]
                             if creds:
                                 tool_creds.append(creds)
                     if tool_creds:
