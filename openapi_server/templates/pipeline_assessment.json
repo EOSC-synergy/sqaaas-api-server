@@ -40,7 +40,7 @@
       "environment": {
           "JPL_KEEPGOING": "enabled"
       },
-      "timeout": 600
+      "timeout": 1800
     }
   ],
   "composer_data": {
