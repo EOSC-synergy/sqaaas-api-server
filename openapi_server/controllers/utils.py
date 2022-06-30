@@ -11,6 +11,7 @@ import uuid
 import yaml
 
 from aiohttp import web
+from radl import radl_parse
 from urllib3.util import parse_url
 from urllib3.util import Url
 
@@ -18,6 +19,7 @@ from openapi_server import config
 from openapi_server.controllers import db
 from openapi_server.controllers.git import GitUtils
 from openapi_server.controllers.jepl import JePLUtils
+from openapi_server.exception import SQAaaSAPIException
 
 from github.GithubException import GithubException
 from github.GithubException import UnknownObjectException
@@ -240,9 +242,10 @@ class ProcessExtraData(object):
         ### NOTE!! Setting working_dir only makes sense when only one volume is expected!
         service_data['working_dir'] = service_data['volumes'][0]['target']
         logger.debug('Setting <working_dir> property to <%s>' % service_data['working_dir'])
+
     @staticmethod
     def set_service_oneshot(service_data):
-        """Set the default volume data.
+        """Set the sleep command if service is marked as oneshot.
 
         :param service_data: Data of the DC service
         """
@@ -253,6 +256,20 @@ class ProcessExtraData(object):
         if oneshot:
             logger.debug('Oneshot image, setting <sleep> command')
             service_data['command'] = 'sleep 6000000'
+
+    @staticmethod
+    def set_service_entrypoint(service_data):
+        """Set the given entrypoint.
+
+        :param service_data: Data of the DC service
+        """
+        logger.debug('Call to ProcessExtraData.set_service_entrypoint() method')
+        entrypoint = None
+        if 'entrypoint' in service_data.keys():
+            entrypoint = service_data.pop('entrypoint')
+        if entrypoint:
+            logger.debug('Setting required entrypoint: %s' % entrypoint)
+            service_data['entrypoint'] = entrypoint
 
     @staticmethod
     def set_tox_env(repo_checkout_dir, repos_data):
@@ -330,6 +347,8 @@ class ProcessExtraData(object):
         dockerfile = None
         build_args = None
         oneshot = True
+        entrypoint = None
+        environment = []
         service_data = {} # existing service data
 
         if service_name:
@@ -351,6 +370,8 @@ class ProcessExtraData(object):
             )
             image = tool['docker'].get('image', '')
             oneshot = tool['docker'].get('oneshot', True)
+            entrypoint = tool['docker'].get('entrypoint', None)
+            environment = tool['docker'].get('environment', [])
 
         dockerfile = os.path.basename(dockerfile_path)
         service_image_properties = JePLUtils.get_composer_service(
@@ -359,7 +380,9 @@ class ProcessExtraData(object):
             context=context,
             dockerfile=dockerfile,
             build_args=build_args,
-            oneshot=oneshot
+            oneshot=oneshot,
+            entrypoint=entrypoint,
+            environment=environment
         )
 
         if service_data:
@@ -595,6 +618,7 @@ def process_extra_data(config_json, composer_json, report_to_stdout=False):
     commands_script_list = []
     tool_criteria_map = {}
     service_images_curated_list = [] # services processed by curate_service_image_properties()
+    additional_files_to_commit = [] # mainly for image-modified IM config files
     for criterion_name, criterion_data in config_json['sqa_criteria'].items():
         logger.debug('Processing config data for criterion <%s>' % criterion_name)
         criterion_data_copy = copy.deepcopy(criterion_data)
@@ -667,6 +691,7 @@ def process_extra_data(config_json, composer_json, report_to_stdout=False):
                 repos_new[stage_name] = repo
 
                 if repo_url or tool_has_template:
+                    template_kwargs = {}
                     # Create script for 'commands' builder
                     # NOTE: This is a workaround -> a specific builder to tackle this will be implemented in JePL
                     if 'commands' in repo.keys():
@@ -683,7 +708,6 @@ def process_extra_data(config_json, composer_json, report_to_stdout=False):
                         if repo_url:
                             checkout_dir = project_repos_mapping[repo_url]['name']
                         # template_kwargs
-                        template_kwargs = {}
                         for arg in tool.get('args', []):
                             if arg.get('id', None):
                                 # split(',') is required since some values might be
@@ -705,6 +729,7 @@ def process_extra_data(config_json, composer_json, report_to_stdout=False):
 
                     # Set credentials if the tool needs them
                     tool_creds = []
+                    # creds in tooling's args
                     for arg in tool.get('args', []):
                         creds = {}
                         if arg['type'] in ['optional']:
@@ -716,6 +741,53 @@ def process_extra_data(config_json, composer_json, report_to_stdout=False):
                                 creds['variable'] = arg['value']
                         if creds:
                             tool_creds.append(creds)
+                    if tool.get('template', '') in ['im_client']:
+                        iaas = template_kwargs.get('openstack_site_id', '')
+                        # Add image-modified IM config file to files_to_commit
+                        im_config_file = template_kwargs['im_config_file']
+                        im_image_id = template_kwargs['im_image_id']
+                        openstack_url = template_kwargs['openstack_url']
+                        repo, branch = (None, None)
+                        if repo_url:
+                            # repo object expects 'repo' key as current
+                            # project_repos_mapping's 'name' key
+                            _repo = {
+                                'repo': repo_url,
+                                'branch': project_repos_mapping[repo_url]['branch']
+                            }
+                            additional_files_to_commit.append(
+                                add_image_to_im(
+                                    im_config_file,
+                                    im_image_id,
+                                    openstack_url,
+                                    repo=_repo
+                                )
+                            )
+                        else:
+                            additional_files_to_commit.append({
+                                'file_name': im_config_file,
+                                'file_data': None,
+                                'deployment': template_kwargs
+                            })
+                        # creds in sqaaas.ini (i.e im_client)
+                        for cred_id in [
+                            (
+                                'im_jenkins_credential_id',
+                                'im_jenkins_credential_user_var',
+                                'im_jenkins_credential_pass_var'
+                            ),
+                            (
+                                'openstack_jenkins_credential_id',
+                                'openstack_jenkins_credential_user_var',
+                                'openstack_jenkins_credential_pass_var'
+                            )
+                        ]:
+                            creds = {}
+                            creds['id'] = template_kwargs[cred_id[0]]
+                            creds['username_var'] = template_kwargs[cred_id[1]]
+                            creds['password_var'] = template_kwargs[cred_id[2]]
+                            if creds:
+                                tool_creds.append(creds)
                     if tool_creds:
                         logger.debug(
                             'Found credentials for the tool <%s>: %s' % (
@@ -737,6 +809,9 @@ def process_extra_data(config_json, composer_json, report_to_stdout=False):
         if not 'environment' in config_json.keys():
             config_json['environment'] = {}
         config_json['environment'][jpl_envvar] = 'enabled'
+
+    # Default CONFIG:TIMEOUT
+    config_json['timeout'] = 1800
 
     # COMPOSER (Docker Compose specific)
     for srv_name, srv_data in composer_json['services'].items():
@@ -799,6 +874,8 @@ def process_extra_data(config_json, composer_json, report_to_stdout=False):
         ProcessExtraData.set_service_volume(srv_data)
         ## Handle 'oneshot' services
         ProcessExtraData.set_service_oneshot(srv_data)
+        ## Handle 'entrypoint' property
+        ProcessExtraData.set_service_entrypoint(srv_data)
 
     composer_data = {'data_json': composer_json}
 
@@ -806,7 +883,13 @@ def process_extra_data(config_json, composer_json, report_to_stdout=False):
     # - Multiple stages/Jenkins when clause
     config_data_list = ProcessExtraData.set_config_when_clause(config_json)
 
-    return (config_data_list, composer_data, commands_script_list, tool_criteria_map)
+    return (
+        config_data_list,
+        composer_data,
+        commands_script_list,
+        additional_files_to_commit,
+        tool_criteria_map
+    )
 
 
 def has_this_repo(config_data_list):
@@ -860,6 +943,15 @@ def get_short_repo_name(repo_url, include_host=False):
     short_repo_name = short_repo_name.rsplit('.git')[0]
     logger.debug('Short repository name for <%s>: %s' % (repo_url, short_repo_name))
     return short_repo_name
+
+
+def get_host_from_uri(uri):
+    """Returns the host part of a given URI.
+
+    :param uri: URI to parse
+    """
+    url_parsed = parse_url(uri)
+    return url_parsed.host
 
 
 def del_empty_keys(data):
@@ -976,4 +1068,66 @@ def format_filtered_data(valid, reason_list, subcriteria=None):
         'valid': False,
         'filtered_reason': reason_list,
         'subcriteria': subcriteria
+    }
+
+
+@GitUtils.do_git_work
+def add_image_to_im(im_config_file, image_id, openstack_url, repo, path='.'):
+    """Adds image_id (defined in sqaaas.ini) to TOSCA and RADL files used
+    by IM.
+
+    Returns a dict with the same format (<file_name> and <file_data> keys) as
+    the JePL files.
+
+    :param im_config_file: relative path to TOSCA or RADL file
+    :param image_id: ID of the image in the OpenStack site
+    :param openstack_url: URL of the OpenStack endpoint
+    :param repo: repository object (URL & branch)
+    :param path: look for file extensions in the given repo path
+    """
+    def _add_image_id_to_radl(data, image_id):
+        radl = radl_parse.parse_radl(data)
+        for s in radl.systems:
+            s.setValue('disk.0.image.url', image_id)
+        return str(radl)
+
+    def _add_image_id_to_tosca(data, image_id):
+        for node in list(
+            data['topology_template']['node_templates'].values()
+        ):
+            if node['type'] in ['tosca.nodes.indigo.Compute']:
+                node['capabilities']['os']['properties']['image'] = image_id
+        return str(data)
+
+    openstack_host = get_host_from_uri(openstack_url)
+    ost_image_id = 'ost://%s/%s' % (openstack_host, image_id) 
+    data = None
+    _reason = None
+    if Path(PurePath(im_config_file, path)).exists():
+        with open(Path(PurePath(path, im_config_file)), 'r') as f:
+            if im_config_file.endswith('.radl'):
+                data = f.read()
+                data = _add_image_id_to_radl(data, ost_image_id)
+            elif im_config_file.endswith(('.yml', '.yaml')):
+                data = yaml.full_load(f)
+                data = _add_image_id_to_tosca(data, ost_image_id)
+            else:
+                _reason = (
+                    'IM config file type not supported: %s' % im_config_file
+                )
+    else:
+        _reason = 'IM config file <%s> does not exist!' % im_config_file
+
+    if not data:
+        if not _reason:
+            _reason = ((
+                'An unexpected error occurred while adding the image ID to IM '
+                'config file'
+            ))
+        logger.error(_reason)
+        raise SQAaaSAPIException(422, _reason)
+
+    return {
+        'file_name': im_config_file,
+        'file_data': data
     }

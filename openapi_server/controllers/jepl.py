@@ -4,7 +4,9 @@ import namegenerator
 
 from jinja2 import Environment, PackageLoader, select_autoescape
 
+from openapi_server import config
 from openapi_server.controllers import utils as ctls_utils
+from openapi_server.exception import SQAaaSAPIException
 
 
 logger = logging.getLogger('sqaaas.api.jepl')
@@ -66,9 +68,44 @@ class JePLUtils(object):
         :param template_kwargs: Object required for template rendering
         """
         env = Environment(
-            loader=PackageLoader('openapi_server', 'templates')
+            loader=PackageLoader('openapi_server', 'templates'),
         )
-        template = env.get_template('commands_script.sh')
+        if template_name in ['im_client', 'ec3_client']:
+            template = env.get_template('commands_script_im.sh')
+            # RADL or TOSCA image id
+            im_config_file = template_kwargs.get('im_config_file', '')
+            _reason = None
+            if not im_config_file:
+                _reason = ((
+                    'No RADL or TOSCA config file provided for im_client: '
+                    '%s' % template_kwargs
+                ))
+            else:
+                if im_config_file.endswith('radl'):
+                    template_kwargs['im_config_file_type'] = 'radl'
+                elif im_config_file.endswith(('yaml', 'yml')):
+                    template_kwargs['im_config_file_type'] = 'yaml'
+                else:
+                    _reason = (
+                        'File <%s> not recognized as either TOSCA or RADL'
+                    )
+            if _reason:
+                logger.debug(_reason)
+                raise SQAaaSAPIException(422, _reason)
+            # IaaS site selection
+            iaas = template_kwargs.get('openstack_site_id', '')
+            if not iaas:
+                _reason = ((
+                    'Cannot find <openstack_site_id> for im_client in the '
+                    'configuration: %s' % template_kwargs
+                ))
+                logger.debug(_reason)
+                raise SQAaaSAPIException(422, _reason)
+            template_kwargs.update(
+                config.get_service_deployment(iaas)
+            )
+        else:
+            template = env.get_template('commands_script.sh')
         return template.render({
             'checkout_dir': checkout_dir,
             'commands': cmd_list,
@@ -101,7 +138,13 @@ class JePLUtils(object):
         """
         # Extract & process those data that are not directly translated into
         # the composer and JePL config
-        config_data_list, composer_data, commands_script_list, tool_criteria_map = ctls_utils.process_extra_data(
+        (
+            config_data_list,
+            composer_data,
+            commands_script_list,
+            additional_files_to_commit,
+            tool_criteria_map
+        ) = ctls_utils.process_extra_data(
             config_json,
             composer_json,
             report_to_stdout=report_to_stdout
@@ -121,7 +164,14 @@ class JePLUtils(object):
             'composer', [composer_data])[0]
         jenkinsfile = cls.get_jenkinsfile(config_data_list)
 
-        return (config_data_list, composer_data, jenkinsfile, commands_script_list, tool_criteria_map)
+        return (
+            config_data_list,
+            composer_data,
+            jenkinsfile,
+            commands_script_list,
+            additional_files_to_commit,
+            tool_criteria_map
+        )
 
     def get_files(
         file_type,
@@ -160,6 +210,7 @@ class JePLUtils(object):
             composer_data,
             jenkinsfile,
             commands_script_list,
+            additional_files_to_commit,
             branch):
         """Push the given JePL file structure to the given repo.
 
@@ -169,7 +220,9 @@ class JePLUtils(object):
         :param config_data_list: List of pipeline's JePL config data.
         :param composer_data: Dict containing pipeline's JePL composer data.
         :param jenkinsfile: String containing the Jenkins configuration.
-        :param commands_script_list: List of generated scripts for the commands builder.
+        :param commands_script_list: List of generated scripts for the commands
+               builder.
+        :param additional_files_to_commit: List of additional files that are needed.
         :param branch: Name of the branch in the remote repository.
         """
         ## config
@@ -242,12 +295,24 @@ class JePLUtils(object):
             }
             for script in commands_scripts_to_remove_set
         ]
+        ## Additional files to commit
+        additional_files_to_push = [
+            {
+                'file_name': additional_file['file_name'],
+                'file_data': additional_file['file_data'],
+                'delete': False
+            }
+            for additional_file in additional_files_to_commit
+                if additional_file['file_data'] # ensure that has some content
+        ]
         ## Merge & Push the definitive list of files
         files_to_push = (
             config_files_to_push + config_files_to_remove +
             composer_files_to_push +
             jenkinsfile_to_push +
-            commands_scripts_to_push + commands_scripts_to_remove)
+            commands_scripts_to_push + commands_scripts_to_remove + 
+            additional_files_to_push
+        )
         commit = gh_utils.push_files(
             files_to_push,
             commit_msg='Add JePL file structure',
@@ -267,7 +332,9 @@ class JePLUtils(object):
             context=None,
             dockerfile=None,
             build_args=None,
-            oneshot=True
+            oneshot=True,
+            entrypoint=None,
+            environment=[]
     ):
         """Get service definition compliant with the composer file.
 
@@ -276,6 +343,8 @@ class JePLUtils(object):
         :param context: Context path when building is required.
         :param dockerfile: Path to the Dockerfile, when building is required.
         :param oneshot: Whether the Docker image is oneshot.
+        :param entrypoint: Entrypoint for the service.
+        :param environment: Environment for the service.
         """
         srv_data = {}
         if image:
@@ -296,6 +365,13 @@ class JePLUtils(object):
         if not oneshot:
             srv_data['oneshot'] = oneshot
             logger.debug('Setting oneshot for service <%s>: %s' % (name, oneshot))
+        if entrypoint:
+            srv_data['entrypoint'] = entrypoint
+            logger.debug('Setting entrypoint for service <%s>: %s' % (name, entrypoint))
+        if environment:
+            srv_data['environment'] = environment
+            logger.debug('Setting environment for service <%s>: %s' % (name, environment))
+
         return srv_data
 
 

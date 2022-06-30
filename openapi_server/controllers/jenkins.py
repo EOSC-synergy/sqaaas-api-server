@@ -170,8 +170,8 @@ class JenkinsUtils(object):
             return (cmd, output_text)
 
         data = do_request('/wfapi/describe', append=True)
-        stage_name_prefix = 'QC.'
-        qc_stages = [stage for stage in data['stages'] if stage['name'].startswith(stage_name_prefix)]
+        stage_name_prefixes = ('QC.', 'SvcQC.')
+        qc_stages = [stage for stage in data['stages'] if stage['name'].startswith(stage_name_prefixes)]
         stage_describe_endpoints = [stage['_links']['self']['href'] for stage in qc_stages]
         self.logger.info('Found %s stage/s that run quality criteria' % len(stage_describe_endpoints))
 
@@ -185,6 +185,7 @@ class JenkinsUtils(object):
             # beautifulsoup4. Unexpected syntaxes have been seen when using
             # instead <text> property from 'log' endpoint
             console_log_endpoint = data['stageFlowNodes'][0]['_links']['console']['href']
+            console_log_endpoint += '?consoleFull'
             data = do_request(console_log_endpoint, json_payload=False)
             stdout = get_text(data.text)
             cmd, output_text = process_stdout(stdout)
@@ -195,7 +196,7 @@ class JenkinsUtils(object):
                     'Pipeline REST API Plugin\'s maxReturnChars property (see '
                     'https://github.com/jenkinsci/pipeline-stage-view-plugin)'
                 )
-                logger.error(_reason)
+                self.logger.error(_reason)
                 raise SQAaaSAPIException(502, _reason)
             criteria_data_list.append({
                 'name': name,
