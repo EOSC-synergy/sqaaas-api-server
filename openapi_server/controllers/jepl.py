@@ -76,26 +76,28 @@ class JePLUtils(object):
             im_config_file = template_kwargs.get('im_config_file', '')
             ec3_templates = template_kwargs.get('ec3_templates', '')
             _reason = None
-            if not im_config_file or ec3_templates:
-                if template_name in ['im_client']:
+            if template_name in ['im_client']:
+                if im_config_file:
+                    if im_config_file.endswith('radl'):
+                        template_kwargs['im_config_file_type'] = 'radl'
+                    elif im_config_file.endswith(('yaml', 'yml')):
+                        template_kwargs['im_config_file_type'] = 'yaml'
+                    else:
+                        _reason = (
+                            'File <%s> not recognized as either TOSCA or RADL'
+                        )
+                else:
                     _reason = ((
                         'No RADL or TOSCA config file provided for im_client: '
                         '%s' % template_kwargs
                     ))
-                elif template_name in ['ec3_client']:
-                    _reason = ((
-                        'No RADL templates provided for ec3_client: '
-                        '%s' % template_kwargs
-                    ))
-            else:
-                if im_config_file.endswith('radl'):
-                    template_kwargs['im_config_file_type'] = 'radl'
-                elif im_config_file.endswith(('yaml', 'yml')):
-                    template_kwargs['im_config_file_type'] = 'yaml'
-                else:
-                    _reason = (
-                        'File <%s> not recognized as either TOSCA or RADL'
-                    )
+
+            if template_name in ['ec3_client'] and not ec3_templates:
+                _reason = ((
+                    'No RADL templates provided for ec3_client: '
+                    '%s' % template_kwargs
+                ))
+
             if _reason:
                 logger.debug(_reason)
                 raise SQAaaSAPIException(422, _reason)
