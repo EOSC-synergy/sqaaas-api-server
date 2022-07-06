@@ -11,6 +11,7 @@ cp {{ im_config_file_name }} {{ im_config_file }}
 {%- set openstack_port = template_kwargs.get("openstack_port") -%}
 {%- set openstack_tenant_name = template_kwargs.get("openstack_tenant_name") -%}
 {%- set openstack_domain_name = template_kwargs.get("openstack_domain_name") -%}
+{%- set openstack_tenant_domain_id = template_kwargs.get("openstack_tenant_domain_id") -%}
 {%- set openstack_auth_version = template_kwargs.get("openstack_auth_version") -%}
 {%- set im_auth_file = "/im/auth.dat" -%}
 mkdir /im
@@ -18,7 +19,7 @@ cat <<EOF >> {{ im_auth_file }}
 # InfrastructureManager auth
 type = InfrastructureManager; username = %s; password = %s
 # OpenStack site using standard user, password, tenant format
-id = {{ openstack_site_id }}; type = OpenStack; host = {{ openstack_url }}:{{ openstack_port }}; username = %s; password = %s; tenant = {{ openstack_tenant_name }}; domain = {{ openstack_domain_name }}; auth_version = {{ openstack_auth_version }}
+id = {{ openstack_site_id }}; type = OpenStack; host = {{ openstack_url }}:{{ openstack_port }}; username = %s; password = %s; tenant = {{ openstack_tenant_name }}; tenant_domain_id = {{ openstack_tenant_domain_id }}; domain = {{ openstack_domain_name }}; auth_version = {{ openstack_auth_version }}
 EOF
 if [ -z "$IM_USER" ] || [ -z "$IM_PASS" ] || [ -z "$OPENSTACK_USER" ] || [ -z "$OPENSTACK_PASS" ]; then
   echo 'One or more credential variables are undefined (required: IM_USER, IM_PASS, OPENSTACK_USER, OPENSTACK_PASS)'

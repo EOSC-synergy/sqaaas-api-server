@@ -152,6 +152,7 @@ openstack_port = 5000
 openstack_domain_name = default
 openstack_auth_version = 3.x_password
 openstack_tenant_name = my_openstack_tenant
+openstack_tenant_domain_id = 0432c17d955e4c8d8ab7db0384536d4e
 openstack_jenkins_credential_id = my_openstack_cred
 openstack_jenkins_credential_user_var = OPENSTACK_USER
 openstack_jenkins_credential_pass_var = OPENSTACK_PASS
