@@ -4,11 +4,6 @@
 {% if checkout_dir not in ['.'] %}
 cp {{ im_config_file_name }} {{ im_config_file }}
 {% endif %}
-{%- if im_config_file.endswith("radl") %}
-{%- set image_id = template_kwargs.get("radl_image_id") -%}
-{%- else %}
-{%- set image_id = template_kwargs.get("tosca_image_id") -%}
-{%- endif %}
 {%- set im_config_file_type = template_kwargs.get("im_config_file_type", "") -%}
 {%- set im_server = template_kwargs.get("im_server") -%}
 {%- set openstack_site_id = template_kwargs.get("openstack_site_id") -%}
