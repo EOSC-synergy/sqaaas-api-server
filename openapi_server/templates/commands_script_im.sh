@@ -35,6 +35,7 @@ ls -l {{ im_auth_file }}
 echo "Printing IM config file: {{ im_config_file }}"
 cat {{ im_config_file }}
 echo
+{% if template in ['im_client'] %}
 im_client.py -r "{{ im_server }}" -a "{{ im_auth_file }}" create_wait_outputs {{ im_config_file }} > ./im_{{ im_config_file_type }}.json
 RETURN_CODE=$?
 echo "im_client.py create_wait_outputs return code: ${RETURN_CODE}"
@@ -62,4 +63,10 @@ elif ! [[ -z "${INFID}" && "x${INFID}x" == "xnullx" ]]; then
 else
   exit ${RETURN_CODE}
 fi
+{%- elif template in ['ec3_client'] %}
+{%- set ec3_templates = template_kwargs.get("ec3_templates") -%}
+ec3 launch sqaaas_ec3_cluster {{ ec3_templates|join('') }} -a "{{ im_auth_file }}" -u {{ im_server }} -y
+ec3 show sqaaas_ec3_cluster -r
+ec3 destroy sqaaas_ec3_cluster --force -y
+{%- endif %}
 )
