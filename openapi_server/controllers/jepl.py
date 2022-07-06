@@ -74,12 +74,19 @@ class JePLUtils(object):
             template = env.get_template('commands_script_im.sh')
             # RADL or TOSCA image id
             im_config_file = template_kwargs.get('im_config_file', '')
+            ec3_templates = template_kwargs.get('ec3_templates', '')
             _reason = None
-            if not im_config_file:
-                _reason = ((
-                    'No RADL or TOSCA config file provided for im_client: '
-                    '%s' % template_kwargs
-                ))
+            if not im_config_file or ec3_templates:
+                if template_name in ['im_client']:
+                    _reason = ((
+                        'No RADL or TOSCA config file provided for im_client: '
+                        '%s' % template_kwargs
+                    ))
+                elif template_name in ['ec3_client']:
+                    _reason = ((
+                        'No RADL templates provided for ec3_client: '
+                        '%s' % template_kwargs
+                    ))
             else:
                 if im_config_file.endswith('radl'):
                     template_kwargs['im_config_file_type'] = 'radl'
@@ -310,7 +317,7 @@ class JePLUtils(object):
             config_files_to_push + config_files_to_remove +
             composer_files_to_push +
             jenkinsfile_to_push +
-            commands_scripts_to_push + commands_scripts_to_remove + 
+            commands_scripts_to_push + commands_scripts_to_remove +
             additional_files_to_push
         )
         commit = gh_utils.push_files(
