@@ -1,11 +1,6 @@
 (
-{%- set im_config_file_name = template_kwargs.get("im_config_file", "") -%}
-{%- set im_config_file = checkout_dir ~ "/" ~ im_config_file_name -%}
-{% if checkout_dir not in ['.'] %}
-cp {{ im_config_file_name }} {{ im_config_file }}
-{% endif %}
-{%- set im_config_file_type = template_kwargs.get("im_config_file_type", "") -%}
 {%- set im_server = template_kwargs.get("im_server") -%}
+{%- set im_auth_file = "/im/auth.dat" -%}
 {%- set openstack_site_id = template_kwargs.get("openstack_site_id") -%}
 {%- set openstack_url = template_kwargs.get("openstack_url") -%}
 {%- set openstack_port = template_kwargs.get("openstack_port") -%}
@@ -13,7 +8,6 @@ cp {{ im_config_file_name }} {{ im_config_file }}
 {%- set openstack_domain_name = template_kwargs.get("openstack_domain_name") -%}
 {%- set openstack_tenant_domain_id = template_kwargs.get("openstack_tenant_domain_id") -%}
 {%- set openstack_auth_version = template_kwargs.get("openstack_auth_version") -%}
-{%- set im_auth_file = "/im/auth.dat" -%}
 mkdir /im
 cat <<EOF >> {{ im_auth_file }}
 # InfrastructureManager auth
@@ -29,7 +23,14 @@ printf "$(cat {{ im_auth_file }})" "${IM_USER}" "${IM_PASS}" "${OPENSTACK_USER}"
 echo "Generated auth.dat file:"
 ls -l {{ im_auth_file }}
 echo
+
 {% if template in ['im_client'] %}
+{%- set im_config_file_name = template_kwargs.get("im_config_file", "") -%}
+{%- set im_config_file = checkout_dir ~ "/" ~ im_config_file_name -%}
+{% if checkout_dir not in ['.'] %}
+cp {{ im_config_file_name }} {{ im_config_file }}
+{% endif %}
+{%- set im_config_file_type = template_kwargs.get("im_config_file_type", "") -%}
 echo "Printing IM config file: {{ im_config_file }}"
 cat {{ im_config_file }}
 im_client.py -r "{{ im_server }}" -a "{{ im_auth_file }}" create_wait_outputs {{ im_config_file }} > ./im_{{ im_config_file_type }}.json
