@@ -28,10 +28,10 @@ fi
 printf "$(cat {{ im_auth_file }})" "${IM_USER}" "${IM_PASS}" "${OPENSTACK_USER}" "${OPENSTACK_PASS}" > {{ im_auth_file }}
 echo "Generated auth.dat file:"
 ls -l {{ im_auth_file }}
-echo "Printing IM config file: {{ im_config_file }}"
-cat {{ im_config_file }}
 echo
 {% if template in ['im_client'] %}
+echo "Printing IM config file: {{ im_config_file }}"
+cat {{ im_config_file }}
 im_client.py -r "{{ im_server }}" -a "{{ im_auth_file }}" create_wait_outputs {{ im_config_file }} > ./im_{{ im_config_file_type }}.json
 RETURN_CODE=$?
 echo "im_client.py create_wait_outputs return code: ${RETURN_CODE}"
