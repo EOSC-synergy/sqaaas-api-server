@@ -65,10 +65,11 @@ fi
 {%- set ec3_templates_path = "/etc/ec3/templates" -%}
 mkdir -p {{ ec3_templates_path }}
 {%- for ec3_template in ec3_templates %}
+{%- set ec3_template_checkout_path = checkout_dir ~ "/" ~ ec3_template -%}
 {%- if ec3_template.endswith('.radl') %}
-cp {{ ec3_template }} {{ ec3_templates_path }}
+cp {{ ec3_template_checkout_path }} {{ ec3_templates_path }}
 {%- else %}
-cp -rf {{ ec3_template }}/* {{ ec3_templates_path }}
+cp -rf {{ ec3_template_checkout_path }}/* {{ ec3_templates_path }}
 {%- endif %}
 {%- endfor %}
 ec3 launch sqaaas_ec3_cluster {{ ec3_templates|join('') }} -a "{{ im_auth_file }}" -u {{ im_server }} -y
