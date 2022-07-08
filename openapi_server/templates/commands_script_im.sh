@@ -61,6 +61,11 @@ else
 fi
 {%- elif template in ['ec3_client'] %}
 {%- set ec3_templates = template_kwargs.get("ec3_templates") -%}
+{%- set ec3_templates_path = "/etc/ec3/templates" -%}
+mkdir -p {{ ec3_templates_path }}
+{%- for ec3_template in ec3_templates %}
+cp {{ ec3_template }} {{ ec3_templates_path }}
+{%- endfor %}
 ec3 launch sqaaas_ec3_cluster {{ ec3_templates|join('') }} -a "{{ im_auth_file }}" -u {{ im_server }} -y
 ec3 show sqaaas_ec3_cluster -r
 ec3 destroy sqaaas_ec3_cluster --force -y
