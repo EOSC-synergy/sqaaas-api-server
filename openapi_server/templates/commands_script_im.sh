@@ -63,14 +63,16 @@ fi
 {%- elif template in ['ec3_client'] %}
 {%- set ec3_templates_path = "/etc/ec3/templates" -%}
 {%- set ec3_templates = template_kwargs.get("ec3_templates") -%}
-{%- set ec3_templates_local_dir = template_kwargs.get("ec3_templates_local_dir") -%}
+{%- set ec3_templates_local_dirs = template_kwargs.get("ec3_templates_local_dirs") -%}
 mkdir -p {{ ec3_templates_path }}
-{%- if ec3_templates_local_dir not in ['.'] %}
-{%- set _checkout_path = checkout_dir ~ "/" ~ ec3_templates_local_dir -%}
+{%- for _local_dir in ec3_templates_local_dirs %}
+{%- if _local_dir not in ['.'] %}
+{%- set _checkout_path = checkout_dir ~ "/" ~ _local_dirs -%}
 {%- else %}
 {%- set _checkout_path = checkout_dir -%}
 {%- endif %}
 cp -rf {{ _checkout_path }} {{ ec3_templates_path }}
+{%- endfor %}
 ec3 launch sqaaas_ec3_cluster {{ ec3_templates|join('') }} -a "{{ im_auth_file }}" -u {{ im_server }} -y
 ec3 show sqaaas_ec3_cluster -r
 ec3 destroy sqaaas_ec3_cluster --force -y
