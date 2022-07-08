@@ -64,7 +64,11 @@ fi
 {%- set ec3_templates_path = "/etc/ec3/templates" -%}
 mkdir -p {{ ec3_templates_path }}
 {%- for ec3_template in ec3_templates %}
+{%- if is_dir(ec3_template) %}
+cp -rf {{ ec3_template }}/* {{ ec3_templates_path }}
+{%- else %}
 cp {{ ec3_template }} {{ ec3_templates_path }}
+{%- endif %}
 {%- endfor %}
 ec3 launch sqaaas_ec3_cluster {{ ec3_templates|join('') }} -a "{{ im_auth_file }}" -u {{ im_server }} -y
 ec3 show sqaaas_ec3_cluster -r

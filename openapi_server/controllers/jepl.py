@@ -115,12 +115,15 @@ class JePLUtils(object):
             )
         else:
             template = env.get_template('commands_script.sh')
-        return template.render({
-            'checkout_dir': checkout_dir,
-            'commands': cmd_list,
-            'template': template_name,
-            'template_kwargs': template_kwargs
-        })
+        return template.render(
+            {
+                'checkout_dir': checkout_dir,
+                'commands': cmd_list,
+                'template': template_name,
+                'template_kwargs': template_kwargs
+            },
+            is_dir=ctls_utils.is_dir
+        )
 
     def get_jenkinsfile(config_data_list):
         """Returns a String with the Jenkinsfile rendered from the given
