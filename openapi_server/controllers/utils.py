@@ -743,10 +743,14 @@ def process_extra_data(config_json, composer_json, report_to_stdout=False):
                                 creds['variable'] = arg['value']
                         if creds:
                             tool_creds.append(creds)
-                    if tool.get('template', '') in ['im_client']:
+                    if tool.get('template', '') in ['im_client', 'ec3_client']:
                         iaas = template_kwargs.get('openstack_site_id', '')
                         # Add image-modified IM config file to files_to_commit
-                        im_config_file = template_kwargs['im_config_file']
+                        if tool.get('template', '') in ['im_client']:
+                            _config_file_to_modify = template_kwargs['im_config_file']
+                        elif tool.get('template', '') in ['ec3_client']:
+                            any_ec3_template = template_kwargs('ec3_templates')[0]
+                            _config_file_to_modify = any_ec3_template
                         im_image_id = template_kwargs['im_image_id']
                         openstack_url = template_kwargs['openstack_url']
                         repo, branch = (None, None)
@@ -759,7 +763,7 @@ def process_extra_data(config_json, composer_json, report_to_stdout=False):
                             }
                             additional_files_to_commit.append(
                                 add_image_to_im(
-                                    im_config_file,
+                                    _config_file_to_modify,
                                     im_image_id,
                                     openstack_url,
                                     repo=_repo
@@ -767,7 +771,7 @@ def process_extra_data(config_json, composer_json, report_to_stdout=False):
                             )
                         else:
                             additional_files_to_commit.append({
-                                'file_name': im_config_file,
+                                'file_name': _config_file_to_modify,
                                 'file_data': None,
                                 'deployment': template_kwargs
                             })
