@@ -71,7 +71,7 @@ mkdir -p {{ ec3_templates_path }}
 {%- else %}
 {%- set _checkout_path = checkout_dir -%}
 {%- endif %}
-cp -rf {{ _checkout_path }} {{ ec3_templates_path }}
+cp -rf {{ _checkout_path }}/* {{ ec3_templates_path }}
 {%- endfor %}
 ec3 launch sqaaas_ec3_cluster {{ ec3_templates|join('') }} -a "{{ im_auth_file }}" -u {{ im_server }} -y
 ec3 show sqaaas_ec3_cluster -r
