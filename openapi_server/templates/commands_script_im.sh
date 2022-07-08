@@ -73,7 +73,7 @@ mkdir -p {{ ec3_templates_path }}
 {%- endif %}
 cp -rf {{ _checkout_path }}/* {{ ec3_templates_path }}
 {%- endfor %}
-ec3 launch sqaaas_ec3_cluster {{ ec3_templates|join('') }} -a "{{ im_auth_file }}" -u {{ im_server }} -y
+ec3 launch sqaaas_ec3_cluster {{ ec3_templates|join(' ') }} -a "{{ im_auth_file }}" -u {{ im_server }} -y
 ec3 show sqaaas_ec3_cluster -r
 ec3 destroy sqaaas_ec3_cluster --force -y
 {%- endif %}
