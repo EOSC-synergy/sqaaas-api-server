@@ -710,9 +710,11 @@ def process_extra_data(config_json, composer_json, report_to_stdout=False):
                         # template_kwargs
                         for arg in tool.get('args', []):
                             if arg.get('id', None):
+                                _value = arg['value']
                                 # split(',') is required since some values might be
                                 # comma-separated
-                                _value = arg['value'].split(',')
+                                if type(_value) in [str]:
+                                    _value = arg['value'].split(',')
                                 if len(_value) <= 1:
                                     _value = arg['value']
                                 template_kwargs[arg['id']] = _value
