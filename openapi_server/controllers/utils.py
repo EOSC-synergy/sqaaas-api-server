@@ -755,28 +755,12 @@ def process_extra_data(config_json, composer_json, report_to_stdout=False):
                                 any_ec3_template, 'radl'
                             ])
                             # Get template relative location
-                            parent_dirs = template_kwargs.get(
-                                'ec3_templates_local_dirs', []
+                            parent_dir = template_kwargs.get(
+                                'ec3_templates_repo_dir', './'
                             )
-                            if parent_dirs:
-                                for _dir in parent_dirs:
-                                    path_obj = Path(PurePath(
-                                        _dir, any_ec3_template_file_name
-                                    ))
-                                    if path_obj.exists():
-                                        _file_to_modify = path_obj.to_posix()
-                                        logger.debug((
-                                            'Found EC3 template (RADL file) '
-                                            'where OpenStack image ID will be '
-                                            'added: %s' % _file_to_modify
-                                        ))
-                                        break
-                            if not _file_to_modify:
-                                _reason = ((
-                                    "No EC3 template (RADL file) found to add "
-                                    "image ID"
-                                ))
-                                raise SQAaaSAPIException(422, _reason)
+                            _file_to_modify = Path(PurePath(
+                                parent_dir, any_ec3_template_file_name
+                            )).as_posix()
                         im_image_id = template_kwargs['im_image_id']
                         openstack_url = template_kwargs['openstack_url']
                         repo, branch = (None, None)
