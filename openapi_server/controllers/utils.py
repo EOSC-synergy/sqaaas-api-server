@@ -749,7 +749,7 @@ def process_extra_data(config_json, composer_json, report_to_stdout=False):
                         if tool.get('template', '') in ['im_client']:
                             _config_file_to_modify = template_kwargs['im_config_file']
                         elif tool.get('template', '') in ['ec3_client']:
-                            any_ec3_template = template_kwargs('ec3_templates')[0]
+                            any_ec3_template = template_kwargs['ec3_templates'][0]
                             _config_file_to_modify = any_ec3_template
                         im_image_id = template_kwargs['im_image_id']
                         openstack_url = template_kwargs['openstack_url']
@@ -1106,7 +1106,7 @@ def add_image_to_im(im_config_file, image_id, openstack_url, repo, path='.'):
         return str(data)
 
     openstack_host = get_host_from_uri(openstack_url)
-    ost_image_id = 'ost://%s/%s' % (openstack_host, image_id) 
+    ost_image_id = 'ost://%s/%s' % (openstack_host, image_id)
     data = None
     _reason = None
     if Path(PurePath(im_config_file, path)).exists():
