@@ -745,12 +745,38 @@ def process_extra_data(config_json, composer_json, report_to_stdout=False):
                             tool_creds.append(creds)
                     if tool.get('template', '') in ['im_client', 'ec3_client']:
                         iaas = template_kwargs.get('openstack_site_id', '')
+                        _file_to_modify = None
                         # Add image-modified IM config file to files_to_commit
                         if tool.get('template', '') in ['im_client']:
-                            _config_file_to_modify = template_kwargs['im_config_file']
+                            _file_to_modify = template_kwargs['im_config_file']
                         elif tool.get('template', '') in ['ec3_client']:
                             any_ec3_template = template_kwargs['ec3_templates'][0]
-                            _config_file_to_modify = any_ec3_template
+                            any_ec3_template_file_name = '.'.join([
+                                any_ec3_template, 'radl'
+                            ])
+                            # Get template relative location
+                            parent_dirs = template_kwargs.get(
+                                'ec3_templates_local_dirs', []
+                            )
+                            if parent_dirs:
+                                for _dir in parent_dirs:
+                                    path_obj = Path(PurePath(
+                                        _dir, any_ec3_template_file_name
+                                    ))
+                                    if path_obj.exists():
+                                        _file_to_modify = path_obj.to_posix()
+                                        logger.debug((
+                                            'Found EC3 template (RADL file) '
+                                            'where OpenStack image ID will be '
+                                            'added: %s' % _file_to_modify
+                                        ))
+                                        break
+                            if not _file_to_modify:
+                                _reason = ((
+                                    "No EC3 template (RADL file) found to add "
+                                    "image ID"
+                                ))
+                                raise SQAaaSAPIException(422, _reason)
                         im_image_id = template_kwargs['im_image_id']
                         openstack_url = template_kwargs['openstack_url']
                         repo, branch = (None, None)
@@ -763,7 +789,7 @@ def process_extra_data(config_json, composer_json, report_to_stdout=False):
                             }
                             additional_files_to_commit.append(
                                 add_image_to_im(
-                                    _config_file_to_modify,
+                                    _file_to_modify,
                                     im_image_id,
                                     openstack_url,
                                     repo=_repo
@@ -771,7 +797,7 @@ def process_extra_data(config_json, composer_json, report_to_stdout=False):
                             )
                         else:
                             additional_files_to_commit.append({
-                                'file_name': _config_file_to_modify,
+                                'file_name': _file_to_modify,
                                 'file_data': None,
                                 'deployment': template_kwargs
                             })
