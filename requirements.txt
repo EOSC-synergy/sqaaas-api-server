@@ -18,6 +18,7 @@ namegenerator>=1.0.6
 aiohttp>=3.8.1
 urllib3~=1.26
 RADL~=1.2.0
+ec3-cli~=2.2.1
 # report2sqaaas == 1.5.0-alpha4
 git+https://github.com/EOSC-synergy/sqaaas-reporting@1.5.0-alpha4#egg=report2sqaaas
 # report2sqaaas-plugin-markdownlint = 1.6.0-alpha1

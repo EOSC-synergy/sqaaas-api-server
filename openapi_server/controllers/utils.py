@@ -11,7 +11,6 @@ import uuid
 import yaml
 
 from aiohttp import web
-from radl import radl_parse
 from urllib3.util import parse_url
 from urllib3.util import Url
 
@@ -776,6 +775,7 @@ def process_extra_data(config_json, composer_json, report_to_stdout=False):
                                     _file_to_modify,
                                     im_image_id,
                                     openstack_url,
+                                    tech=tool.get('template', ''),
                                     repo=_repo
                                 )
                             )
@@ -1088,7 +1088,7 @@ def format_filtered_data(valid, reason_list, subcriteria=None):
 
 
 @GitUtils.do_git_work
-def add_image_to_im(im_config_file, image_id, openstack_url, repo, path='.'):
+def add_image_to_im(im_config_file, image_id, openstack_url, tech, repo, path='.'):
     """Adds image_id (defined in sqaaas.ini) to TOSCA and RADL files used
     by IM.
 
@@ -1098,11 +1098,17 @@ def add_image_to_im(im_config_file, image_id, openstack_url, repo, path='.'):
     :param im_config_file: relative path to TOSCA or RADL file
     :param image_id: ID of the image in the OpenStack site
     :param openstack_url: URL of the OpenStack endpoint
+    :param tech: type of technology used, either 'im_client' or 'ec3_client'
     :param repo: repository object (URL & branch)
     :param path: look for file extensions in the given repo path
     """
     def _add_image_id_to_radl(data, image_id):
-        radl = radl_parse.parse_radl(data)
+        if tech in ['ec3_client']:
+            from IM2.radl import parse_radl
+            radl = parse_radl(data)
+        else:
+            from radl import radl_parse
+            radl = radl_parse.parse_radl(data)
         for s in radl.systems:
             s.setValue('disk.0.image.url', image_id)
         return str(radl)
