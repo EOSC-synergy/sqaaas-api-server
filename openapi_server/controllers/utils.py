@@ -737,9 +737,9 @@ def process_extra_data(config_json, composer_json, report_to_stdout=False):
                             iaas = template_kwargs.get('openstack_site_id', '')
                             _file_to_modify = None
                             # Add image-modified IM config file to files_to_commit
-                            if tool.get('template', '') in ['im_client']:
+                            if tool_has_template in ['im_client']:
                                 _file_to_modify = template_kwargs['im_config_file']
-                            elif tool.get('template', '') in ['ec3_client']:
+                            elif tool_has_template in ['ec3_client']:
                                 any_ec3_template = template_kwargs['ec3_templates'][0]
                                 any_ec3_template_file_name = '.'.join([
                                     any_ec3_template, 'radl'
@@ -751,6 +751,8 @@ def process_extra_data(config_json, composer_json, report_to_stdout=False):
                                 _file_to_modify = Path(PurePath(
                                     parent_dir, any_ec3_template_file_name
                                 )).as_posix()
+                                # Add modified ec3 template to template_kwargs
+                                template_kwargs['ec3_template_modified'] = _file_to_modify
                             im_image_id = template_kwargs['im_image_id']
                             openstack_url = template_kwargs['openstack_url']
                             repo, branch = (None, None)
@@ -766,7 +768,7 @@ def process_extra_data(config_json, composer_json, report_to_stdout=False):
                                         _file_to_modify,
                                         im_image_id,
                                         openstack_url,
-                                        tech=tool.get('template', ''),
+                                        tech=tool_has_template,
                                         repo=_repo
                                     )
                                 )
