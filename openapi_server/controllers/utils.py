@@ -734,9 +734,20 @@ def process_extra_data(config_json, composer_json, report_to_stdout=False):
                                 template_kwargs[arg['id']] = _value
                         # im & ec3
                         if tool_has_template in ['im_client', 'ec3_client']:
+                            # Config for IaaS site
                             iaas = template_kwargs.get('openstack_site_id', '')
-                            _file_to_modify = None
+                            if not iaas:
+                                _reason = ((
+                                    'Cannot find <openstack_site_id> for im_client in the '
+                                    'configuration: %s' % template_kwargs
+                                ))
+                                logger.debug(_reason)
+                                raise SQAaaSAPIException(422, _reason)
+                            template_kwargs.update(
+                                config.get_service_deployment(iaas)
+                            )
                             # Add image-modified IM config file to files_to_commit
+                            _file_to_modify = None
                             if tool_has_template in ['im_client']:
                                 _file_to_modify = template_kwargs['im_config_file']
                             elif tool_has_template in ['ec3_client']:

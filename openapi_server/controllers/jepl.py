@@ -101,18 +101,6 @@ class JePLUtils(object):
             if _reason:
                 logger.debug(_reason)
                 raise SQAaaSAPIException(422, _reason)
-            # IaaS site selection
-            iaas = template_kwargs.get('openstack_site_id', '')
-            if not iaas:
-                _reason = ((
-                    'Cannot find <openstack_site_id> for im_client in the '
-                    'configuration: %s' % template_kwargs
-                ))
-                logger.debug(_reason)
-                raise SQAaaSAPIException(422, _reason)
-            template_kwargs.update(
-                config.get_service_deployment(iaas)
-            )
         else:
             template = env.get_template('commands_script.sh')
         return template.render(
