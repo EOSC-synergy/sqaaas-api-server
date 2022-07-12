@@ -689,6 +689,21 @@ def process_extra_data(config_json, composer_json, report_to_stdout=False):
                     stage_name = stage_name_new
                 repos_new[stage_name] = repo
 
+                # Set credentials if the tool needs them
+                tool_creds = []
+                # creds in tooling's args
+                for arg in tool.get('args', []):
+                    creds = {}
+                    if arg['type'] in ['optional']:
+                        option = arg['option']
+                        if option.find('jenkins-credential-id') != -1:
+                            creds['id'] = arg['value']
+                        elif option.find(
+                            'jenkins-credential-variable') != -1:
+                            creds['variable'] = arg['value']
+                    if creds:
+                        tool_creds.append(creds)
+
                 if repo_url or tool_has_template:
                     template_kwargs = {}
                     # Create script for 'commands' builder
@@ -717,6 +732,70 @@ def process_extra_data(config_json, composer_json, report_to_stdout=False):
                                 if len(_value) <= 1:
                                     _value = arg['value']
                                 template_kwargs[arg['id']] = _value
+                        # im & ec3
+                        if tool_has_template in ['im_client', 'ec3_client']:
+                            iaas = template_kwargs.get('openstack_site_id', '')
+                            _file_to_modify = None
+                            # Add image-modified IM config file to files_to_commit
+                            if tool.get('template', '') in ['im_client']:
+                                _file_to_modify = template_kwargs['im_config_file']
+                            elif tool.get('template', '') in ['ec3_client']:
+                                any_ec3_template = template_kwargs['ec3_templates'][0]
+                                any_ec3_template_file_name = '.'.join([
+                                    any_ec3_template, 'radl'
+                                ])
+                                # Get template relative location
+                                parent_dir = template_kwargs.get(
+                                    'ec3_templates_repo_dir', './'
+                                )
+                                _file_to_modify = Path(PurePath(
+                                    parent_dir, any_ec3_template_file_name
+                                )).as_posix()
+                            im_image_id = template_kwargs['im_image_id']
+                            openstack_url = template_kwargs['openstack_url']
+                            repo, branch = (None, None)
+                            if repo_url:
+                                # repo object expects 'repo' key as current
+                                # project_repos_mapping's 'name' key
+                                _repo = {
+                                    'repo': repo_url,
+                                    'branch': project_repos_mapping[repo_url]['branch']
+                                }
+                                additional_files_to_commit.append(
+                                    add_image_to_im(
+                                        _file_to_modify,
+                                        im_image_id,
+                                        openstack_url,
+                                        tech=tool.get('template', ''),
+                                        repo=_repo
+                                    )
+                                )
+                            else:
+                                additional_files_to_commit.append({
+                                    'file_name': _file_to_modify,
+                                    'file_data': None,
+                                    'deployment': template_kwargs
+                                })
+                            # creds in sqaaas.ini (i.e im_client)
+                            for cred_id in [
+                                (
+                                    'im_jenkins_credential_id',
+                                    'im_jenkins_credential_user_var',
+                                    'im_jenkins_credential_pass_var'
+                                ),
+                                (
+                                    'openstack_jenkins_credential_id',
+                                    'openstack_jenkins_credential_user_var',
+                                    'openstack_jenkins_credential_pass_var'
+                                )
+                            ]:
+                                creds = {}
+                                creds['id'] = template_kwargs[cred_id[0]]
+                                creds['username_var'] = template_kwargs[cred_id[1]]
+                                creds['password_var'] = template_kwargs[cred_id[2]]
+                                if creds:
+                                    tool_creds.append(creds)
+                        # script/s creation
                         ProcessExtraData.generate_script_for_commands(
                             stage_name=stage_name,
                             checkout_dir=checkout_dir,
@@ -728,90 +807,15 @@ def process_extra_data(config_json, composer_json, report_to_stdout=False):
                         )
                     tox_checkout_dir = stage_name
 
-                    # Set credentials if the tool needs them
-                    tool_creds = []
-                    # creds in tooling's args
-                    for arg in tool.get('args', []):
-                        creds = {}
-                        if arg['type'] in ['optional']:
-                            option = arg['option']
-                            if option.find('jenkins-credential-id') != -1:
-                                creds['id'] = arg['value']
-                            elif option.find(
-                                'jenkins-credential-variable') != -1:
-                                creds['variable'] = arg['value']
-                        if creds:
-                            tool_creds.append(creds)
-                    if tool.get('template', '') in ['im_client', 'ec3_client']:
-                        iaas = template_kwargs.get('openstack_site_id', '')
-                        _file_to_modify = None
-                        # Add image-modified IM config file to files_to_commit
-                        if tool.get('template', '') in ['im_client']:
-                            _file_to_modify = template_kwargs['im_config_file']
-                        elif tool.get('template', '') in ['ec3_client']:
-                            any_ec3_template = template_kwargs['ec3_templates'][0]
-                            any_ec3_template_file_name = '.'.join([
-                                any_ec3_template, 'radl'
-                            ])
-                            # Get template relative location
-                            parent_dir = template_kwargs.get(
-                                'ec3_templates_repo_dir', './'
-                            )
-                            _file_to_modify = Path(PurePath(
-                                parent_dir, any_ec3_template_file_name
-                            )).as_posix()
-                        im_image_id = template_kwargs['im_image_id']
-                        openstack_url = template_kwargs['openstack_url']
-                        repo, branch = (None, None)
-                        if repo_url:
-                            # repo object expects 'repo' key as current
-                            # project_repos_mapping's 'name' key
-                            _repo = {
-                                'repo': repo_url,
-                                'branch': project_repos_mapping[repo_url]['branch']
-                            }
-                            additional_files_to_commit.append(
-                                add_image_to_im(
-                                    _file_to_modify,
-                                    im_image_id,
-                                    openstack_url,
-                                    tech=tool.get('template', ''),
-                                    repo=_repo
-                                )
-                            )
-                        else:
-                            additional_files_to_commit.append({
-                                'file_name': _file_to_modify,
-                                'file_data': None,
-                                'deployment': template_kwargs
-                            })
-                        # creds in sqaaas.ini (i.e im_client)
-                        for cred_id in [
-                            (
-                                'im_jenkins_credential_id',
-                                'im_jenkins_credential_user_var',
-                                'im_jenkins_credential_pass_var'
-                            ),
-                            (
-                                'openstack_jenkins_credential_id',
-                                'openstack_jenkins_credential_user_var',
-                                'openstack_jenkins_credential_pass_var'
-                            )
-                        ]:
-                            creds = {}
-                            creds['id'] = template_kwargs[cred_id[0]]
-                            creds['username_var'] = template_kwargs[cred_id[1]]
-                            creds['password_var'] = template_kwargs[cred_id[2]]
-                            if creds:
-                                tool_creds.append(creds)
-                    if tool_creds:
-                        logger.debug(
-                            'Found credentials for the tool <%s>: %s' % (
-                                tool['name'], tool_creds
-                            )
+                # add creds to config
+                if tool_creds:
+                    logger.debug(
+                        'Found credentials for the tool <%s>: %s' % (
+                            tool['name'], tool_creds
                         )
-                        for cred in tool_creds:
-                            config_json['config']['credentials'].append(cred)
+                    )
+                    for cred in tool_creds:
+                        config_json['config']['credentials'].append(cred)
 
                 # FIXME Commented out until issue #154 gets resolved
                 # Modify Tox properties (chdir, defaults)
