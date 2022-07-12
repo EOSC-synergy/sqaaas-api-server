@@ -1104,13 +1104,27 @@ def add_image_to_im(im_config_file, image_id, openstack_url, tech, repo, path='.
     """
     def _add_image_id_to_radl(data, image_id):
         if tech in ['ec3_client']:
+            import IM2.radl.radl as IM_RADL
+            class include(IM_RADL.FeaturedAspect):
+                def check(self, r):
+                    self.check_simple(dict(template=(str, lambda x,_: len(x.value.strip()))), r)
+            IM_RADL.include = include
+            class description(IM_RADL.FeaturedAspect):
+                def check(self, r):
+                    self.check_simple(dict(short=(str, None), content=(str, None), kind=(str, None)), r)
+            IM_RADL.description = description
             from IM2.radl import parse_radl
+            from IM2.radl import dump_radl
+            from IM2.radl.radl import system
             radl = parse_radl(data)
+            for s in radl.gets(system):
+                s.setValue('disk.0.image.url', image_id)
+            radl = dump_radl(radl)
         else:
             from radl import radl_parse
             radl = radl_parse.parse_radl(data)
-        for s in radl.systems:
-            s.setValue('disk.0.image.url', image_id)
+            for s in radl.systems:
+                s.setValue('disk.0.image.url', image_id)
         return str(radl)
 
     def _add_image_id_to_tosca(data, image_id):
