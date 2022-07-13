@@ -1184,11 +1184,3 @@ def add_image_to_im(im_config_file, image_id, openstack_url, tech, repo, path='.
         'file_name': im_config_file,
         'file_data': data
     }
-
-
-def is_dir(path_name):
-    """Checks if the given path is a directory.
-
-    :param path_name: relative or absolute location to a file or directory
-    """
-    return Path(path_name).is_dir()

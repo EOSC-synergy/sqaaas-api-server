@@ -109,8 +109,7 @@ class JePLUtils(object):
                 'commands': cmd_list,
                 'template': template_name,
                 'template_kwargs': template_kwargs
-            },
-            is_dir=ctls_utils.is_dir
+            }
         )
 
     def get_jenkinsfile(config_data_list):
