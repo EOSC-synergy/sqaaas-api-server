@@ -784,6 +784,8 @@ def process_extra_data(config_json, composer_json, report_to_stdout=False):
                                     )
                                 )
                             else:
+                                # add_image_to_im() will be called from the
+                                # associated path (/run, /pull_request, etc.)
                                 additional_files_to_commit.append({
                                     'file_name': _file_to_modify,
                                     'file_data': None,
