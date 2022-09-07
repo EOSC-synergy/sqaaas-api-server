@@ -74,44 +74,43 @@ class JePLUtils(object):
             template = env.get_template('commands_script_im.sh')
             # RADL or TOSCA image id
             im_config_file = template_kwargs.get('im_config_file', '')
+            ec3_templates = template_kwargs.get('ec3_templates', '')
             _reason = None
-            if not im_config_file:
+            if template_name in ['im_client']:
+                if im_config_file:
+                    if im_config_file.endswith('radl'):
+                        template_kwargs['im_config_file_type'] = 'radl'
+                    elif im_config_file.endswith(('yaml', 'yml')):
+                        template_kwargs['im_config_file_type'] = 'yaml'
+                    else:
+                        _reason = (
+                            'File <%s> not recognized as either TOSCA or RADL'
+                        )
+                else:
+                    _reason = ((
+                        'No RADL or TOSCA config file provided for im_client: '
+                        '%s' % template_kwargs
+                    ))
+
+            if template_name in ['ec3_client'] and not ec3_templates:
                 _reason = ((
-                    'No RADL or TOSCA config file provided for im_client: '
+                    'No RADL templates provided for ec3_client: '
                     '%s' % template_kwargs
                 ))
-            else:
-                if im_config_file.endswith('radl'):
-                    template_kwargs['im_config_file_type'] = 'radl'
-                elif im_config_file.endswith(('yaml', 'yml')):
-                    template_kwargs['im_config_file_type'] = 'yaml'
-                else:
-                    _reason = (
-                        'File <%s> not recognized as either TOSCA or RADL'
-                    )
+
             if _reason:
                 logger.debug(_reason)
                 raise SQAaaSAPIException(422, _reason)
-            # IaaS site selection
-            iaas = template_kwargs.get('openstack_site_id', '')
-            if not iaas:
-                _reason = ((
-                    'Cannot find <openstack_site_id> for im_client in the '
-                    'configuration: %s' % template_kwargs
-                ))
-                logger.debug(_reason)
-                raise SQAaaSAPIException(422, _reason)
-            template_kwargs.update(
-                config.get_service_deployment(iaas)
-            )
         else:
             template = env.get_template('commands_script.sh')
-        return template.render({
-            'checkout_dir': checkout_dir,
-            'commands': cmd_list,
-            'template': template_name,
-            'template_kwargs': template_kwargs
-        })
+        return template.render(
+            {
+                'checkout_dir': checkout_dir,
+                'commands': cmd_list,
+                'template': template_name,
+                'template_kwargs': template_kwargs
+            }
+        )
 
     def get_jenkinsfile(config_data_list):
         """Returns a String with the Jenkinsfile rendered from the given
@@ -310,7 +309,7 @@ class JePLUtils(object):
             config_files_to_push + config_files_to_remove +
             composer_files_to_push +
             jenkinsfile_to_push +
-            commands_scripts_to_push + commands_scripts_to_remove + 
+            commands_scripts_to_push + commands_scripts_to_remove +
             additional_files_to_push
         )
         commit = gh_utils.push_files(

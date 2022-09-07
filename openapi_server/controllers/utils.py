@@ -11,7 +11,6 @@ import uuid
 import yaml
 
 from aiohttp import web
-from radl import radl_parse
 from urllib3.util import parse_url
 from urllib3.util import Url
 
@@ -690,6 +689,21 @@ def process_extra_data(config_json, composer_json, report_to_stdout=False):
                     stage_name = stage_name_new
                 repos_new[stage_name] = repo
 
+                # Set credentials if the tool needs them
+                tool_creds = []
+                # creds in tooling's args
+                for arg in tool.get('args', []):
+                    creds = {}
+                    if arg['type'] in ['optional']:
+                        option = arg['option']
+                        if option.find('jenkins-credential-id') != -1:
+                            creds['id'] = arg['value']
+                        elif option.find(
+                            'jenkins-credential-variable') != -1:
+                            creds['variable'] = arg['value']
+                    if creds:
+                        tool_creds.append(creds)
+
                 if repo_url or tool_has_template:
                     template_kwargs = {}
                     # Create script for 'commands' builder
@@ -710,12 +724,91 @@ def process_extra_data(config_json, composer_json, report_to_stdout=False):
                         # template_kwargs
                         for arg in tool.get('args', []):
                             if arg.get('id', None):
+                                _value = arg['value']
                                 # split(',') is required since some values might be
                                 # comma-separated
-                                _value = arg['value'].split(',')
+                                if type(_value) in [str]:
+                                    _value = arg['value'].split(',')
                                 if len(_value) <= 1:
                                     _value = arg['value']
                                 template_kwargs[arg['id']] = _value
+                        # im & ec3
+                        if tool_has_template in ['im_client', 'ec3_client']:
+                            # Config for IaaS site
+                            iaas = template_kwargs.get('openstack_site_id', '')
+                            if not iaas:
+                                _reason = ((
+                                    'Cannot find <openstack_site_id> for im_client in the '
+                                    'configuration: %s' % template_kwargs
+                                ))
+                                logger.debug(_reason)
+                                raise SQAaaSAPIException(422, _reason)
+                            template_kwargs.update(
+                                config.get_service_deployment(iaas)
+                            )
+                            # Add image-modified IM config file to files_to_commit
+                            _file_to_modify = None
+                            if tool_has_template in ['im_client']:
+                                _file_to_modify = template_kwargs['im_config_file']
+                            elif tool_has_template in ['ec3_client']:
+                                any_ec3_template = template_kwargs['ec3_templates'][0]
+                                any_ec3_template_file_name = '.'.join([
+                                    any_ec3_template, 'radl'
+                                ])
+                                # Get template relative location
+                                parent_dir = template_kwargs.get(
+                                    'ec3_templates_repo_dir', './'
+                                )
+                                _file_to_modify = Path(PurePath(
+                                    parent_dir, any_ec3_template_file_name
+                                )).as_posix()
+                                # Add modified ec3 template to template_kwargs
+                                template_kwargs['ec3_template_modified'] = _file_to_modify
+                            im_image_id = template_kwargs['im_image_id']
+                            openstack_url = template_kwargs['openstack_url']
+                            repo, branch = (None, None)
+                            if repo_url:
+                                # repo object expects 'repo' key as current
+                                # project_repos_mapping's 'name' key
+                                _repo = {
+                                    'repo': repo_url,
+                                    'branch': project_repos_mapping[repo_url]['branch']
+                                }
+                                additional_files_to_commit.append(
+                                    add_image_to_im(
+                                        _file_to_modify,
+                                        im_image_id,
+                                        openstack_url,
+                                        tech=tool_has_template,
+                                        repo=_repo
+                                    )
+                                )
+                            else:
+                                additional_files_to_commit.append({
+                                    'file_name': _file_to_modify,
+                                    'file_data': None,
+                                    'deployment': template_kwargs
+                                })
+                            # creds in sqaaas.ini (i.e im_client)
+                            for cred_id in [
+                                (
+                                    'im_jenkins_credential_id',
+                                    'im_jenkins_credential_user_var',
+                                    'im_jenkins_credential_pass_var'
+                                ),
+                                (
+                                    'openstack_jenkins_credential_id',
+                                    'openstack_jenkins_credential_user_var',
+                                    'openstack_jenkins_credential_pass_var'
+                                )
+                            ]:
+                                creds = {}
+                                creds['id'] = template_kwargs[cred_id[0]]
+                                creds['username_var'] = template_kwargs[cred_id[1]]
+                                creds['password_var'] = template_kwargs[cred_id[2]]
+                                if creds:
+                                    tool_creds.append(creds)
+                        # script/s creation
                         ProcessExtraData.generate_script_for_commands(
                             stage_name=stage_name,
                             checkout_dir=checkout_dir,
@@ -727,75 +820,15 @@ def process_extra_data(config_json, composer_json, report_to_stdout=False):
                         )
                     tox_checkout_dir = stage_name
 
-                    # Set credentials if the tool needs them
-                    tool_creds = []
-                    # creds in tooling's args
-                    for arg in tool.get('args', []):
-                        creds = {}
-                        if arg['type'] in ['optional']:
-                            option = arg['option']
-                            if option.find('jenkins-credential-id') != -1:
-                                creds['id'] = arg['value']
-                            elif option.find(
-                                'jenkins-credential-variable') != -1:
-                                creds['variable'] = arg['value']
-                        if creds:
-                            tool_creds.append(creds)
-                    if tool.get('template', '') in ['im_client']:
-                        iaas = template_kwargs.get('openstack_site_id', '')
-                        # Add image-modified IM config file to files_to_commit
-                        im_config_file = template_kwargs['im_config_file']
-                        im_image_id = template_kwargs['im_image_id']
-                        openstack_url = template_kwargs['openstack_url']
-                        repo, branch = (None, None)
-                        if repo_url:
-                            # repo object expects 'repo' key as current
-                            # project_repos_mapping's 'name' key
-                            _repo = {
-                                'repo': repo_url,
-                                'branch': project_repos_mapping[repo_url]['branch']
-                            }
-                            additional_files_to_commit.append(
-                                add_image_to_im(
-                                    im_config_file,
-                                    im_image_id,
-                                    openstack_url,
-                                    repo=_repo
-                                )
-                            )
-                        else:
-                            additional_files_to_commit.append({
-                                'file_name': im_config_file,
-                                'file_data': None,
-                                'deployment': template_kwargs
-                            })
-                        # creds in sqaaas.ini (i.e im_client)
-                        for cred_id in [
-                            (
-                                'im_jenkins_credential_id',
-                                'im_jenkins_credential_user_var',
-                                'im_jenkins_credential_pass_var'
-                            ),
-                            (
-                                'openstack_jenkins_credential_id',
-                                'openstack_jenkins_credential_user_var',
-                                'openstack_jenkins_credential_pass_var'
-                            )
-                        ]:
-                            creds = {}
-                            creds['id'] = template_kwargs[cred_id[0]]
-                            creds['username_var'] = template_kwargs[cred_id[1]]
-                            creds['password_var'] = template_kwargs[cred_id[2]]
-                            if creds:
-                                tool_creds.append(creds)
-                    if tool_creds:
-                        logger.debug(
-                            'Found credentials for the tool <%s>: %s' % (
-                                tool['name'], tool_creds
-                            )
+                # add creds to config
+                if tool_creds:
+                    logger.debug(
+                        'Found credentials for the tool <%s>: %s' % (
+                            tool['name'], tool_creds
                         )
-                        for cred in tool_creds:
-                            config_json['config']['credentials'].append(cred)
+                    )
+                    for cred in tool_creds:
+                        config_json['config']['credentials'].append(cred)
 
                 # FIXME Commented out until issue #154 gets resolved
                 # Modify Tox properties (chdir, defaults)
@@ -1072,7 +1105,7 @@ def format_filtered_data(valid, reason_list, subcriteria=None):
 
 
 @GitUtils.do_git_work
-def add_image_to_im(im_config_file, image_id, openstack_url, repo, path='.'):
+def add_image_to_im(im_config_file, image_id, openstack_url, tech, repo, path='.'):
     """Adds image_id (defined in sqaaas.ini) to TOSCA and RADL files used
     by IM.
 
@@ -1082,13 +1115,33 @@ def add_image_to_im(im_config_file, image_id, openstack_url, repo, path='.'):
     :param im_config_file: relative path to TOSCA or RADL file
     :param image_id: ID of the image in the OpenStack site
     :param openstack_url: URL of the OpenStack endpoint
+    :param tech: type of technology used, either 'im_client' or 'ec3_client'
     :param repo: repository object (URL & branch)
     :param path: look for file extensions in the given repo path
     """
     def _add_image_id_to_radl(data, image_id):
-        radl = radl_parse.parse_radl(data)
-        for s in radl.systems:
-            s.setValue('disk.0.image.url', image_id)
+        if tech in ['ec3_client']:
+            import IM2.radl.radl as IM_RADL
+            class include(IM_RADL.FeaturedAspect):
+                def check(self, r):
+                    self.check_simple(dict(template=(str, lambda x,_: len(x.value.strip()))), r)
+            IM_RADL.include = include
+            class description(IM_RADL.FeaturedAspect):
+                def check(self, r):
+                    self.check_simple(dict(short=(str, None), content=(str, None), kind=(str, None)), r)
+            IM_RADL.description = description
+            from IM2.radl import parse_radl
+            from IM2.radl import dump_radl
+            from IM2.radl.radl import system
+            radl = parse_radl(data)
+            for s in radl.gets(system):
+                s.setValue('disk.0.image.url', image_id)
+            radl = dump_radl(radl)
+        else:
+            from radl import radl_parse
+            radl = radl_parse.parse_radl(data)
+            for s in radl.systems:
+                s.setValue('disk.0.image.url', image_id)
         return str(radl)
 
     def _add_image_id_to_tosca(data, image_id):
@@ -1100,7 +1153,7 @@ def add_image_to_im(im_config_file, image_id, openstack_url, repo, path='.'):
         return str(data)
 
     openstack_host = get_host_from_uri(openstack_url)
-    ost_image_id = 'ost://%s/%s' % (openstack_host, image_id) 
+    ost_image_id = 'ost://%s/%s' % (openstack_host, image_id)
     data = None
     _reason = None
     if Path(PurePath(im_config_file, path)).exists():
