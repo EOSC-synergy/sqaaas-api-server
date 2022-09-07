@@ -16,11 +16,12 @@ class Tool(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, name: str=None, lang: str=None, jepl_support: bool=None, docs: str=None, docker: ToolDocker=None, executable: str=None, args: List[ToolArg]=None):
+    def __init__(self, name: str=None, lang: str=None, version: str=None, jepl_support: bool=None, docs: str=None, docker: ToolDocker=None, executable: str=None, args: List[ToolArg]=None):
         """Tool - a model defined in OpenAPI
 
         :param name: The name of this Tool.
         :param lang: The lang of this Tool.
+        :param version: The version of this Tool.
         :param jepl_support: The jepl_support of this Tool.
         :param docs: The docs of this Tool.
         :param docker: The docker of this Tool.
@@ -30,6 +31,7 @@ class Tool(Model):
         self.openapi_types = {
             'name': str,
             'lang': str,
+            'version': str,
             'jepl_support': bool,
             'docs': str,
             'docker': ToolDocker,
@@ -40,6 +42,7 @@ class Tool(Model):
         self.attribute_map = {
             'name': 'name',
             'lang': 'lang',
+            'version': 'version',
             'jepl_support': 'jepl_support',
             'docs': 'docs',
             'docker': 'docker',
@@ -49,6 +52,7 @@ class Tool(Model):
 
         self._name = name
         self._lang = lang
+        self._version = version
         self._jepl_support = jepl_support
         self._docs = docs
         self._docker = docker
@@ -68,6 +72,7 @@ class Tool(Model):
     def name(self):
         """Gets the name of this Tool.
 
+        Name of the tool
 
         :return: The name of this Tool.
         :rtype: str
@@ -78,6 +83,7 @@ class Tool(Model):
     def name(self, name):
         """Sets the name of this Tool.
 
+        Name of the tool
 
         :param name: The name of this Tool.
         :type name: str
@@ -91,6 +97,7 @@ class Tool(Model):
     def lang(self):
         """Gets the lang of this Tool.
 
+        Language that the tool is aligned with
 
         :return: The lang of this Tool.
         :rtype: str
@@ -101,6 +108,7 @@ class Tool(Model):
     def lang(self, lang):
         """Sets the lang of this Tool.
 
+        Language that the tool is aligned with
 
         :param lang: The lang of this Tool.
         :type lang: str
@@ -109,6 +117,29 @@ class Tool(Model):
             raise ValueError("Invalid value for `lang`, must not be `None`")
 
         self._lang = lang
+
+    @property
+    def version(self):
+        """Gets the version of this Tool.
+
+        Version of the tool
+
+        :return: The version of this Tool.
+        :rtype: str
+        """
+        return self._version
+
+    @version.setter
+    def version(self, version):
+        """Sets the version of this Tool.
+
+        Version of the tool
+
+        :param version: The version of this Tool.
+        :type version: str
+        """
+
+        self._version = version
 
     @property
     def jepl_support(self):

@@ -15,28 +15,32 @@ class AssessmentOutputSubcriteria(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, description: str=None, valid: bool=None, evidence: List[AssessmentOutputValidator]=None):
+    def __init__(self, description: str=None, valid: bool=None, evidence: List[AssessmentOutputValidator]=None, required_for_next_level_badge: bool=None):
         """AssessmentOutputSubcriteria - a model defined in OpenAPI
 
         :param description: The description of this AssessmentOutputSubcriteria.
         :param valid: The valid of this AssessmentOutputSubcriteria.
         :param evidence: The evidence of this AssessmentOutputSubcriteria.
+        :param required_for_next_level_badge: The required_for_next_level_badge of this AssessmentOutputSubcriteria.
         """
         self.openapi_types = {
             'description': str,
             'valid': bool,
-            'evidence': List[AssessmentOutputValidator]
+            'evidence': List[AssessmentOutputValidator],
+            'required_for_next_level_badge': bool
         }
 
         self.attribute_map = {
             'description': 'description',
             'valid': 'valid',
-            'evidence': 'evidence'
+            'evidence': 'evidence',
+            'required_for_next_level_badge': 'required_for_next_level_badge'
         }
 
         self._description = description
         self._valid = valid
         self._evidence = evidence
+        self._required_for_next_level_badge = required_for_next_level_badge
 
     @classmethod
     def from_dict(cls, dikt: dict) -> 'AssessmentOutputSubcriteria':
@@ -115,3 +119,26 @@ class AssessmentOutputSubcriteria(Model):
         """
 
         self._evidence = evidence
+
+    @property
+    def required_for_next_level_badge(self):
+        """Gets the required_for_next_level_badge of this AssessmentOutputSubcriteria.
+
+        Whether current subcriterion is required for the next level of badging
+
+        :return: The required_for_next_level_badge of this AssessmentOutputSubcriteria.
+        :rtype: bool
+        """
+        return self._required_for_next_level_badge
+
+    @required_for_next_level_badge.setter
+    def required_for_next_level_badge(self, required_for_next_level_badge):
+        """Sets the required_for_next_level_badge of this AssessmentOutputSubcriteria.
+
+        Whether current subcriterion is required for the next level of badging
+
+        :param required_for_next_level_badge: The required_for_next_level_badge of this AssessmentOutputSubcriteria.
+        :type required_for_next_level_badge: bool
+        """
+
+        self._required_for_next_level_badge = required_for_next_level_badge

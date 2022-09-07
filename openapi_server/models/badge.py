@@ -6,6 +6,7 @@ from typing import List, Dict, Type
 
 from openapi_server.models.base_model_ import Model
 from openapi_server.models.badge_assertion import BadgeAssertion
+from openapi_server.models.badge_criteria_stats import BadgeCriteriaStats
 from openapi_server import util
 
 
@@ -15,25 +16,29 @@ class Badge(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, data: BadgeAssertion=None, share: str=None, verification_url: str=None):
+    def __init__(self, criteria: Dict[str, BadgeCriteriaStats]=None, data: BadgeAssertion=None, share: str=None, verification_url: str=None):
         """Badge - a model defined in OpenAPI
 
+        :param criteria: The criteria of this Badge.
         :param data: The data of this Badge.
         :param share: The share of this Badge.
         :param verification_url: The verification_url of this Badge.
         """
         self.openapi_types = {
+            'criteria': Dict[str, BadgeCriteriaStats],
             'data': BadgeAssertion,
             'share': str,
             'verification_url': str
         }
 
         self.attribute_map = {
+            'criteria': 'criteria',
             'data': 'data',
             'share': 'share',
             'verification_url': 'verification_url'
         }
 
+        self._criteria = criteria
         self._data = data
         self._share = share
         self._verification_url = verification_url
@@ -46,6 +51,27 @@ class Badge(Model):
         :return: The Badge of this Badge.
         """
         return util.deserialize_model(dikt, cls)
+
+    @property
+    def criteria(self):
+        """Gets the criteria of this Badge.
+
+
+        :return: The criteria of this Badge.
+        :rtype: Dict[str, BadgeCriteriaStats]
+        """
+        return self._criteria
+
+    @criteria.setter
+    def criteria(self, criteria):
+        """Sets the criteria of this Badge.
+
+
+        :param criteria: The criteria of this Badge.
+        :type criteria: Dict[str, BadgeCriteriaStats]
+        """
+
+        self._criteria = criteria
 
     @property
     def data(self):

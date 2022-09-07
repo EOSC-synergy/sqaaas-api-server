@@ -5,6 +5,7 @@ from datetime import date, datetime
 from typing import List, Dict, Type
 
 from openapi_server.models.base_model_ import Model
+from openapi_server.models.assessment_output_report_addl_props_coverage import AssessmentOutputReportAddlPropsCoverage
 from openapi_server.models.assessment_output_subcriteria import AssessmentOutputSubcriteria
 from openapi_server import util
 
@@ -15,28 +16,32 @@ class AssessmentOutputReportAddlProps(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, valid: bool=False, filtered_reason: List[str]=[], subcriteria: Dict[str, AssessmentOutputSubcriteria]=None):
+    def __init__(self, valid: bool=False, filtered_reason: List[str]=[], subcriteria: Dict[str, AssessmentOutputSubcriteria]=None, coverage: AssessmentOutputReportAddlPropsCoverage=None):
         """AssessmentOutputReportAddlProps - a model defined in OpenAPI
 
         :param valid: The valid of this AssessmentOutputReportAddlProps.
         :param filtered_reason: The filtered_reason of this AssessmentOutputReportAddlProps.
         :param subcriteria: The subcriteria of this AssessmentOutputReportAddlProps.
+        :param coverage: The coverage of this AssessmentOutputReportAddlProps.
         """
         self.openapi_types = {
             'valid': bool,
             'filtered_reason': List[str],
-            'subcriteria': Dict[str, AssessmentOutputSubcriteria]
+            'subcriteria': Dict[str, AssessmentOutputSubcriteria],
+            'coverage': AssessmentOutputReportAddlPropsCoverage
         }
 
         self.attribute_map = {
             'valid': 'valid',
             'filtered_reason': 'filtered_reason',
-            'subcriteria': 'subcriteria'
+            'subcriteria': 'subcriteria',
+            'coverage': 'coverage'
         }
 
         self._valid = valid
         self._filtered_reason = filtered_reason
         self._subcriteria = subcriteria
+        self._coverage = coverage
 
     @classmethod
     def from_dict(cls, dikt: dict) -> 'AssessmentOutputReportAddlProps':
@@ -113,3 +118,24 @@ class AssessmentOutputReportAddlProps(Model):
         """
 
         self._subcriteria = subcriteria
+
+    @property
+    def coverage(self):
+        """Gets the coverage of this AssessmentOutputReportAddlProps.
+
+
+        :return: The coverage of this AssessmentOutputReportAddlProps.
+        :rtype: AssessmentOutputReportAddlPropsCoverage
+        """
+        return self._coverage
+
+    @coverage.setter
+    def coverage(self, coverage):
+        """Sets the coverage of this AssessmentOutputReportAddlProps.
+
+
+        :param coverage: The coverage of this AssessmentOutputReportAddlProps.
+        :type coverage: AssessmentOutputReportAddlPropsCoverage
+        """
+
+        self._coverage = coverage
