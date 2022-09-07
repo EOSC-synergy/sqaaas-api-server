@@ -7,6 +7,7 @@ from typing import List, Dict, Type
 from openapi_server.models.base_model_ import Model
 from openapi_server.models.assessment_output_badge import AssessmentOutputBadge
 from openapi_server.models.assessment_output_report_addl_props import AssessmentOutputReportAddlProps
+from openapi_server.models.assessment_output_repository import AssessmentOutputRepository
 from openapi_server import util
 
 
@@ -16,22 +17,26 @@ class AssessmentOutput(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, report: Dict[str, AssessmentOutputReportAddlProps]=None, badge: AssessmentOutputBadge=None):
+    def __init__(self, repository: List[AssessmentOutputRepository]=None, report: Dict[str, AssessmentOutputReportAddlProps]=None, badge: AssessmentOutputBadge=None):
         """AssessmentOutput - a model defined in OpenAPI
 
+        :param repository: The repository of this AssessmentOutput.
         :param report: The report of this AssessmentOutput.
         :param badge: The badge of this AssessmentOutput.
         """
         self.openapi_types = {
+            'repository': List[AssessmentOutputRepository],
             'report': Dict[str, AssessmentOutputReportAddlProps],
             'badge': AssessmentOutputBadge
         }
 
         self.attribute_map = {
+            'repository': 'repository',
             'report': 'report',
             'badge': 'badge'
         }
 
+        self._repository = repository
         self._report = report
         self._badge = badge
 
@@ -43,6 +48,27 @@ class AssessmentOutput(Model):
         :return: The AssessmentOutput of this AssessmentOutput.
         """
         return util.deserialize_model(dikt, cls)
+
+    @property
+    def repository(self):
+        """Gets the repository of this AssessmentOutput.
+
+
+        :return: The repository of this AssessmentOutput.
+        :rtype: List[AssessmentOutputRepository]
+        """
+        return self._repository
+
+    @repository.setter
+    def repository(self, repository):
+        """Sets the repository of this AssessmentOutput.
+
+
+        :param repository: The repository of this AssessmentOutput.
+        :type repository: List[AssessmentOutputRepository]
+        """
+
+        self._repository = repository
 
     @property
     def report(self):

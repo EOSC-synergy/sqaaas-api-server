@@ -1,9 +1,12 @@
 # coding: utf-8
 
 # import models into model package
+from openapi_server.models.assessment_deployment import AssessmentDeployment
 from openapi_server.models.assessment_output import AssessmentOutput
 from openapi_server.models.assessment_output_badge import AssessmentOutputBadge
 from openapi_server.models.assessment_output_report_addl_props import AssessmentOutputReportAddlProps
+from openapi_server.models.assessment_output_report_addl_props_coverage import AssessmentOutputReportAddlPropsCoverage
+from openapi_server.models.assessment_output_repository import AssessmentOutputRepository
 from openapi_server.models.assessment_output_subcriteria import AssessmentOutputSubcriteria
 from openapi_server.models.assessment_output_tool_ci import AssessmentOutputToolCI
 from openapi_server.models.assessment_output_validator import AssessmentOutputValidator
@@ -13,6 +16,7 @@ from openapi_server.models.assessment_output_validator_tool import AssessmentOut
 from openapi_server.models.badge import Badge
 from openapi_server.models.badge_assertion import BadgeAssertion
 from openapi_server.models.badge_assertion_recipient import BadgeAssertionRecipient
+from openapi_server.models.badge_criteria_stats import BadgeCriteriaStats
 from openapi_server.models.creds_user_pass import CredsUserPass
 from openapi_server.models.criterion import Criterion
 from openapi_server.models.criterion_build_addl_props import CriterionBuildAddlProps

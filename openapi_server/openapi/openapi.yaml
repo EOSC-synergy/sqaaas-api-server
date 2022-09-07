@@ -845,9 +845,10 @@ components:
           value: detect
           option: option
         docs: https://openapi-generator.tech
-        name: name
-        lang: lang
+        name: flake8
+        lang: Python
         jepl_support: true
+        version: 4.0.1
         executable: executable
         docker:
           image: image
@@ -856,10 +857,19 @@ components:
           oneshot: true
       properties:
         name:
+          description: Name of the tool
+          example: flake8
           title: name
           type: string
         lang:
+          description: Language that the tool is aligned with
+          example: Python
           title: lang
+          type: string
+        version:
+          description: Version of the tool
+          example: 4.0.1
+          title: version
           type: string
         jepl_support:
           title: jepl_support
@@ -918,9 +928,10 @@ components:
             value: detect
             option: option
           docs: https://openapi-generator.tech
-          name: name
-          lang: lang
+          name: flake8
+          lang: Python
           jepl_support: true
+          version: 4.0.1
           executable: executable
           docker:
             image: image
@@ -951,9 +962,10 @@ components:
             value: detect
             option: option
           docs: https://openapi-generator.tech
-          name: name
-          lang: lang
+          name: flake8
+          lang: Python
           jepl_support: true
+          version: 4.0.1
           executable: executable
           docker:
             image: image
@@ -1149,9 +1161,10 @@ components:
                   value: detect
                   option: option
                 docs: https://openapi-generator.tech
-                name: name
-                lang: lang
+                name: flake8
+                lang: Python
                 jepl_support: true
+                version: 4.0.1
                 executable: executable
                 docker:
                   image: image
@@ -1191,9 +1204,10 @@ components:
                   value: detect
                   option: option
                 docs: https://openapi-generator.tech
-                name: name
-                lang: lang
+                name: flake8
+                lang: Python
                 jepl_support: true
+                version: 4.0.1
                 executable: executable
                 docker:
                   image: image
@@ -1368,9 +1382,10 @@ components:
                     value: detect
                     option: option
                   docs: https://openapi-generator.tech
-                  name: name
-                  lang: lang
+                  name: flake8
+                  lang: Python
                   jepl_support: true
+                  version: 4.0.1
                   executable: executable
                   docker:
                     image: image
@@ -1410,9 +1425,10 @@ components:
                     value: detect
                     option: option
                   docs: https://openapi-generator.tech
-                  name: name
-                  lang: lang
+                  name: flake8
+                  lang: Python
                   jepl_support: true
+                  version: 4.0.1
                   executable: executable
                   docker:
                     image: image
@@ -1479,9 +1495,10 @@ components:
                     value: detect
                     option: option
                   docs: https://openapi-generator.tech
-                  name: name
-                  lang: lang
+                  name: flake8
+                  lang: Python
                   jepl_support: true
+                  version: 4.0.1
                   executable: executable
                   docker:
                     image: image
@@ -1521,9 +1538,10 @@ components:
                     value: detect
                     option: option
                   docs: https://openapi-generator.tech
-                  name: name
-                  lang: lang
+                  name: flake8
+                  lang: Python
                   jepl_support: true
+                  version: 4.0.1
                   executable: executable
                   docker:
                     image: image
@@ -1627,15 +1645,104 @@ components:
           $ref: '#/components/schemas/JePL_jenkinsfile'
       title: Pipeline
       type: object
+    AssessmentDeployment:
+      properties:
+        repo_deploy:
+          $ref: '#/components/schemas/Repository'
+        deploy_tool:
+          $ref: '#/components/schemas/Tool'
+      title: AssessmentDeployment
+      type: object
     Pipeline_assessment:
       properties:
         repo_code:
           $ref: '#/components/schemas/Repository'
         repo_docs:
           $ref: '#/components/schemas/Repository'
+        deployment:
+          $ref: '#/components/schemas/AssessmentDeployment'
       required:
       - repo_code
       title: Pipeline_assessment
+      type: object
+    AssessmentOutputRepository:
+      example:
+        avatar_url: https://avatars.githubusercontent.com/u/57723286?v=4
+        stargazers_count: 2
+        contributors_count: 2
+        topics:
+        - openapi
+        - sqaaas
+        name: sqaaas-api-spec
+        description: OpenAPI specification for the SQA as a Service
+        language: Shell
+        tag: 2.5.0
+        watchers_count: 2
+        url: https://github.com/eosc-synergy/sqaaas-api-spec
+        forks_count: 2
+      properties:
+        name:
+          description: (nick) Name of the repository
+          example: sqaaas-api-spec
+          title: name
+          type: string
+        url:
+          description: URL of the repository
+          example: https://github.com/eosc-synergy/sqaaas-api-spec
+          format: uri
+          title: url
+          type: string
+        avatar_url:
+          description: Avatar URL for the repository
+          example: https://avatars.githubusercontent.com/u/57723286?v=4
+          format: uri
+          title: avatar_url
+          type: string
+        description:
+          description: One-liner containing the repository's purpose
+          example: OpenAPI specification for the SQA as a Service
+          title: description
+          type: string
+        language:
+          description: Programming language used
+          example: Shell
+          title: language
+          type: string
+        tag:
+          description: Git tag that corresponds to the current version
+          example: 2.5.0
+          title: tag
+          type: string
+        topics:
+          description: Labels that characterize the repository
+          example:
+          - openapi
+          - sqaaas
+          items:
+            type: string
+          title: topics
+          type: array
+        stargazers_count:
+          description: (GitHub only) Number of stars
+          example: 2
+          title: stargazers_count
+          type: number
+        watchers_count:
+          description: (GitHub only) Number of watchers
+          example: 2
+          title: watchers_count
+          type: number
+        contributors_count:
+          description: (GitHub only) Number of contributors
+          example: 2
+          title: contributors_count
+          type: number
+        forks_count:
+          description: (GitHub only) Number of forks
+          example: 2
+          title: forks_count
+          type: number
+      title: AssessmentOutputRepository
       type: object
     AssessmentOutputToolCI:
       description: Details of the CI build where the tool was executed
@@ -1688,13 +1795,32 @@ components:
           stdout_text: stdout_text
           url: https://openapi-generator.tech
           status: SUCCESS
-        name: licensee
+        name: flake8
+        lang: Python
+        version: 4.0.1
+        docker:
+          image: image
+          dockerfile: dockerfile
+          reviewed: 2000-01-23
+          oneshot: true
       properties:
         name:
           description: Name of the tool
-          example: licensee
+          example: flake8
           title: name
           type: string
+        lang:
+          description: Language that the tool is aligned with
+          example: Python
+          title: lang
+          type: string
+        version:
+          description: Version of the tool
+          example: 4.0.1
+          title: version
+          type: string
+        docker:
+          $ref: '#/components/schemas/Tool_docker'
         ci:
           $ref: '#/components/schemas/AssessmentOutputToolCI'
         level:
@@ -1757,7 +1883,14 @@ components:
             stdout_text: stdout_text
             url: https://openapi-generator.tech
             status: SUCCESS
-          name: licensee
+          name: flake8
+          lang: Python
+          version: 4.0.1
+          docker:
+            image: image
+            dockerfile: dockerfile
+            reviewed: 2000-01-23
+            oneshot: true
       properties:
         valid:
           description: Validity of the subcriterion according to the tool
@@ -1806,7 +1939,14 @@ components:
               stdout_text: stdout_text
               url: https://openapi-generator.tech
               status: SUCCESS
-            name: licensee
+            name: flake8
+            lang: Python
+            version: 4.0.1
+            docker:
+              image: image
+              dockerfile: dockerfile
+              reviewed: 2000-01-23
+              oneshot: true
         - valid: true
           standard:
             title: A set of Common Software Quality Assurance Baseline Criteria for
@@ -1828,8 +1968,16 @@ components:
               stdout_text: stdout_text
               url: https://openapi-generator.tech
               status: SUCCESS
-            name: licensee
+            name: flake8
+            lang: Python
+            version: 4.0.1
+            docker:
+              image: image
+              dockerfile: dockerfile
+              reviewed: 2000-01-23
+              oneshot: true
         description: All code repositories MUST have a README file
+        required_for_next_level_badge: true
       properties:
         description:
           description: Short statement about the goal of the given subcriterion
@@ -1846,7 +1994,50 @@ components:
             $ref: '#/components/schemas/AssessmentOutputValidator'
           title: evidence
           type: array
+        required_for_next_level_badge:
+          description: Whether current subcriterion is required for the next level
+            of badging
+          title: required_for_next_level_badge
+          type: boolean
       title: AssessmentOutputSubcriteria
+      type: object
+    BadgeCriteriaStats:
+      description: Identifier of the badge class (e.g. bronze)
+      example:
+        missing:
+        - missing
+        - missing
+        fulfilled:
+        - fulfilled
+        - fulfilled
+        to_fulfill:
+        - criterion_id
+        - criterion_id
+      properties:
+        to_fulfill:
+          default: []
+          description: List of criteria codes to be fulfilled for the given badge
+            class
+          items:
+            example: criterion_id
+            type: string
+          title: to_fulfill
+          type: array
+        missing:
+          default: []
+          description: List of missing criteria codes for the badge class to be granted
+          items:
+            type: string
+          title: missing
+          type: array
+        fulfilled:
+          default: []
+          description: List of fulfilled criteria codes for the given badge class
+          items:
+            type: string
+          title: fulfilled
+          type: array
+      title: BadgeCriteriaStats
       type: object
     BadgeAssertion:
       description: Badge data as obtained from Open Badge's Badgr implementation
@@ -1915,9 +2106,25 @@ components:
           badgeClass: sBS3EsJQRAC0ENTmvETtQw
           issuer: aS1lWKgIR4u8bGjPZUzAyg
           issuedOn: 2021-04-07T10:07:00Z
+        criteria:
+          key:
+            missing:
+            - missing
+            - missing
+            fulfilled:
+            - fulfilled
+            - fulfilled
+            to_fulfill:
+            - criterion_id
+            - criterion_id
         share: <html>..</html>
         verification_url: https://openapi-generator.tech
       properties:
+        criteria:
+          additionalProperties:
+            $ref: '#/components/schemas/BadgeCriteriaStats'
+          title: criteria
+          type: object
         data:
           $ref: '#/components/schemas/BadgeAssertion'
         share:
@@ -1949,6 +2156,17 @@ components:
               badgeClass: sBS3EsJQRAC0ENTmvETtQw
               issuer: aS1lWKgIR4u8bGjPZUzAyg
               issuedOn: 2021-04-07T10:07:00Z
+            criteria:
+              key:
+                missing:
+                - missing
+                - missing
+                fulfilled:
+                - fulfilled
+                - fulfilled
+                to_fulfill:
+                - criterion_id
+                - criterion_id
             share: <html>..</html>
             verification_url: https://openapi-generator.tech
           services:
@@ -1965,6 +2183,17 @@ components:
               badgeClass: sBS3EsJQRAC0ENTmvETtQw
               issuer: aS1lWKgIR4u8bGjPZUzAyg
               issuedOn: 2021-04-07T10:07:00Z
+            criteria:
+              key:
+                missing:
+                - missing
+                - missing
+                fulfilled:
+                - fulfilled
+                - fulfilled
+                to_fulfill:
+                - criterion_id
+                - criterion_id
             share: <html>..</html>
             verification_url: https://openapi-generator.tech
           fair:
@@ -1981,11 +2210,26 @@ components:
               badgeClass: sBS3EsJQRAC0ENTmvETtQw
               issuer: aS1lWKgIR4u8bGjPZUzAyg
               issuedOn: 2021-04-07T10:07:00Z
+            criteria:
+              key:
+                missing:
+                - missing
+                - missing
+                fulfilled:
+                - fulfilled
+                - fulfilled
+                to_fulfill:
+                - criterion_id
+                - criterion_id
             share: <html>..</html>
             verification_url: https://openapi-generator.tech
         report:
           key:
             valid: false
+            coverage:
+              percentage: 60
+              success_subcriteria: 0
+              total_subcriteria: 5
             subcriteria:
               key:
                 valid: true
@@ -2011,7 +2255,14 @@ components:
                       stdout_text: stdout_text
                       url: https://openapi-generator.tech
                       status: SUCCESS
-                    name: licensee
+                    name: flake8
+                    lang: Python
+                    version: 4.0.1
+                    docker:
+                      image: image
+                      dockerfile: dockerfile
+                      reviewed: 2000-01-23
+                      oneshot: true
                 - valid: true
                   standard:
                     title: A set of Common Software Quality Assurance Baseline Criteria
@@ -2033,12 +2284,52 @@ components:
                       stdout_text: stdout_text
                       url: https://openapi-generator.tech
                       status: SUCCESS
-                    name: licensee
+                    name: flake8
+                    lang: Python
+                    version: 4.0.1
+                    docker:
+                      image: image
+                      dockerfile: dockerfile
+                      reviewed: 2000-01-23
+                      oneshot: true
                 description: All code repositories MUST have a README file
+                required_for_next_level_badge: true
             filtered_reason:
             - filtered_reason
             - filtered_reason
+        repository:
+        - avatar_url: https://avatars.githubusercontent.com/u/57723286?v=4
+          stargazers_count: 2
+          contributors_count: 2
+          topics:
+          - openapi
+          - sqaaas
+          name: sqaaas-api-spec
+          description: OpenAPI specification for the SQA as a Service
+          language: Shell
+          tag: 2.5.0
+          watchers_count: 2
+          url: https://github.com/eosc-synergy/sqaaas-api-spec
+          forks_count: 2
+        - avatar_url: https://avatars.githubusercontent.com/u/57723286?v=4
+          stargazers_count: 2
+          contributors_count: 2
+          topics:
+          - openapi
+          - sqaaas
+          name: sqaaas-api-spec
+          description: OpenAPI specification for the SQA as a Service
+          language: Shell
+          tag: 2.5.0
+          watchers_count: 2
+          url: https://github.com/eosc-synergy/sqaaas-api-spec
+          forks_count: 2
       properties:
+        repository:
+          items:
+            $ref: '#/components/schemas/AssessmentOutputRepository'
+          title: repository
+          type: array
         report:
           additionalProperties:
             $ref: '#/components/schemas/AssessmentOutput_report_addl_props'
@@ -2127,9 +2418,10 @@ components:
                   value: detect
                   option: option
                 docs: https://openapi-generator.tech
-                name: name
-                lang: lang
+                name: flake8
+                lang: Python
                 jepl_support: true
+                version: 4.0.1
                 executable: executable
                 docker:
                   image: image
@@ -2169,9 +2461,10 @@ components:
                   value: detect
                   option: option
                 docs: https://openapi-generator.tech
-                name: name
-                lang: lang
+                name: flake8
+                lang: Python
                 jepl_support: true
+                version: 4.0.1
                 executable: executable
                 docker:
                   image: image
@@ -2420,9 +2713,10 @@ components:
             value: detect
             option: option
           docs: https://openapi-generator.tech
-          name: name
-          lang: lang
+          name: flake8
+          lang: Python
           jepl_support: true
+          version: 4.0.1
           executable: executable
           docker:
             image: image
@@ -2511,9 +2805,10 @@ components:
               value: detect
               option: option
             docs: https://openapi-generator.tech
-            name: name
-            lang: lang
+            name: flake8
+            lang: Python
             jepl_support: true
+            version: 4.0.1
             executable: executable
             docker:
               image: image
@@ -2553,9 +2848,10 @@ components:
               value: detect
               option: option
             docs: https://openapi-generator.tech
-            name: name
-            lang: lang
+            name: flake8
+            lang: Python
             jepl_support: true
+            version: 4.0.1
             executable: executable
             docker:
               image: image
@@ -2857,10 +3153,37 @@ components:
           type: string
       title: BadgeAssertion_recipient
       type: object
+    AssessmentOutput_report_addl_props_coverage:
+      example:
+        percentage: 60
+        success_subcriteria: 0
+        total_subcriteria: 5
+      properties:
+        percentage:
+          description: Overall percentage of criterion coverage
+          example: 60
+          title: percentage
+          type: number
+        total_subcriteria:
+          description: Number of total subcriteria assessed for the criterion
+          example: 5
+          title: total_subcriteria
+          type: integer
+        success_subcriteria:
+          description: Number of subcriteria evaluates as success
+          example: 0
+          title: success_subcriteria
+          type: integer
+      title: AssessmentOutput_report_addl_props_coverage
+      type: object
     AssessmentOutput_report_addl_props:
       description: ID of the criterion
       example:
         valid: false
+        coverage:
+          percentage: 60
+          success_subcriteria: 0
+          total_subcriteria: 5
         subcriteria:
           key:
             valid: true
@@ -2886,7 +3209,14 @@ components:
                   stdout_text: stdout_text
                   url: https://openapi-generator.tech
                   status: SUCCESS
-                name: licensee
+                name: flake8
+                lang: Python
+                version: 4.0.1
+                docker:
+                  image: image
+                  dockerfile: dockerfile
+                  reviewed: 2000-01-23
+                  oneshot: true
             - valid: true
               standard:
                 title: A set of Common Software Quality Assurance Baseline Criteria
@@ -2908,8 +3238,16 @@ components:
                   stdout_text: stdout_text
                   url: https://openapi-generator.tech
                   status: SUCCESS
-                name: licensee
+                name: flake8
+                lang: Python
+                version: 4.0.1
+                docker:
+                  image: image
+                  dockerfile: dockerfile
+                  reviewed: 2000-01-23
+                  oneshot: true
             description: All code repositories MUST have a README file
+            required_for_next_level_badge: true
         filtered_reason:
         - filtered_reason
         - filtered_reason
@@ -2932,6 +3270,8 @@ components:
             $ref: '#/components/schemas/AssessmentOutputSubcriteria'
           title: subcriteria
           type: object
+        coverage:
+          $ref: '#/components/schemas/AssessmentOutput_report_addl_props_coverage'
       title: AssessmentOutput_report_addl_props
       type: object
     AssessmentOutput_badge:
@@ -2950,6 +3290,17 @@ components:
             badgeClass: sBS3EsJQRAC0ENTmvETtQw
             issuer: aS1lWKgIR4u8bGjPZUzAyg
             issuedOn: 2021-04-07T10:07:00Z
+          criteria:
+            key:
+              missing:
+              - missing
+              - missing
+              fulfilled:
+              - fulfilled
+              - fulfilled
+              to_fulfill:
+              - criterion_id
+              - criterion_id
           share: <html>..</html>
           verification_url: https://openapi-generator.tech
         services:
@@ -2966,6 +3317,17 @@ components:
             badgeClass: sBS3EsJQRAC0ENTmvETtQw
             issuer: aS1lWKgIR4u8bGjPZUzAyg
             issuedOn: 2021-04-07T10:07:00Z
+          criteria:
+            key:
+              missing:
+              - missing
+              - missing
+              fulfilled:
+              - fulfilled
+              - fulfilled
+              to_fulfill:
+              - criterion_id
+              - criterion_id
           share: <html>..</html>
           verification_url: https://openapi-generator.tech
         fair:
@@ -2982,6 +3344,17 @@ components:
             badgeClass: sBS3EsJQRAC0ENTmvETtQw
             issuer: aS1lWKgIR4u8bGjPZUzAyg
             issuedOn: 2021-04-07T10:07:00Z
+          criteria:
+            key:
+              missing:
+              - missing
+              - missing
+              fulfilled:
+              - fulfilled
+              - fulfilled
+              to_fulfill:
+              - criterion_id
+              - criterion_id
           share: <html>..</html>
           verification_url: https://openapi-generator.tech
       properties:

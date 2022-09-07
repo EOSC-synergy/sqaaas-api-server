@@ -5,6 +5,7 @@ from datetime import date, datetime
 from typing import List, Dict, Type
 
 from openapi_server.models.base_model_ import Model
+from openapi_server.models.assessment_deployment import AssessmentDeployment
 from openapi_server.models.repository import Repository
 from openapi_server import util
 
@@ -15,24 +16,28 @@ class PipelineAssessment(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, repo_code: Repository=None, repo_docs: Repository=None):
+    def __init__(self, repo_code: Repository=None, repo_docs: Repository=None, deployment: AssessmentDeployment=None):
         """PipelineAssessment - a model defined in OpenAPI
 
         :param repo_code: The repo_code of this PipelineAssessment.
         :param repo_docs: The repo_docs of this PipelineAssessment.
+        :param deployment: The deployment of this PipelineAssessment.
         """
         self.openapi_types = {
             'repo_code': Repository,
-            'repo_docs': Repository
+            'repo_docs': Repository,
+            'deployment': AssessmentDeployment
         }
 
         self.attribute_map = {
             'repo_code': 'repo_code',
-            'repo_docs': 'repo_docs'
+            'repo_docs': 'repo_docs',
+            'deployment': 'deployment'
         }
 
         self._repo_code = repo_code
         self._repo_docs = repo_docs
+        self._deployment = deployment
 
     @classmethod
     def from_dict(cls, dikt: dict) -> 'PipelineAssessment':
@@ -86,3 +91,24 @@ class PipelineAssessment(Model):
         """
 
         self._repo_docs = repo_docs
+
+    @property
+    def deployment(self):
+        """Gets the deployment of this PipelineAssessment.
+
+
+        :return: The deployment of this PipelineAssessment.
+        :rtype: AssessmentDeployment
+        """
+        return self._deployment
+
+    @deployment.setter
+    def deployment(self, deployment):
+        """Sets the deployment of this PipelineAssessment.
+
+
+        :param deployment: The deployment of this PipelineAssessment.
+        :type deployment: AssessmentDeployment
+        """
+
+        self._deployment = deployment
