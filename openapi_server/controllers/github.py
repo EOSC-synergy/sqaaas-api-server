@@ -389,5 +389,5 @@ class GitHubUtils(object):
 
         :param repo_name: Name of the repo to push (format: <user|org>/<repo_name>)
         """
-        owner = get_owner(repo_name)
+        owner = self.get_owner(repo_name)
         return owner.avatar_url
