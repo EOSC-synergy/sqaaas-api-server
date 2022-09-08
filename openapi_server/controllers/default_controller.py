@@ -363,7 +363,7 @@ async def add_pipeline_for_assessment(request: web.Request, body, optional_tools
 
     #3 Load repo settings
     repo_settings = {
-        'name': get_short_repo_name(repo_code['repo']),
+        'name': ctls_utils.get_short_repo_name(repo_code['repo']),
         'url': repo_code['repo'],
         'tag': repo_code['branch'] # FIXME: get default branch if not exist
     }
@@ -371,15 +371,16 @@ async def add_pipeline_for_assessment(request: web.Request, body, optional_tools
         repo_code['repo'], platforms=SUPPORTED_PLATFORMS
     )
     if platform in ['github']:
+        gh_repo_name = repo_code['repo'].split('/', 3)[-1]
         repo_settings.update({
-            'avatar_url': gh_utils.get_avatar(repo_code['repo']),
-            'description': gh_utils.get_description(repo_code['repo']),
-            'language': gh_utils.get_languages(repo_code['repo']),
-            'topics': gh_utils.get_topics(repo_code['repo']),
-            'stargazers_count': gh_utils.get_stargazers(repo_code['repo']),
-            'watchers_count': gh_utils.get_watchers(repo_code['repo']),
-            'contributors_count': gh_utils.get_contributors(repo_code['repo']),
-            'forks_count': gh_utils.get_forks(repo_code['repo'])
+            'avatar_url': gh_utils.get_avatar(gh_repo_name),
+            'description': gh_utils.get_description(gh_repo_name),
+            'language': gh_utils.get_languages(gh_repo_name),
+            'topics': gh_utils.get_topics(gh_repo_name),
+            'stargazers_count': gh_utils.get_stargazers(gh_repo_name),
+            'watchers_count': gh_utils.get_watchers(gh_repo_name),
+            'contributors_count': gh_utils.get_contributors(gh_repo_name),
+            'forks_count': gh_utils.get_forks(gh_repo_name)
         })
 
     #4 Store QAA data
