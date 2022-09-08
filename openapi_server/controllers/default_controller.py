@@ -653,11 +653,16 @@ def _set_im_config_files_content(
                 'repo': repo_url,
                 'branch': repo_branch
             }
+            _tech = ('ec3_client'
+                if 'ec3_templates' in list(additional_file['deployment'])
+                else 'im_client'
+            )
             additional_files_list.append(
                 ctls_utils.add_image_to_im(
                     im_config_file,
                     im_image_id,
                     openstack_url,
+                    tech=_tech,
                     repo=_repo
                 )
             )
