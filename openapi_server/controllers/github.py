@@ -358,7 +358,7 @@ class GitHubUtils(object):
         :param repo_name: Name of the repo to push (format: <user|org>/<repo_name>)
         """
         repo = self.get_repository(repo_name)
-        return repo.get_stargazers()
+        return repo.get_stargazers().totalCount
 
     def get_watchers(self, repo_name):
         """Gets the watcher count from a Github repository.
@@ -366,7 +366,7 @@ class GitHubUtils(object):
         :param repo_name: Name of the repo to push (format: <user|org>/<repo_name>)
         """
         repo = self.get_repository(repo_name)
-        return repo.get_watchers()
+        return repo.get_watchers().totalCount
 
     def get_contributors(self, repo_name):
         """Gets the contributor count from a Github repository.
@@ -374,7 +374,7 @@ class GitHubUtils(object):
         :param repo_name: Name of the repo to push (format: <user|org>/<repo_name>)
         """
         repo = self.get_repository(repo_name)
-        return repo.get_contributors()
+        return repo.get_contributors().totalCount
 
     def get_forks(self, repo_name):
         """Gets the fork count from a Github repository.
@@ -382,7 +382,7 @@ class GitHubUtils(object):
         :param repo_name: Name of the repo to push (format: <user|org>/<repo_name>)
         """
         repo = self.get_repository(repo_name)
-        return repo.get_forks()
+        return repo.get_forks().totalCount
 
     def get_avatar(self, repo_name):
         """Gets the avatar URL from a Github repository.
