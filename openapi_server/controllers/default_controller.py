@@ -361,7 +361,34 @@ async def add_pipeline_for_assessment(request: web.Request, body, optional_tools
         report_to_stdout=True
     )
 
-    #3 Store QAA data
+    #3 Load repo settings
+    active_branch = repo_code['branch']
+    if not active_branch:
+        active_branch = GitUtils.get_remote_active_branch(
+            repo_code['repo']
+        )
+    repo_settings = {
+        'name': ctls_utils.get_short_repo_name(repo_code['repo']),
+        'url': repo_code['repo'],
+        'tag': active_branch
+    }
+    platform = ctls_utils.supported_git_platform(
+        repo_code['repo'], platforms=SUPPORTED_PLATFORMS
+    )
+    if platform in ['github']:
+        gh_repo_name = repo_code['repo'].split('/', 3)[-1]
+        repo_settings.update({
+            'avatar_url': gh_utils.get_avatar(gh_repo_name),
+            'description': gh_utils.get_description(gh_repo_name),
+            'language': gh_utils.get_languages(gh_repo_name),
+            'topics': gh_utils.get_topics(gh_repo_name),
+            'stargazers_count': gh_utils.get_stargazers(gh_repo_name),
+            'watchers_count': gh_utils.get_watchers(gh_repo_name),
+            'contributors_count': gh_utils.get_contributors(gh_repo_name),
+            'forks_count': gh_utils.get_forks(gh_repo_name)
+        })
+
+    #4 Store QAA data
     db.add_assessment_data(
         pipeline_id,
         criteria_filtered_out
@@ -1846,7 +1873,7 @@ async def _sort_tooling_by_criteria(tooling_metadata_json, criteria_id_list=[]):
                 tooling_data_qaa = await _get_criterion_tooling(
                     criterion, tooling_metadata_json, tools_qaa_specific=True)
                 criterion_data[TOOLING_QAA_SPECIFIC_KEY] = tooling_data_qaa
-            
+
             criteria_data_list.append(criterion_data)
     except SQAaaSAPIException as e:
         return web.Response(status=e.http_code, reason=e.message, text=e.message)

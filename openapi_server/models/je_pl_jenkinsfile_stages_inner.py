@@ -5,8 +5,8 @@ from datetime import date, datetime
 from typing import List, Dict, Type
 
 from openapi_server.models.base_model_ import Model
-from openapi_server.models.je_pl_jenkinsfile_stages_items_pipeline_config import JePLJenkinsfileStagesItemsPipelineConfig
-from openapi_server.models.je_pl_jenkinsfile_stages_items_when import JePLJenkinsfileStagesItemsWhen
+from openapi_server.models.je_pl_jenkinsfile_stages_inner_pipeline_config import JePLJenkinsfileStagesInnerPipelineConfig
+from openapi_server.models.je_pl_jenkinsfile_stages_inner_when import JePLJenkinsfileStagesInnerWhen
 from openapi_server import util
 
 
@@ -16,15 +16,15 @@ class JePLJenkinsfileStagesInner(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, when: JePLJenkinsfileStagesItemsWhen=None, pipeline_config: JePLJenkinsfileStagesItemsPipelineConfig=None):
+    def __init__(self, when: JePLJenkinsfileStagesInnerWhen=None, pipeline_config: JePLJenkinsfileStagesInnerPipelineConfig=None):
         """JePLJenkinsfileStagesInner - a model defined in OpenAPI
 
         :param when: The when of this JePLJenkinsfileStagesInner.
         :param pipeline_config: The pipeline_config of this JePLJenkinsfileStagesInner.
         """
         self.openapi_types = {
-            'when': JePLJenkinsfileStagesItemsWhen,
-            'pipeline_config': JePLJenkinsfileStagesItemsPipelineConfig
+            'when': JePLJenkinsfileStagesInnerWhen,
+            'pipeline_config': JePLJenkinsfileStagesInnerPipelineConfig
         }
 
         self.attribute_map = {
@@ -50,7 +50,7 @@ class JePLJenkinsfileStagesInner(Model):
 
 
         :return: The when of this JePLJenkinsfileStagesInner.
-        :rtype: JePLJenkinsfileStagesItemsWhen
+        :rtype: JePLJenkinsfileStagesInnerWhen
         """
         return self._when
 
@@ -60,7 +60,7 @@ class JePLJenkinsfileStagesInner(Model):
 
 
         :param when: The when of this JePLJenkinsfileStagesInner.
-        :type when: JePLJenkinsfileStagesItemsWhen
+        :type when: JePLJenkinsfileStagesInnerWhen
         """
 
         self._when = when
@@ -71,7 +71,7 @@ class JePLJenkinsfileStagesInner(Model):
 
 
         :return: The pipeline_config of this JePLJenkinsfileStagesInner.
-        :rtype: JePLJenkinsfileStagesItemsPipelineConfig
+        :rtype: JePLJenkinsfileStagesInnerPipelineConfig
         """
         return self._pipeline_config
 
@@ -81,7 +81,7 @@ class JePLJenkinsfileStagesInner(Model):
 
 
         :param pipeline_config: The pipeline_config of this JePLJenkinsfileStagesInner.
-        :type pipeline_config: JePLJenkinsfileStagesItemsPipelineConfig
+        :type pipeline_config: JePLJenkinsfileStagesInnerPipelineConfig
         """
 
         self._pipeline_config = pipeline_config
