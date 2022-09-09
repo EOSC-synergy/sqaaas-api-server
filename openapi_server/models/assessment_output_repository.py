@@ -14,14 +14,14 @@ class AssessmentOutputRepository(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, name: str=None, url: str=None, avatar_url: str=None, description: str=None, language: str=None, tag: str=None, topics: List[str]=None, stargazers_count: float=None, watchers_count: float=None, contributors_count: float=None, forks_count: float=None):
+    def __init__(self, name: str=None, url: str=None, avatar_url: str=None, description: str=None, languages: List[str]=None, tag: str=None, topics: List[str]=None, stargazers_count: float=None, watchers_count: float=None, contributors_count: float=None, forks_count: float=None):
         """AssessmentOutputRepository - a model defined in OpenAPI
 
         :param name: The name of this AssessmentOutputRepository.
         :param url: The url of this AssessmentOutputRepository.
         :param avatar_url: The avatar_url of this AssessmentOutputRepository.
         :param description: The description of this AssessmentOutputRepository.
-        :param language: The language of this AssessmentOutputRepository.
+        :param languages: The languages of this AssessmentOutputRepository.
         :param tag: The tag of this AssessmentOutputRepository.
         :param topics: The topics of this AssessmentOutputRepository.
         :param stargazers_count: The stargazers_count of this AssessmentOutputRepository.
@@ -34,7 +34,7 @@ class AssessmentOutputRepository(Model):
             'url': str,
             'avatar_url': str,
             'description': str,
-            'language': str,
+            'languages': List[str],
             'tag': str,
             'topics': List[str],
             'stargazers_count': float,
@@ -48,7 +48,7 @@ class AssessmentOutputRepository(Model):
             'url': 'url',
             'avatar_url': 'avatar_url',
             'description': 'description',
-            'language': 'language',
+            'languages': 'languages',
             'tag': 'tag',
             'topics': 'topics',
             'stargazers_count': 'stargazers_count',
@@ -61,7 +61,7 @@ class AssessmentOutputRepository(Model):
         self._url = url
         self._avatar_url = avatar_url
         self._description = description
-        self._language = language
+        self._languages = languages
         self._tag = tag
         self._topics = topics
         self._stargazers_count = stargazers_count
@@ -171,27 +171,27 @@ class AssessmentOutputRepository(Model):
         self._description = description
 
     @property
-    def language(self):
-        """Gets the language of this AssessmentOutputRepository.
+    def languages(self):
+        """Gets the languages of this AssessmentOutputRepository.
 
         Programming language used
 
-        :return: The language of this AssessmentOutputRepository.
-        :rtype: str
+        :return: The languages of this AssessmentOutputRepository.
+        :rtype: List[str]
         """
-        return self._language
+        return self._languages
 
-    @language.setter
-    def language(self, language):
-        """Sets the language of this AssessmentOutputRepository.
+    @languages.setter
+    def languages(self, languages):
+        """Sets the languages of this AssessmentOutputRepository.
 
         Programming language used
 
-        :param language: The language of this AssessmentOutputRepository.
-        :type language: str
+        :param languages: The languages of this AssessmentOutputRepository.
+        :type languages: List[str]
         """
 
-        self._language = language
+        self._languages = languages
 
     @property
     def tag(self):

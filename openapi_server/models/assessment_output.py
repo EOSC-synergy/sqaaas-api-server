@@ -6,7 +6,7 @@ from typing import List, Dict, Type
 
 from openapi_server.models.base_model_ import Model
 from openapi_server.models.assessment_output_badge import AssessmentOutputBadge
-from openapi_server.models.assessment_output_report_addl_props import AssessmentOutputReportAddlProps
+from openapi_server.models.assessment_output_report_value import AssessmentOutputReportValue
 from openapi_server.models.assessment_output_repository import AssessmentOutputRepository
 from openapi_server import util
 
@@ -17,7 +17,7 @@ class AssessmentOutput(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, repository: List[AssessmentOutputRepository]=None, report: Dict[str, AssessmentOutputReportAddlProps]=None, badge: AssessmentOutputBadge=None):
+    def __init__(self, repository: List[AssessmentOutputRepository]=None, report: Dict[str, AssessmentOutputReportValue]=None, badge: AssessmentOutputBadge=None):
         """AssessmentOutput - a model defined in OpenAPI
 
         :param repository: The repository of this AssessmentOutput.
@@ -26,7 +26,7 @@ class AssessmentOutput(Model):
         """
         self.openapi_types = {
             'repository': List[AssessmentOutputRepository],
-            'report': Dict[str, AssessmentOutputReportAddlProps],
+            'report': Dict[str, AssessmentOutputReportValue],
             'badge': AssessmentOutputBadge
         }
 
@@ -76,7 +76,7 @@ class AssessmentOutput(Model):
 
 
         :return: The report of this AssessmentOutput.
-        :rtype: Dict[str, AssessmentOutputReportAddlProps]
+        :rtype: Dict[str, AssessmentOutputReportValue]
         """
         return self._report
 
@@ -86,7 +86,7 @@ class AssessmentOutput(Model):
 
 
         :param report: The report of this AssessmentOutput.
-        :type report: Dict[str, AssessmentOutputReportAddlProps]
+        :type report: Dict[str, AssessmentOutputReportValue]
         """
 
         self._report = report
