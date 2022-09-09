@@ -361,7 +361,7 @@ async def add_pipeline_for_assessment(request: web.Request, body, optional_tools
         report_to_stdout=True
     )
 
-    #3 Load repo settings
+    #3 Store repo settings
     active_branch = repo_code['branch']
     if not active_branch:
         active_branch = GitUtils.get_remote_active_branch(
@@ -387,6 +387,10 @@ async def add_pipeline_for_assessment(request: web.Request, body, optional_tools
             'contributors_count': gh_utils.get_contributors(gh_repo_name),
             'forks_count': gh_utils.get_forks(gh_repo_name)
         })
+    db.add_repo_settings(
+        pipeline_id,
+        repo_settings
+    )
 
     #4 Store QAA data
     db.add_assessment_data(
@@ -1446,6 +1450,7 @@ async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Re
         db.add_badge_data(pipeline_id, badge_data)
 
     r = {
+        'repository': pipeline_data.get('repo_settings', {}),
         'report': report_data,
         'badge': badge_data
     }
