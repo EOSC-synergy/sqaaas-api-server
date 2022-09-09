@@ -5,7 +5,7 @@ from datetime import date, datetime
 from typing import List, Dict, Type
 
 from openapi_server.models.base_model_ import Model
-from openapi_server.models.criterion_build_addl_props import CriterionBuildAddlProps
+from openapi_server.models.criterion_build_value import CriterionBuildValue
 from openapi_server.models.je_pl_config_config import JePLConfigConfig
 from openapi_server import util
 
@@ -16,7 +16,7 @@ class JePLConfig(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, config: JePLConfigConfig=None, sqa_criteria: Dict[str, CriterionBuildAddlProps]=None, environment: Dict[str, str]=None, timeout: int=None):
+    def __init__(self, config: JePLConfigConfig=None, sqa_criteria: Dict[str, CriterionBuildValue]=None, environment: Dict[str, str]=None, timeout: int=None):
         """JePLConfig - a model defined in OpenAPI
 
         :param config: The config of this JePLConfig.
@@ -26,7 +26,7 @@ class JePLConfig(Model):
         """
         self.openapi_types = {
             'config': JePLConfigConfig,
-            'sqa_criteria': Dict[str, CriterionBuildAddlProps],
+            'sqa_criteria': Dict[str, CriterionBuildValue],
             'environment': Dict[str, str],
             'timeout': int
         }
@@ -80,7 +80,7 @@ class JePLConfig(Model):
         Definition of software and service criteria to be run by the pipeline
 
         :return: The sqa_criteria of this JePLConfig.
-        :rtype: Dict[str, CriterionBuildAddlProps]
+        :rtype: Dict[str, CriterionBuildValue]
         """
         return self._sqa_criteria
 
@@ -91,7 +91,7 @@ class JePLConfig(Model):
         Definition of software and service criteria to be run by the pipeline
 
         :param sqa_criteria: The sqa_criteria of this JePLConfig.
-        :type sqa_criteria: Dict[str, CriterionBuildAddlProps]
+        :type sqa_criteria: Dict[str, CriterionBuildValue]
         """
 
         self._sqa_criteria = sqa_criteria
