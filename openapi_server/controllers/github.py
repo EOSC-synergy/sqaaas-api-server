@@ -342,7 +342,8 @@ class GitHubUtils(object):
         :param repo_name: Name of the repo to push (format: <user|org>/<repo_name>)
         """
         repo = self.get_repository(repo_name)
-        return repo.get_languages()
+        languages = repo.get_languages()
+        return sorted(languages, key=languages.get, reverse=True)
 
     def get_topics(self, repo_name):
         """Gets the topic list from a Github repository.
