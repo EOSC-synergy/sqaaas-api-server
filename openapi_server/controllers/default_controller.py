@@ -362,10 +362,15 @@ async def add_pipeline_for_assessment(request: web.Request, body, optional_tools
     )
 
     #3 Load repo settings
+    active_branch = repo_code['branch']
+    if not active_branch:
+        active_branch = GitUtils.get_remote_active_branch(
+            repo_code['repo']
+        )
     repo_settings = {
         'name': ctls_utils.get_short_repo_name(repo_code['repo']),
         'url': repo_code['repo'],
-        'tag': repo_code['branch'] # FIXME: get default branch if not exist
+        'tag': active_branch
     }
     platform = ctls_utils.supported_git_platform(
         repo_code['repo'], platforms=SUPPORTED_PLATFORMS
