@@ -362,6 +362,8 @@ async def add_pipeline_for_assessment(request: web.Request, body, optional_tools
     )
 
     #3 Store repo settings
+    ## For the time being, just consider the main repo code. Still an array
+    ## object must be returned
     active_branch = repo_code['branch']
     if not active_branch:
         active_branch = GitUtils.get_remote_active_branch(
@@ -1450,7 +1452,7 @@ async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Re
         db.add_badge_data(pipeline_id, badge_data)
 
     r = {
-        'repository': pipeline_data.get('repo_settings', {}),
+        'repository': [pipeline_data.get('repo_settings', {})],
         'report': report_data,
         'badge': badge_data
     }
