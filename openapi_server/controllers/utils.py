@@ -663,6 +663,11 @@ def process_extra_data(config_json, composer_json, report_to_stdout=False):
                         tool_criteria_map[criterion_name].update(tool_criterion_map)
                     else:
                         tool_criteria_map[criterion_name] = tool_criterion_map
+                else:
+                    # Store the criterion anyway
+                    tool_criteria_map[criterion_name] = {
+                        tool['name']: []
+                    }
 
                 tox_checkout_dir = '.'
                 try:
@@ -820,6 +825,7 @@ def process_extra_data(config_json, composer_json, report_to_stdout=False):
                             template_name=tool['template'],
                             template_kwargs=template_kwargs
                         )
+                    # tox 
                     tox_checkout_dir = stage_name
 
                 # add creds to config
