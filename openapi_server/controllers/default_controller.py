@@ -382,7 +382,7 @@ async def add_pipeline_for_assessment(request: web.Request, body, optional_tools
         repo_settings.update({
             'avatar_url': gh_utils.get_avatar(gh_repo_name),
             'description': gh_utils.get_description(gh_repo_name),
-            'language': gh_utils.get_languages(gh_repo_name),
+            'languages': gh_utils.get_languages(gh_repo_name),
             'topics': gh_utils.get_topics(gh_repo_name),
             'stargazers_count': gh_utils.get_stargazers(gh_repo_name),
             'watchers_count': gh_utils.get_watchers(gh_repo_name),
