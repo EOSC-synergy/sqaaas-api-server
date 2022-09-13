@@ -665,12 +665,8 @@ def process_extra_data(config_json, composer_json, report_to_stdout=False):
                         tool_criteria_map[criterion_name] = tool_criterion_map
                 else:
                     # Store the criterion anyway
-                    _tool = tool['name']
-                    _tool_executable = tool.get('executable', None)
-                    if _tool_executable:
-                        _tool = _tool_executable
                     tool_criteria_map[criterion_name] = {
-                        _tool: []
+                        tool['name']: []
                     }
 
                 tox_checkout_dir = '.'
