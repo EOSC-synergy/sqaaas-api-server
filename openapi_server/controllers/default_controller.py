@@ -1002,11 +1002,13 @@ async def _run_validation(criterion_name, **kwargs):
     tooling_metadata_json = await _get_tooling_metadata()
 
     def _get_tool_reporting_data(tool):
+        data = {}
         for tool_type, tools in tooling_metadata_json['tools'].items():
             if tool in tools.keys():
                 data = tools[tool]['reporting']
                 logger.debug('Found reporting data in tooling for tool <%s>' % tool)
                 return data
+        return data
 
     try:
         # Obtain the report2sqaaas input args (aka <opts>) from tooling
@@ -1018,6 +1020,10 @@ async def _run_validation(criterion_name, **kwargs):
 
     # Add additional data for the validator plugin
     validator_opts = copy.deepcopy(reporting_data)
+    print('?'*20)
+    import json
+    print(json.dumps(validator_opts))
+    print('?'*20)
     validator_opts['stdout'] = kwargs.get('stdout_text', None)
     validator_opts['status'] = kwargs.get('status', None)
     validator_opts['criterion'] = criterion_name
