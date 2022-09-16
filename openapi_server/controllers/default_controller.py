@@ -44,6 +44,12 @@ GITHUB_ORG = config.get_repo('organization')
 JENKINS_GITHUB_ORG = config.get_ci('github_organization_name')
 TOOLING_QAA_SPECIFIC_KEY = 'tools_qaa_specific'
 
+SW_PREFIX = 'QC'
+SRV_PREFIX = 'SvcQC'
+FAIR_PREFIX = 'QC.Fair'
+
+BADGE_CATEGORIES = ['bronze', 'silver', 'gold']
+
 logger = logging.getLogger('sqaaas.api.controller')
 
 
@@ -1342,11 +1348,6 @@ async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Re
         return report_data
 
     def _get_criteria_per_badge_type(report_data):
-        # Criteria prefixes
-        SW_PREFIX = 'QC.'
-        SRV_PREFIX = 'SvcQC'
-        FAIR_PREFIX = 'QC.Fair'
-
         criteria_fulfilled_list = [
             criterion
             for criterion, criterion_data in report_data.items()
@@ -1411,8 +1412,13 @@ async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Re
             logger.error(_reason)
             return web.Response(status=422, reason=_reason, text=_reason)
         # Get Badgr's badgeclass and proceed with badge issuance
+        missing_criteria_all = [] # required_for_next_level flag
         for badge_type, criteria_fulfilled_list in criteria_fulfilled_map.items():
-            badgeclass_name, criteria_summary = await _badgeclass_matchmaking(
+            (
+                badgeclass_name,
+                badge_category,
+                criteria_summary
+            ) = await _badgeclass_matchmaking(
                 pipeline_id, badge_type, criteria_fulfilled_list
             )
             # Generate criteria summary
@@ -1450,12 +1456,50 @@ async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Re
                     badge_data[badge_type]['verification_url'] = (
                         'https://badgecheck.io/?url=%s' % embed_url
                     )
+                
+                next_level_badge = await _get_next_level_badge(badge_category)
+                if next_level_badge:
+                    missing_criteria_all.extend(
+                        criteria_summary[next_level_badge]['missing']
+                    )
+
         # Store badge data in DB
         db.add_badge_data(pipeline_id, badge_data)
 
+        # Subcriterion required_for_next_level
+        report_data_copy = copy.deepcopy(report_data)
+        for criterion, criterion_data in report_data.items():
+            _subcriteria = criterion_data['subcriteria']
+            if _subcriteria:
+                for subcriterion, subcriterion_data in _subcriteria.items():
+                    _valid = subcriterion_data['valid']
+                    if not _valid:
+                        try:
+                            _criterion = re.search(
+                                rf"(^({SW_PREFIX}|{SRV_PREFIX})\.[A-Za-z]+)",
+                                subcriterion
+                            ).group(0)
+                        except AttributeError:
+                            logger.error((
+                                'Could not extract criterion string from '
+                                'subcriterion string: %s. Could not check '
+                                'whether the subcriterion is required for '
+                                'the next-level badge' % subcriterion
+                            ))
+                        else:
+                            _required_for_next_level = False
+                            if _criterion in missing_criteria_all:
+                                _required_for_next_level = True
+
+                            (report_data_copy[criterion]
+                                             ['subcriteria']
+                                             [subcriterion]
+                                             ['required_for_next_level_badge']
+                            ) = _required_for_next_level
+
     r = {
         'repository': [pipeline_data.get('repo_settings', {})],
-        'report': report_data,
+        'report': report_data_copy,
         'badge': badge_data
     }
     return web.json_response(r, status=200)
@@ -1615,6 +1659,18 @@ async def get_compressed_files(request: web.Request, pipeline_id) -> web.Respons
     return response
 
 
+# FIXME Badge categories must not be hardcoded here
+async def _get_next_level_badge(badge_category):
+    next_level_badge = None
+    list_item_no = BADGE_CATEGORIES.index(badge_category)
+    try:
+        next_level_badge = BADGE_CATEGORIES[list_item_no + 1]
+    except IndexError:
+        logger.debug('Already achieved highest badge class level')
+
+    return next_level_badge
+
+
 async def _badgeclass_matchmaking(pipeline_id, badge_type, criteria_fulfilled_list):
     """Does the matchmaking to obtain the badgeclass to be awarded (if any).
 
@@ -1626,8 +1682,9 @@ async def _badgeclass_matchmaking(pipeline_id, badge_type, criteria_fulfilled_li
     :type criteria_fulfilled_list: list
     """
     badge_awarded_badgeclass_name = None
+    badge_awarded_category = None
     criteria_summary = {}
-    for badge_category in ['bronze', 'silver', 'gold']:
+    for badge_category in BADGE_CATEGORIES:
         logger.debug('Matching given criteria against defined %s criteria for %s' % (
             badge_category.upper(), badge_type.upper())
         )
@@ -1657,11 +1714,16 @@ async def _badgeclass_matchmaking(pipeline_id, badge_type, criteria_fulfilled_li
                 pipeline_id, badge_category.upper())
             )
             badge_awarded_badgeclass_name = badgeclass_name
+            badge_awarded_category = badge_category
 
     if badge_awarded_badgeclass_name:
         logger.debug('Badgeclass to use for badge issuance: %s' % badge_awarded_badgeclass_name)
 
-    return badge_awarded_badgeclass_name, criteria_summary
+    return (
+        badge_awarded_badgeclass_name,
+        badge_awarded_category,
+        criteria_summary
+    )
 
 
 async def _issue_badge(pipeline_id, badgeclass_name):
