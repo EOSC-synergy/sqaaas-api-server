@@ -1457,11 +1457,11 @@ async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Re
                         'https://badgecheck.io/?url=%s' % embed_url
                     )
                 
-                next_level_badge = await _get_next_level_badge(badge_category)
-                if next_level_badge:
-                    missing_criteria_all.extend(
-                        criteria_summary[next_level_badge]['missing']
-                    )
+            next_level_badge = await _get_next_level_badge(badge_category)
+            if next_level_badge:
+                missing_criteria_all.extend(
+                    criteria_summary[next_level_badge]['missing']
+                )
 
         # Store badge data in DB
         db.add_badge_data(pipeline_id, badge_data)
@@ -1662,11 +1662,14 @@ async def get_compressed_files(request: web.Request, pipeline_id) -> web.Respons
 # FIXME Badge categories must not be hardcoded here
 async def _get_next_level_badge(badge_category):
     next_level_badge = None
-    list_item_no = BADGE_CATEGORIES.index(badge_category)
-    try:
-        next_level_badge = BADGE_CATEGORIES[list_item_no + 1]
-    except IndexError:
-        logger.debug('Already achieved highest badge class level')
+    if badge_category:
+        list_item_no = BADGE_CATEGORIES.index(badge_category)
+        try:
+            next_level_badge = BADGE_CATEGORIES[list_item_no + 1]
+        except IndexError:
+            logger.debug('Already achieved highest badge class level')
+    else:
+        next_level_badge = BADGE_CATEGORIES[0]
 
     return next_level_badge
 
