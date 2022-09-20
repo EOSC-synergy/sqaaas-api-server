@@ -1331,15 +1331,27 @@ async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Re
                     subcriteria[subcriterion_id]['evidence'].append(
                         evidence_data
                     )
-                # Subcriterion validity
+                # Subcriterion validity & coverage
+                total_subcriteria = len(list(subcriteria))
+                success_subcriteria = 0
                 for subcriterion_id, subcriterion_data in subcriteria.items():
                     valid = all(evidence['valid']
                         for evidence in subcriterion_data['evidence'])
                     subcriteria[subcriterion_id]['valid'] = valid
+                    if valid:
+                        success_subcriteria += 1
+                percentage_criterion = int(
+                    success_subcriteria * 100 / total_subcriteria
+                )
 
             report_data[criterion_name] = {
                 'valid': all(criterion_valid_list),
-                'subcriteria': subcriteria
+                'subcriteria': subcriteria,
+                'coverage': {
+                    'percentage': percentage_criterion,
+                    'total_subcriteria': total_subcriteria,
+                    'success_subcriteria': success_subcriteria
+                }
             }
 
         # Append filtered-out criteria
