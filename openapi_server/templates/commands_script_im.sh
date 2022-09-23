@@ -13,7 +13,11 @@ cat <<EOF >> {{ im_auth_file }}
 # InfrastructureManager auth
 type = InfrastructureManager; username = %s; password = %s
 # OpenStack site using standard user, password, tenant format
+{% if openstack_site_id in ['ifca'] %}
 id = {{ openstack_site_id }}; type = OpenStack; host = {{ openstack_url }}:{{ openstack_port }}; username = %s; password = %s; tenant = {{ openstack_tenant_name }}; tenant_domain_id = {{ openstack_tenant_domain_id }}; domain = {{ openstack_domain_name }}; auth_version = {{ openstack_auth_version }}
+{% else %}
+id = {{ openstack_site_id }}; type = OpenStack; host = {{ openstack_url }}:{{ openstack_port }}; username = %s; password = %s; tenant = {{ openstack_tenant_name }}; domain = {{ openstack_domain_name }}; auth_version = {{ openstack_auth_version }}
+{% endif %}
 EOF
 if [ -z "$IM_USER" ] || [ -z "$IM_PASS" ] || [ -z "$OPENSTACK_USER" ] || [ -z "$OPENSTACK_PASS" ]; then
   echo 'One or more credential variables are undefined (required: IM_USER, IM_PASS, OPENSTACK_USER, OPENSTACK_PASS)'
