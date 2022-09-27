@@ -1389,9 +1389,13 @@ async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Re
             for _subcriterion, _subcriterion_metadata in _metadata.items():
                 filtered_criteria[_criterion]['subcriteria'][_subcriterion] = {
                     'description': _subcriterion_metadata['description'],
-                    'valid': False,
+                    'valid': _data.get('valid', False),
                     'evidence': [{
-                        'message': _subcriterion_metadata['evidence']['failure']
+                        'valid': False,
+                        'message': '\n'.join(_data.get(
+                            'filtered_reason',
+                            _subcriterion_metadata['evidence']['failure']
+                        ))
                     }]
                 }
             # Coverage
