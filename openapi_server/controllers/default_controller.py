@@ -1265,6 +1265,22 @@ async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Re
     except SQAaaSAPIException as e:
         return web.Response(status=e.http_code, reason=e.message, text=e.message)
 
+    def _get_coverage(subcriteria):
+        total_subcriteria = len(list(subcriteria))
+        success_subcriteria = 0
+        for subcriterion_id, subcriterion_data in subcriteria.items():
+            if subcriteria[subcriterion_id]['valid']:
+                success_subcriteria += 1
+        percentage_criterion = int(
+            success_subcriteria * 100 / total_subcriteria
+        )
+
+        return (
+            total_subcriteria,
+            success_subcriteria,
+            percentage_criterion
+        )
+
     def _format_report():
         report_data = {}
         pipeline_data = db.get_entry(pipeline_id)
@@ -1331,18 +1347,17 @@ async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Re
                     subcriteria[subcriterion_id]['evidence'].append(
                         evidence_data
                     )
-                # Subcriterion validity & coverage
-                total_subcriteria = len(list(subcriteria))
-                success_subcriteria = 0
+                # Subcriterion validity
                 for subcriterion_id, subcriterion_data in subcriteria.items():
                     valid = all(evidence['valid']
                         for evidence in subcriterion_data['evidence'])
                     subcriteria[subcriterion_id]['valid'] = valid
-                    if valid:
-                        success_subcriteria += 1
-                percentage_criterion = int(
-                    success_subcriteria * 100 / total_subcriteria
-                )
+                # Coverage
+                (
+                    total_subcriteria,
+                    success_subcriteria,
+                    percentage_criterion
+                ) = _get_coverage(subcriteria)
 
             report_data[criterion_name] = {
                 'valid': all(criterion_valid_list),
@@ -1354,8 +1369,45 @@ async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Re
                 }
             }
 
-        # Append filtered-out criteria
-        report_data.update(criteria_filtered_out)
+        # Report filtered-out criteria
+        # report_data.update(criteria_filtered_out)
+        #
+        # Subcriterion data shall be in the form:
+        # {
+        #   'description': 'str',
+        #   'valid': true/false
+        #   'evidence': [ .. ]
+        #   'required_for_next_level_badge': true/false
+        # }
+        filtered_criteria = {}
+        for _criterion, _data in criteria_filtered_out.items():
+            filtered_criteria[_criterion] = {
+                'valid': False,
+                'subcriteria': {}
+            }
+            _metadata = r2s_utils.load_criterion_from_standard(_criterion)
+            for _subcriterion, _subcriterion_metadata in _metadata.items():
+                filtered_criteria[_criterion]['subcriteria'][_subcriterion] = {
+                    'description': _subcriterion_metadata['description'],
+                    'valid': False,
+                    'evidence': [{
+                        'message': _subcriterion_metadata['evidence']['failure']
+                    }]
+                }
+            # Coverage
+            (
+                total_subcriteria,
+                success_subcriteria,
+                percentage_criterion
+            ) = _get_coverage(filtered_criteria[_criterion]['subcriteria'])
+            
+            filtered_criteria[_criterion]['coverage'] = {
+                'percentage': percentage_criterion,
+                'total_subcriteria': total_subcriteria,
+                'success_subcriteria': success_subcriteria
+            }
+            # Add filtered criterion to reporting data
+            report_data.update(filtered_criteria)
 
         return report_data
 
