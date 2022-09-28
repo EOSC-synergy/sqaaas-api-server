@@ -133,6 +133,7 @@ async def _get_tooling_for_assessment(
     repo_code = body.get('repo_code', {})
     repo_docs = body.get('repo_docs', {})
     deployment = body.get('deployment', {})
+    fair = body.get('fair', {})
     
     levels_for_assessment = ['REQUIRED', 'RECOMMENDED']
     tooling_metadata_json = await _get_tooling_metadata()
@@ -164,6 +165,11 @@ async def _get_tooling_for_assessment(
                     'user: %s' % criterion_data_copy['tools']
                 ))
                 filter_tool_by_requirement_level = False
+        elif criterion_id in ['QC.FAIR'] and not fair:
+            logger.warning(
+                'Excluding QC.FAIR criterion as there are no inputs for FAIR'
+            )
+            continue
         logger.info('Using repository <%s> for criterion <%s>' % (
             repo['repo'], criterion_id)
         )
