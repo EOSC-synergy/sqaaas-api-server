@@ -105,9 +105,6 @@ async def add_pipeline(request: web.Request, body, report_to_stdout=None) -> web
 
 async def _get_tooling_for_assessment(
     body,
-    # repo_code,
-    # repo_docs=None,
-    # deployment={},
     optional_tools=[]
 ):
     """Returns per-criterion tooling metadata filtered for assessment.
@@ -121,12 +118,8 @@ async def _get_tooling_for_assessment(
     tools, a <filtered> property is added to the criterion dict that is
     returned by this method
 
-    :param repo_code: code repository object (URL & branch)
+    :param body: modified request body with the required data for assessment
     :type repo_code: dict
-    :param repo_docs: optional docs repository object (URL & branch)
-    :type repo_docs: dict
-    :param deployment: optional service deployment data (repo & tool)
-    :type deployment: dict
     :param optional_tools: Optional tools that shall be accounted
     :type optional_tools: list
     """
