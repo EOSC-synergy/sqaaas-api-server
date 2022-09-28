@@ -104,9 +104,7 @@ async def add_pipeline(request: web.Request, body, report_to_stdout=None) -> web
 
 
 async def _get_tooling_for_assessment(
-    repo_code,
-    repo_docs=None,
-    deployment={},
+    body,
     optional_tools=[]
 ):
     """Returns per-criterion tooling metadata filtered for assessment.
@@ -120,15 +118,16 @@ async def _get_tooling_for_assessment(
     tools, a <filtered> property is added to the criterion dict that is
     returned by this method
 
-    :param repo_code: code repository object (URL & branch)
+    :param body: modified request body with the required data for assessment
     :type repo_code: dict
-    :param repo_docs: optional docs repository object (URL & branch)
-    :type repo_docs: dict
-    :param deployment: optional service deployment data (repo & tool)
-    :type deployment: dict
     :param optional_tools: Optional tools that shall be accounted
     :type optional_tools: list
     """
+    repo_code = body.get('repo_code', {})
+    repo_docs = body.get('repo_docs', {})
+    deployment = body.get('deployment', {})
+    fair = body.get('fair', {})
+    
     levels_for_assessment = ['REQUIRED', 'RECOMMENDED']
     tooling_metadata_json = await _get_tooling_metadata()
     criteria_data_list = await _sort_tooling_by_criteria(tooling_metadata_json)
@@ -159,6 +158,11 @@ async def _get_tooling_for_assessment(
                     'user: %s' % criterion_data_copy['tools']
                 ))
                 filter_tool_by_requirement_level = False
+        elif criterion_id in ['QC.FAIR'] and not fair:
+            logger.warning(
+                'Excluding QC.FAIR criterion as there are no inputs for FAIR'
+            )
+            continue
         logger.info('Using repository <%s> for criterion <%s>' % (
             repo['repo'], criterion_id)
         )
@@ -318,19 +322,39 @@ async def add_pipeline_for_assessment(request: web.Request, body, optional_tools
     # part of the validate_request() decorator
     body = ctls_utils.del_empty_keys(body)
 
-    repo_code = body['repo_code']
-    repo_docs = body.get('repo_docs', {})
+    #0 Validate request
+    repo_code = body.get('repo_code', {})
     deployment = body.get('deployment', {})
+    repo_data = {}
+    
+    repo_url = repo_code.get('repo', None) # is there data actually?
+    if repo_url:
+        repo_data = repo_code
+        # Purge 
+        body.pop('deployment', {})
+    else:
+        repo_deploy = deployment.get('repo_deploy', {})
+        repo_deploy_url = repo_deploy.get('repo', None)
+        if repo_deploy_url:
+            repo_data = repo_deploy
+            # Purge
+            body.pop('repo_code', {})
+            body.pop('repo_docs', {})
+    
+    if not repo_data:
+        _reason = (
+            'Invalid request: not valid data found for a software/service '
+            'assessment'
+        )
+        return web.Response(status=422, reason=_reason, text=_reason)
 
-    #0 Filter per-criterion tools that will take part in the assessment
+    #1 Filter per-criterion tools that will take part in the assessment
     try:
         (
             criteria_data_list,
             criteria_filtered_out
         ) = await _get_tooling_for_assessment(
-                repo_code=repo_code,
-                repo_docs=repo_docs,
-                deployment=deployment,
+                body=body,
                 optional_tools=optional_tools
             )
         logger.debug((
@@ -340,20 +364,20 @@ async def add_pipeline_for_assessment(request: web.Request, body, optional_tools
     except SQAaaSAPIException as e:
         return web.Response(status=e.http_code, reason=e.message, text=e.message)
 
-    #1 Load request payload (same as passed to POST /pipeline) from templates
+    #2 Load request payload (same as passed to POST /pipeline) from templates
     env = Environment(
         loader=PackageLoader('openapi_server', 'templates')
     )
     template = env.get_template('pipeline_assessment.json')
     pipeline_name = '.'.join([
-        os.path.basename(repo_code['repo']),
+        os.path.basename(repo_data['repo']),
         'assess'
     ])
     logger.debug('Generated pipeline name for the assessment: %s' % pipeline_name)
     json_rendered = template.render(
         pipeline_name=pipeline_name,
         repo_code=repo_code,
-        repo_docs=repo_docs,
+        repo_docs=body.get('repo_docs', {}),
         repo_deploy=deployment.get('repo_deploy', {}),
         criteria_data_list=criteria_data_list,
         tooling_qaa_specific_key=TOOLING_QAA_SPECIFIC_KEY
@@ -361,30 +385,30 @@ async def add_pipeline_for_assessment(request: web.Request, body, optional_tools
     json_data = json.loads(json_rendered)
     logger.debug('Generated JSON payload (from template) required to create the pipeline for the assessment: %s' % json_data)
 
-    #2 Create pipeline
+    #3 Create pipeline
     pipeline_id = await _add_pipeline_to_db(
         json_data,
         report_to_stdout=True
     )
 
-    #3 Store repo settings
+    #4 Store repo settings
     ## For the time being, just consider the main repo code. Still an array
     ## object must be returned
-    active_branch = repo_code['branch']
+    active_branch = repo_data.get('branch', None)
     if not active_branch:
         active_branch = GitUtils.get_remote_active_branch(
-            repo_code['repo']
+            repo_data['repo']
         )
     repo_settings = {
-        'name': ctls_utils.get_short_repo_name(repo_code['repo']),
-        'url': repo_code['repo'],
+        'name': ctls_utils.get_short_repo_name(repo_data['repo']),
+        'url': repo_data['repo'],
         'tag': active_branch
     }
     platform = ctls_utils.supported_git_platform(
-        repo_code['repo'], platforms=SUPPORTED_PLATFORMS
+        repo_data['repo'], platforms=SUPPORTED_PLATFORMS
     )
     if platform in ['github']:
-        gh_repo_name = repo_code['repo'].split('/', 3)[-1]
+        gh_repo_name = repo_data['repo'].split('/', 3)[-1]
         repo_settings.update({
             'avatar_url': gh_utils.get_avatar(gh_repo_name),
             'description': gh_utils.get_description(gh_repo_name),
@@ -400,7 +424,7 @@ async def add_pipeline_for_assessment(request: web.Request, body, optional_tools
         repo_settings
     )
 
-    #4 Store QAA data
+    #5 Store QAA data
     db.add_assessment_data(
         pipeline_id,
         criteria_filtered_out
