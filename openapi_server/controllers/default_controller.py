@@ -44,6 +44,12 @@ GITHUB_ORG = config.get_repo('organization')
 JENKINS_GITHUB_ORG = config.get_ci('github_organization_name')
 TOOLING_QAA_SPECIFIC_KEY = 'tools_qaa_specific'
 
+SW_PREFIX = 'QC'
+SRV_PREFIX = 'SvcQC'
+FAIR_PREFIX = 'QC.Fair'
+
+BADGE_CATEGORIES = ['bronze', 'silver', 'gold']
+
 logger = logging.getLogger('sqaaas.api.controller')
 
 
@@ -361,7 +367,40 @@ async def add_pipeline_for_assessment(request: web.Request, body, optional_tools
         report_to_stdout=True
     )
 
-    #3 Store QAA data
+    #3 Store repo settings
+    ## For the time being, just consider the main repo code. Still an array
+    ## object must be returned
+    active_branch = repo_code['branch']
+    if not active_branch:
+        active_branch = GitUtils.get_remote_active_branch(
+            repo_code['repo']
+        )
+    repo_settings = {
+        'name': ctls_utils.get_short_repo_name(repo_code['repo']),
+        'url': repo_code['repo'],
+        'tag': active_branch
+    }
+    platform = ctls_utils.supported_git_platform(
+        repo_code['repo'], platforms=SUPPORTED_PLATFORMS
+    )
+    if platform in ['github']:
+        gh_repo_name = repo_code['repo'].split('/', 3)[-1]
+        repo_settings.update({
+            'avatar_url': gh_utils.get_avatar(gh_repo_name),
+            'description': gh_utils.get_description(gh_repo_name),
+            'languages': gh_utils.get_languages(gh_repo_name),
+            'topics': gh_utils.get_topics(gh_repo_name),
+            'stargazers_count': gh_utils.get_stargazers(gh_repo_name),
+            'watchers_count': gh_utils.get_watchers(gh_repo_name),
+            'contributors_count': gh_utils.get_contributors(gh_repo_name),
+            'forks_count': gh_utils.get_forks(gh_repo_name)
+        })
+    db.add_repo_settings(
+        pipeline_id,
+        repo_settings
+    )
+
+    #4 Store QAA data
     db.add_assessment_data(
         pipeline_id,
         criteria_filtered_out
@@ -969,11 +1008,13 @@ async def _run_validation(criterion_name, **kwargs):
     tooling_metadata_json = await _get_tooling_metadata()
 
     def _get_tool_reporting_data(tool):
+        data = {}
         for tool_type, tools in tooling_metadata_json['tools'].items():
-            if tool in tools.keys():
+            if tool in list(tools):
                 data = tools[tool]['reporting']
                 logger.debug('Found reporting data in tooling for tool <%s>' % tool)
                 return data
+        return data
 
     try:
         # Obtain the report2sqaaas input args (aka <opts>) from tooling
@@ -1290,15 +1331,27 @@ async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Re
                     subcriteria[subcriterion_id]['evidence'].append(
                         evidence_data
                     )
-                # Subcriterion validity
+                # Subcriterion validity & coverage
+                total_subcriteria = len(list(subcriteria))
+                success_subcriteria = 0
                 for subcriterion_id, subcriterion_data in subcriteria.items():
                     valid = all(evidence['valid']
                         for evidence in subcriterion_data['evidence'])
                     subcriteria[subcriterion_id]['valid'] = valid
+                    if valid:
+                        success_subcriteria += 1
+                percentage_criterion = int(
+                    success_subcriteria * 100 / total_subcriteria
+                )
 
             report_data[criterion_name] = {
                 'valid': all(criterion_valid_list),
-                'subcriteria': subcriteria
+                'subcriteria': subcriteria,
+                'coverage': {
+                    'percentage': percentage_criterion,
+                    'total_subcriteria': total_subcriteria,
+                    'success_subcriteria': success_subcriteria
+                }
             }
 
         # Append filtered-out criteria
@@ -1307,11 +1360,6 @@ async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Re
         return report_data
 
     def _get_criteria_per_badge_type(report_data):
-        # Criteria prefixes
-        SW_PREFIX = 'QC.'
-        SRV_PREFIX = 'SvcQC'
-        FAIR_PREFIX = 'QC.Fair'
-
         criteria_fulfilled_list = [
             criterion
             for criterion, criterion_data in report_data.items()
@@ -1376,8 +1424,13 @@ async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Re
             logger.error(_reason)
             return web.Response(status=422, reason=_reason, text=_reason)
         # Get Badgr's badgeclass and proceed with badge issuance
+        missing_criteria_all = [] # required_for_next_level flag
         for badge_type, criteria_fulfilled_list in criteria_fulfilled_map.items():
-            badgeclass_name, criteria_summary = await _badgeclass_matchmaking(
+            (
+                badgeclass_name,
+                badge_category,
+                criteria_summary
+            ) = await _badgeclass_matchmaking(
                 pipeline_id, badge_type, criteria_fulfilled_list
             )
             # Generate criteria summary
@@ -1415,11 +1468,50 @@ async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Re
                     badge_data[badge_type]['verification_url'] = (
                         'https://badgecheck.io/?url=%s' % embed_url
                     )
+                
+            next_level_badge = await _get_next_level_badge(badge_category)
+            if next_level_badge:
+                missing_criteria_all.extend(
+                    criteria_summary[next_level_badge]['missing']
+                )
+
         # Store badge data in DB
         db.add_badge_data(pipeline_id, badge_data)
 
+        # Subcriterion required_for_next_level
+        report_data_copy = copy.deepcopy(report_data)
+        for criterion, criterion_data in report_data.items():
+            _subcriteria = criterion_data['subcriteria']
+            if _subcriteria:
+                for subcriterion, subcriterion_data in _subcriteria.items():
+                    _valid = subcriterion_data['valid']
+                    if not _valid:
+                        try:
+                            _criterion = re.search(
+                                rf"(^({SW_PREFIX}|{SRV_PREFIX})\.[A-Za-z]+)",
+                                subcriterion
+                            ).group(0)
+                        except AttributeError:
+                            logger.error((
+                                'Could not extract criterion string from '
+                                'subcriterion string: %s. Could not check '
+                                'whether the subcriterion is required for '
+                                'the next-level badge' % subcriterion
+                            ))
+                        else:
+                            _required_for_next_level = False
+                            if _criterion in missing_criteria_all:
+                                _required_for_next_level = True
+
+                            (report_data_copy[criterion]
+                                             ['subcriteria']
+                                             [subcriterion]
+                                             ['required_for_next_level_badge']
+                            ) = _required_for_next_level
+
     r = {
-        'report': report_data,
+        'repository': [pipeline_data.get('repo_settings', {})],
+        'report': report_data_copy,
         'badge': badge_data
     }
     return web.json_response(r, status=200)
@@ -1579,6 +1671,21 @@ async def get_compressed_files(request: web.Request, pipeline_id) -> web.Respons
     return response
 
 
+# FIXME Badge categories must not be hardcoded here
+async def _get_next_level_badge(badge_category):
+    next_level_badge = None
+    if badge_category:
+        list_item_no = BADGE_CATEGORIES.index(badge_category)
+        try:
+            next_level_badge = BADGE_CATEGORIES[list_item_no + 1]
+        except IndexError:
+            logger.debug('Already achieved highest badge class level')
+    else:
+        next_level_badge = BADGE_CATEGORIES[0]
+
+    return next_level_badge
+
+
 async def _badgeclass_matchmaking(pipeline_id, badge_type, criteria_fulfilled_list):
     """Does the matchmaking to obtain the badgeclass to be awarded (if any).
 
@@ -1590,8 +1697,9 @@ async def _badgeclass_matchmaking(pipeline_id, badge_type, criteria_fulfilled_li
     :type criteria_fulfilled_list: list
     """
     badge_awarded_badgeclass_name = None
+    badge_awarded_category = None
     criteria_summary = {}
-    for badge_category in ['bronze', 'silver', 'gold']:
+    for badge_category in BADGE_CATEGORIES:
         logger.debug('Matching given criteria against defined %s criteria for %s' % (
             badge_category.upper(), badge_type.upper())
         )
@@ -1621,11 +1729,16 @@ async def _badgeclass_matchmaking(pipeline_id, badge_type, criteria_fulfilled_li
                 pipeline_id, badge_category.upper())
             )
             badge_awarded_badgeclass_name = badgeclass_name
+            badge_awarded_category = badge_category
 
     if badge_awarded_badgeclass_name:
         logger.debug('Badgeclass to use for badge issuance: %s' % badge_awarded_badgeclass_name)
 
-    return badge_awarded_badgeclass_name, criteria_summary
+    return (
+        badge_awarded_badgeclass_name,
+        badge_awarded_category,
+        criteria_summary
+    )
 
 
 async def _issue_badge(pipeline_id, badgeclass_name):
@@ -1846,7 +1959,7 @@ async def _sort_tooling_by_criteria(tooling_metadata_json, criteria_id_list=[]):
                 tooling_data_qaa = await _get_criterion_tooling(
                     criterion, tooling_metadata_json, tools_qaa_specific=True)
                 criterion_data[TOOLING_QAA_SPECIFIC_KEY] = tooling_data_qaa
-            
+
             criteria_data_list.append(criterion_data)
     except SQAaaSAPIException as e:
         return web.Response(status=e.http_code, reason=e.message, text=e.message)

@@ -87,7 +87,7 @@ paths:
               example:
                 id: dd7d8481-81a3-407f-95f0-a2f1cb382a4b
               schema:
-                $ref: '#/components/schemas/inline_response_201'
+                $ref: '#/components/schemas/add_pipeline_201_response'
           description: Created
           links:
             get_pipeline_by_pipeline_id:
@@ -131,7 +131,7 @@ paths:
               example:
                 id: dd7d8481-81a3-407f-95f0-a2f1cb382a4b
               schema:
-                $ref: '#/components/schemas/inline_response_201'
+                $ref: '#/components/schemas/add_pipeline_201_response'
           description: Created
           links:
             get_pipeline_by_pipeline_id:
@@ -350,7 +350,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_200_2'
+                $ref: '#/components/schemas/get_pipeline_composer_jepl_200_response'
           description: Successful operation
         "400":
           description: Invalid pipeline ID supplied
@@ -435,7 +435,7 @@ paths:
             application/json:
               schema:
                 items:
-                  $ref: '#/components/schemas/inline_response_200'
+                  $ref: '#/components/schemas/get_pipeline_config_jepl_200_response_inner'
                 type: array
           description: Successful operation
         "400":
@@ -464,7 +464,7 @@ paths:
             application/json:
               schema:
                 items:
-                  $ref: '#/components/schemas/inline_response_200_1'
+                  $ref: '#/components/schemas/get_pipeline_commands_scripts_200_response_inner'
                 type: array
           description: Successful operation
         "400":
@@ -521,7 +521,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_200_3'
+                $ref: '#/components/schemas/get_pipeline_jenkinsfile_jepl_200_response'
           description: Successful operation
         "400":
           description: Invalid pipeline ID supplied
@@ -583,25 +583,10 @@ paths:
           type: string
         style: simple
       requestBody:
-        $ref: '#/components/requestBodies/inline_object'
         content:
           application/json:
             schema:
-              properties:
-                repo:
-                  description: URL of the upstream repo
-                  format: uri
-                  title: repo
-                  type: string
-                branch:
-                  description: Brach from the upstream repo used as the base for the
-                    pull request
-                  title: branch
-                  type: string
-              required:
-              - repo
-              title: inline_object
-              type: object
+              $ref: '#/components/schemas/create_pull_request_request'
         required: true
         x-body-name: body
       responses:
@@ -611,7 +596,7 @@ paths:
               example:
                 pull_request_url: https://github.com/eosc-synergy/sqaaas-api-spec/pull/23
               schema:
-                $ref: '#/components/schemas/inline_response_200_5'
+                $ref: '#/components/schemas/create_pull_request_200_response'
           description: Successful operation
         "400":
           description: Invalid pipeline ID supplied
@@ -714,7 +699,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/inline_response_200_4'
+                $ref: '#/components/schemas/get_pipeline_status_200_response'
           description: Successful operation
         "400":
           description: Invalid pipeline ID supplied
@@ -733,13 +718,6 @@ paths:
       summary: Get pipeline status.
       x-openapi-router-controller: openapi_server.controllers.default_controller
 components:
-  requestBodies:
-    inline_object:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/inline_object'
-      required: true
   responses:
     BadGateway:
       content:
@@ -845,9 +823,10 @@ components:
           value: detect
           option: option
         docs: https://openapi-generator.tech
-        name: name
-        lang: lang
+        name: flake8
+        lang: Python
         jepl_support: true
+        version: 4.0.1
         executable: executable
         docker:
           image: image
@@ -856,10 +835,19 @@ components:
           oneshot: true
       properties:
         name:
+          description: Name of the tool
+          example: flake8
           title: name
           type: string
         lang:
+          description: Language that the tool is aligned with
+          example: Python
           title: lang
+          type: string
+        version:
+          description: Version of the tool
+          example: 4.0.1
+          title: version
           type: string
         jepl_support:
           title: jepl_support
@@ -918,9 +906,10 @@ components:
             value: detect
             option: option
           docs: https://openapi-generator.tech
-          name: name
-          lang: lang
+          name: flake8
+          lang: Python
           jepl_support: true
+          version: 4.0.1
           executable: executable
           docker:
             image: image
@@ -951,9 +940,10 @@ components:
             value: detect
             option: option
           docs: https://openapi-generator.tech
-          name: name
-          lang: lang
+          name: flake8
+          lang: Python
           jepl_support: true
+          version: 4.0.1
           executable: executable
           docker:
             image: image
@@ -1094,7 +1084,7 @@ components:
       type: boolean
     CriterionBuild:
       additionalProperties:
-        $ref: '#/components/schemas/CriterionBuild_addl_props'
+        $ref: '#/components/schemas/CriterionBuild_value'
       description: Definition of software and service criteria to be run by the pipeline
       title: sqa_criteria
       type: object
@@ -1149,9 +1139,10 @@ components:
                   value: detect
                   option: option
                 docs: https://openapi-generator.tech
-                name: name
-                lang: lang
+                name: flake8
+                lang: Python
                 jepl_support: true
+                version: 4.0.1
                 executable: executable
                 docker:
                   image: image
@@ -1191,9 +1182,10 @@ components:
                   value: detect
                   option: option
                 docs: https://openapi-generator.tech
-                name: name
-                lang: lang
+                name: flake8
+                lang: Python
                 jepl_support: true
+                version: 4.0.1
                 executable: executable
                 docker:
                   image: image
@@ -1226,7 +1218,7 @@ components:
           $ref: '#/components/schemas/JePL_config_config'
         sqa_criteria:
           additionalProperties:
-            $ref: '#/components/schemas/CriterionBuild_addl_props'
+            $ref: '#/components/schemas/CriterionBuild_value'
           description: Definition of software and service criteria to be run by the
             pipeline
           title: sqa_criteria
@@ -1249,7 +1241,7 @@ components:
       type: object
     ServiceDockerCompose:
       additionalProperties:
-        $ref: '#/components/schemas/ServiceDockerCompose_addl_props'
+        $ref: '#/components/schemas/ServiceDockerCompose_value'
       title: services
       type: object
     JePL_composer:
@@ -1289,7 +1281,7 @@ components:
           type: string
         services:
           additionalProperties:
-            $ref: '#/components/schemas/ServiceDockerCompose_addl_props'
+            $ref: '#/components/schemas/ServiceDockerCompose_value'
           title: services
           type: object
       title: JePL_composer
@@ -1368,9 +1360,10 @@ components:
                     value: detect
                     option: option
                   docs: https://openapi-generator.tech
-                  name: name
-                  lang: lang
+                  name: flake8
+                  lang: Python
                   jepl_support: true
+                  version: 4.0.1
                   executable: executable
                   docker:
                     image: image
@@ -1410,9 +1403,10 @@ components:
                     value: detect
                     option: option
                   docs: https://openapi-generator.tech
-                  name: name
-                  lang: lang
+                  name: flake8
+                  lang: Python
                   jepl_support: true
+                  version: 4.0.1
                   executable: executable
                   docker:
                     image: image
@@ -1479,9 +1473,10 @@ components:
                     value: detect
                     option: option
                   docs: https://openapi-generator.tech
-                  name: name
-                  lang: lang
+                  name: flake8
+                  lang: Python
                   jepl_support: true
+                  version: 4.0.1
                   executable: executable
                   docker:
                     image: image
@@ -1521,9 +1516,10 @@ components:
                     value: detect
                     option: option
                   docs: https://openapi-generator.tech
-                  name: name
-                  lang: lang
+                  name: flake8
+                  lang: Python
                   jepl_support: true
+                  version: 4.0.1
                   executable: executable
                   docker:
                     image: image
@@ -1627,15 +1623,108 @@ components:
           $ref: '#/components/schemas/JePL_jenkinsfile'
       title: Pipeline
       type: object
+    AssessmentDeployment:
+      properties:
+        repo_deploy:
+          $ref: '#/components/schemas/Repository'
+        deploy_tool:
+          $ref: '#/components/schemas/Tool'
+      title: AssessmentDeployment
+      type: object
     Pipeline_assessment:
       properties:
         repo_code:
           $ref: '#/components/schemas/Repository'
         repo_docs:
           $ref: '#/components/schemas/Repository'
+        deployment:
+          $ref: '#/components/schemas/AssessmentDeployment'
       required:
       - repo_code
       title: Pipeline_assessment
+      type: object
+    AssessmentOutputRepository:
+      example:
+        avatar_url: https://avatars.githubusercontent.com/u/57723286?v=4
+        languages:
+        - Shell
+        - Shell
+        stargazers_count: 2
+        contributors_count: 2
+        topics:
+        - openapi
+        - sqaaas
+        name: sqaaas-api-spec
+        description: OpenAPI specification for the SQA as a Service
+        tag: 2.5.0
+        watchers_count: 2
+        url: https://github.com/eosc-synergy/sqaaas-api-spec
+        forks_count: 2
+      properties:
+        name:
+          description: (nick) Name of the repository
+          example: sqaaas-api-spec
+          title: name
+          type: string
+        url:
+          description: URL of the repository
+          example: https://github.com/eosc-synergy/sqaaas-api-spec
+          format: uri
+          title: url
+          type: string
+        avatar_url:
+          description: Avatar URL for the repository
+          example: https://avatars.githubusercontent.com/u/57723286?v=4
+          format: uri
+          title: avatar_url
+          type: string
+        description:
+          description: One-liner containing the repository's purpose
+          example: OpenAPI specification for the SQA as a Service
+          title: description
+          type: string
+        languages:
+          description: Programming language used
+          items:
+            example: Shell
+            type: string
+          title: languages
+          type: array
+        tag:
+          description: Git tag that corresponds to the current version
+          example: 2.5.0
+          title: tag
+          type: string
+        topics:
+          description: Labels that characterize the repository
+          example:
+          - openapi
+          - sqaaas
+          items:
+            type: string
+          title: topics
+          type: array
+        stargazers_count:
+          description: (GitHub only) Number of stars
+          example: 2
+          title: stargazers_count
+          type: number
+        watchers_count:
+          description: (GitHub only) Number of watchers
+          example: 2
+          title: watchers_count
+          type: number
+        contributors_count:
+          description: (GitHub only) Number of contributors
+          example: 2
+          title: contributors_count
+          type: number
+        forks_count:
+          description: (GitHub only) Number of forks
+          example: 2
+          title: forks_count
+          type: number
+      title: AssessmentOutputRepository
       type: object
     AssessmentOutputToolCI:
       description: Details of the CI build where the tool was executed
@@ -1688,13 +1777,32 @@ components:
           stdout_text: stdout_text
           url: https://openapi-generator.tech
           status: SUCCESS
-        name: licensee
+        name: flake8
+        lang: Python
+        version: 4.0.1
+        docker:
+          image: image
+          dockerfile: dockerfile
+          reviewed: 2000-01-23
+          oneshot: true
       properties:
         name:
           description: Name of the tool
-          example: licensee
+          example: flake8
           title: name
           type: string
+        lang:
+          description: Language that the tool is aligned with
+          example: Python
+          title: lang
+          type: string
+        version:
+          description: Version of the tool
+          example: 4.0.1
+          title: version
+          type: string
+        docker:
+          $ref: '#/components/schemas/Tool_docker'
         ci:
           $ref: '#/components/schemas/AssessmentOutputToolCI'
         level:
@@ -1757,7 +1865,14 @@ components:
             stdout_text: stdout_text
             url: https://openapi-generator.tech
             status: SUCCESS
-          name: licensee
+          name: flake8
+          lang: Python
+          version: 4.0.1
+          docker:
+            image: image
+            dockerfile: dockerfile
+            reviewed: 2000-01-23
+            oneshot: true
       properties:
         valid:
           description: Validity of the subcriterion according to the tool
@@ -1806,7 +1921,14 @@ components:
               stdout_text: stdout_text
               url: https://openapi-generator.tech
               status: SUCCESS
-            name: licensee
+            name: flake8
+            lang: Python
+            version: 4.0.1
+            docker:
+              image: image
+              dockerfile: dockerfile
+              reviewed: 2000-01-23
+              oneshot: true
         - valid: true
           standard:
             title: A set of Common Software Quality Assurance Baseline Criteria for
@@ -1828,8 +1950,16 @@ components:
               stdout_text: stdout_text
               url: https://openapi-generator.tech
               status: SUCCESS
-            name: licensee
+            name: flake8
+            lang: Python
+            version: 4.0.1
+            docker:
+              image: image
+              dockerfile: dockerfile
+              reviewed: 2000-01-23
+              oneshot: true
         description: All code repositories MUST have a README file
+        required_for_next_level_badge: true
       properties:
         description:
           description: Short statement about the goal of the given subcriterion
@@ -1846,7 +1976,50 @@ components:
             $ref: '#/components/schemas/AssessmentOutputValidator'
           title: evidence
           type: array
+        required_for_next_level_badge:
+          description: Whether current subcriterion is required for the next level
+            of badging
+          title: required_for_next_level_badge
+          type: boolean
       title: AssessmentOutputSubcriteria
+      type: object
+    BadgeCriteriaStats:
+      description: Identifier of the badge class (e.g. bronze)
+      example:
+        missing:
+        - missing
+        - missing
+        fulfilled:
+        - fulfilled
+        - fulfilled
+        to_fulfill:
+        - criterion_id
+        - criterion_id
+      properties:
+        to_fulfill:
+          default: []
+          description: List of criteria codes to be fulfilled for the given badge
+            class
+          items:
+            example: criterion_id
+            type: string
+          title: to_fulfill
+          type: array
+        missing:
+          default: []
+          description: List of missing criteria codes for the badge class to be granted
+          items:
+            type: string
+          title: missing
+          type: array
+        fulfilled:
+          default: []
+          description: List of fulfilled criteria codes for the given badge class
+          items:
+            type: string
+          title: fulfilled
+          type: array
+      title: BadgeCriteriaStats
       type: object
     BadgeAssertion:
       description: Badge data as obtained from Open Badge's Badgr implementation
@@ -1915,9 +2088,25 @@ components:
           badgeClass: sBS3EsJQRAC0ENTmvETtQw
           issuer: aS1lWKgIR4u8bGjPZUzAyg
           issuedOn: 2021-04-07T10:07:00Z
+        criteria:
+          key:
+            missing:
+            - missing
+            - missing
+            fulfilled:
+            - fulfilled
+            - fulfilled
+            to_fulfill:
+            - criterion_id
+            - criterion_id
         share: <html>..</html>
         verification_url: https://openapi-generator.tech
       properties:
+        criteria:
+          additionalProperties:
+            $ref: '#/components/schemas/BadgeCriteriaStats'
+          title: criteria
+          type: object
         data:
           $ref: '#/components/schemas/BadgeAssertion'
         share:
@@ -1949,6 +2138,17 @@ components:
               badgeClass: sBS3EsJQRAC0ENTmvETtQw
               issuer: aS1lWKgIR4u8bGjPZUzAyg
               issuedOn: 2021-04-07T10:07:00Z
+            criteria:
+              key:
+                missing:
+                - missing
+                - missing
+                fulfilled:
+                - fulfilled
+                - fulfilled
+                to_fulfill:
+                - criterion_id
+                - criterion_id
             share: <html>..</html>
             verification_url: https://openapi-generator.tech
           services:
@@ -1965,6 +2165,17 @@ components:
               badgeClass: sBS3EsJQRAC0ENTmvETtQw
               issuer: aS1lWKgIR4u8bGjPZUzAyg
               issuedOn: 2021-04-07T10:07:00Z
+            criteria:
+              key:
+                missing:
+                - missing
+                - missing
+                fulfilled:
+                - fulfilled
+                - fulfilled
+                to_fulfill:
+                - criterion_id
+                - criterion_id
             share: <html>..</html>
             verification_url: https://openapi-generator.tech
           fair:
@@ -1981,11 +2192,26 @@ components:
               badgeClass: sBS3EsJQRAC0ENTmvETtQw
               issuer: aS1lWKgIR4u8bGjPZUzAyg
               issuedOn: 2021-04-07T10:07:00Z
+            criteria:
+              key:
+                missing:
+                - missing
+                - missing
+                fulfilled:
+                - fulfilled
+                - fulfilled
+                to_fulfill:
+                - criterion_id
+                - criterion_id
             share: <html>..</html>
             verification_url: https://openapi-generator.tech
         report:
           key:
             valid: false
+            coverage:
+              percentage: 60
+              success_subcriteria: 0
+              total_subcriteria: 5
             subcriteria:
               key:
                 valid: true
@@ -2011,7 +2237,14 @@ components:
                       stdout_text: stdout_text
                       url: https://openapi-generator.tech
                       status: SUCCESS
-                    name: licensee
+                    name: flake8
+                    lang: Python
+                    version: 4.0.1
+                    docker:
+                      image: image
+                      dockerfile: dockerfile
+                      reviewed: 2000-01-23
+                      oneshot: true
                 - valid: true
                   standard:
                     title: A set of Common Software Quality Assurance Baseline Criteria
@@ -2033,15 +2266,59 @@ components:
                       stdout_text: stdout_text
                       url: https://openapi-generator.tech
                       status: SUCCESS
-                    name: licensee
+                    name: flake8
+                    lang: Python
+                    version: 4.0.1
+                    docker:
+                      image: image
+                      dockerfile: dockerfile
+                      reviewed: 2000-01-23
+                      oneshot: true
                 description: All code repositories MUST have a README file
+                required_for_next_level_badge: true
             filtered_reason:
             - filtered_reason
             - filtered_reason
+        repository:
+        - avatar_url: https://avatars.githubusercontent.com/u/57723286?v=4
+          languages:
+          - Shell
+          - Shell
+          stargazers_count: 2
+          contributors_count: 2
+          topics:
+          - openapi
+          - sqaaas
+          name: sqaaas-api-spec
+          description: OpenAPI specification for the SQA as a Service
+          tag: 2.5.0
+          watchers_count: 2
+          url: https://github.com/eosc-synergy/sqaaas-api-spec
+          forks_count: 2
+        - avatar_url: https://avatars.githubusercontent.com/u/57723286?v=4
+          languages:
+          - Shell
+          - Shell
+          stargazers_count: 2
+          contributors_count: 2
+          topics:
+          - openapi
+          - sqaaas
+          name: sqaaas-api-spec
+          description: OpenAPI specification for the SQA as a Service
+          tag: 2.5.0
+          watchers_count: 2
+          url: https://github.com/eosc-synergy/sqaaas-api-spec
+          forks_count: 2
       properties:
+        repository:
+          items:
+            $ref: '#/components/schemas/AssessmentOutputRepository'
+          title: repository
+          type: array
         report:
           additionalProperties:
-            $ref: '#/components/schemas/AssessmentOutput_report_addl_props'
+            $ref: '#/components/schemas/AssessmentOutput_report_value'
           title: report
           type: object
         badge:
@@ -2064,7 +2341,7 @@ components:
     CriterionOutput:
       additionalProperties:
         items:
-          $ref: '#/components/schemas/CriterionOutput_addl_props_inner'
+          $ref: '#/components/schemas/CriterionOutput_value_inner'
         type: array
       example:
         QC.Lic:
@@ -2078,7 +2355,7 @@ components:
             valid: true
             data_unstructured: {}
       type: object
-    inline_response_201:
+    add_pipeline_201_response:
       example:
         id: id
       properties:
@@ -2086,9 +2363,9 @@ components:
           description: UUID identifying the pipeline
           title: id
           type: string
-      title: inline_response_201
+      title: add_pipeline_201_response
       type: object
-    inline_response_200:
+    get_pipeline_config_jepl_200_response_inner:
       example:
         file_name: "{\"file_name\":\"config.yml\"}"
         content:
@@ -2127,9 +2404,10 @@ components:
                   value: detect
                   option: option
                 docs: https://openapi-generator.tech
-                name: name
-                lang: lang
+                name: flake8
+                lang: Python
                 jepl_support: true
+                version: 4.0.1
                 executable: executable
                 docker:
                   image: image
@@ -2169,9 +2447,10 @@ components:
                   value: detect
                   option: option
                 docs: https://openapi-generator.tech
-                name: name
-                lang: lang
+                name: flake8
+                lang: Python
                 jepl_support: true
+                version: 4.0.1
                 executable: executable
                 docker:
                   image: image
@@ -2190,14 +2469,14 @@ components:
           type: string
         content:
           additionalProperties:
-            $ref: '#/components/schemas/CriterionBuild_addl_props'
+            $ref: '#/components/schemas/CriterionBuild_value'
           description: Definition of software and service criteria to be run by the
             pipeline
           title: sqa_criteria
           type: object
-      title: inline_response_200
+      title: get_pipeline_config_jepl_200_response_inner
       type: object
-    inline_response_200_1:
+    get_pipeline_commands_scripts_200_response_inner:
       example:
         file_name: script.sh
         content: |-
@@ -2216,9 +2495,9 @@ components:
             )
           title: content
           type: string
-      title: inline_response_200_1
+      title: get_pipeline_commands_scripts_200_response_inner
       type: object
-    inline_response_200_2:
+    get_pipeline_composer_jepl_200_response:
       example:
         file_name: "{\"file_name\":\"docker-compose.yml\"}"
         content:
@@ -2255,38 +2534,39 @@ components:
           type: string
         content:
           $ref: '#/components/schemas/JePL_composer'
-      title: inline_response_200_2
+      title: get_pipeline_composer_jepl_200_response
       type: object
-    inline_response_200_3:
-      example: "{\"file_name\":\"Jenkinsfile\",\"content\":\"@Library(['github.com/indigo-dc/jenkins-pipeline-library@release/2.1.0'])\
-        \ _\\n\\ndef projectConfig\\n\\npipeline {\\n    agent any\\n\\n    stages\
-        \ {\\n        stage('SQA baseline criterion: QC.Sty') {\\n            when\
-        \ {\\n                branch pattern: 'sqaaas', comparator: ''\\n        \
-        \    }\\n            steps {\\n                script {\\n               \
-        \     projectConfig = pipelineConfig(\\n                        configFile:\
-        \ '.sqa/config.yml',\\n                        scmConfigs: [ localBranch:\
-        \ true ]\\n                    )\\n                    buildStages(projectConfig)\\\
-        n                }\\n            }\\n            post {\\n               \
-        \ cleanup {\\n                    cleanWs()\\n                }\\n       \
-        \     }\\n        }\\n        stage('SQA baseline criterion: QC.Doc') {\\\
-        n            when {\\n                branch pattern: 'build', comparator:\
-        \ ''\\n            }\\n            steps {\\n                script {\\n \
-        \                   projectConfig = pipelineConfig(\\n                   \
-        \     configFile: '.sqa/config.snappy-peach-chicken.yml',\\n             \
-        \           scmConfigs: [ localBranch: true ]\\n                    )\\n \
-        \                   buildStages(projectConfig)\\n                }\\n    \
-        \        }\\n            post {\\n                cleanup {\\n           \
-        \         cleanWs()\\n                }\\n            }\\n        }\\n   \
-        \ }\\n}\"}"
+    get_pipeline_jenkinsfile_jepl_200_response:
+      example:
+        file_name: Jenkinsfile
+        content: "@Library(['github.com/indigo-dc/jenkins-pipeline-library@release/2.1.0'])\
+          \ _\n\ndef projectConfig\n\npipeline {\n    agent any\n\n    stages {\n\
+          \        stage('SQA baseline criterion: QC.Sty') {\n            when {\n\
+          \                branch pattern: 'sqaaas', comparator: ''\n            }\n\
+          \            steps {\n                script {\n                    projectConfig\
+          \ = pipelineConfig(\n                        configFile: '.sqa/config.yml',\n\
+          \                        scmConfigs: [ localBranch: true ]\n           \
+          \         )\n                    buildStages(projectConfig)\n          \
+          \      }\n            }\n            post {\n                cleanup {\n\
+          \                    cleanWs()\n                }\n            }\n     \
+          \   }\n        stage('SQA baseline criterion: QC.Doc') {\n            when\
+          \ {\n                branch pattern: 'build', comparator: ''\n         \
+          \   }\n            steps {\n                script {\n                 \
+          \   projectConfig = pipelineConfig(\n                        configFile:\
+          \ '.sqa/config.snappy-peach-chicken.yml',\n                        scmConfigs:\
+          \ [ localBranch: true ]\n                    )\n                    buildStages(projectConfig)\n\
+          \                }\n            }\n            post {\n                cleanup\
+          \ {\n                    cleanWs()\n                }\n            }\n \
+          \       }\n    }\n}"
       properties:
         file_name:
           example: "{\"file_name\":\"Jenkinsfile\"}"
           type: string
         content:
           type: string
-      title: inline_response_200_3
+      title: get_pipeline_jenkinsfile_jepl_200_response
       type: object
-    inline_response_200_4:
+    get_pipeline_status_200_response:
       example:
         openbadge_id: https://openapi-generator.tech
         build_status: success
@@ -2310,9 +2590,9 @@ components:
           format: uri
           title: openbadge_id
           type: string
-      title: inline_response_200_4
+      title: get_pipeline_status_200_response
       type: object
-    inline_object:
+    create_pull_request_request:
       properties:
         repo:
           description: URL of the upstream repo
@@ -2326,9 +2606,9 @@ components:
           type: string
       required:
       - repo
-      title: inline_object
+      title: create_pull_request_request
       type: object
-    inline_response_200_5:
+    create_pull_request_200_response:
       example:
         pull_request_url: https://openapi-generator.tech
       properties:
@@ -2336,7 +2616,7 @@ components:
           format: uri
           title: pull_request_url
           type: string
-      title: inline_response_200_5
+      title: create_pull_request_200_response
       type: object
     Tool_docker:
       example:
@@ -2384,7 +2664,7 @@ components:
           type: string
       title: Criterion_description
       type: object
-    CriterionBuild_addl_props_repos_inner:
+    CriterionBuild_value_repos_inner:
       additionalProperties: false
       example:
         container: testing
@@ -2420,9 +2700,10 @@ components:
             value: detect
             option: option
           docs: https://openapi-generator.tech
-          name: name
-          lang: lang
+          name: flake8
+          lang: Python
           jepl_support: true
+          version: 4.0.1
           executable: executable
           docker:
             image: image
@@ -2455,9 +2736,9 @@ components:
           $ref: '#/components/schemas/Tox_simplified'
         tool:
           $ref: '#/components/schemas/Tool'
-      title: CriterionBuild_addl_props_repos_inner
+      title: CriterionBuild_value_repos_inner
       type: object
-    CriterionBuild_addl_props_when:
+    CriterionBuild_value_when:
       additionalProperties: false
       description: "Requirements that should take into account to execute the pipeline,\
         \ such as branch/tags names"
@@ -2472,9 +2753,9 @@ components:
         building_tag:
           title: When_building_tag
           type: boolean
-      title: CriterionBuild_addl_props_when
+      title: CriterionBuild_value_when
       type: object
-    CriterionBuild_addl_props:
+    CriterionBuild_value:
       description: ID of the criterion
       example:
         repos:
@@ -2511,9 +2792,10 @@ components:
               value: detect
               option: option
             docs: https://openapi-generator.tech
-            name: name
-            lang: lang
+            name: flake8
+            lang: Python
             jepl_support: true
+            version: 4.0.1
             executable: executable
             docker:
               image: image
@@ -2553,9 +2835,10 @@ components:
               value: detect
               option: option
             docs: https://openapi-generator.tech
-            name: name
-            lang: lang
+            name: flake8
+            lang: Python
             jepl_support: true
+            version: 4.0.1
             executable: executable
             docker:
               image: image
@@ -2573,14 +2856,14 @@ components:
           description: List of repositories (from config:project_repos) for which
             the given criterion will be checked
           items:
-            $ref: '#/components/schemas/CriterionBuild_addl_props_repos_inner'
+            $ref: '#/components/schemas/CriterionBuild_value_repos_inner'
           title: repos
           type: array
         when:
-          $ref: '#/components/schemas/CriterionBuild_addl_props_when'
+          $ref: '#/components/schemas/CriterionBuild_value_when'
       required:
       - repos
-      title: CriterionBuild_addl_props
+      title: CriterionBuild_value
       type: object
     JePL_config_config:
       description: JePL's main configuration
@@ -2616,7 +2899,7 @@ components:
           type: array
       title: JePL_config_config
       type: object
-    ServiceDockerCompose_addl_props_build:
+    ServiceDockerCompose_value_build:
       example:
         args:
           key: args
@@ -2636,9 +2919,9 @@ components:
             type: string
           title: args
           type: object
-      title: ServiceDockerCompose_addl_props_build
+      title: ServiceDockerCompose_value_build
       type: object
-    ServiceDockerCompose_addl_props_image_registry:
+    ServiceDockerCompose_value_image_registry:
       example:
         push: true
         credential_id: my-dockerhub-cred
@@ -2650,9 +2933,9 @@ components:
           example: my-dockerhub-cred
           title: credential_id
           type: string
-      title: ServiceDockerCompose_addl_props_image_registry
+      title: ServiceDockerCompose_value_image_registry
       type: object
-    ServiceDockerCompose_addl_props_image:
+    ServiceDockerCompose_value_image:
       example:
         registry:
           push: true
@@ -2664,12 +2947,12 @@ components:
           title: name
           type: string
         registry:
-          $ref: '#/components/schemas/ServiceDockerCompose_addl_props_image_registry'
+          $ref: '#/components/schemas/ServiceDockerCompose_value_image_registry'
       required:
       - name
-      title: ServiceDockerCompose_addl_props_image
+      title: ServiceDockerCompose_value_image
       type: object
-    ServiceDockerCompose_addl_props_volumes_inner:
+    ServiceDockerCompose_value_volumes_inner:
       example:
         source: ./
         type: bind
@@ -2688,9 +2971,9 @@ components:
           example: ./sqaaas-build
           title: target
           type: string
-      title: ServiceDockerCompose_addl_props_volumes_inner
+      title: ServiceDockerCompose_value_volumes_inner
       type: object
-    ServiceDockerCompose_addl_props:
+    ServiceDockerCompose_value:
       example:
         image:
           registry:
@@ -2717,16 +3000,16 @@ components:
         command: sleep 600000
       properties:
         build:
-          $ref: '#/components/schemas/ServiceDockerCompose_addl_props_build'
+          $ref: '#/components/schemas/ServiceDockerCompose_value_build'
         image:
-          $ref: '#/components/schemas/ServiceDockerCompose_addl_props_image'
+          $ref: '#/components/schemas/ServiceDockerCompose_value_image'
         hostname:
           example: sqaaas-host
           title: hostname
           type: string
         volumes:
           items:
-            $ref: '#/components/schemas/ServiceDockerCompose_addl_props_volumes_inner'
+            $ref: '#/components/schemas/ServiceDockerCompose_value_volumes_inner'
           title: volumes
           type: array
         command:
@@ -2746,9 +3029,9 @@ components:
           default: true
           title: oneshot
           type: boolean
-      title: ServiceDockerCompose_addl_props
+      title: ServiceDockerCompose_value
       type: object
-    JePL_jenkinsfile_stagesItems_when:
+    JePL_jenkinsfile_stages_inner_when:
       example:
         branches:
         - master
@@ -2760,9 +3043,9 @@ components:
             type: string
           title: branches
           type: array
-      title: JePL_jenkinsfile_stagesItems_when
+      title: JePL_jenkinsfile_stages_inner_when
       type: object
-    JePL_jenkinsfile_stagesItems_pipeline_config:
+    JePL_jenkinsfile_stages_inner_pipeline_config:
       example:
         credentials_id: userpass_dockerhub
         base_branch: https://github.com/eosc-synergy/sqaaas-api-spec
@@ -2790,7 +3073,7 @@ components:
           example: eoscsynergy/jpl-validator:1.1.0
           title: jepl_validator_docker_image
           type: string
-      title: JePL_jenkinsfile_stagesItems_pipeline_config
+      title: JePL_jenkinsfile_stages_inner_pipeline_config
       type: object
     JePL_jenkinsfile_stages_inner:
       example:
@@ -2806,9 +3089,9 @@ components:
           - master
       properties:
         when:
-          $ref: '#/components/schemas/JePL_jenkinsfile_stagesItems_when'
+          $ref: '#/components/schemas/JePL_jenkinsfile_stages_inner_when'
         pipeline_config:
-          $ref: '#/components/schemas/JePL_jenkinsfile_stagesItems_pipeline_config'
+          $ref: '#/components/schemas/JePL_jenkinsfile_stages_inner_pipeline_config'
       title: JePL_jenkinsfile_stages_inner
       type: object
     AssessmentOutputValidator_plugin:
@@ -2857,10 +3140,37 @@ components:
           type: string
       title: BadgeAssertion_recipient
       type: object
-    AssessmentOutput_report_addl_props:
+    AssessmentOutput_report_value_coverage:
+      example:
+        percentage: 60
+        success_subcriteria: 0
+        total_subcriteria: 5
+      properties:
+        percentage:
+          description: Overall percentage of criterion coverage
+          example: 60
+          title: percentage
+          type: number
+        total_subcriteria:
+          description: Number of total subcriteria assessed for the criterion
+          example: 5
+          title: total_subcriteria
+          type: integer
+        success_subcriteria:
+          description: Number of subcriteria evaluates as success
+          example: 0
+          title: success_subcriteria
+          type: integer
+      title: AssessmentOutput_report_value_coverage
+      type: object
+    AssessmentOutput_report_value:
       description: ID of the criterion
       example:
         valid: false
+        coverage:
+          percentage: 60
+          success_subcriteria: 0
+          total_subcriteria: 5
         subcriteria:
           key:
             valid: true
@@ -2886,7 +3196,14 @@ components:
                   stdout_text: stdout_text
                   url: https://openapi-generator.tech
                   status: SUCCESS
-                name: licensee
+                name: flake8
+                lang: Python
+                version: 4.0.1
+                docker:
+                  image: image
+                  dockerfile: dockerfile
+                  reviewed: 2000-01-23
+                  oneshot: true
             - valid: true
               standard:
                 title: A set of Common Software Quality Assurance Baseline Criteria
@@ -2908,8 +3225,16 @@ components:
                   stdout_text: stdout_text
                   url: https://openapi-generator.tech
                   status: SUCCESS
-                name: licensee
+                name: flake8
+                lang: Python
+                version: 4.0.1
+                docker:
+                  image: image
+                  dockerfile: dockerfile
+                  reviewed: 2000-01-23
+                  oneshot: true
             description: All code repositories MUST have a README file
+            required_for_next_level_badge: true
         filtered_reason:
         - filtered_reason
         - filtered_reason
@@ -2932,7 +3257,9 @@ components:
             $ref: '#/components/schemas/AssessmentOutputSubcriteria'
           title: subcriteria
           type: object
-      title: AssessmentOutput_report_addl_props
+        coverage:
+          $ref: '#/components/schemas/AssessmentOutput_report_value_coverage'
+      title: AssessmentOutput_report_value
       type: object
     AssessmentOutput_badge:
       example:
@@ -2950,6 +3277,17 @@ components:
             badgeClass: sBS3EsJQRAC0ENTmvETtQw
             issuer: aS1lWKgIR4u8bGjPZUzAyg
             issuedOn: 2021-04-07T10:07:00Z
+          criteria:
+            key:
+              missing:
+              - missing
+              - missing
+              fulfilled:
+              - fulfilled
+              - fulfilled
+              to_fulfill:
+              - criterion_id
+              - criterion_id
           share: <html>..</html>
           verification_url: https://openapi-generator.tech
         services:
@@ -2966,6 +3304,17 @@ components:
             badgeClass: sBS3EsJQRAC0ENTmvETtQw
             issuer: aS1lWKgIR4u8bGjPZUzAyg
             issuedOn: 2021-04-07T10:07:00Z
+          criteria:
+            key:
+              missing:
+              - missing
+              - missing
+              fulfilled:
+              - fulfilled
+              - fulfilled
+              to_fulfill:
+              - criterion_id
+              - criterion_id
           share: <html>..</html>
           verification_url: https://openapi-generator.tech
         fair:
@@ -2982,6 +3331,17 @@ components:
             badgeClass: sBS3EsJQRAC0ENTmvETtQw
             issuer: aS1lWKgIR4u8bGjPZUzAyg
             issuedOn: 2021-04-07T10:07:00Z
+          criteria:
+            key:
+              missing:
+              - missing
+              - missing
+              fulfilled:
+              - fulfilled
+              - fulfilled
+              to_fulfill:
+              - criterion_id
+              - criterion_id
           share: <html>..</html>
           verification_url: https://openapi-generator.tech
       properties:
@@ -2993,7 +3353,7 @@ components:
           $ref: '#/components/schemas/Badge'
       title: AssessmentOutput_badge
       type: object
-    CriterionOutput_addl_propsItems_validation:
+    CriterionOutput_value_inner_validation:
       properties:
         valid:
           title: valid
@@ -3001,9 +3361,9 @@ components:
         data_unstructured:
           title: data_unstructured
           type: object
-      title: CriterionOutput_addl_propsItems_validation
+      title: CriterionOutput_value_inner_validation
       type: object
-    CriterionOutput_addl_props_inner:
+    CriterionOutput_value_inner:
       properties:
         status:
           enum:
@@ -3024,6 +3384,6 @@ components:
           title: validator
           type: string
         validation:
-          $ref: '#/components/schemas/CriterionOutput_addl_propsItems_validation'
-      title: CriterionOutput_addl_props_inner
+          $ref: '#/components/schemas/CriterionOutput_value_inner_validation'
+      title: CriterionOutput_value_inner
       type: object

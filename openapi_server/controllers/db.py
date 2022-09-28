@@ -207,6 +207,21 @@ def add_assessment_data(pipeline_id, assessment_data):
     logger.debug('QAA data added in DB for pipeline <%s>: %s' % (pipeline_id, db[pipeline_id]['qaa']))
 
 
+def add_repo_settings(pipeline_id, repo_settings):
+    """Stores the information about the code repository.
+
+    :param pipeline_id: UUID-format identifier for the pipeline.
+    :param repo_settings: Information (metadata) about the code repository.
+    """
+    db = load_content()
+    db[pipeline_id]['repo_settings'] = repo_settings
+    store_content(db)
+    logger.debug((
+        'Repository information (metadata) added in DB for pipeline '
+        '<%s>: %s' % (pipeline_id, db[pipeline_id]['repo_settings'])
+    ))
+
+
 def update_environment(pipeline_id, envvar_data):
     """Updates the config.yml's environment data in the DB for the given pipeline ID.
 

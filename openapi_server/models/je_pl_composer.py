@@ -5,7 +5,7 @@ from datetime import date, datetime
 from typing import List, Dict, Type
 
 from openapi_server.models.base_model_ import Model
-from openapi_server.models.service_docker_compose_addl_props import ServiceDockerComposeAddlProps
+from openapi_server.models.service_docker_compose_value import ServiceDockerComposeValue
 from openapi_server import util
 
 
@@ -15,7 +15,7 @@ class JePLComposer(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, version: str=None, services: Dict[str, ServiceDockerComposeAddlProps]=None):
+    def __init__(self, version: str=None, services: Dict[str, ServiceDockerComposeValue]=None):
         """JePLComposer - a model defined in OpenAPI
 
         :param version: The version of this JePLComposer.
@@ -23,7 +23,7 @@ class JePLComposer(Model):
         """
         self.openapi_types = {
             'version': str,
-            'services': Dict[str, ServiceDockerComposeAddlProps]
+            'services': Dict[str, ServiceDockerComposeValue]
         }
 
         self.attribute_map = {
@@ -70,7 +70,7 @@ class JePLComposer(Model):
 
 
         :return: The services of this JePLComposer.
-        :rtype: Dict[str, ServiceDockerComposeAddlProps]
+        :rtype: Dict[str, ServiceDockerComposeValue]
         """
         return self._services
 
@@ -80,7 +80,7 @@ class JePLComposer(Model):
 
 
         :param services: The services of this JePLComposer.
-        :type services: Dict[str, ServiceDockerComposeAddlProps]
+        :type services: Dict[str, ServiceDockerComposeValue]
         """
 
         self._services = services

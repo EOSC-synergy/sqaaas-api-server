@@ -247,6 +247,16 @@ class GitHubUtils(object):
                 self.logger.debug('Repository <%s> not found!' % repo_name)
         return repo
 
+    def get_owner(self, repo_name):
+        """Gets the user that owns the repo.
+
+        If found, it returns a NamedUser object.
+
+        :param repo_name: Name of the repo (format: <user|org>/<repo_name>)
+        """
+        _owner_name, _repo_name = repo_name.split('/')
+        return self.client.get_user(_owner_name)
+
     def get_org_repository(self, repo_name, org_name='eosc-synergy'):
         """Gets a repository from the given Github organization.
 
@@ -317,3 +327,68 @@ class GitHubUtils(object):
         repo = self.get_org_repository(repo_name)
         self.logger.debug('Getting commit data for SHA <%s>' % commit_id)
         return repo.get_commit(commit_id).html_url
+
+    def get_description(self, repo_name):
+        """Gets the description from a Github repository.
+
+        :param repo_name: Name of the repo to push (format: <user|org>/<repo_name>)
+        """
+        repo = self.get_repository(repo_name)
+        return repo.description
+
+    def get_languages(self, repo_name):
+        """Gets the languages used in a Github repository.
+
+        :param repo_name: Name of the repo to push (format: <user|org>/<repo_name>)
+        """
+        repo = self.get_repository(repo_name)
+        languages = repo.get_languages()
+        return sorted(languages, key=languages.get, reverse=True)
+
+    def get_topics(self, repo_name):
+        """Gets the topic list from a Github repository.
+
+        :param repo_name: Name of the repo to push (format: <user|org>/<repo_name>)
+        """
+        repo = self.get_repository(repo_name)
+        return repo.get_topics()
+
+    def get_stargazers(self, repo_name):
+        """Gets the star count from a Github repository.
+
+        :param repo_name: Name of the repo to push (format: <user|org>/<repo_name>)
+        """
+        repo = self.get_repository(repo_name)
+        return repo.get_stargazers().totalCount
+
+    def get_watchers(self, repo_name):
+        """Gets the watcher count from a Github repository.
+
+        :param repo_name: Name of the repo to push (format: <user|org>/<repo_name>)
+        """
+        repo = self.get_repository(repo_name)
+        return repo.get_watchers().totalCount
+
+    def get_contributors(self, repo_name):
+        """Gets the contributor count from a Github repository.
+
+        :param repo_name: Name of the repo to push (format: <user|org>/<repo_name>)
+        """
+        repo = self.get_repository(repo_name)
+        return repo.get_contributors().totalCount
+
+    def get_forks(self, repo_name):
+        """Gets the fork count from a Github repository.
+
+        :param repo_name: Name of the repo to push (format: <user|org>/<repo_name>)
+        """
+        repo = self.get_repository(repo_name)
+        return repo.get_forks().totalCount
+
+    def get_avatar(self, repo_name):
+        """Gets the avatar URL from a Github repository.
+
+        :param repo_name: Name of the repo to push (format: <user|org>/<repo_name>)
+        """
+        owner = self.get_owner(repo_name)
+        return owner.avatar_url
