@@ -254,7 +254,7 @@ class GitHubUtils(object):
 
         :param repo_name: Name of the repo (format: <user|org>/<repo_name>)
         """
-        _owner_name, _repo_name = repo_name.split('/')
+        _owner_name, _repo_name = repo_name.split('/', 1)
         return self.client.get_user(_owner_name)
 
     def get_org_repository(self, repo_name, org_name='eosc-synergy'):
@@ -264,7 +264,8 @@ class GitHubUtils(object):
 
         :param repo_name: Name of the repo (format: <user|org>/<repo_name>)
         """
-        _org_name, _repo_name = repo_name.split('/')
+        _org_name, _repo_name = repo_name.split('/', 1)
+        _repo_name = _repo_name.rsplit('/', 1)[0] # remove any trailing slash
         org = self.client.get_organization(_org_name)
         try:
             return org.get_repo(_repo_name)
@@ -278,7 +279,8 @@ class GitHubUtils(object):
 
         :param repo_name: Name of the repo (format: <user|org>/<repo_name>)
         """
-        _org_name, _repo_name = repo_name.split('/')
+        _org_name, _repo_name = repo_name.split('/', 1)
+        _repo_name = _repo_name.rsplit('/', 1)[0] # remove any trailing slash
         repo = self.get_org_repository(repo_name)
         if not repo:
             org = self.client.get_organization(_org_name)
