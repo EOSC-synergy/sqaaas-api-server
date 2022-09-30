@@ -981,6 +981,7 @@ def get_short_repo_name(repo_url, include_host=False):
         ])
     # cleanup
     short_repo_name = short_repo_name.lstrip('/')
+    short_repo_name = short_repo_name.rstrip('/')
     short_repo_name = short_repo_name.rsplit('.git')[0]
     logger.debug('Short repository name for <%s>: %s' % (repo_url, short_repo_name))
     return short_repo_name
