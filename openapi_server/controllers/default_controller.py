@@ -1295,9 +1295,11 @@ async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Re
         for subcriterion_id, subcriterion_data in subcriteria.items():
             if subcriteria[subcriterion_id]['valid']:
                 success_subcriteria += 1
-        percentage_criterion = int(
-            success_subcriteria * 100 / total_subcriteria
-        )
+        percentage_criterion = 0
+        if total_subcriteria > 0:
+            percentage_criterion = int(
+                success_subcriteria * 100 / total_subcriteria
+            )
 
         return (
             total_subcriteria,
