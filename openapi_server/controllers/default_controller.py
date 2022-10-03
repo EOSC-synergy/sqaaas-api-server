@@ -1358,6 +1358,7 @@ async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Re
                     if subcriterion_id not in list(subcriteria):
                         subcriteria[subcriterion_id] = {
                             'description': subcriterion_data['description'],
+                            'hint': _subcriterion_metadata['hint'],
                             'evidence': []
                         }
                     evidence_data = {
@@ -1416,6 +1417,7 @@ async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Re
                 filtered_criteria[_criterion]['subcriteria'][_subcriterion] = {
                     'description': _subcriterion_metadata['description'],
                     'valid': _data.get('valid', False),
+                    'hint': _subcriterion_metadata['hint'],
                     'evidence': [{
                         'valid': False,
                         'message': '\n'.join(_data.get(
