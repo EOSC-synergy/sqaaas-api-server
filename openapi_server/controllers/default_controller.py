@@ -408,7 +408,7 @@ async def add_pipeline_for_assessment(request: web.Request, body, optional_tools
         repo_data['repo'], platforms=SUPPORTED_PLATFORMS
     )
     if platform in ['github']:
-        gh_repo_name = repo_data['repo'].split('/', 3)[-1]
+        gh_repo_name = repo_settings['name']
         repo_settings.update({
             'avatar_url': gh_utils.get_avatar(gh_repo_name),
             'description': gh_utils.get_description(gh_repo_name),
@@ -1295,9 +1295,11 @@ async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Re
         for subcriterion_id, subcriterion_data in subcriteria.items():
             if subcriteria[subcriterion_id]['valid']:
                 success_subcriteria += 1
-        percentage_criterion = int(
-            success_subcriteria * 100 / total_subcriteria
-        )
+        percentage_criterion = 0
+        if total_subcriteria > 0:
+            percentage_criterion = int(
+                success_subcriteria * 100 / total_subcriteria
+            )
 
         return (
             total_subcriteria,
