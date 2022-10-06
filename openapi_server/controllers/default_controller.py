@@ -1349,7 +1349,8 @@ async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Re
                 tool_data = {
                     'name': tool,
                     'ci': ci_data,
-                    'level': criterion_output_data['requirement_level']
+                    'level': criterion_output_data['requirement_level'],
+                    'build_repo': pipeline_data.get('pipeline_repo_url', None)
                 }
 
                 # Compose subcriteria record
