@@ -409,9 +409,11 @@ class ProcessExtraData(object):
 
         Returns a mapping of the tool and associated command for the given criterion, such as:
             {
-                "licensee": [
-                    "licensee detect . --json"
-                ]
+                "licensee": {
+                    "commands": [
+                        "licensee detect . --json"
+                    ]
+                }
             }
 
         :param tool: Tool object
@@ -481,9 +483,11 @@ class ProcessExtraData(object):
             cmd = [' '.join(cmd_list)]
         criterion_repo['commands'].extend(cmd)
         if tool in list(tool_map):
-            tool_map[tool_name].extend(cmd)
+            tool_map[tool_name]['commands'].extend(cmd)
         else:
-            tool_map[tool_name] = cmd
+            tool_map[tool_name] = {
+                'commands': cmd
+            }
         # If applicable, print the generated report to stdout
         if report_to_stdout:
             report_file = tool.get('includes_report', None)
@@ -666,7 +670,9 @@ def process_extra_data(config_json, composer_json, report_to_stdout=False):
                 else:
                     # Store the criterion anyway
                     tool_criteria_map[criterion_name] = {
-                        tool['name']: []
+                        tool['name']: {
+                            'commands': []
+                        }
                     }
 
                 tox_checkout_dir = '.'
