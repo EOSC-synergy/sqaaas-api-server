@@ -391,7 +391,21 @@ async def add_pipeline_for_assessment(request: web.Request, body, optional_tools
         report_to_stdout=True
     )
 
-    #4 Store repo settings
+    #4 Store tool related data in the DB
+    pipeline_data = db.get_entry(pipeline_id)
+    criteria_tools = pipeline_data['tools']
+    for criterion_data in criteria_data_list:
+        _criterion_id = criterion_data['id']
+        for _tool_data in criterion_data['tools']:
+            _tool_name = _tool_data['name']
+            criteria_tools[_criterion_id][_tool_name].update({
+                'lang': _tool_data['lang'],
+                'version': _tool_data['version'],
+                'docker': _tool_data['docker']
+            })
+    db.add_tool_data(pipeline_id, criteria_tools)
+
+    #5 Store repo settings
     ## For the time being, just consider the main repo code. Still an array
     ## object must be returned
     active_branch = repo_data.get('branch', None)
@@ -424,7 +438,7 @@ async def add_pipeline_for_assessment(request: web.Request, body, optional_tools
         repo_settings
     )
 
-    #5 Store QAA data
+    #6 Store QAA data
     db.add_assessment_data(
         pipeline_id,
         criteria_filtered_out
@@ -1128,7 +1142,8 @@ async def _get_tool_from_command(tool_criterion_map, stdout_command):
 
     """
     matched_tool = None
-    for tool_name, tool_cmd_list in tool_criterion_map.items():
+    for tool_name, tool_data in tool_criterion_map.items():
+        tool_cmd_list = tool_data['commands']
         # For the matching tool process, let's consider all cmds as a whole
         tool_cmd = ';'.join(tool_cmd_list)
         if stdout_command.find(tool_cmd) != -1:
@@ -1311,18 +1326,18 @@ async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Re
         report_data = {}
         pipeline_data = db.get_entry(pipeline_id)
         criteria_filtered_out = pipeline_data['qaa']
-        criteria_tool_commands = pipeline_data['tools']
+        criteria_tools = pipeline_data['tools']
 
         for criterion_name, criterion_output_data_list in output_data.items():
             # Health check: a given criterion MUST NOT be present both in the
             # filtered list and as part of the pipeline execution stages
-            if criterion_name in list(criteria_filtered_out):
-                _reason = ((
-                    'Criterion <%s> has been both filtered out and executed '
-                    'in the pipeline' % criterion_name
-                ))
-                logger.error(_reason)
-                raise SQAaaSAPIException(422, _reason)
+            # if criterion_name in list(criteria_filtered_out):
+            #     _reason = ((
+            #         'Criterion <%s> has been both filtered out and executed '
+            #         'in the pipeline' % criterion_name
+            #     ))
+            #     logger.error(_reason)
+            #     raise SQAaaSAPIException(422, _reason)
 
             criterion_valid_list = []
             subcriteria = {}
@@ -1342,14 +1357,18 @@ async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Re
                 ci_data = {
                     'name': criterion_output_data['name'],
                     'status': criterion_output_data['status'],
-                    'stdout_command': criteria_tool_commands[criterion_name][tool],
+                    'stdout_command': criteria_tools[criterion_name][tool]['commands'],
                     'stdout_text': criterion_output_data['stdout_text'],
                     'url': criterion_output_data['url']
                 }
                 tool_data = {
                     'name': tool,
+                    'lang': criteria_tools[criterion_name][tool].get('lang', None),
+                    'version': criteria_tools[criterion_name][tool].get('version', None),
+                    'docker': criteria_tools[criterion_name][tool].get('docker', None),
                     'ci': ci_data,
-                    'level': criterion_output_data['requirement_level']
+                    'level': criterion_output_data['requirement_level'],
+                    'build_repo': pipeline_data.get('pipeline_repo_url', None)
                 }
 
                 # Compose subcriteria record
@@ -1358,6 +1377,7 @@ async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Re
                     if subcriterion_id not in list(subcriteria):
                         subcriteria[subcriterion_id] = {
                             'description': subcriterion_data['description'],
+                            'hint': subcriterion_data['hint'],
                             'evidence': []
                         }
                     evidence_data = {
@@ -1416,6 +1436,7 @@ async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Re
                 filtered_criteria[_criterion]['subcriteria'][_subcriterion] = {
                     'description': _subcriterion_metadata['description'],
                     'valid': _data.get('valid', False),
+                    'hint': _subcriterion_metadata['hint'],
                     'evidence': [{
                         'valid': False,
                         'message': '\n'.join(_data.get(
