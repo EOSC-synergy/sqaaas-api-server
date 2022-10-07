@@ -23,29 +23,29 @@ RADL~=1.2.0
 ec3-cli~=2.2.1
 # report2sqaaas == 1.9.0-alpha
 git+https://github.com/EOSC-synergy/sqaaas-reporting@1.9.0-alpha#egg=report2sqaaas
-# report2sqaaas-plugin-markdownlint = 1.9.0-alpha5
-git+https://github.com/EOSC-synergy/sqaaas-reporting-plugins@1.9.0-alpha5#egg=report2sqaaas-plugin-markdownlint&subdirectory=qc_doc_markdownlint
-# report2sqaaas-plugin-find_doc_files = 1.9.0-alpha5
-git+https://github.com/EOSC-synergy/sqaaas-reporting-plugins@1.9.0-alpha5#egg=report2sqaaas-plugin-find_doc_files&subdirectory=qc_doc_find_doc_files
-# report2sqaaas-plugin-licensee = 1.9.0-alpha5
-git+https://github.com/EOSC-synergy/sqaaas-reporting-plugins@1.9.0-alpha5#egg=report2sqaaas-plugin-licensee&subdirectory=qc_lic_licensee
-# report2sqaaas-plugin-boolean = 1.9.0-alpha5
-git+https://github.com/EOSC-synergy/sqaaas-reporting-plugins@1.9.0-alpha5#egg=report2sqaaas-plugin-boolean&subdirectory=qc_ALL_boolean
-# report2sqaaas-plugin-json_not_empty = 1.9.0-alpha5
-git+https://github.com/EOSC-synergy/sqaaas-reporting-plugins@1.9.0-alpha5#egg=report2sqaaas-plugin-json_not_empty&subdirectory=qc_ALL_json_not_empty
-# report2sqaaas-plugin-flake8 = 1.9.0-alpha5
-git+https://github.com/EOSC-synergy/sqaaas-reporting-plugins@1.9.0-alpha5#egg=report2sqaaas-plugin-flake8&subdirectory=qc_sty_flake8
-# report2sqaaas-plugin-bandit = 1.9.0-alpha5
-git+https://github.com/EOSC-synergy/sqaaas-reporting-plugins@1.9.0-alpha5#egg=report2sqaaas-plugin-bandit&subdirectory=qc_sec_bandit
-# report2sqaaas-plugin-cff = 1.9.0-alpha5
-git+https://github.com/EOSC-synergy/sqaaas-reporting-plugins@1.9.0-alpha5#egg=report2sqaaas-plugin-cff&subdirectory=qc_met_cff
-# report2sqaaas-plugin-fairEva = 1.9.0-alpha5
-git+https://github.com/EOSC-synergy/sqaaas-reporting-plugins@1.9.0-alpha5#egg=report2sqaaas-plugin-fairEva&subdirectory=qc_fair_fairEva
-# report2sqaaas-plugin-is_semver = 1.9.0-alpha5
-git+https://github.com/EOSC-synergy/sqaaas-reporting-plugins@1.9.0-alpha5#egg=report2sqaaas-plugin-is_semver&subdirectory=qc_ver_is_semver
-# report2sqaaas-plugin-fuji = 1.9.0-alpha5
-git+https://github.com/EOSC-synergy/sqaaas-reporting-plugins@1.9.0-alpha5#egg=report2sqaaas-plugin-fuji&subdirectory=qc_fair_fuji
-# report2sqaaas-plugin-jenkins_exit_status = 1.9.0-alpha5
-git+https://github.com/EOSC-synergy/sqaaas-reporting-plugins@1.9.0-alpha5#egg=report2sqaaas-plugin-jenkins_exit_status&subdirectory=qc_ALL_jenkins_exit_status
-# report2sqaaas-plugin-gosec = 1.9.0-alpha5
-git+https://github.com/EOSC-synergy/sqaaas-reporting-plugins@1.9.0-alpha5#egg=report2sqaaas-plugin-gosec&subdirectory=qc_sec_gosec
+# report2sqaaas-plugin-markdownlint = 1.9.0-alpha6
+git+https://github.com/EOSC-synergy/sqaaas-reporting-plugins@1.9.0-alpha6#egg=report2sqaaas-plugin-markdownlint&subdirectory=qc_doc_markdownlint
+# report2sqaaas-plugin-find_doc_files = 1.9.0-alpha6
+git+https://github.com/EOSC-synergy/sqaaas-reporting-plugins@1.9.0-alpha6#egg=report2sqaaas-plugin-find_doc_files&subdirectory=qc_doc_find_doc_files
+# report2sqaaas-plugin-licensee = 1.9.0-alpha6
+git+https://github.com/EOSC-synergy/sqaaas-reporting-plugins@1.9.0-alpha6#egg=report2sqaaas-plugin-licensee&subdirectory=qc_lic_licensee
+# report2sqaaas-plugin-boolean = 1.9.0-alpha6
+git+https://github.com/EOSC-synergy/sqaaas-reporting-plugins@1.9.0-alpha6#egg=report2sqaaas-plugin-boolean&subdirectory=qc_ALL_boolean
+# report2sqaaas-plugin-json_not_empty = 1.9.0-alpha6
+git+https://github.com/EOSC-synergy/sqaaas-reporting-plugins@1.9.0-alpha6#egg=report2sqaaas-plugin-json_not_empty&subdirectory=qc_ALL_json_not_empty
+# report2sqaaas-plugin-flake8 = 1.9.0-alpha6
+git+https://github.com/EOSC-synergy/sqaaas-reporting-plugins@1.9.0-alpha6#egg=report2sqaaas-plugin-flake8&subdirectory=qc_sty_flake8
+# report2sqaaas-plugin-bandit = 1.9.0-alpha6
+git+https://github.com/EOSC-synergy/sqaaas-reporting-plugins@1.9.0-alpha6#egg=report2sqaaas-plugin-bandit&subdirectory=qc_sec_bandit
+# report2sqaaas-plugin-cff = 1.9.0-alpha6
+git+https://github.com/EOSC-synergy/sqaaas-reporting-plugins@1.9.0-alpha6#egg=report2sqaaas-plugin-cff&subdirectory=qc_met_cff
+# report2sqaaas-plugin-fairEva = 1.9.0-alpha6
+git+https://github.com/EOSC-synergy/sqaaas-reporting-plugins@1.9.0-alpha6#egg=report2sqaaas-plugin-fairEva&subdirectory=qc_fair_fairEva
+# report2sqaaas-plugin-is_semver = 1.9.0-alpha6
+git+https://github.com/EOSC-synergy/sqaaas-reporting-plugins@1.9.0-alpha6#egg=report2sqaaas-plugin-is_semver&subdirectory=qc_ver_is_semver
+# report2sqaaas-plugin-fuji = 1.9.0-alpha6
+git+https://github.com/EOSC-synergy/sqaaas-reporting-plugins@1.9.0-alpha6#egg=report2sqaaas-plugin-fuji&subdirectory=qc_fair_fuji
+# report2sqaaas-plugin-jenkins_exit_status = 1.9.0-alpha6
+git+https://github.com/EOSC-synergy/sqaaas-reporting-plugins@1.9.0-alpha6#egg=report2sqaaas-plugin-jenkins_exit_status&subdirectory=qc_ALL_jenkins_exit_status
+# report2sqaaas-plugin-gosec = 1.9.0-alpha6
+git+https://github.com/EOSC-synergy/sqaaas-reporting-plugins@1.9.0-alpha6#egg=report2sqaaas-plugin-gosec&subdirectory=qc_sec_gosec
