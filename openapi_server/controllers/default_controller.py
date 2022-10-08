@@ -275,7 +275,9 @@ async def _get_tooling_for_assessment(
                 'source code assessment.'
             ))
         # are repo_code and repo_docs different?
-        _same_repo = list(repo_code.values()) == list(repo_docs.values())
+        _same_repo = True
+        if repo_docs:
+            _same_repo = list(repo_code.values()) == list(repo_docs.values())
 
         _code_criteria = []
         for _data in criteria_data_list:
