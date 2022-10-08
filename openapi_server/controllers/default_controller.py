@@ -123,6 +123,138 @@ async def _get_tooling_for_assessment(
     :param optional_tools: Optional tools that shall be accounted
     :type optional_tools: list
     """
+    @GitUtils.do_git_work
+    def _filter_tools(repo, criteria_data_list, path='.'):
+        criteria_data_list_filtered = []
+        criteria_filtered_out = {}
+        for criterion_data in criteria_data_list:
+            criterion_data_copy = copy.deepcopy(criterion_data)
+            criterion_has_required_level = False
+            criterion_id = criterion_data_copy['id']
+            filter_tool_by_requirement_level = True
+            toolset_for_reporting = []
+            filtered_required_tools = []
+            for tool in criterion_data_copy['tools']:
+                # Tool filter #1: <reporting:requirement_level> property
+                if filter_tool_by_requirement_level:
+                    account_tool_by_requirement_level = False
+                    try:
+                        level = tool['reporting']['requirement_level']
+                        if level in levels_for_assessment:
+                            account_tool_by_requirement_level = True
+                            logger.debug((
+                                'Accounting for QAA the tool <%s> (reason: '
+                                'REQUIRED/RECOMMENDED): %s' % (
+                                    tool['name'], tool
+                                )
+                            ))
+                            if level in ['REQUIRED']:
+                                criterion_has_required_level = True
+                        else:
+                            if tool in optional_tools:
+                                account_tool_by_requirement_level = True
+                                logger.debug((
+                                    'Accounting for QAA the tool <%s> (reason: '
+                                    'requested as OPTIONAL tool): %s' % (
+                                        tool['name'], tool
+                                    )
+                                ))
+                    except KeyError:
+                        logger.debug((
+                            'Skipping tool <%s> as it does not have reporting data '
+                            'defined: %s' % (tool['name'], tool)
+                        ))
+                else:
+                    # NOTE: Setting this flag to true is a trick to make tools that
+                    # have been requested not to be filtered-by-requirement-level
+                    # can enter the next conditional block (lang files)
+                    account_tool_by_requirement_level = True
+                # Tool filter #2: presence of file extensions or filenames in the
+                # repository based on the language
+                if account_tool_by_requirement_level :
+                    account_tool = False
+                    lang = tool['lang']
+                    lang_entry = ctls_utils.get_language_entry(lang)
+                    if not lang_entry:
+                        account_tool = True
+                        logger.debug((
+                            'Skipping file matching for tool <%s>: entry for '
+                            'language <%s> has not been found in metadata file' % (
+                                tool['name'], lang
+                            )
+                        ))
+                    else:
+                        files_found = []
+                        field = None
+                        value = None
+                        for field_name in ['extensions', 'filenames']:
+                            value = lang_entry.get(field_name, None)
+                            if not value:
+                                continue
+                            logger.debug(
+                                'Matching repo files by <%s> for language <%s>: '
+                                '%s' % (
+                                    field_name, lang, value
+                                )
+                            )
+                            files_found = ctls_utils.find_files_by_language(
+                                field_name, value, repo=repo
+                            )
+                            if files_found:
+                                account_tool = True
+                                logger.debug((
+                                    'Found matching files in repository: '
+                                    '%s' % files_found
+                                ))
+                                break
+                        if not files_found:
+                            _reason = (
+                                'No matching files found for language <%s> in '
+                                'repository searching by extensions or '
+                                'filenames' % lang
+                            )
+                            if criterion_has_required_level:
+                                filtered_required_tools.append(_reason)
+                            logger.debug(_reason)
+                    if account_tool:
+                        logger.info(
+                            'Tool <%s> accounted for assessment' % tool['name']
+                        )
+                        toolset_for_reporting.append(tool)
+                    else:
+                        logger.info((
+                            'Not adding tool <%s> for the assessment. No matching '
+                            'files (language: %s) found in the repository <%s>' % (
+                                tool['name'], lang, repo['repo']
+                            )
+                        ))
+
+            if not toolset_for_reporting:
+                _reason = ((
+                    'No tool defined for assessment (missing <reporting> '
+                    'property) in <%s> criterion' % criterion_id
+                ))
+                if criterion_has_required_level:
+                    filtered_out_data = ctls_utils.format_filtered_data(
+                        False,
+                        filtered_required_tools
+                    )
+                    criteria_filtered_out[criterion_id] = filtered_out_data
+                    logger.warn(_reason)
+                else:
+                    logger.debug(_reason)
+            else:
+                logger.info((
+                    'Found %s tool/s for assessment of criterion <%s>: %s' % (
+                        len(toolset_for_reporting),
+                        criterion_id,
+                        [tool['name'] for tool in toolset_for_reporting])
+                ))
+                criterion_data_copy['tools'] = toolset_for_reporting
+                criteria_data_list_filtered.append(criterion_data_copy)
+        
+        return criteria_data_list_filtered, criteria_filtered_out
+
     repo_code = body.get('repo_code', {})
     repo_docs = body.get('repo_docs', {})
     deployment = body.get('deployment', {})
@@ -131,162 +263,67 @@ async def _get_tooling_for_assessment(
     levels_for_assessment = ['REQUIRED', 'RECOMMENDED']
     tooling_metadata_json = await _get_tooling_metadata()
     criteria_data_list = await _sort_tooling_by_criteria(tooling_metadata_json)
+
+    # NOTE Not allowing multiple assessments for the moment
+    relevant_criteria_data = [] 
+    if repo_code:
+        # healthy check
+        if deployment:
+            logger.warning((
+                'Provided URLs both for the source code and deployment '
+                'assessment. Ignoring service assessment and continuing with '
+                'source code assessment.'
+            ))
+        # are repo_code and repo_docs different?
+        _same_repo = list(repo_code.values()) == list(repo_docs.values())
+
+        _code_criteria = []
+        for _data in criteria_data_list:
+            _criterion_id = _data['id']
+            if (
+                _criterion_id.startswith('QC') and
+                not _criterion_id in ['QC.FAIR']
+            ):
+                if _criterion_id in ['QC.Doc'] and not _same_repo:
+                    relevant_criteria_data.append({
+                        'repo': repo_docs,
+                        'criteria_data_list': [_data]
+                    })
+                else:
+                    _code_criteria.append(_data)
+        relevant_criteria_data.append({
+            'repo': repo_code,
+            'criteria_data_list': _code_criteria
+        })
+    elif deployment:
+        relevant_criteria_data = {
+            'repo': deployment,
+            'criteria_data_list': [_data
+                for _data in criteria_data_list
+                    if _data['id'].startswith('SvcQC')
+            ]
+        }
+    else:
+        # FIXME This will change when FAIR is integrated
+        _reason = (
+            'Neither source code nor deployment repositories have been '
+            'provided'
+        )
+        raise SQAaaSAPIException(422, _reason)
+    logger.debug(
+        'Resultant repository and criteria mapping: '
+        '%s' % relevant_criteria_data
+    )
+
     criteria_data_list_filtered = []
     criteria_filtered_out = {}
-    repo_deploy = deployment.get('repo_deploy', {})
-    for criterion_data in criteria_data_list:
-        criterion_data_copy = copy.deepcopy(criterion_data)
-        criterion_has_required_level = False
-        criterion_id = criterion_data_copy['id']
-        repo = repo_code
-        filter_tool_by_requirement_level = True
-        if criterion_id in ['QC.Doc'] and repo_docs:
-            repo = repo_docs
-        elif criterion_id in ['SvcQC.Dep']:
-            if not deployment:
-                logger.warning(
-                    'Missing required data for the service deployment. '
-                    'Skipping criterion SvcQC.Dep'
-                )
-                continue
-            else:
-                if repo_deploy:
-                    repo = repo_deploy
-                criterion_data_copy['tools'] = [deployment['deploy_tool']]
-                logger.debug((
-                    'Restricting SvcQC.Dep tools to the one choosen by the '
-                    'user: %s' % criterion_data_copy['tools']
-                ))
-                filter_tool_by_requirement_level = False
-        elif criterion_id in ['QC.FAIR'] and not fair:
-            logger.warning(
-                'Excluding QC.FAIR criterion as there are no inputs for FAIR'
-            )
-            continue
-        logger.info('Using repository <%s> for criterion <%s>' % (
-            repo['repo'], criterion_id)
-        )
-
-        toolset_for_reporting = []
-        filtered_required_tools = []
-        for tool in criterion_data_copy['tools']:
-            # Tool filter #1: <reporting:requirement_level> property
-            if filter_tool_by_requirement_level:
-                account_tool_by_requirement_level = False
-                try:
-                    level = tool['reporting']['requirement_level']
-                    if level in levels_for_assessment:
-                        account_tool_by_requirement_level = True
-                        logger.debug((
-                            'Accounting for QAA the tool <%s> (reason: '
-                            'REQUIRED/RECOMMENDED): %s' % (
-                                tool['name'], tool
-                            )
-                        ))
-                        if level in ['REQUIRED']:
-                            criterion_has_required_level = True
-                    else:
-                        if tool in optional_tools:
-                            account_tool_by_requirement_level = True
-                            logger.debug((
-                                'Accounting for QAA the tool <%s> (reason: '
-                                'requested as OPTIONAL tool): %s' % (
-                                    tool['name'], tool
-                                )
-                            ))
-                except KeyError:
-                    logger.debug((
-                        'Skipping tool <%s> as it does not have reporting data '
-                        'defined: %s' % (tool['name'], tool)
-                    ))
-            else:
-                # NOTE: Setting this flag to true is a trick to make tools that
-                # have been requested not to be filtered-by-requirement-level
-                # can enter the next conditional block (lang files)
-                account_tool_by_requirement_level = True
-            # Tool filter #2: presence of file extensions or filenames in the
-            # repository based on the language
-            if account_tool_by_requirement_level :
-                account_tool = False
-                lang = tool['lang']
-                lang_entry = ctls_utils.get_language_entry(lang)
-                if not lang_entry:
-                    account_tool = True
-                    logger.debug((
-                        'Skipping file matching for tool <%s>: entry for '
-                        'language <%s> has not been found in metadata file' % (
-                            tool['name'], lang
-                        )
-                    ))
-                else:
-                    files_found = []
-                    field = None
-                    value = None
-                    for field_name in ['extensions', 'filenames']:
-                        value = lang_entry.get(field_name, None)
-                        if not value:
-                            continue
-                        logger.debug(
-                            'Matching repo files by <%s> for language <%s>: '
-                            '%s' % (
-                                field_name, lang, value
-                            )
-                        )
-                        files_found = ctls_utils.find_files_by_language(
-                            field_name, value, repo=repo
-                        )
-                        if files_found:
-                            account_tool = True
-                            logger.debug((
-                                'Found matching files in repository: '
-                                '%s' % files_found
-                            ))
-                            break
-                    if not files_found:
-                        _reason = (
-                            'No matching files found for language <%s> in '
-                            'repository searching by extensions or '
-                            'filenames' % lang
-                        )
-                        if criterion_has_required_level:
-                            filtered_required_tools.append(_reason)
-                        logger.debug(_reason)
-                if account_tool:
-                    logger.info(
-                        'Tool <%s> accounted for assessment' % tool['name']
-                    )
-                    toolset_for_reporting.append(tool)
-                else:
-                    logger.info((
-                        'Not adding tool <%s> for the assessment. No matching '
-                        'files (language: %s) found in the repository <%s>' % (
-                            tool['name'], lang, repo['repo']
-                        )
-                    ))
-
-        if not toolset_for_reporting:
-            _reason = ((
-                'No tool defined for assessment (missing <reporting> '
-                'property) in <%s> criterion' % criterion_id
-            ))
-            if criterion_has_required_level:
-                filtered_out_data = ctls_utils.format_filtered_data(
-                    False,
-                    filtered_required_tools
-                )
-                criteria_filtered_out[criterion_id] = filtered_out_data
-                logger.warn(_reason)
-            else:
-                logger.debug(_reason)
-        else:
-            logger.info((
-                'Found %s tool/s for assessment of criterion <%s>: %s' % (
-                    len(toolset_for_reporting),
-                    criterion_id,
-                    [tool['name'] for tool in toolset_for_reporting])
-            ))
-            criterion_data_copy['tools'] = toolset_for_reporting
-            criteria_data_list_filtered.append(criterion_data_copy)
+    for repo_criteria_mapping in relevant_criteria_data:
+        (
+            _criteria_data_list_filtered,
+            _criteria_filtered_out
+        ) = _filter_tools(**repo_criteria_mapping)
+        criteria_data_list_filtered.extend(_criteria_data_list_filtered)
+        criteria_filtered_out.update(_criteria_filtered_out)
 
     if not criteria_data_list_filtered:
         _reason = 'Could not find any tool for criteria assessment'

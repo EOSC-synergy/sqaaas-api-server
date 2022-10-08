@@ -1053,7 +1053,6 @@ def get_language_entry(lang):
     return lang_entry
 
 
-@GitUtils.do_git_work
 def find_files_by_language(field, value, repo, path='.'):
     """Finds files in the current path that match the given list of
     extensions.
