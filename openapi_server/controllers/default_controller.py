@@ -198,7 +198,7 @@ async def _get_tooling_for_assessment(
                                 )
                             )
                             files_found = ctls_utils.find_files_by_language(
-                                field_name, value, repo=repo
+                                field_name, value, repo=repo, path=path
                             )
                             if files_found:
                                 account_tool = True
