@@ -1053,7 +1053,6 @@ def get_language_entry(lang):
     return lang_entry
 
 
-@GitUtils.do_git_work
 def find_files_by_language(field, value, repo, path='.'):
     """Finds files in the current path that match the given list of
     extensions.
@@ -1068,11 +1067,10 @@ def find_files_by_language(field, value, repo, path='.'):
     if field in ['extensions']:
         for extension in value:
             file_list = sorted(Path(path).rglob('*'+extension))
-            files_found.extend([str(file_name) for file_name in file_list])
+            files_found.extend(file_list)
     elif field in ['filenames']:
         for filename in value:
-            if Path(PurePath(path, filename)).exists():
-                files_found.append(filename)
+            files_found.extend(Path(path).rglob(filename))
     else:
         logger.warn((
             'Language field <%s> (from languages.yml) not supported!' % field
@@ -1082,7 +1080,7 @@ def find_files_by_language(field, value, repo, path='.'):
             field, files_found)
         )
 
-    return files_found
+    return [str(file_name) for file_name in files_found]
 
 
 def get_registry_from_image(image_name):
