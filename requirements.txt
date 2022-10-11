@@ -13,7 +13,7 @@ Jinja2
 python-jenkins
 deepdiff
 namegenerator
-GitPython
+GitPython==3.1.29
 stevedore
 beautifulsoup4
 namegenerator>=1.0.6
