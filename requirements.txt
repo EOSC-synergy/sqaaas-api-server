@@ -21,8 +21,8 @@ aiohttp>=3.8.1
 urllib3~=1.26
 RADL~=1.2.0
 ec3-cli~=2.2.1
-# report2sqaaas == 1.9.0-alpha2
-git+https://github.com/EOSC-synergy/sqaaas-reporting@1.9.0-alpha2#egg=report2sqaaas
+# report2sqaaas == 1.9.0-alpha3
+git+https://github.com/EOSC-synergy/sqaaas-reporting@1.9.0-alpha3#egg=report2sqaaas
 # report2sqaaas-plugin-markdownlint = 1.9.0-alpha12
 git+https://github.com/EOSC-synergy/sqaaas-reporting-plugins@1.9.0-alpha12#egg=report2sqaaas-plugin-markdownlint&subdirectory=qc_doc_markdownlint
 # report2sqaaas-plugin-find_doc_files = 1.9.0-alpha12
