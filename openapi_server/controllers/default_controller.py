@@ -313,11 +313,16 @@ async def _get_tooling_for_assessment(
             'repo': deployment['repo_deploy'],
             'criteria_data_list': _code_criteria
         })
+    elif fair:
+        relevant_criteria_data.append({
+            'repo': None,
+            'criteria_data_list': []
+        })
     else:
         # FIXME This will change when FAIR is integrated
         _reason = (
-            'Neither source code nor deployment repositories have been '
-            'provided'
+            'Neither source code/deployment repositories nor FAIR inputs have '
+            'been provided for the assessment'
         )
         raise SQAaaSAPIException(422, _reason)
     logger.debug(
@@ -368,6 +373,7 @@ async def add_pipeline_for_assessment(request: web.Request, body, user_requested
     #0 Validate request
     repo_code = body.get('repo_code', {})
     deployment = body.get('deployment', {})
+    fair = body.get('fair', {})
     repo_data = {}
     
     repo_url = repo_code.get('repo', None) # is there data actually?
@@ -375,7 +381,7 @@ async def add_pipeline_for_assessment(request: web.Request, body, user_requested
         repo_data = repo_code
         # Purge 
         body.pop('deployment', {})
-    else:
+    elif deployment:
         repo_deploy = deployment.get('repo_deploy', {})
         repo_deploy_url = repo_deploy.get('repo', None)
         if repo_deploy_url:
@@ -384,10 +390,10 @@ async def add_pipeline_for_assessment(request: web.Request, body, user_requested
             body.pop('repo_code', {})
             body.pop('repo_docs', {})
     
-    if not repo_data:
+    if not repo_data and not fair:
         _reason = (
-            'Invalid request: not valid data found for a software/service '
-            'assessment'
+            'Invalid request: not valid data found for a '
+            'software/service/FAIRness assessment'
         )
         return web.Response(status=422, reason=_reason, text=_reason)
 
