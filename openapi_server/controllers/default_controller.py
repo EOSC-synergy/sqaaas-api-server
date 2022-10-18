@@ -316,7 +316,10 @@ async def _get_tooling_for_assessment(
     elif fair:
         relevant_criteria_data.append({
             'repo': None,
-            'criteria_data_list': []
+            'criteria_data_list': [_data
+                for _data in criteria_data_list
+                    if _data['id'] in ['QC.FAIR']
+            ]
         })
     else:
         # FIXME This will change when FAIR is integrated
