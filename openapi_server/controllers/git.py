@@ -148,35 +148,36 @@ class GitUtils(object):
         """
         @functools.wraps(f)
         def decorated_function(*args, **kwargs):
-            repo = kwargs['repo']
-            source_repo = GitUtils._format_git_url(repo['repo'])
-            source_repo_branch = repo.get('branch', None)
-            with tempfile.TemporaryDirectory() as dirpath:
-                try:
-                    if source_repo_branch:
-                        repo = Repo.clone_from(
-                            source_repo, dirpath,
-                            single_branch=True, b=source_repo_branch
+            repo = kwargs.get('repo', None)
+            if repo:
+                source_repo = GitUtils._format_git_url(repo['repo'])
+                source_repo_branch = repo.get('branch', None)
+                with tempfile.TemporaryDirectory() as dirpath:
+                    try:
+                        if source_repo_branch:
+                            repo = Repo.clone_from(
+                                source_repo, dirpath,
+                                single_branch=True, b=source_repo_branch
+                            )
+                        else:
+                            repo = Repo.clone_from(
+                                source_repo, dirpath
+                            )
+                        branch = repo.active_branch
+                        branch = branch.name
+                        msg = 'Repository <%s> was cloned (branch: %s)' % (
+                            source_repo, branch)
+                        logger.debug(msg)
+                    except GitCommandError as e:
+                        raise SQAaaSAPIException(
+                            422, GitUtils._custom_exception_messages(
+                                e, repo=repo['repo']
+                            )
                         )
                     else:
-                        repo = Repo.clone_from(
-                            source_repo, dirpath
-                        )
-                    branch = repo.active_branch
-                    branch = branch.name
-                    msg = 'Repository <%s> was cloned (branch: %s)' % (
-                        source_repo, branch)
-                    logger.debug(msg)
-                except GitCommandError as e:
-                    raise SQAaaSAPIException(
-                        422, GitUtils._custom_exception_messages(
-                            e, repo=repo['repo']
-                        )
-                    )
-                else:
-                    # Set path to the temporary directory
-                    kwargs['path'] = dirpath
-                    # Perform the actual work
-                    ret = f(*args, **kwargs)
-                    return ret
+                        # Set path to the temporary directory
+                        kwargs['path'] = dirpath
+                        # Perform the actual work
+            ret = f(*args, **kwargs)
+            return ret
         return decorated_function
