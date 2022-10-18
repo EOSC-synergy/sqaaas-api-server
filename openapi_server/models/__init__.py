@@ -3,6 +3,7 @@
 # import models into model package
 from openapi_server.models.add_pipeline201_response import AddPipeline201Response
 from openapi_server.models.assessment_deployment import AssessmentDeployment
+from openapi_server.models.assessment_fair import AssessmentFAIR
 from openapi_server.models.assessment_output import AssessmentOutput
 from openapi_server.models.assessment_output_badge import AssessmentOutputBadge
 from openapi_server.models.assessment_output_report_value import AssessmentOutputReportValue
