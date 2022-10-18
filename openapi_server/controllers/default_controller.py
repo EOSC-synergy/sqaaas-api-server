@@ -421,11 +421,16 @@ async def add_pipeline_for_assessment(request: web.Request, body, user_requested
         loader=PackageLoader('openapi_server', 'templates')
     )
     template = env.get_template('pipeline_assessment.json')
+
+    build_repo_name = repo_data.get('repo', None)
+    if fair:
+        build_repo_name = body['fair']['persistent_identifier']
     pipeline_name = '.'.join([
-        os.path.basename(repo_data['repo']),
+        os.path.basename(build_repo_name),
         'assess'
     ])
     logger.debug('Generated pipeline name for the assessment: %s' % pipeline_name)
+
     json_rendered = template.render(
         pipeline_name=pipeline_name,
         repo_code=repo_code,
