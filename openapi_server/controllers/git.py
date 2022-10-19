@@ -178,6 +178,8 @@ class GitUtils(object):
                         # Set path to the temporary directory
                         kwargs['path'] = dirpath
                         # Perform the actual work
-            ret = f(*args, **kwargs)
+                    ret = f(*args, **kwargs)
+            else:
+                ret = f(*args, **kwargs)
             return ret
         return decorated_function
