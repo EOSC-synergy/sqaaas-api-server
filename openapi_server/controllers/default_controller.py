@@ -313,11 +313,19 @@ async def _get_tooling_for_assessment(
             'repo': deployment['repo_deploy'],
             'criteria_data_list': _code_criteria
         })
+    elif fair:
+        relevant_criteria_data.append({
+            'repo': None,
+            'criteria_data_list': [_data
+                for _data in criteria_data_list
+                    if _data['id'] in ['QC.FAIR']
+            ]
+        })
     else:
         # FIXME This will change when FAIR is integrated
         _reason = (
-            'Neither source code nor deployment repositories have been '
-            'provided'
+            'Neither source code/deployment repositories nor FAIR inputs have '
+            'been provided for the assessment'
         )
         raise SQAaaSAPIException(422, _reason)
     logger.debug(
@@ -368,6 +376,7 @@ async def add_pipeline_for_assessment(request: web.Request, body, user_requested
     #0 Validate request
     repo_code = body.get('repo_code', {})
     deployment = body.get('deployment', {})
+    fair = body.get('fair', {})
     repo_data = {}
     
     repo_url = repo_code.get('repo', None) # is there data actually?
@@ -375,7 +384,7 @@ async def add_pipeline_for_assessment(request: web.Request, body, user_requested
         repo_data = repo_code
         # Purge 
         body.pop('deployment', {})
-    else:
+    elif deployment:
         repo_deploy = deployment.get('repo_deploy', {})
         repo_deploy_url = repo_deploy.get('repo', None)
         if repo_deploy_url:
@@ -384,10 +393,10 @@ async def add_pipeline_for_assessment(request: web.Request, body, user_requested
             body.pop('repo_code', {})
             body.pop('repo_docs', {})
     
-    if not repo_data:
+    if not repo_data and not fair:
         _reason = (
-            'Invalid request: not valid data found for a software/service '
-            'assessment'
+            'Invalid request: not valid data found for a '
+            'software/service/FAIRness assessment'
         )
         return web.Response(status=422, reason=_reason, text=_reason)
 
@@ -412,11 +421,16 @@ async def add_pipeline_for_assessment(request: web.Request, body, user_requested
         loader=PackageLoader('openapi_server', 'templates')
     )
     template = env.get_template('pipeline_assessment.json')
+
+    build_repo_name = repo_data.get('repo', None)
+    if fair:
+        build_repo_name = body['fair']['persistent_identifier']
     pipeline_name = '.'.join([
-        os.path.basename(repo_data['repo']),
+        os.path.basename(build_repo_name),
         'assess'
     ])
     logger.debug('Generated pipeline name for the assessment: %s' % pipeline_name)
+
     json_rendered = template.render(
         pipeline_name=pipeline_name,
         repo_code=repo_code,
@@ -451,35 +465,36 @@ async def add_pipeline_for_assessment(request: web.Request, body, user_requested
     #5 Store repo settings
     ## For the time being, just consider the main repo code. Still an array
     ## object must be returned
-    active_branch = repo_data.get('branch', None)
-    if not active_branch:
-        active_branch = GitUtils.get_remote_active_branch(
-            repo_data['repo']
+    if repo_data:
+        active_branch = repo_data.get('branch', None)
+        if not active_branch:
+            active_branch = GitUtils.get_remote_active_branch(
+                repo_data['repo']
+            )
+        repo_settings = {
+            'name': ctls_utils.get_short_repo_name(repo_data['repo']),
+            'url': repo_data['repo'],
+            'tag': active_branch
+        }
+        platform = ctls_utils.supported_git_platform(
+            repo_data['repo'], platforms=SUPPORTED_PLATFORMS
         )
-    repo_settings = {
-        'name': ctls_utils.get_short_repo_name(repo_data['repo']),
-        'url': repo_data['repo'],
-        'tag': active_branch
-    }
-    platform = ctls_utils.supported_git_platform(
-        repo_data['repo'], platforms=SUPPORTED_PLATFORMS
-    )
-    if platform in ['github']:
-        gh_repo_name = repo_settings['name']
-        repo_settings.update({
-            'avatar_url': gh_utils.get_avatar(gh_repo_name),
-            'description': gh_utils.get_description(gh_repo_name),
-            'languages': gh_utils.get_languages(gh_repo_name),
-            'topics': gh_utils.get_topics(gh_repo_name),
-            'stargazers_count': gh_utils.get_stargazers(gh_repo_name),
-            'watchers_count': gh_utils.get_watchers(gh_repo_name),
-            'contributors_count': gh_utils.get_contributors(gh_repo_name),
-            'forks_count': gh_utils.get_forks(gh_repo_name)
-        })
-    db.add_repo_settings(
-        pipeline_id,
-        repo_settings
-    )
+        if platform in ['github']:
+            gh_repo_name = repo_settings['name']
+            repo_settings.update({
+                'avatar_url': gh_utils.get_avatar(gh_repo_name),
+                'description': gh_utils.get_description(gh_repo_name),
+                'languages': gh_utils.get_languages(gh_repo_name),
+                'topics': gh_utils.get_topics(gh_repo_name),
+                'stargazers_count': gh_utils.get_stargazers(gh_repo_name),
+                'watchers_count': gh_utils.get_watchers(gh_repo_name),
+                'contributors_count': gh_utils.get_contributors(gh_repo_name),
+                'forks_count': gh_utils.get_forks(gh_repo_name)
+            })
+        db.add_repo_settings(
+            pipeline_id,
+            repo_settings
+        )
 
     #6 Store QAA data
     db.add_assessment_data(
