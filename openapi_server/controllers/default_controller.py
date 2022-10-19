@@ -298,13 +298,21 @@ async def _get_tooling_for_assessment(
             'criteria_data_list': _code_criteria
         })
     elif deployment:
-        relevant_criteria_data = {
-            'repo': deployment,
-            'criteria_data_list': [_data
-                for _data in criteria_data_list
-                    if _data['id'].startswith('SvcQC')
-            ]
-        }
+        _code_criteria = []
+        # deployment tool
+        _deploy_tool = deployment['deploy_tool']
+        for _data in criteria_data_list:
+            if _data['id'].startswith('SvcQC'):
+                if _data['id'] in ['SvcQC.Dep']:
+                    _data['tools'] = [_deploy_tool]
+                    user_requested_tools.append(_deploy_tool)
+                _code_criteria.append(_data)
+
+        # relevant_criteria_data
+        relevant_criteria_data.append({
+            'repo': deployment['repo_deploy'],
+            'criteria_data_list': _code_criteria
+        })
     else:
         # FIXME This will change when FAIR is integrated
         _reason = (

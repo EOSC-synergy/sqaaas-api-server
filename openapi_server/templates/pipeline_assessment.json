@@ -1,10 +1,15 @@
+{%- if repo_code -%}
+{%- set repositories = [repo_code, repo_docs] -%}
+{%- elif repo_deploy -%}
+{%- set repositories = [repo_deploy] -%}
+{%- endif -%}
 {
   "name": "{{ pipeline_name }}",
   "config_data": [
     {
       "config": {
         "project_repos": [
-	  {%- for repo in [repo_code, repo_docs, repo_deploy] -%}
+	  {%- for repo in repositories -%}
           {%- if repo.get('repo', {})  -%}
 	  {{ "," if not loop.first else "" }}
           {
