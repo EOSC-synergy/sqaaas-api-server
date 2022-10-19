@@ -314,12 +314,17 @@ async def _get_tooling_for_assessment(
             'criteria_data_list': _code_criteria
         })
     elif fair:
+        _code_criteria = []
+        # fair tool
+        _fair_tool = fair['fair_tool']
+        for _data in criteria_data_list:
+            if _data['id'] in ['QC.FAIR']:
+                _data['tools'] = [_fair_tool]
+                user_requested_tools.append(_fair_tool)
+                _code_criteria.append(_data)
         relevant_criteria_data.append({
             'repo': None,
-            'criteria_data_list': [_data
-                for _data in criteria_data_list
-                    if _data['id'] in ['QC.FAIR']
-            ]
+            'criteria_data_list': _code_criteria
         })
     else:
         # FIXME This will change when FAIR is integrated
@@ -424,7 +429,12 @@ async def add_pipeline_for_assessment(request: web.Request, body, user_requested
 
     build_repo_name = repo_data.get('repo', None)
     if fair:
-        build_repo_name = body['fair']['persistent_identifier']
+        # FIXME Temporary hack until the web provides all required input fields
+        _fair_tool = body['fair']['fair_tool']
+        for arg in _fair_tool['args']:
+            if arg.get('id', '') in ['persistent_identifier']:
+                build_repo_name = arg['value']
+                break
     pipeline_name = '.'.join([
         os.path.basename(build_repo_name),
         'assess'
