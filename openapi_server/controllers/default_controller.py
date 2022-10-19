@@ -105,7 +105,7 @@ async def add_pipeline(request: web.Request, body, report_to_stdout=None) -> web
 
 async def _get_tooling_for_assessment(
     body,
-    optional_tools=[]
+    user_requested_tools=[]
 ):
     """Returns per-criterion tooling metadata filtered for assessment.
 
@@ -120,8 +120,8 @@ async def _get_tooling_for_assessment(
 
     :param body: modified request body with the required data for assessment
     :type repo_code: dict
-    :param optional_tools: Optional tools that shall be accounted
-    :type optional_tools: list
+    :param user_requested_tools: Optional tools that shall be accounted
+    :type user_requested_tools: list
     """
     @GitUtils.do_git_work
     def _filter_tools(repo, criteria_data_list, path='.'):
@@ -151,11 +151,11 @@ async def _get_tooling_for_assessment(
                             if level in ['REQUIRED']:
                                 criterion_has_required_level = True
                         else:
-                            if tool in optional_tools:
+                            if tool in user_requested_tools:
                                 account_tool_by_requirement_level = True
                                 logger.debug((
                                     'Accounting for QAA the tool <%s> (reason: '
-                                    'requested as OPTIONAL tool): %s' % (
+                                    'tool requested by user): %s' % (
                                         tool['name'], tool
                                     )
                                 ))
@@ -331,19 +331,26 @@ async def _get_tooling_for_assessment(
         _reason = 'Could not find any tool for criteria assessment'
         logger.error(_reason)
         raise SQAaaSAPIException(422, _reason)
+    
+    # print('*'*20)
+    # import json
+    # print(json.dumps(_criteria_data_list_filtered, indent=4))
+    # print('*'*20)
+    # import sys
+    # sys.exit(0)
 
     return criteria_data_list_filtered, criteria_filtered_out
 
 
-async def add_pipeline_for_assessment(request: web.Request, body, optional_tools=[]) -> web.Response:
+async def add_pipeline_for_assessment(request: web.Request, body, user_requested_tools=[]) -> web.Response:
     """Creates a pipeline for assessment (QAA module).
 
     Creates a pipeline for assessment (QAA module).
 
     :param body: JSON payload request.
     :type body: dict | bytes
-    :param optional_tools: Optional tools that shall be accounted
-    :type optional_tools: list
+    :param user_requested_tools: Optional tools that shall be accounted
+    :type user_requested_tools: list
 
     """
     # FIXME If it is applicable to every HTTP request, it shall be added as
@@ -383,7 +390,7 @@ async def add_pipeline_for_assessment(request: web.Request, body, optional_tools
             criteria_filtered_out
         ) = await _get_tooling_for_assessment(
                 body=body,
-                optional_tools=optional_tools
+                user_requested_tools=user_requested_tools
             )
         logger.debug((
             'Gathered tooling data enabled for assessment'
