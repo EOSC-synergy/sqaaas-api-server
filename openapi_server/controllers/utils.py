@@ -762,7 +762,10 @@ def process_extra_data(config_json, composer_json, report_to_stdout=False):
                             if tool_has_template in ['im_client']:
                                 _file_to_modify = template_kwargs['im_config_file']
                             elif tool_has_template in ['ec3_client']:
-                                any_ec3_template = template_kwargs['ec3_templates'][0]
+                                if type(template_kwargs['ec3_templates']) is list:
+                                    any_ec3_template = template_kwargs['ec3_templates'][0]
+                                elif type(template_kwargs['ec3_templates']) is str:
+                                    any_ec3_template = template_kwargs['ec3_templates']
                                 any_ec3_template_file_name = '.'.join([
                                     any_ec3_template, 'radl'
                                 ])
