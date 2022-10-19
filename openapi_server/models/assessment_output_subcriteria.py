@@ -15,18 +15,20 @@ class AssessmentOutputSubcriteria(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, description: str=None, valid: bool=None, evidence: List[AssessmentOutputValidator]=None, required_for_next_level_badge: bool=None):
+    def __init__(self, description: str=None, valid: bool=None, evidence: List[AssessmentOutputValidator]=None, hint: str=None, required_for_next_level_badge: bool=None):
         """AssessmentOutputSubcriteria - a model defined in OpenAPI
 
         :param description: The description of this AssessmentOutputSubcriteria.
         :param valid: The valid of this AssessmentOutputSubcriteria.
         :param evidence: The evidence of this AssessmentOutputSubcriteria.
+        :param hint: The hint of this AssessmentOutputSubcriteria.
         :param required_for_next_level_badge: The required_for_next_level_badge of this AssessmentOutputSubcriteria.
         """
         self.openapi_types = {
             'description': str,
             'valid': bool,
             'evidence': List[AssessmentOutputValidator],
+            'hint': str,
             'required_for_next_level_badge': bool
         }
 
@@ -34,12 +36,14 @@ class AssessmentOutputSubcriteria(Model):
             'description': 'description',
             'valid': 'valid',
             'evidence': 'evidence',
+            'hint': 'hint',
             'required_for_next_level_badge': 'required_for_next_level_badge'
         }
 
         self._description = description
         self._valid = valid
         self._evidence = evidence
+        self._hint = hint
         self._required_for_next_level_badge = required_for_next_level_badge
 
     @classmethod
@@ -119,6 +123,29 @@ class AssessmentOutputSubcriteria(Model):
         """
 
         self._evidence = evidence
+
+    @property
+    def hint(self):
+        """Gets the hint of this AssessmentOutputSubcriteria.
+
+        Provide hints to fulfill the current subcriterion
+
+        :return: The hint of this AssessmentOutputSubcriteria.
+        :rtype: str
+        """
+        return self._hint
+
+    @hint.setter
+    def hint(self, hint):
+        """Sets the hint of this AssessmentOutputSubcriteria.
+
+        Provide hints to fulfill the current subcriterion
+
+        :param hint: The hint of this AssessmentOutputSubcriteria.
+        :type hint: str
+        """
+
+        self._hint = hint
 
     @property
     def required_for_next_level_badge(self):

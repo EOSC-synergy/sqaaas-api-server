@@ -6,6 +6,7 @@ from typing import List, Dict, Type
 
 from openapi_server.models.base_model_ import Model
 from openapi_server.models.assessment_deployment import AssessmentDeployment
+from openapi_server.models.assessment_fair import AssessmentFAIR
 from openapi_server.models.repository import Repository
 from openapi_server import util
 
@@ -16,28 +17,32 @@ class PipelineAssessment(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, repo_code: Repository=None, repo_docs: Repository=None, deployment: AssessmentDeployment=None):
+    def __init__(self, repo_code: Repository=None, repo_docs: Repository=None, deployment: AssessmentDeployment=None, fair: AssessmentFAIR=None):
         """PipelineAssessment - a model defined in OpenAPI
 
         :param repo_code: The repo_code of this PipelineAssessment.
         :param repo_docs: The repo_docs of this PipelineAssessment.
         :param deployment: The deployment of this PipelineAssessment.
+        :param fair: The fair of this PipelineAssessment.
         """
         self.openapi_types = {
             'repo_code': Repository,
             'repo_docs': Repository,
-            'deployment': AssessmentDeployment
+            'deployment': AssessmentDeployment,
+            'fair': AssessmentFAIR
         }
 
         self.attribute_map = {
             'repo_code': 'repo_code',
             'repo_docs': 'repo_docs',
-            'deployment': 'deployment'
+            'deployment': 'deployment',
+            'fair': 'fair'
         }
 
         self._repo_code = repo_code
         self._repo_docs = repo_docs
         self._deployment = deployment
+        self._fair = fair
 
     @classmethod
     def from_dict(cls, dikt: dict) -> 'PipelineAssessment':
@@ -66,8 +71,6 @@ class PipelineAssessment(Model):
         :param repo_code: The repo_code of this PipelineAssessment.
         :type repo_code: Repository
         """
-        if repo_code is None:
-            raise ValueError("Invalid value for `repo_code`, must not be `None`")
 
         self._repo_code = repo_code
 
@@ -112,3 +115,24 @@ class PipelineAssessment(Model):
         """
 
         self._deployment = deployment
+
+    @property
+    def fair(self):
+        """Gets the fair of this PipelineAssessment.
+
+
+        :return: The fair of this PipelineAssessment.
+        :rtype: AssessmentFAIR
+        """
+        return self._fair
+
+    @fair.setter
+    def fair(self, fair):
+        """Sets the fair of this PipelineAssessment.
+
+
+        :param fair: The fair of this PipelineAssessment.
+        :type fair: AssessmentFAIR
+        """
+
+        self._fair = fair
