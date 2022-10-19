@@ -465,35 +465,36 @@ async def add_pipeline_for_assessment(request: web.Request, body, user_requested
     #5 Store repo settings
     ## For the time being, just consider the main repo code. Still an array
     ## object must be returned
-    active_branch = repo_data.get('branch', None)
-    if not active_branch:
-        active_branch = GitUtils.get_remote_active_branch(
-            repo_data['repo']
+    if repo_data:
+        active_branch = repo_data.get('branch', None)
+        if not active_branch:
+            active_branch = GitUtils.get_remote_active_branch(
+                repo_data['repo']
+            )
+        repo_settings = {
+            'name': ctls_utils.get_short_repo_name(repo_data['repo']),
+            'url': repo_data['repo'],
+            'tag': active_branch
+        }
+        platform = ctls_utils.supported_git_platform(
+            repo_data['repo'], platforms=SUPPORTED_PLATFORMS
         )
-    repo_settings = {
-        'name': ctls_utils.get_short_repo_name(repo_data['repo']),
-        'url': repo_data['repo'],
-        'tag': active_branch
-    }
-    platform = ctls_utils.supported_git_platform(
-        repo_data['repo'], platforms=SUPPORTED_PLATFORMS
-    )
-    if platform in ['github']:
-        gh_repo_name = repo_settings['name']
-        repo_settings.update({
-            'avatar_url': gh_utils.get_avatar(gh_repo_name),
-            'description': gh_utils.get_description(gh_repo_name),
-            'languages': gh_utils.get_languages(gh_repo_name),
-            'topics': gh_utils.get_topics(gh_repo_name),
-            'stargazers_count': gh_utils.get_stargazers(gh_repo_name),
-            'watchers_count': gh_utils.get_watchers(gh_repo_name),
-            'contributors_count': gh_utils.get_contributors(gh_repo_name),
-            'forks_count': gh_utils.get_forks(gh_repo_name)
-        })
-    db.add_repo_settings(
-        pipeline_id,
-        repo_settings
-    )
+        if platform in ['github']:
+            gh_repo_name = repo_settings['name']
+            repo_settings.update({
+                'avatar_url': gh_utils.get_avatar(gh_repo_name),
+                'description': gh_utils.get_description(gh_repo_name),
+                'languages': gh_utils.get_languages(gh_repo_name),
+                'topics': gh_utils.get_topics(gh_repo_name),
+                'stargazers_count': gh_utils.get_stargazers(gh_repo_name),
+                'watchers_count': gh_utils.get_watchers(gh_repo_name),
+                'contributors_count': gh_utils.get_contributors(gh_repo_name),
+                'forks_count': gh_utils.get_forks(gh_repo_name)
+            })
+        db.add_repo_settings(
+            pipeline_id,
+            repo_settings
+        )
 
     #6 Store QAA data
     db.add_assessment_data(
