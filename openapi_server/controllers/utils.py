@@ -1175,8 +1175,9 @@ def add_image_to_im(im_config_file, image_id, openstack_url, tech, repo, path='.
     ost_image_id = 'ost://%s/%s' % (openstack_host, image_id)
     data = None
     _reason = None
-    if Path(PurePath(im_config_file, path)).exists():
-        with open(Path(PurePath(path, im_config_file)), 'r') as f:
+    im_config_file_abspath = Path(path) / im_config_file
+    if Path(im_config_file_abspath).exists():
+        with open(Path(im_config_file_abspath), 'r') as f:
             if im_config_file.endswith('.radl'):
                 data = f.read()
                 data = _add_image_id_to_radl(data, ost_image_id)
