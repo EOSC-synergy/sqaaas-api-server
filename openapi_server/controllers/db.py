@@ -214,9 +214,6 @@ def add_tool_data(pipeline_id, criteria_tools):
     :param criteria_tools: Tool data from each criterion.
     """
     db = load_content()
-    print('/'*20)
-    print(criteria_tools)
-    print('/'*20)
     db[pipeline_id]['tools'] = criteria_tools
     store_content(db)
     logger.debug('Criteria\'s tool data added in DB for pipeline <%s>: %s' % (pipeline_id, db[pipeline_id]['tools']))
