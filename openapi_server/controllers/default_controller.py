@@ -453,10 +453,13 @@ async def add_pipeline_for_assessment(request: web.Request, body, user_requested
     logger.debug('Generated JSON payload (from template) required to create the pipeline for the assessment: %s' % json_data)
 
     #3 Create pipeline
-    pipeline_id = await _add_pipeline_to_db(
-        json_data,
-        report_to_stdout=True
-    )
+    try:
+        pipeline_id = await _add_pipeline_to_db(
+            json_data,
+            report_to_stdout=True
+        )
+    except SQAaaSAPIException as e:
+        return web.Response(status=e.http_code, reason=e.message, text=e.message)
 
     #4 Store tool related data in the DB
     pipeline_data = db.get_entry(pipeline_id)
