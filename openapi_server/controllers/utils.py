@@ -864,7 +864,7 @@ def process_extra_data(config_json, composer_json, report_to_stdout=False):
         config_json['environment'][jpl_envvar] = 'enabled'
 
     # Default CONFIG:TIMEOUT
-    config_json['timeout'] = 1800
+    config_json['timeout'] = 5400
 
     # COMPOSER (Docker Compose specific)
     for srv_name, srv_data in composer_json['services'].items():
