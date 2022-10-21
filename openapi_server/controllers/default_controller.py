@@ -1584,6 +1584,8 @@ async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Re
     # Gather & format <badge> key
     badge_data = {}
     share_data = None
+    pipeline_data = {}
+    report_data_copy = {}
     # List of fullfilled criteria per badge type (i.e. [software, services, fair])
     criteria_fulfilled_map = _get_criteria_per_badge_type(report_data)
     if criteria_fulfilled_map:
