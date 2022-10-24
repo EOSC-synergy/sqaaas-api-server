@@ -1534,30 +1534,43 @@ async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Re
         return report_data
 
     def _get_criteria_per_badge_type(report_data):
-        criteria_fulfilled_list = [
-            criterion
-            for criterion, criterion_data in report_data.items()
-            if criterion_data['valid']
+        _criteria_data = report_data
+        _criteria_list = list(report_data)
+        if FAIR_PREFIX in _criteria_list:
+            logger.info((
+                'QC.FAIR criterion detected: considering only '
+                'QC.FAIR subcriteria'
+            ))
+            _criteria_data = report_data['QC.FAIR']['subcriteria']
+            badge_type = 'fair'
+        elif _criteria_list[0].startswith(SW_PREFIX):
+            badge_type = 'software'
+        elif _criteria_list[0].startswith(SRV_PREFIX):
+            badge_type = 'services'
+
+        criteria_fulfilled_list = [criterion
+            for criterion, criterion_data in _criteria_data.items()
+                if criterion_data['valid']
         ]
 
+        criteria_fulfilled_map = {}
         if not criteria_fulfilled_list:
             logger.warn('No criteria was fulfilled!')
-            criteria_fulfilled_map = {}
-        else:
-            # NOTE Keys aligned with subsection name in sqaaas.ini
-            criteria_fulfilled_map = {
-                'software': [],
-                'services': [],
-                'fair': [],
-            }
-            for criterion in criteria_fulfilled_list:
-                if criterion.startswith(FAIR_PREFIX):
-                    badge_type = 'fair'
-                elif criterion.startswith(SW_PREFIX):
-                    badge_type = 'software'
-                elif criterion.startswith(SRV_PREFIX):
-                    badge_type = 'services'
-                criteria_fulfilled_map[badge_type].append(criterion)
+        criteria_fulfilled_map[badge_type] = criteria_fulfilled_list
+            # # NOTE Keys aligned with subsection name in sqaaas.ini
+            # criteria_fulfilled_map = {
+            #     'software': [],
+            #     'services': [],
+            #     'fair': [],
+            # }
+            # for criterion in criteria_fulfilled_list:
+            #     if criterion.startswith(FAIR_PREFIX):
+            #         badge_type = 'fair'
+            #     elif criterion.startswith(SW_PREFIX):
+            #         badge_type = 'software'
+            #     elif criterion.startswith(SRV_PREFIX):
+            #         badge_type = 'services'
+            #     criteria_fulfilled_map[badge_type].append(criterion)
         return criteria_fulfilled_map
 
     # Iterate over the criteria and associated tool results to compose the payload of the HTTP response:
