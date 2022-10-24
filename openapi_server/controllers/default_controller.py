@@ -1633,6 +1633,8 @@ async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Re
             badge_data[badge_type] = {
                 'criteria': criteria_summary
             }
+
+            badge_data[badge_type]['data'] = {}
             if badgeclass_name:
                 try:
                     badge_obj = await _issue_badge(
