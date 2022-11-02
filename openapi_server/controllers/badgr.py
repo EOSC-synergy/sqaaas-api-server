@@ -197,8 +197,11 @@ class BadgrUtils(object):
     @refresh_token
     def issue_badge(self,
             badgeclass_name,
+            url,
+            branch,
             commit_id,
-            commit_url,
+            build_commit_id,
+            build_commit_url,
             ci_build_url,
             sw_criteria=[],
             srv_criteria=[]
@@ -207,9 +210,13 @@ class BadgrUtils(object):
 
         :param badgeclass_name: String that corresponds to the BadgeClass
             name (as it appears in Badgr web)
-        :param commit_id: Commit ID assigned by git as a result of pushing
+        :param url: Upstream repository URL
+        :param branch: Active branch of the upstream repository
+        :param commit_id: SHA that corresponds to the upstream version being
+            assessed
+        :param build_commit_id: Commit ID assigned by git as a result of pushing
             the JePL files.
-        :param commit_url: Absolute URL pointing to the commit that triggered
+        :param build_commit_url: Absolute URL pointing to the commit that triggered
             the pipeline
         :param ci_build_url: Absolute URL pointing to the build results of the
             pipeline
@@ -235,14 +242,19 @@ class BadgrUtils(object):
         # Assertion data
         assertion_data = json.dumps({
             'recipient': {
-              'identity': commit_url,
+              'identity': url,
               'hashed': True,
               'type': 'url'
             },
-            'narrative': 'Tracking source code SHA: [%s](%s)' % (
-                commit_id, commit_url
-            ),
+            'narrative': (
+                'SQAaaS assessment results for repository %s '
+                '(commit: %s, branch: %s)'
+            ) % (url, commit_id, branch),
             'evidence': [
+              {
+                'url': build_commit_url,
+                'narrative': 'SQAaaS build repository'
+              },
               {
                 'url': ci_build_url,
                 'narrative': 'Build page from Jenkins CI'
