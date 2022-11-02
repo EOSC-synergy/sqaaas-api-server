@@ -488,7 +488,8 @@ async def add_pipeline_for_assessment(request: web.Request, body, user_requested
         repo_settings = {
             'name': ctls_utils.get_short_repo_name(repo_data['repo']),
             'url': repo_data['repo'],
-            'tag': active_branch
+            'tag': active_branch,
+            'commit_id': current_commit
         }
         platform = ctls_utils.supported_git_platform(
             repo_data['repo'], platforms=SUPPORTED_PLATFORMS
@@ -1956,8 +1957,11 @@ async def _issue_badge(pipeline_id, badgeclass_name):
     try:
         badge_data = badgr_utils.issue_badge(
             badgeclass_name=badgeclass_name,
-            commit_id=build_info['commit_id'],
-            commit_url=build_info['commit_url'],
+            url=pipeline_data['repo_settings']['url'],
+            branch=pipeline_data['repo_settings']['branch'],
+            commit_id=pipeline_data['repo_settings']['commit'],
+            build_commit_id=build_info['commit_id'],
+            build_commit_url=build_info['commit_url'],
             ci_build_url=build_info['url']
         )
     except Exception as e:
