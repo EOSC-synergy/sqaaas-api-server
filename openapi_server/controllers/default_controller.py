@@ -125,7 +125,7 @@ async def _get_tooling_for_assessment(
     :type user_requested_tools: list
     """
     @GitUtils.do_git_work
-    def _filter_tools(repo, criteria_data_list, path='.'):
+    def _filter_tools(repo, criteria_data_list, path='.', **kwargs):
         criteria_data_list_filtered = []
         criteria_filtered_out = {}
         for criterion_data in criteria_data_list:
@@ -254,7 +254,7 @@ async def _get_tooling_for_assessment(
                 criterion_data_copy['tools'] = toolset_for_reporting
                 criteria_data_list_filtered.append(criterion_data_copy)
         
-        return criteria_data_list_filtered, criteria_filtered_out
+        return criteria_data_list_filtered, criteria_filtered_out, kwargs
 
     repo_code = body.get('repo_code', {})
     repo_docs = body.get('repo_docs', {})
@@ -344,7 +344,8 @@ async def _get_tooling_for_assessment(
     for repo_criteria_mapping in relevant_criteria_data:
         (
             _criteria_data_list_filtered,
-            _criteria_filtered_out
+            _criteria_filtered_out,
+            repo_settings
         ) = _filter_tools(**repo_criteria_mapping)
         criteria_data_list_filtered.extend(_criteria_data_list_filtered)
         criteria_filtered_out.update(_criteria_filtered_out)
@@ -361,7 +362,7 @@ async def _get_tooling_for_assessment(
     # import sys
     # sys.exit(0)
 
-    return criteria_data_list_filtered, criteria_filtered_out
+    return criteria_data_list_filtered, criteria_filtered_out, repo_settings
 
 
 async def add_pipeline_for_assessment(request: web.Request, body, user_requested_tools=[]) -> web.Response:
@@ -407,10 +408,12 @@ async def add_pipeline_for_assessment(request: web.Request, body, user_requested
         return web.Response(status=422, reason=_reason, text=_reason)
 
     #1 Filter per-criterion tools that will take part in the assessment
+    repo_settings = {}
     try:
         (
             criteria_data_list,
-            criteria_filtered_out
+            criteria_filtered_out,
+            repo_settings
         ) = await _get_tooling_for_assessment(
                 body=body,
                 user_requested_tools=user_requested_tools
@@ -480,17 +483,10 @@ async def add_pipeline_for_assessment(request: web.Request, body, user_requested
     ## For the time being, just consider the main repo code. Still an array
     ## object must be returned
     if repo_data:
-        active_branch = repo_data.get('branch', None)
-        if not active_branch:
-            active_branch = GitUtils.get_remote_active_branch(
-                repo_data['repo']
-            )
-        repo_settings = {
+        repo_settings.update({
             'name': ctls_utils.get_short_repo_name(repo_data['repo']),
-            'url': repo_data['repo'],
-            'tag': active_branch,
-            'commit_id': current_commit
-        }
+            'url': repo_data['repo']
+        })
         platform = ctls_utils.supported_git_platform(
             repo_data['repo'], platforms=SUPPORTED_PLATFORMS
         )

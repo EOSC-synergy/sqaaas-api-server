@@ -177,7 +177,9 @@ class GitUtils(object):
                     else:
                         # Set path to the temporary directory
                         kwargs['path'] = dirpath
-                        # Perform the actual work
+                        # repo settings
+                        kwargs['tag'] = branch
+                        kwargs['commit_id'] = repo.commit(branch).hexsha
                     ret = f(*args, **kwargs)
             else:
                 ret = f(*args, **kwargs)
