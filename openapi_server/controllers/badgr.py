@@ -198,7 +198,7 @@ class BadgrUtils(object):
     def issue_badge(self,
             badgeclass_name,
             url,
-            branch,
+            tag,
             commit_id,
             build_commit_id,
             build_commit_url,
@@ -211,7 +211,7 @@ class BadgrUtils(object):
         :param badgeclass_name: String that corresponds to the BadgeClass
             name (as it appears in Badgr web)
         :param url: Upstream repository URL
-        :param branch: Active branch of the upstream repository
+        :param tag: Active tag of the upstream repository
         :param commit_id: SHA that corresponds to the upstream version being
             assessed
         :param build_commit_id: Commit ID assigned by git as a result of pushing
@@ -248,8 +248,8 @@ class BadgrUtils(object):
             },
             'narrative': (
                 'SQAaaS assessment results for repository %s '
-                '(commit: %s, branch: %s)'
-            ) % (url, commit_id, branch),
+                '(commit: %s, branch/tag: %s)'
+            ) % (url, commit_id, tag),
             'evidence': [
               {
                 'url': build_commit_url,
