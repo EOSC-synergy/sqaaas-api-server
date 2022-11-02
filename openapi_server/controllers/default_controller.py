@@ -1954,8 +1954,8 @@ async def _issue_badge(pipeline_id, badgeclass_name):
         badge_data = badgr_utils.issue_badge(
             badgeclass_name=badgeclass_name,
             url=pipeline_data['repo_settings']['url'],
-            branch=pipeline_data['repo_settings']['branch'],
-            commit_id=pipeline_data['repo_settings']['commit'],
+            tag=pipeline_data['repo_settings']['tag'],
+            commit_id=pipeline_data['repo_settings']['commit_id'],
             build_commit_id=build_info['commit_id'],
             build_commit_url=build_info['commit_url'],
             ci_build_url=build_info['url']
