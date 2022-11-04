@@ -741,7 +741,7 @@ def process_extra_data(config_json, composer_json, report_to_stdout=False):
                                 _value = arg['value']
                                 # split(',') is required since some values might be
                                 # comma-separated
-                                if type(_value) in [str]:
+                                if type(_value) in [str] and not arg.get('value_has_commas', False):
                                     _value = arg['value'].split(',')
                                 if len(_value) <= 1:
                                     _value = arg['value']
