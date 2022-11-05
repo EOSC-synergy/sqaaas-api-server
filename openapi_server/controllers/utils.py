@@ -425,7 +425,10 @@ class ProcessExtraData(object):
         def process_value(arg, commands_builder=False, option_no_flag=False):
             value = arg['value']
             if type(value) in [str]:
-                value_list = list(filter(None, value.split(',')))
+                if not arg.get('value_has_commas', False):
+                    value_list = list(filter(None, value.split(',')))
+                else:
+                    value_list = [value]
                 value_list = list(map(str.strip, value_list))
                 if arg.get('repeatable', False):
                     if len(value_list) == 1:
