@@ -1124,7 +1124,7 @@ def format_filtered_data(valid, reason_list, subcriteria=None):
 
 
 @GitUtils.do_git_work
-def add_image_to_im(im_config_file, image_id, openstack_url, tech, repo, path='.'):
+def add_image_to_im(im_config_file, image_id, openstack_url, tech, repo, path='.', **kwargs):
     """Adds image_id (defined in sqaaas.ini) to TOSCA and RADL files used
     by IM.
 
