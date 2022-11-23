@@ -482,11 +482,11 @@ async def add_pipeline_for_assessment(request: web.Request, body, user_requested
     #5 Store repo settings
     ## For the time being, just consider the main repo code. Still an array
     ## object must be returned
+    repo_settings.update({
+        'name': ctls_utils.get_short_repo_name(build_repo_name),
+        'url': build_repo_name
+    })
     if repo_data:
-        repo_settings.update({
-            'name': ctls_utils.get_short_repo_name(repo_data['repo']),
-            'url': repo_data['repo']
-        })
         platform = ctls_utils.supported_git_platform(
             repo_data['repo'], platforms=SUPPORTED_PLATFORMS
         )
@@ -502,10 +502,10 @@ async def add_pipeline_for_assessment(request: web.Request, body, user_requested
                 'contributors_count': gh_utils.get_contributors(gh_repo_name),
                 'forks_count': gh_utils.get_forks(gh_repo_name)
             })
-        db.add_repo_settings(
-            pipeline_id,
-            repo_settings
-        )
+    db.add_repo_settings(
+        pipeline_id,
+        repo_settings
+    )
 
     #6 Store QAA data
     db.add_assessment_data(
@@ -1636,6 +1636,7 @@ async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Re
                 try:
                     badge_obj = await _issue_badge(
                         pipeline_id,
+                        badge_type,
                         badgeclass_name,
                     )
                     badge_data[badge_type]['data'] = badge_obj
@@ -1930,11 +1931,13 @@ async def _badgeclass_matchmaking(pipeline_id, badge_type, criteria_fulfilled_li
     )
 
 
-async def _issue_badge(pipeline_id, badgeclass_name):
+async def _issue_badge(pipeline_id, badge_type, badgeclass_name):
     """Issues a badge using BadgrUtils.
 
     :param pipeline_id: ID of the pipeline to get
     :type pipeline_id: str
+    :param badge_type: String that identifies the type of badge 
+    :type badge_type: str
     :param badgeclass_name: String that corresponds to the BadgeClass name (as it appears in Badgr web)
     :type badgeclass_name: str
     """
@@ -1950,15 +1953,26 @@ async def _issue_badge(pipeline_id, badgeclass_name):
         logger.error(_reason)
         return web.Response(status=422, reason=_reason, text=_reason)
 
+    badge_args = {}
+    if badge_type in ['fair']:
+        badge_args = {
+        }
+    else:
+        badge_args = {
+            'url': pipeline_data['repo_settings']['url'],
+            'tag': pipeline_data['repo_settings']['tag'],
+            'commit_id': pipeline_data['repo_settings']['commit_id'],
+        }
+
     try:
         badge_data = badgr_utils.issue_badge(
+            badge_type=badge_type,
             badgeclass_name=badgeclass_name,
             url=pipeline_data['repo_settings']['url'],
-            tag=pipeline_data['repo_settings']['tag'],
-            commit_id=pipeline_data['repo_settings']['commit_id'],
             build_commit_id=build_info['commit_id'],
             build_commit_url=build_info['commit_url'],
-            ci_build_url=build_info['url']
+            ci_build_url=build_info['url'],
+            **badge_args
         )
     except Exception as e:
         _reason = 'Cannot issue a badge for pipeline <%s>: %s' % (pipeline_id, e)

@@ -196,18 +196,20 @@ class BadgrUtils(object):
 
     @refresh_token
     def issue_badge(self,
+            badge_type,
             badgeclass_name,
             url,
-            tag,
-            commit_id,
-            build_commit_id,
-            build_commit_url,
-            ci_build_url,
+            tag=None,
+            commit_id=None,
+            build_commit_id=None,
+            build_commit_url=None,
+            ci_build_url=None,
             sw_criteria=[],
             srv_criteria=[]
         ):
         """Issues a badge (Badgr's assertion).
 
+        :param badge_type: String that identifies the type of badge 
         :param badgeclass_name: String that corresponds to the BadgeClass
             name (as it appears in Badgr web)
         :param url: Upstream repository URL
@@ -240,16 +242,21 @@ class BadgrUtils(object):
             'Content-Type': 'application/json'
         }
         # Assertion data
+        narrative = None
+        if badge_type in ['fair']:
+            narrative = 'SQAaaS assessment results for dataset %s'
+        else:
+            narrative = (
+                'SQAaaS assessment results for repository %s '
+                '(commit: %s, branch/tag: %s)' % (url, commit_id, tag)
+            )
         assertion_data = json.dumps({
             'recipient': {
               'identity': url,
               'hashed': True,
               'type': 'url'
             },
-            'narrative': (
-                'SQAaaS assessment results for repository %s '
-                '(commit: %s, branch/tag: %s)'
-            ) % (url, commit_id, tag),
+            'narrative': narrative,
             'evidence': [
               {
                 'url': build_commit_url,
