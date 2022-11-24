@@ -2173,11 +2173,13 @@ async def _sort_tooling_by_criteria(tooling_metadata_json, criteria_id_list=[]):
     return criteria_data_list
 
 
-async def get_criteria(request: web.Request, criterion_id=None) -> web.Response:
+async def get_criteria(request: web.Request, criterion_id=None, assessment=None) -> web.Response:
     """Returns data about criteria.
 
     :param criterion_id: Get data from a specific criterion
     :type criterion_id: str
+    :param assessment: Flag to indicate whether the criteria shall consider only assessment-related tools
+    :type assessment: bool
 
     """
     try:
