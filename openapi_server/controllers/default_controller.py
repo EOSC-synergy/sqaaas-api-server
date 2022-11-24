@@ -2193,4 +2193,12 @@ async def get_criteria(request: web.Request, criterion_id=None, assessment=None)
     criteria_data_list = await _sort_tooling_by_criteria(
         tooling_metadata_json, criteria_id_list=criteria_id_list)
 
+    if assessment: # exclude 'commands' tool
+        for criterion_data in criteria_data_list:
+            _tool_list = []
+            for tool_data in criterion_data['tools']:
+                if tool_data['name'] not in ['commands']:
+                    _tool_list.append(tool_data)
+            criterion_data['tools'] = _tool_list
+
     return web.json_response(criteria_data_list, status=200)
