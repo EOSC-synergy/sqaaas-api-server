@@ -1,5 +1,8 @@
 # SQAaaS OpenAPI server
 
+#### Achievements 
+[![Boostnote](https://github.com/EOSC-synergy/SQAaaS/raw/master/badges/badges_120x93/badge_software_bronze.png)](https://eu.badgr.com/public/assertions/bw3v-fVCR6eJoMjwG11afw "SQAaaS bronze badge achieved")
+
 ## Overview
 API server implementation for the SQA-as-a-Service (SQAaaS) platform.
 
