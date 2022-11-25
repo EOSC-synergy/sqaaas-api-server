@@ -1954,12 +1954,8 @@ async def _issue_badge(pipeline_id, badge_type, badgeclass_name):
         return web.Response(status=422, reason=_reason, text=_reason)
 
     badge_args = {}
-    if badge_type in ['fair']:
+    if badge_type not in ['fair']:
         badge_args = {
-        }
-    else:
-        badge_args = {
-            'url': pipeline_data['repo_settings']['url'],
             'tag': pipeline_data['repo_settings']['tag'],
             'commit_id': pipeline_data['repo_settings']['commit_id'],
         }

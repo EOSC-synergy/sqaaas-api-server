@@ -244,7 +244,7 @@ class BadgrUtils(object):
         # Assertion data
         narrative = None
         if badge_type in ['fair']:
-            narrative = 'SQAaaS assessment results for dataset %s'
+            narrative = 'SQAaaS assessment results for dataset %s' % url
         else:
             narrative = (
                 'SQAaaS assessment results for repository %s '
