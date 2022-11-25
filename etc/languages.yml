@@ -5294,7 +5294,7 @@ Ruby:
   - ".rbx"
   - ".ru"
   - ".ruby"
-  - ".spec"
+#  - ".spec"
   - ".thor"
   - ".watchr"
   interpreters:
