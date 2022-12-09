@@ -1,9 +1,9 @@
 # SQAaaS OpenAPI server
 
-[![SQAaaS badge shields.io](https://img.shields.io/badge/sqaaas%20software-bronze-e6ae77)](https://eu.badgr.com/public/assertions/bw3v-fVCR6eJoMjwG11afw "SQAaaS bronze badge achieved")
+[![SQAaaS badge shields.io](https://img.shields.io/badge/sqaaas%20software-silver-lightgrey)](https://api.eu.badgr.io/public/assertions/U-GSO-5DS-qHf5I3MernmQ "SQAaaS silver badge achieved")
 
 #### Achievements 
-[![SQAaaS badge](https://github.com/EOSC-synergy/SQAaaS/raw/master/badges/badges_150x116/badge_software_bronze.png)](https://eu.badgr.com/public/assertions/bw3v-fVCR6eJoMjwG11afw "SQAaaS bronze badge achieved")
+[![SQAaaS badge](https://github.com/EOSC-synergy/SQAaaS/raw/master/badges/badges_150x116/badge_software_silver.png)](https://api.eu.badgr.io/public/assertions/U-GSO-5DS-qHf5I3MernmQ "SQAaaS silver badge achieved")
 
 ## Overview
 API server implementation for the SQA-as-a-Service (SQAaaS) platform.
