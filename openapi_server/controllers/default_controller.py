@@ -46,7 +46,8 @@ TOOLING_QAA_SPECIFIC_KEY = 'tools_qaa_specific'
 
 SW_PREFIX = 'QC'
 SRV_PREFIX = 'SvcQC'
-FAIR_PREFIX = 'QC.Fair'
+FAIR_PREFIX = 'QC.FAIR'
+FAIR_RDA_PREFIX = 'rda'
 
 BADGE_CATEGORIES = ['bronze', 'silver', 'gold']
 
@@ -124,7 +125,7 @@ async def _get_tooling_for_assessment(
     :type user_requested_tools: list
     """
     @GitUtils.do_git_work
-    def _filter_tools(repo, criteria_data_list, path='.'):
+    def _filter_tools(repo, criteria_data_list, path='.', **kwargs):
         criteria_data_list_filtered = []
         criteria_filtered_out = {}
         for criterion_data in criteria_data_list:
@@ -253,7 +254,7 @@ async def _get_tooling_for_assessment(
                 criterion_data_copy['tools'] = toolset_for_reporting
                 criteria_data_list_filtered.append(criterion_data_copy)
         
-        return criteria_data_list_filtered, criteria_filtered_out
+        return criteria_data_list_filtered, criteria_filtered_out, kwargs
 
     repo_code = body.get('repo_code', {})
     repo_docs = body.get('repo_docs', {})
@@ -313,11 +314,24 @@ async def _get_tooling_for_assessment(
             'repo': deployment['repo_deploy'],
             'criteria_data_list': _code_criteria
         })
+    elif fair:
+        _code_criteria = []
+        # fair tool
+        _fair_tool = fair['fair_tool']
+        for _data in criteria_data_list:
+            if _data['id'] in ['QC.FAIR']:
+                _data['tools'] = [_fair_tool]
+                user_requested_tools.append(_fair_tool)
+                _code_criteria.append(_data)
+        relevant_criteria_data.append({
+            'repo': None,
+            'criteria_data_list': _code_criteria
+        })
     else:
         # FIXME This will change when FAIR is integrated
         _reason = (
-            'Neither source code nor deployment repositories have been '
-            'provided'
+            'Neither source code/deployment repositories nor FAIR inputs have '
+            'been provided for the assessment'
         )
         raise SQAaaSAPIException(422, _reason)
     logger.debug(
@@ -330,7 +344,8 @@ async def _get_tooling_for_assessment(
     for repo_criteria_mapping in relevant_criteria_data:
         (
             _criteria_data_list_filtered,
-            _criteria_filtered_out
+            _criteria_filtered_out,
+            repo_settings
         ) = _filter_tools(**repo_criteria_mapping)
         criteria_data_list_filtered.extend(_criteria_data_list_filtered)
         criteria_filtered_out.update(_criteria_filtered_out)
@@ -347,7 +362,7 @@ async def _get_tooling_for_assessment(
     # import sys
     # sys.exit(0)
 
-    return criteria_data_list_filtered, criteria_filtered_out
+    return criteria_data_list_filtered, criteria_filtered_out, repo_settings
 
 
 async def add_pipeline_for_assessment(request: web.Request, body, user_requested_tools=[]) -> web.Response:
@@ -368,6 +383,7 @@ async def add_pipeline_for_assessment(request: web.Request, body, user_requested
     #0 Validate request
     repo_code = body.get('repo_code', {})
     deployment = body.get('deployment', {})
+    fair = body.get('fair', {})
     repo_data = {}
     
     repo_url = repo_code.get('repo', None) # is there data actually?
@@ -375,7 +391,7 @@ async def add_pipeline_for_assessment(request: web.Request, body, user_requested
         repo_data = repo_code
         # Purge 
         body.pop('deployment', {})
-    else:
+    elif deployment:
         repo_deploy = deployment.get('repo_deploy', {})
         repo_deploy_url = repo_deploy.get('repo', None)
         if repo_deploy_url:
@@ -384,18 +400,20 @@ async def add_pipeline_for_assessment(request: web.Request, body, user_requested
             body.pop('repo_code', {})
             body.pop('repo_docs', {})
     
-    if not repo_data:
+    if not repo_data and not fair:
         _reason = (
-            'Invalid request: not valid data found for a software/service '
-            'assessment'
+            'Invalid request: not valid data found for a '
+            'software/service/FAIRness assessment'
         )
         return web.Response(status=422, reason=_reason, text=_reason)
 
     #1 Filter per-criterion tools that will take part in the assessment
+    repo_settings = {}
     try:
         (
             criteria_data_list,
-            criteria_filtered_out
+            criteria_filtered_out,
+            repo_settings
         ) = await _get_tooling_for_assessment(
                 body=body,
                 user_requested_tools=user_requested_tools
@@ -412,11 +430,21 @@ async def add_pipeline_for_assessment(request: web.Request, body, user_requested
         loader=PackageLoader('openapi_server', 'templates')
     )
     template = env.get_template('pipeline_assessment.json')
+
+    build_repo_name = repo_data.get('repo', None)
+    if fair:
+        # FIXME Temporary hack until the web provides all required input fields
+        _fair_tool = body['fair']['fair_tool']
+        for arg in _fair_tool['args']:
+            if arg.get('id', '') in ['persistent_identifier']:
+                build_repo_name = arg['value']
+                break
     pipeline_name = '.'.join([
-        os.path.basename(repo_data['repo']),
+        os.path.basename(build_repo_name),
         'assess'
     ])
     logger.debug('Generated pipeline name for the assessment: %s' % pipeline_name)
+
     json_rendered = template.render(
         pipeline_name=pipeline_name,
         repo_code=repo_code,
@@ -429,10 +457,13 @@ async def add_pipeline_for_assessment(request: web.Request, body, user_requested
     logger.debug('Generated JSON payload (from template) required to create the pipeline for the assessment: %s' % json_data)
 
     #3 Create pipeline
-    pipeline_id = await _add_pipeline_to_db(
-        json_data,
-        report_to_stdout=True
-    )
+    try:
+        pipeline_id = await _add_pipeline_to_db(
+            json_data,
+            report_to_stdout=True
+        )
+    except SQAaaSAPIException as e:
+        return web.Response(status=e.http_code, reason=e.message, text=e.message)
 
     #4 Store tool related data in the DB
     pipeline_data = db.get_entry(pipeline_id)
@@ -451,31 +482,26 @@ async def add_pipeline_for_assessment(request: web.Request, body, user_requested
     #5 Store repo settings
     ## For the time being, just consider the main repo code. Still an array
     ## object must be returned
-    active_branch = repo_data.get('branch', None)
-    if not active_branch:
-        active_branch = GitUtils.get_remote_active_branch(
-            repo_data['repo']
+    repo_settings.update({
+        'name': ctls_utils.get_short_repo_name(build_repo_name),
+        'url': build_repo_name
+    })
+    if repo_data:
+        platform = ctls_utils.supported_git_platform(
+            repo_data['repo'], platforms=SUPPORTED_PLATFORMS
         )
-    repo_settings = {
-        'name': ctls_utils.get_short_repo_name(repo_data['repo']),
-        'url': repo_data['repo'],
-        'tag': active_branch
-    }
-    platform = ctls_utils.supported_git_platform(
-        repo_data['repo'], platforms=SUPPORTED_PLATFORMS
-    )
-    if platform in ['github']:
-        gh_repo_name = repo_settings['name']
-        repo_settings.update({
-            'avatar_url': gh_utils.get_avatar(gh_repo_name),
-            'description': gh_utils.get_description(gh_repo_name),
-            'languages': gh_utils.get_languages(gh_repo_name),
-            'topics': gh_utils.get_topics(gh_repo_name),
-            'stargazers_count': gh_utils.get_stargazers(gh_repo_name),
-            'watchers_count': gh_utils.get_watchers(gh_repo_name),
-            'contributors_count': gh_utils.get_contributors(gh_repo_name),
-            'forks_count': gh_utils.get_forks(gh_repo_name)
-        })
+        if platform in ['github']:
+            gh_repo_name = repo_settings['name']
+            repo_settings.update({
+                'avatar_url': gh_utils.get_avatar(gh_repo_name),
+                'description': gh_utils.get_description(gh_repo_name),
+                'languages': gh_utils.get_languages(gh_repo_name),
+                'topics': gh_utils.get_topics(gh_repo_name),
+                'stargazers_count': gh_utils.get_stargazers(gh_repo_name),
+                'watchers_count': gh_utils.get_watchers(gh_repo_name),
+                'contributors_count': gh_utils.get_contributors(gh_repo_name),
+                'forks_count': gh_utils.get_forks(gh_repo_name)
+            })
     db.add_repo_settings(
         pipeline_id,
         repo_settings
@@ -1506,30 +1532,43 @@ async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Re
         return report_data
 
     def _get_criteria_per_badge_type(report_data):
-        criteria_fulfilled_list = [
-            criterion
-            for criterion, criterion_data in report_data.items()
-            if criterion_data['valid']
+        _criteria_data = report_data
+        _criteria_list = list(report_data)
+        if FAIR_PREFIX in _criteria_list:
+            logger.info((
+                'QC.FAIR criterion detected: considering only '
+                'QC.FAIR subcriteria'
+            ))
+            _criteria_data = report_data['QC.FAIR']['subcriteria']
+            badge_type = 'fair'
+        elif _criteria_list[0].startswith(SW_PREFIX):
+            badge_type = 'software'
+        elif _criteria_list[0].startswith(SRV_PREFIX):
+            badge_type = 'services'
+
+        criteria_fulfilled_list = [criterion
+            for criterion, criterion_data in _criteria_data.items()
+                if criterion_data['valid']
         ]
 
+        criteria_fulfilled_map = {}
         if not criteria_fulfilled_list:
             logger.warn('No criteria was fulfilled!')
-            criteria_fulfilled_map = {}
-        else:
-            # NOTE Keys aligned with subsection name in sqaaas.ini
-            criteria_fulfilled_map = {
-                'software': [],
-                'services': [],
-                'fair': [],
-            }
-            for criterion in criteria_fulfilled_list:
-                if criterion.startswith(FAIR_PREFIX):
-                    badge_type = 'fair'
-                elif criterion.startswith(SW_PREFIX):
-                    badge_type = 'software'
-                elif criterion.startswith(SRV_PREFIX):
-                    badge_type = 'services'
-                criteria_fulfilled_map[badge_type].append(criterion)
+        criteria_fulfilled_map[badge_type] = criteria_fulfilled_list
+            # # NOTE Keys aligned with subsection name in sqaaas.ini
+            # criteria_fulfilled_map = {
+            #     'software': [],
+            #     'services': [],
+            #     'fair': [],
+            # }
+            # for criterion in criteria_fulfilled_list:
+            #     if criterion.startswith(FAIR_PREFIX):
+            #         badge_type = 'fair'
+            #     elif criterion.startswith(SW_PREFIX):
+            #         badge_type = 'software'
+            #     elif criterion.startswith(SRV_PREFIX):
+            #         badge_type = 'services'
+            #     criteria_fulfilled_map[badge_type].append(criterion)
         return criteria_fulfilled_map
 
     # Iterate over the criteria and associated tool results to compose the payload of the HTTP response:
@@ -1556,6 +1595,8 @@ async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Re
     # Gather & format <badge> key
     badge_data = {}
     share_data = None
+    pipeline_data = {}
+    report_data_copy = {}
     # List of fullfilled criteria per badge type (i.e. [software, services, fair])
     criteria_fulfilled_map = _get_criteria_per_badge_type(report_data)
     if criteria_fulfilled_map:
@@ -1589,10 +1630,13 @@ async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Re
             badge_data[badge_type] = {
                 'criteria': criteria_summary
             }
+
+            badge_data[badge_type]['data'] = {}
             if badgeclass_name:
                 try:
                     badge_obj = await _issue_badge(
                         pipeline_id,
+                        badge_type,
                         badgeclass_name,
                     )
                     badge_data[badge_type]['data'] = badge_obj
@@ -1634,7 +1678,7 @@ async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Re
                     if not _valid:
                         try:
                             _criterion = re.search(
-                                rf"(^({SW_PREFIX}|{SRV_PREFIX})\.[A-Za-z]+)",
+                                rf"(^({SW_PREFIX}|{SRV_PREFIX})\.[A-Za-z]+)|(^({FAIR_RDA_PREFIX})_[a-z][0-9]+)",
                                 subcriterion
                             ).group(0)
                         except AttributeError:
@@ -1887,11 +1931,13 @@ async def _badgeclass_matchmaking(pipeline_id, badge_type, criteria_fulfilled_li
     )
 
 
-async def _issue_badge(pipeline_id, badgeclass_name):
+async def _issue_badge(pipeline_id, badge_type, badgeclass_name):
     """Issues a badge using BadgrUtils.
 
     :param pipeline_id: ID of the pipeline to get
     :type pipeline_id: str
+    :param badge_type: String that identifies the type of badge 
+    :type badge_type: str
     :param badgeclass_name: String that corresponds to the BadgeClass name (as it appears in Badgr web)
     :type badgeclass_name: str
     """
@@ -1907,12 +1953,22 @@ async def _issue_badge(pipeline_id, badgeclass_name):
         logger.error(_reason)
         return web.Response(status=422, reason=_reason, text=_reason)
 
+    badge_args = {}
+    if badge_type not in ['fair']:
+        badge_args = {
+            'tag': pipeline_data['repo_settings']['tag'],
+            'commit_id': pipeline_data['repo_settings']['commit_id'],
+        }
+
     try:
         badge_data = badgr_utils.issue_badge(
+            badge_type=badge_type,
             badgeclass_name=badgeclass_name,
-            commit_id=build_info['commit_id'],
-            commit_url=build_info['commit_url'],
-            ci_build_url=build_info['url']
+            url=pipeline_data['repo_settings']['url'],
+            build_commit_id=build_info['commit_id'],
+            build_commit_url=build_info['commit_url'],
+            ci_build_url=build_info['url'],
+            **badge_args
         )
     except Exception as e:
         _reason = 'Cannot issue a badge for pipeline <%s>: %s' % (pipeline_id, e)
@@ -2113,11 +2169,13 @@ async def _sort_tooling_by_criteria(tooling_metadata_json, criteria_id_list=[]):
     return criteria_data_list
 
 
-async def get_criteria(request: web.Request, criterion_id=None) -> web.Response:
+async def get_criteria(request: web.Request, criterion_id=None, assessment=None) -> web.Response:
     """Returns data about criteria.
 
     :param criterion_id: Get data from a specific criterion
     :type criterion_id: str
+    :param assessment: Flag to indicate whether the criteria shall consider only assessment-related tools
+    :type assessment: bool
 
     """
     try:
@@ -2130,5 +2188,13 @@ async def get_criteria(request: web.Request, criterion_id=None) -> web.Response:
         criteria_id_list = [criterion_id]
     criteria_data_list = await _sort_tooling_by_criteria(
         tooling_metadata_json, criteria_id_list=criteria_id_list)
+
+    if assessment: # exclude 'commands' tool
+        for criterion_data in criteria_data_list:
+            _tool_list = []
+            for tool_data in criterion_data['tools']:
+                if tool_data['name'] not in ['commands']:
+                    _tool_list.append(tool_data)
+            criterion_data['tools'] = _tool_list
 
     return web.json_response(criteria_data_list, status=200)

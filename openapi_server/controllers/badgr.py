@@ -196,20 +196,29 @@ class BadgrUtils(object):
 
     @refresh_token
     def issue_badge(self,
+            badge_type,
             badgeclass_name,
-            commit_id,
-            commit_url,
-            ci_build_url,
+            url,
+            tag=None,
+            commit_id=None,
+            build_commit_id=None,
+            build_commit_url=None,
+            ci_build_url=None,
             sw_criteria=[],
             srv_criteria=[]
         ):
         """Issues a badge (Badgr's assertion).
 
+        :param badge_type: String that identifies the type of badge 
         :param badgeclass_name: String that corresponds to the BadgeClass
             name (as it appears in Badgr web)
-        :param commit_id: Commit ID assigned by git as a result of pushing
+        :param url: Upstream repository URL
+        :param tag: Active tag of the upstream repository
+        :param commit_id: SHA that corresponds to the upstream version being
+            assessed
+        :param build_commit_id: Commit ID assigned by git as a result of pushing
             the JePL files.
-        :param commit_url: Absolute URL pointing to the commit that triggered
+        :param build_commit_url: Absolute URL pointing to the commit that triggered
             the pipeline
         :param ci_build_url: Absolute URL pointing to the build results of the
             pipeline
@@ -233,16 +242,26 @@ class BadgrUtils(object):
             'Content-Type': 'application/json'
         }
         # Assertion data
+        narrative = None
+        if badge_type in ['fair']:
+            narrative = 'SQAaaS assessment results for dataset %s' % url
+        else:
+            narrative = (
+                'SQAaaS assessment results for repository %s '
+                '(commit: %s, branch/tag: %s)' % (url, commit_id, tag)
+            )
         assertion_data = json.dumps({
             'recipient': {
-              'identity': commit_url,
+              'identity': url,
               'hashed': True,
               'type': 'url'
             },
-            'narrative': 'Tracking source code SHA: [%s](%s)' % (
-                commit_id, commit_url
-            ),
+            'narrative': narrative,
             'evidence': [
+              {
+                'url': build_commit_url,
+                'narrative': 'SQAaaS build repository'
+              },
               {
                 'url': ci_build_url,
                 'narrative': 'Build page from Jenkins CI'

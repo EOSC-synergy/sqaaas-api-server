@@ -27,6 +27,16 @@ paths:
         schema:
           type: string
         style: form
+      - description: Flag to indicate whether the criteria shall consider only assessment-related
+          tools
+        explode: true
+        in: query
+        name: assessment
+        required: false
+        schema:
+          default: false
+          type: boolean
+        style: form
       responses:
         "200":
           content:
@@ -2002,7 +2012,7 @@ components:
               reviewed: 2000-01-23
               oneshot: true
         hint: |
-          The Open Source Initiative (OSI) sets out the requirements for software to be legally declared as open source. Use one of the <a href="https://opensource.org/licenses">OSI popular licenses</a> for this check to be successful.
+          The Open Source Initiative (OSI) sets out the requirements for software to be legally declared as open source. Use one of the <a href="https://opensource.org/licenses" target="_blank">OSI popular licenses</a> for this check to be successful.
         description: All code repositories MUST have a README file
         required_for_next_level_badge: true
       properties:
@@ -2024,7 +2034,7 @@ components:
         hint:
           description: Provide hints to fulfill the current subcriterion
           example: |
-            The Open Source Initiative (OSI) sets out the requirements for software to be legally declared as open source. Use one of the <a href="https://opensource.org/licenses">OSI popular licenses</a> for this check to be successful.
+            The Open Source Initiative (OSI) sets out the requirements for software to be legally declared as open source. Use one of the <a href="https://opensource.org/licenses" target="_blank">OSI popular licenses</a> for this check to be successful.
           title: hint
           type: string
         required_for_next_level_badge:
@@ -2326,7 +2336,7 @@ components:
                       reviewed: 2000-01-23
                       oneshot: true
                 hint: |
-                  The Open Source Initiative (OSI) sets out the requirements for software to be legally declared as open source. Use one of the <a href="https://opensource.org/licenses">OSI popular licenses</a> for this check to be successful.
+                  The Open Source Initiative (OSI) sets out the requirements for software to be legally declared as open source. Use one of the <a href="https://opensource.org/licenses" target="_blank">OSI popular licenses</a> for this check to be successful.
                 description: All code repositories MUST have a README file
                 required_for_next_level_badge: true
             filtered_reason:
@@ -3317,7 +3327,7 @@ components:
                   reviewed: 2000-01-23
                   oneshot: true
             hint: |
-              The Open Source Initiative (OSI) sets out the requirements for software to be legally declared as open source. Use one of the <a href="https://opensource.org/licenses">OSI popular licenses</a> for this check to be successful.
+              The Open Source Initiative (OSI) sets out the requirements for software to be legally declared as open source. Use one of the <a href="https://opensource.org/licenses" target="_blank">OSI popular licenses</a> for this check to be successful.
             description: All code repositories MUST have a README file
             required_for_next_level_badge: true
         filtered_reason:

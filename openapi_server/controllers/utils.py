@@ -741,7 +741,7 @@ def process_extra_data(config_json, composer_json, report_to_stdout=False):
                                 _value = arg['value']
                                 # split(',') is required since some values might be
                                 # comma-separated
-                                if type(_value) in [str]:
+                                if type(_value) in [str] and not arg.get('value_has_commas', False):
                                     _value = arg['value'].split(',')
                                 if len(_value) <= 1:
                                     _value = arg['value']
@@ -765,7 +765,10 @@ def process_extra_data(config_json, composer_json, report_to_stdout=False):
                             if tool_has_template in ['im_client']:
                                 _file_to_modify = template_kwargs['im_config_file']
                             elif tool_has_template in ['ec3_client']:
-                                any_ec3_template = template_kwargs['ec3_templates'][0]
+                                if type(template_kwargs['ec3_templates']) is list:
+                                    any_ec3_template = template_kwargs['ec3_templates'][0]
+                                elif type(template_kwargs['ec3_templates']) is str:
+                                    any_ec3_template = template_kwargs['ec3_templates']
                                 any_ec3_template_file_name = '.'.join([
                                     any_ec3_template, 'radl'
                                 ])
@@ -861,7 +864,7 @@ def process_extra_data(config_json, composer_json, report_to_stdout=False):
         config_json['environment'][jpl_envvar] = 'enabled'
 
     # Default CONFIG:TIMEOUT
-    config_json['timeout'] = 1800
+    config_json['timeout'] = 5400
 
     # COMPOSER (Docker Compose specific)
     for srv_name, srv_data in composer_json['services'].items():
@@ -1121,7 +1124,7 @@ def format_filtered_data(valid, reason_list, subcriteria=None):
 
 
 @GitUtils.do_git_work
-def add_image_to_im(im_config_file, image_id, openstack_url, tech, repo, path='.'):
+def add_image_to_im(im_config_file, image_id, openstack_url, tech, repo, path='.', **kwargs):
     """Adds image_id (defined in sqaaas.ini) to TOSCA and RADL files used
     by IM.
 
@@ -1172,8 +1175,9 @@ def add_image_to_im(im_config_file, image_id, openstack_url, tech, repo, path='.
     ost_image_id = 'ost://%s/%s' % (openstack_host, image_id)
     data = None
     _reason = None
-    if Path(PurePath(im_config_file, path)).exists():
-        with open(Path(PurePath(path, im_config_file)), 'r') as f:
+    im_config_file_abspath = Path(path) / im_config_file
+    if Path(im_config_file_abspath).exists():
+        with open(Path(im_config_file_abspath), 'r') as f:
             if im_config_file.endswith('.radl'):
                 data = f.read()
                 data = _add_image_id_to_radl(data, ost_image_id)

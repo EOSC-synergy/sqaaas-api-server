@@ -67,6 +67,9 @@ fi
 {%- elif template in ['ec3_client'] %}
 {%- set ec3_templates_path = "/etc/ec3/templates" -%}
 {%- set ec3_templates = template_kwargs.get("ec3_templates") -%}
+{%- if ec3_templates is string -%}
+{%- set ec3_templates = [ec3_templates] -%}
+{%- endif -%}
 {%- set ec3_templates_repo_dir = template_kwargs.get("ec3_templates_repo_dir") -%}
 {%- set ec3_template_modified = template_kwargs.get("ec3_template_modified") -%}
 mkdir -p {{ ec3_templates_path }}
