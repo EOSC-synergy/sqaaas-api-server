@@ -5,6 +5,14 @@
 #### Achievements 
 [![SQAaaS badge](https://github.com/EOSC-synergy/SQAaaS/raw/master/badges/badges_150x116/badge_software_silver.png)](https://api.eu.badgr.io/public/assertions/U-GSO-5DS-qHf5I3MernmQ "SQAaaS silver badge achieved")
 
+
+## Founding institutions
+<p float="left">
+    <img src="images/logo-csic.png" height="50" hspace="10"/>
+    <img src="images/logo-UPV.png" height="50" hspace="10"/>
+    <img src="images/logo-LIP.png" height="50" hspace="10"/>
+</p>
+
 ## Overview
 API server implementation for the SQA-as-a-Service (SQAaaS) platform.
 
@@ -84,3 +92,12 @@ In the root path of the current repository, execute:
 ```
 $ docker build -t eoscsynergy/sqaaas-api-server:<version> -f docker/Dockerfile .
 ```
+
+## Acknowledgements
+
+This software has been developed within the EOSC-Synergy project that has received funding from the European Union's Horizon 2020 research and innovation programme under grant agreement number 857647.
+
+<p align="center">
+  <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT1WF4g5KH3PnQE_Ve10QFRS-gZ0NpCQ7Qr-_km1RqnOCEF1fQt" hspace="20">
+  <img src="images/logo-SYNERGY.png" height="100">
+</p>
