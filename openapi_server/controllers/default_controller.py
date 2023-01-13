@@ -342,13 +342,17 @@ async def _get_tooling_for_assessment(
     criteria_data_list_filtered = []
     criteria_filtered_out = {}
     for repo_criteria_mapping in relevant_criteria_data:
-        (
-            _criteria_data_list_filtered,
-            _criteria_filtered_out,
-            repo_settings
-        ) = _filter_tools(**repo_criteria_mapping)
-        criteria_data_list_filtered.extend(_criteria_data_list_filtered)
-        criteria_filtered_out.update(_criteria_filtered_out)
+        try:
+            (
+                _criteria_data_list_filtered,
+                _criteria_filtered_out,
+                repo_settings
+            ) = _filter_tools(**repo_criteria_mapping)
+        except SQAaaSAPIException as e:
+            raise e
+        else:
+            criteria_data_list_filtered.extend(_criteria_data_list_filtered)
+            criteria_filtered_out.update(_criteria_filtered_out)
 
     if not criteria_data_list_filtered:
         _reason = 'Could not find any tool for criteria assessment'
