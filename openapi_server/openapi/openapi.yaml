@@ -990,24 +990,6 @@ components:
           type: array
       title: Criterion
       type: object
-    Repository:
-      example:
-        repo: https://github.com/eosc-synergy/sqaaas-api-spec
-        branch: master
-      properties:
-        repo:
-          description: URL of the repository
-          example: https://github.com/eosc-synergy/sqaaas-api-spec
-          format: uri
-          title: repo
-          type: string
-        branch:
-          description: Branch name
-          example: master
-          title: branch
-          type: string
-      title: Repository
-      type: object
     Creds_user_pass:
       example:
         password_var: GIT_PASS
@@ -1039,6 +1021,31 @@ components:
       - password_var
       - username_var
       title: Creds_user_pass
+      type: object
+    Repository:
+      example:
+        repo: https://github.com/eosc-synergy/sqaaas-api-spec
+        branch: master
+        credential_id:
+          password_var: GIT_PASS
+          username_var: GIT_USER
+          id: my-dockerhub-token
+          type: username_password
+      properties:
+        repo:
+          description: URL of the repository
+          example: https://github.com/eosc-synergy/sqaaas-api-spec
+          format: uri
+          title: repo
+          type: string
+        branch:
+          description: Branch name
+          example: master
+          title: branch
+          type: string
+        credential_id:
+          $ref: '#/components/schemas/Creds_user_pass'
+      title: Repository
       type: object
     Commands_simplified:
       description: List of commands to execute
@@ -1217,8 +1224,18 @@ components:
           project_repos:
           - repo: https://github.com/eosc-synergy/sqaaas-api-spec
             branch: master
+            credential_id:
+              password_var: GIT_PASS
+              username_var: GIT_USER
+              id: my-dockerhub-token
+              type: username_password
           - repo: https://github.com/eosc-synergy/sqaaas-api-spec
             branch: master
+            credential_id:
+              password_var: GIT_PASS
+              username_var: GIT_USER
+              id: my-dockerhub-token
+              type: username_password
           credentials:
           - password_var: GIT_PASS
             username_var: GIT_USER
@@ -1438,8 +1455,18 @@ components:
             project_repos:
             - repo: https://github.com/eosc-synergy/sqaaas-api-spec
               branch: master
+              credential_id:
+                password_var: GIT_PASS
+                username_var: GIT_USER
+                id: my-dockerhub-token
+                type: username_password
             - repo: https://github.com/eosc-synergy/sqaaas-api-spec
               branch: master
+              credential_id:
+                password_var: GIT_PASS
+                username_var: GIT_USER
+                id: my-dockerhub-token
+                type: username_password
             credentials:
             - password_var: GIT_PASS
               username_var: GIT_USER
@@ -1551,8 +1578,18 @@ components:
             project_repos:
             - repo: https://github.com/eosc-synergy/sqaaas-api-spec
               branch: master
+              credential_id:
+                password_var: GIT_PASS
+                username_var: GIT_USER
+                id: my-dockerhub-token
+                type: username_password
             - repo: https://github.com/eosc-synergy/sqaaas-api-spec
               branch: master
+              credential_id:
+                password_var: GIT_PASS
+                username_var: GIT_USER
+                id: my-dockerhub-token
+                type: username_password
             credentials:
             - password_var: GIT_PASS
               username_var: GIT_USER
@@ -2964,8 +3001,18 @@ components:
         project_repos:
         - repo: https://github.com/eosc-synergy/sqaaas-api-spec
           branch: master
+          credential_id:
+            password_var: GIT_PASS
+            username_var: GIT_USER
+            id: my-dockerhub-token
+            type: username_password
         - repo: https://github.com/eosc-synergy/sqaaas-api-spec
           branch: master
+          credential_id:
+            password_var: GIT_PASS
+            username_var: GIT_USER
+            id: my-dockerhub-token
+            type: username_password
         credentials:
         - password_var: GIT_PASS
           username_var: GIT_USER
