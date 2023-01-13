@@ -355,13 +355,6 @@ async def _get_tooling_for_assessment(
         logger.error(_reason)
         raise SQAaaSAPIException(422, _reason)
     
-    # print('*'*20)
-    # import json
-    # print(json.dumps(_criteria_data_list_filtered, indent=4))
-    # print('*'*20)
-    # import sys
-    # sys.exit(0)
-
     return criteria_data_list_filtered, criteria_filtered_out, repo_settings
 
 
