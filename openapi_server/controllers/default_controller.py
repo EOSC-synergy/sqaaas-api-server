@@ -899,10 +899,12 @@ async def run_pipeline(
             repo_branch
         )
     else:
-        repo_data = gh_utils.get_repository(pipeline_repo)
-        if not repo_data:
-            repo_data = gh_utils.create_org_repository(pipeline_repo)
-        pipeline_repo_branch = repo_data.default_branch
+        _repo = gh_utils.get_repository(pipeline_repo)
+        if not gh_utils.get_repo_content(pipeline_repo):
+            # Re-create with content (i.e. README)
+            _repo.delete()
+            _repo = gh_utils.create_org_repository(pipeline_repo)
+        pipeline_repo_branch = _repo.default_branch
 
     logger.debug('Using pipeline repository <%s> (branch: %s)' % (
         pipeline_repo, pipeline_repo_branch))
