@@ -22,7 +22,7 @@ class GitHubUtils(object):
         self.client = Github(access_token)
         self.logger = logging.getLogger('sqaaas.api.github')
 
-    def get_repo_content(self, repo_name, branch, path='.'):
+    def get_repo_content(self, repo_name, branch=None, path='.'):
         """Gets the repository content from the given branch.
 
         Returns a List of ContentFile objects.
@@ -31,6 +31,8 @@ class GitHubUtils(object):
         :param branch: Name of the branch
         """
         repo = self.get_org_repository(repo_name)
+        if not branch:
+            branch = repo.default_branch
         try:
             contents = repo.get_dir_contents(path, ref=branch)
         except (UnknownObjectException, GithubException) as e:
