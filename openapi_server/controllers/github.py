@@ -31,6 +31,8 @@ class GitHubUtils(object):
         :param branch: Name of the branch
         """
         repo = self.get_org_repository(repo_name)
+        if not repo:
+            return False
         if not branch:
             branch = repo.default_branch
         try:
