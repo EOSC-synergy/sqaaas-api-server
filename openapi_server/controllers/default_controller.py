@@ -262,8 +262,7 @@ async def _get_tooling_for_assessment(
     fair = body.get('fair', {})
     
     levels_for_assessment = ['REQUIRED', 'RECOMMENDED']
-    tooling_metadata_json = await _get_tooling_metadata()
-    criteria_data_list = await _sort_tooling_by_criteria(tooling_metadata_json)
+    criteria_data_list = await _get_criteria()
 
     # NOTE Not allowing multiple assessments for the moment
     relevant_criteria_data = [] 
@@ -2174,11 +2173,11 @@ async def _sort_tooling_by_criteria(tooling_metadata_json, criteria_id_list=[]):
     return criteria_data_list
 
 
-async def get_criteria(request: web.Request, criterion_id=None, assessment=None) -> web.Response:
-    """Returns data about criteria.
+async def _get_criteria(criteria_id_list=[], assessment=False):
+    """Gets and filters criteria from tooling.
 
-    :param criterion_id: Get data from a specific criterion
-    :type criterion_id: str
+    :param criterion_id_list: Specific list of criteria to check
+    :type criterion_id_list: list
     :param assessment: Flag to indicate whether the criteria shall consider only assessment-related tools
     :type assessment: bool
 
@@ -2188,9 +2187,6 @@ async def get_criteria(request: web.Request, criterion_id=None, assessment=None)
     except SQAaaSAPIException as e:
         return web.Response(status=e.http_code, reason=e.message, text=e.message)
 
-    criteria_id_list = []
-    if criterion_id:
-        criteria_id_list = [criterion_id]
     criteria_data_list = await _sort_tooling_by_criteria(
         tooling_metadata_json, criteria_id_list=criteria_id_list)
 
@@ -2201,5 +2197,24 @@ async def get_criteria(request: web.Request, criterion_id=None, assessment=None)
                 if tool_data['name'] not in ['commands']:
                     _tool_list.append(tool_data)
             criterion_data['tools'] = _tool_list
+
+    return criteria_data_list
+
+
+async def get_criteria(request: web.Request, criterion_id=None, assessment=None) -> web.Response:
+    """Returns data about criteria.
+
+    :param criterion_id: Get data from a specific criterion
+    :type criterion_id: str
+    :param assessment: Flag to indicate whether the criteria shall consider only assessment-related tools
+    :type assessment: bool
+
+    """
+    criteria_id_list = []
+    if criterion_id:
+        criteria_id_list = [criterion_id]
+    criteria_data_list = await _get_criteria(
+        criteria_id_list, assessment=assessment
+    )
 
     return web.json_response(criteria_data_list, status=200)
