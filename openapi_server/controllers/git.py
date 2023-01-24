@@ -1,6 +1,7 @@
 import functools
 import logging
 import os
+import re
 import stat
 import tempfile
 
@@ -37,6 +38,8 @@ class GitUtils(object):
         """
         message = str(exc)
         if message.find('remote: Repository not found') != -1:
+            message = 'Repository not found: %s' % kwargs['repo']
+        elif re.search("fatal: repository '(.+)' not found", message):
             message = 'Repository not found: %s' % kwargs['repo']
 
         return message

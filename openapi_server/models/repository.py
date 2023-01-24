@@ -5,6 +5,7 @@ from datetime import date, datetime
 from typing import List, Dict, Type
 
 from openapi_server.models.base_model_ import Model
+from openapi_server.models.creds_user_pass import CredsUserPass
 from openapi_server import util
 
 
@@ -14,24 +15,28 @@ class Repository(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, repo: str=None, branch: str=None):
+    def __init__(self, repo: str=None, branch: str=None, credential_id: CredsUserPass=None):
         """Repository - a model defined in OpenAPI
 
         :param repo: The repo of this Repository.
         :param branch: The branch of this Repository.
+        :param credential_id: The credential_id of this Repository.
         """
         self.openapi_types = {
             'repo': str,
-            'branch': str
+            'branch': str,
+            'credential_id': CredsUserPass
         }
 
         self.attribute_map = {
             'repo': 'repo',
-            'branch': 'branch'
+            'branch': 'branch',
+            'credential_id': 'credential_id'
         }
 
         self._repo = repo
         self._branch = branch
+        self._credential_id = credential_id
 
     @classmethod
     def from_dict(cls, dikt: dict) -> 'Repository':
@@ -87,3 +92,24 @@ class Repository(Model):
         """
 
         self._branch = branch
+
+    @property
+    def credential_id(self):
+        """Gets the credential_id of this Repository.
+
+
+        :return: The credential_id of this Repository.
+        :rtype: CredsUserPass
+        """
+        return self._credential_id
+
+    @credential_id.setter
+    def credential_id(self, credential_id):
+        """Sets the credential_id of this Repository.
+
+
+        :param credential_id: The credential_id of this Repository.
+        :type credential_id: CredsUserPass
+        """
+
+        self._credential_id = credential_id
