@@ -1450,6 +1450,7 @@ async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Re
                     if subcriterion_id not in list(subcriteria):
                         subcriteria[subcriterion_id] = {
                             'description': subcriterion_data['description'],
+                            'requirement_level': subcriterion_data['requirement_level'],
                             'hint': subcriterion_data['hint'],
                             'evidence': []
                         }
@@ -1695,7 +1696,13 @@ async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Re
                         else:
                             _required_for_next_level = False
                             if _criterion in missing_criteria_all:
-                                _required_for_next_level = True
+                                # get() method used in case the criterion
+                                # validation returned a failure
+                                _requirement_level = subcriterion_data.get(
+                                    'requirement_level', 'MUST'
+                                )
+                                if _requirement_level in ['MUST']:
+                                    _required_for_next_level = True
 
                             (report_data_copy[criterion]
                                              ['subcriteria']
