@@ -1911,7 +1911,7 @@ async def _badgeclass_matchmaking(pipeline_id, badge_type, criteria_fulfilled_li
             'criteria', subsection_list=[badge_type, badge_category]
         ).split()
         # Remove any repeated criterion
-        criteria_to_fulfill_list = set(criteria_to_fulfill_list)
+        criteria_to_fulfill_list = list(set(criteria_to_fulfill_list))
         criteria_summary[badge_category]['to_fulfill'] = criteria_to_fulfill_list
         # Matchmaking
         missing_criteria_list = list(set(criteria_to_fulfill_list).difference(criteria_fulfilled_list))
