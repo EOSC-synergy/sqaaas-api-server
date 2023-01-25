@@ -1921,7 +1921,7 @@ async def _badgeclass_matchmaking(pipeline_id, badge_type, criteria_fulfilled_li
         criteria_to_fulfill_list = list(set(criteria_to_fulfill_list))
         criteria_summary[badge_category]['to_fulfill'] = criteria_to_fulfill_list
         # Matchmaking
-        missing_criteria_list = list(criteria_to_fulfill_list.difference(criteria_fulfilled_list))
+        missing_criteria_list = list(set(criteria_to_fulfill_list).difference(criteria_fulfilled_list))
         criteria_summary[badge_category]['missing'] = missing_criteria_list
         if missing_criteria_list:
             logger.warn('Pipeline <%s> not fulfilling %s criteria. Missing criteria: %s' % (
