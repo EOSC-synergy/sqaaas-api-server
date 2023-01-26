@@ -1450,7 +1450,9 @@ async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Re
                     if subcriterion_id not in list(subcriteria):
                         subcriteria[subcriterion_id] = {
                             'description': subcriterion_data['description'],
-                            'requirement_level': subcriterion_data['requirement_level'],
+                            'requirement_level': subcriterion_data.get(
+                                'requirement_level', 'MAY'
+                            ),
                             'hint': subcriterion_data['hint'],
                             'evidence': []
                         }
