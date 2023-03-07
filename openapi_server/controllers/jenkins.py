@@ -52,6 +52,22 @@ class JenkinsUtils(object):
 
     def get_job_info(self, name, depth=0):
         job_info = {}
+        job_name_list = []
+
+        _org, _repo, _branch = name.split('/')
+        for folder in self.server.get_jobs(folder_depth=1):
+            if folder['name'] in [_org]:
+                job_name_list = [job['name'] for job in folder['jobs']]
+        # Try case-insensitive (Jenkins org-folder limitation)
+        if _repo not in job_name_list:
+            self.logger.debug(
+                'Trying case-insensitive match with job: <%s>' % name
+            )
+            for job_name in job_name_list:
+                if _repo.lower() in [job_name.lower()]:
+                    name = '/'.join([_org, job_name, _branch])
+                    self.logger.debug('Using new job name: <%s>' % name)
+                    break
         try:
             job_info = self.server.get_job_info(name, depth=depth)
             self.logger.debug('Information for job <%s> obtained from Jenkins: %s' % (
