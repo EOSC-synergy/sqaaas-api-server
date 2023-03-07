@@ -92,7 +92,7 @@ class JenkinsUtils(object):
         try:
             item_no = self.server.build_job(full_job_name)
         except Exception:
-            self.logger.warning('Job <%s> has not been queued yet')
+            self.logger.warning('Job <%s> has not been queued yet' % full_job_name)
         else:
             self.logger.debug('Triggered job build (queue item number: %s)' % item_no)
         return item_no
