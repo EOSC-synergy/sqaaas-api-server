@@ -1071,11 +1071,11 @@ async def _update_status(pipeline_id, triggered_by_run=False, build_task=None):
 
     if jenkins_info['scan_org_wait']:
         logger.debug('scan_org_wait still enabled for pipeline job: %s' % jk_job_name)
-        build_data = jk_utils.get_job_info(jk_job_name)
-        if build_data.get('lastBuild', None):
+        _job_info = jk_utils.get_job_info(jk_job_name)
+        if _job_info.get('lastBuild', None):
             try:
-                build_url = build_data['lastBuild']['url']
-                build_no = build_data['lastBuild']['number']
+                build_url = _job_info['lastBuild']['url']
+                build_no = _job_info['lastBuild']['number']
             except KeyError as e:
                 logger.warning(e)
             else:
