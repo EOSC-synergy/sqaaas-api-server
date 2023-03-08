@@ -116,8 +116,16 @@ class JenkinsUtils(object):
 
     def get_build_info(self, full_job_name, build_no, depth=0):
         self.logger.debug('Getting status for job <%s> (build_no: %s)' % (full_job_name, build_no))
-        build_info = self.server.get_build_info(full_job_name, build_no, depth=depth)
-        self.logger.debug('Build info as obtained by Jenkins: %s' % build_info)
+        build_info = None
+        try:
+            build_info = self.server.get_build_info(full_job_name, build_no, depth=depth)
+            self.logger.debug('Build info as obtained by Jenkins: %s' % build_info)
+        except Exception:
+            self.logger.warning(
+                'Could not find build info for #%s (job: <%s>)' % (
+                    build_no, full_job_name
+                )
+            )
         return build_info
 
     def delete_job(self, full_job_name):
