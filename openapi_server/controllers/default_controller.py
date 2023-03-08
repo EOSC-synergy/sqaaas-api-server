@@ -914,21 +914,6 @@ async def run_pipeline(
     logger.debug('Using pipeline repository <%s> (branch: %s)' % (
         pipeline_repo, pipeline_repo_branch))
 
-    commit_id = JePLUtils.push_files(
-        gh_utils,
-        pipeline_repo,
-        config_data_list,
-        composer_data,
-        jenkinsfile,
-        pipeline_data['data']['commands_scripts'],
-        additional_files_list,
-        branch=pipeline_repo_branch
-    )
-    commit_url = gh_utils.get_commit_url(pipeline_repo, commit_id)
-
-    logger.info('Pipeline repository set up at <%s> (branch: %s)' % (
-        pipeline_repo, pipeline_repo_branch))
-
     _pipeline_repo_name = pipeline_repo.split('/')[-1]
     jk_job_name = '/'.join([
         JENKINS_GITHUB_ORG,
@@ -944,20 +929,62 @@ async def run_pipeline(
     build_status = 'NOT_EXECUTED'
     scan_org_wait = False
     reason = ''
+
+    # 1) Check if job already exists on Jenkins
+    job_exists = False
+    last_build_no = None
     if jk_utils.exist_job(jk_job_name):
+        job_exists = True
         logger.warning('Jenkins job <%s> already exists!' % jk_job_name)
-        # <build_item_no> is only valid for about 5 min after job completion
-        build_item_no = jk_utils.build_job(jk_job_name)
-        if build_item_no:
-            build_status = 'QUEUED'
-            logger.info('Build status for pipeline <%s>: %s' % (
-                pipeline_repo, build_status
-            ))
-            reason = 'Triggered the existing Jenkins job'
-        else:
-            _reason = 'Could not trigger build job'
-            logger.error(_reason)
-            raise SQAaaSAPIException(422, _reason)
+        _job_info = jk_utils.get_job_info(jk_job_name)
+        jk_job_name = _job_info['fullName']
+        last_build_no = _job_info['lastBuild']['number']
+
+    # 2) Do the commit
+    commit_id = JePLUtils.push_files(
+        gh_utils,
+        pipeline_repo,
+        config_data_list,
+        composer_data,
+        jenkinsfile,
+        pipeline_data['data']['commands_scripts'],
+        additional_files_list,
+        branch=pipeline_repo_branch
+    )
+    commit_url = gh_utils.get_commit_url(pipeline_repo, commit_id)
+
+    # 3) Automated-run check: previous commit should trigger the build
+    if job_exists:
+        # wait for automated triggering
+        _build_to_check = last_build_no+1
+        _build_triggered = False
+        _max_tries = 8
+        _count_tries = 0
+        while not _build_triggered:
+            if _count_tries >= _max_tries:
+                break
+            _job_info = jk_utils.get_job_info(jk_job_name)
+            _builds = len(_job_info['builds'])
+            if _builds == _build_to_check:
+                _build_triggered = True
+                build_no = _build_to_check
+                build_status = 'EXECUTING'
+            _count_tries += 1
+            await asyncio.sleep(5)
+        # Build manually if not triggered automatically
+        if not _build_triggered:
+            # <build_item_no> is only valid for about 5 min after job completion
+            build_item_no = jk_utils.build_job(jk_job_name)
+            if build_item_no:
+                build_status = 'QUEUED'
+                logger.info('Build status for pipeline <%s>: %s' % (
+                    pipeline_repo, build_status
+                ))
+                reason = 'Triggered the existing Jenkins job'
+            else:
+                _reason = 'Could not trigger build job'
+                logger.error(_reason)
+                raise SQAaaSAPIException(422, _reason)
     else:
         jk_utils.scan_organization()
         scan_org_wait = True
