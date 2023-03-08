@@ -954,37 +954,13 @@ async def run_pipeline(
     commit_url = gh_utils.get_commit_url(pipeline_repo, commit_id)
 
     # 3) Automated-run check: previous commit should trigger the build
+    build_job_task = None
     if job_exists:
-        # wait for automated triggering
         _build_to_check = last_build_no+1
-        _build_triggered = False
-        _max_tries = 8
-        _count_tries = 0
-        while not _build_triggered:
-            if _count_tries >= _max_tries:
-                break
-            _job_info = jk_utils.get_job_info(jk_job_name)
-            _builds = len(_job_info['builds'])
-            if _builds == _build_to_check:
-                _build_triggered = True
-                build_no = _build_to_check
-                build_status = 'EXECUTING'
-            _count_tries += 1
-            await asyncio.sleep(5)
-        # Build manually if not triggered automatically
-        if not _build_triggered:
-            # <build_item_no> is only valid for about 5 min after job completion
-            build_item_no = jk_utils.build_job(jk_job_name)
-            if build_item_no:
-                build_status = 'QUEUED'
-                logger.info('Build status for pipeline <%s>: %s' % (
-                    pipeline_repo, build_status
-                ))
-                reason = 'Triggered the existing Jenkins job'
-            else:
-                _reason = 'Could not trigger build job'
-                logger.error(_reason)
-                raise SQAaaSAPIException(422, _reason)
+        # Fire & forget _update_status()
+        build_job_task = asyncio.create_task(_handle_job_building(jk_job_name, _build_to_check))
+        if build_job_task.done():
+            build_no, build_status, build_url, build_item_no = build_job_task.result()
     else:
         jk_utils.scan_organization()
         scan_org_wait = True
@@ -1013,32 +989,85 @@ async def run_pipeline(
     )
 
     # Fire & forget _update_status()
-    asyncio.create_task(_update_status(pipeline_id, triggered_by_run=True))
+    asyncio.create_task(_update_status(pipeline_id, triggered_by_run=True, build_task=build_job_task))
 
     return web.Response(status=204, reason=reason, text=reason)
 
 
-async def _update_status(pipeline_id, triggered_by_run=False):
+async def _handle_job_building(jk_job_name, build_to_check): 
+    # wait for automated triggering
+    _build_triggered = False
+    _max_tries = 8
+    _count_tries = 0
+    build_no = None
+    build_status = None
+    build_item_no = None
+    while not _build_triggered:
+        if _count_tries >= _max_tries:
+            break
+        _job_info = jk_utils.get_job_info(jk_job_name)
+        _builds = len(_job_info['builds'])
+        if _builds == build_to_check:
+            _build_triggered = True
+            build_no = build_to_check
+            build_status = 'EXECUTING'
+            build_url = _job_info['lastBuild']['url']
+        _count_tries += 1
+        await asyncio.sleep(5)
+    # Build manually if not triggered automatically
+    if not _build_triggered:
+        # <build_item_no> is only valid for about 5 min after job completion
+        build_item_no = jk_utils.build_job(jk_job_name)
+        if build_item_no:
+            build_status = 'QUEUED'
+            logger.info('Build status for pipeline <%s>: %s' % (
+                pipeline_repo, build_status
+            ))
+            reason = 'Triggered the existing Jenkins job'
+        else:
+            _reason = 'Could not trigger build job'
+            logger.error(_reason)
+            raise SQAaaSAPIException(422, _reason)
+    
+    return (build_no, build_status, build_url, build_item_no) 
+
+
+async def _update_status(pipeline_id, triggered_by_run=False, build_task=None):
     """Updates the build status of a pipeline.
 
     :param pipeline_id: ID of the pipeline to get
     :type pipeline_id: str
     """
     pipeline_data = db.get_entry(pipeline_id)
+    build_no = None
+    build_status = None
+    build_url = None
+    build_item_no = None
+
+    _pipeline_executed = False
 
     if 'jenkins' not in pipeline_data.keys():
+        _pipeline_executed = False
+    else:
+        jenkins_info = pipeline_data['jenkins']
+        build_info = jenkins_info['build_info']
+        jk_job_name = jenkins_info['job_name']
+        build_no = build_info['number']
+        build_status = build_info.get('status', None)
+        build_url = build_info['url']
+        build_item_no = build_info['item_number']
+    
+    if build_task:
+        if build_task.done():
+            build_no, build_status, build_item_no = build_job_task.result()
+        else:
+            _pipeline_executed = False
+
+    if _pipeline_executed:
         _reason = 'Could not retrieve Jenkins job information: Pipeline <%s> has not yet ran' % pipeline_id
         logger.error(_reason)
         raise SQAaaSAPIException(422, _reason)
 
-    jenkins_info = pipeline_data['jenkins']
-    build_info = jenkins_info['build_info']
-
-    build_url = build_info['url']
-    build_status = build_info.get('status', None)
-    jk_job_name = jenkins_info['job_name']
-    build_item_no = build_info['item_number']
-    build_no = build_info['number']
 
     if jenkins_info['scan_org_wait']:
         logger.debug('scan_org_wait still enabled for pipeline job: %s' % jk_job_name)
@@ -1064,19 +1093,27 @@ async def _update_status(pipeline_id, triggered_by_run=False):
         build_data = {}
         # Keep looping if triggered by /run, but do not if triggered
         # by /status or /output
-        while not build_data and triggered_by_run:
-            build_data = await jk_utils.get_queue_item(build_item_no)
-            if build_data:
-                build_no = build_data['number']
-                build_url = build_data['url']
-                build_status = 'EXECUTING'
-                logger.info('Jenkins job build URL obtained for repository <%s>: %s' % (
-                    pipeline_data['pipeline_repo'],
-                    build_url
-                ))
-            else:
-                logger.debug('Could not get build data from Jenkins queue item: %s' % build_item_no)
-                await asyncio.sleep(3)
+        if triggered_by_run:
+            while not build_data:
+                if not build_task.done():
+                    await build_task
+                build_no, build_status, build_url, build_item_no = build_task.result()
+                if build_item_no:    
+                    build_data = await jk_utils.get_queue_item(build_item_no)
+                    if build_data:
+                        build_no = build_data['number']
+                        build_url = build_data['url']
+                        build_status = 'EXECUTING'
+                        logger.info('Jenkins job build URL obtained for repository <%s>: %s' % (
+                            pipeline_data['pipeline_repo'],
+                            build_url
+                        ))
+                    else:
+                        logger.debug('Could not get build data from Jenkins queue item: %s' % build_item_no)
+                        await asyncio.sleep(3)
+                # End 'while' if build_no & build_status
+                elif (build_no and build_status):
+                    build_data = True
     else:
         _status = jk_utils.get_build_info(
             jk_job_name,
