@@ -1,6 +1,6 @@
-{%- set repo_docs = repositories.get('repo_docs', {} -%}
-{%- set repo_code = repositories.get('repo_code', {} -%}
-{%- set repo_deploy = repositories.get('deployment', {} -%}
+{%- set repo_docs = repositories.get('repo_docs', {}) -%}
+{%- set repo_code = repositories.get('repo_code', {}) -%}
+{%- set repo_deploy = repositories.get('deployment', {}) -%}
 {
   "name": "{{ pipeline_name }}",
   "config_data": [
@@ -10,9 +10,9 @@
 	  {%- for repo_key, repo_data in repositories.items() -%}
           {%- if repo_data.get('repo', {})  -%}
 	  {{ "," if not loop.first else "" }}
-          {
-            "repo": "{{ repo_data.repo }}",
-            "branch": "{{ repo_data.branch }}"
+	  {
+	    "repo": "{{ repo_data.repo }}",
+	    "branch": "{{ repo_data.branch }}"
 	  }
 	  {%- endif -%}
 	  {%- endfor -%}
