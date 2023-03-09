@@ -52,6 +52,22 @@ class JenkinsUtils(object):
 
     def get_job_info(self, name, depth=0):
         job_info = {}
+        job_name_list = []
+
+        _org, _repo, _branch = name.split('/')
+        for folder in self.server.get_jobs(folder_depth=1):
+            if folder['name'] in [_org]:
+                job_name_list = [job['name'] for job in folder['jobs']]
+        # Try case-insensitive (Jenkins org-folder limitation)
+        if _repo not in job_name_list:
+            self.logger.debug(
+                'Trying case-insensitive match with job: <%s>' % name
+            )
+            for job_name in job_name_list:
+                if _repo.lower() in [job_name.lower()]:
+                    name = '/'.join([_org, job_name, _branch])
+                    self.logger.debug('Using new job name: <%s>' % name)
+                    break
         try:
             job_info = self.server.get_job_info(name, depth=depth)
             self.logger.debug('Information for job <%s> obtained from Jenkins: %s' % (
@@ -76,7 +92,7 @@ class JenkinsUtils(object):
         try:
             item_no = self.server.build_job(full_job_name)
         except Exception:
-            self.logger.warning('Job <%s> has not been queued yet')
+            self.logger.warning('Job <%s> has not been queued yet' % full_job_name)
         else:
             self.logger.debug('Triggered job build (queue item number: %s)' % item_no)
         return item_no
@@ -100,8 +116,16 @@ class JenkinsUtils(object):
 
     def get_build_info(self, full_job_name, build_no, depth=0):
         self.logger.debug('Getting status for job <%s> (build_no: %s)' % (full_job_name, build_no))
-        build_info = self.server.get_build_info(full_job_name, build_no, depth=depth)
-        self.logger.debug('Build info as obtained by Jenkins: %s' % build_info)
+        build_info = None
+        try:
+            build_info = self.server.get_build_info(full_job_name, build_no, depth=depth)
+            self.logger.debug('Build info as obtained by Jenkins: %s' % build_info)
+        except Exception:
+            self.logger.warning(
+                'Could not find build info for #%s (job: <%s>)' % (
+                    build_no, full_job_name
+                )
+            )
         return build_info
 
     def delete_job(self, full_job_name):
