@@ -387,25 +387,31 @@ async def add_pipeline_for_assessment(request: web.Request, body, user_requested
 
     #0 Validate request
     repo_code = body.get('repo_code', {})
+    repo_docs = body.get('repo_docs', {})
     deployment = body.get('deployment', {})
     fair = body.get('fair', {})
-    repo_data = {}
+    repositories = {}
     
-    repo_url = repo_code.get('repo', None) # is there data actually?
-    if repo_url:
-        repo_data = repo_code
-        # Purge 
-        body.pop('deployment', {})
-    elif deployment:
-        repo_deploy = deployment.get('repo_deploy', {})
-        repo_deploy_url = repo_deploy.get('repo', None)
-        if repo_deploy_url:
-            repo_data = repo_deploy
-            # Purge
-            body.pop('repo_code', {})
-            body.pop('repo_docs', {})
+    # FIXME This requires that a healthy check (i.e. exclusively one among
+    # code, services and data is defined) is performed first (right now this
+    # is done in _get_tooling_for_assessment(), so MUST be moved here)
+    _keys_to_purge = []
+    for _repo in [
+        (repo_code, 'repo_code'),
+        (repo_docs, 'repo_docs'),
+        (deployment, 'deployment')
+    ]:
+        _repo_data, _repo_key = _repo
+        _has_content = _repo_data.get('repo', None)
+        if _has_content:
+            repositories[_repo_key] = _repo_data
+        else:
+            _keys_to_purge.append(_repo_key)
+    for _key in _keys_to_purge:
+        body.pop(_key, {})
+    main_repo_key = list(set()-set(_keys_to_purge))[0] # this variable MUST be removed when fixed
     
-    if not repo_data and not fair:
+    if not repositories and not fair:
         _reason = (
             'Invalid request: not valid data found for a '
             'software/service/FAIRness assessment'
@@ -436,7 +442,8 @@ async def add_pipeline_for_assessment(request: web.Request, body, user_requested
     )
     template = env.get_template('pipeline_assessment.json')
 
-    build_repo_name = repo_data.get('repo', None)
+    # FIXME This only considers one repo
+    build_repo_name = repositories[main_repo_key].get('repo', None)
     if fair:
         # FIXME Temporary hack until the web provides all required input fields
         _fair_tool = body['fair']['fair_tool']
@@ -452,9 +459,7 @@ async def add_pipeline_for_assessment(request: web.Request, body, user_requested
 
     json_rendered = template.render(
         pipeline_name=pipeline_name,
-        repo_code=repo_code,
-        repo_docs=body.get('repo_docs', {}),
-        repo_deploy=deployment.get('repo_deploy', {}),
+        repositories=repositories,
         criteria_data_list=criteria_data_list,
         tooling_qaa_specific_key=TOOLING_QAA_SPECIFIC_KEY
     )
@@ -485,15 +490,15 @@ async def add_pipeline_for_assessment(request: web.Request, body, user_requested
     db.add_tool_data(pipeline_id, criteria_tools)
 
     #5 Store repo settings
-    ## For the time being, just consider the main repo code. Still an array
-    ## object must be returned
+    ## FIXME For the time being, just consider the main repo code. Still an
+    ## array object must be returned
     repo_settings.update({
         'name': ctls_utils.get_short_repo_name(build_repo_name),
         'url': build_repo_name
     })
-    if repo_data:
+    if repositories:
         platform = ctls_utils.supported_git_platform(
-            repo_data['repo'], platforms=SUPPORTED_PLATFORMS
+            repositories[main_repo_key], platforms=SUPPORTED_PLATFORMS
         )
         if platform in ['github']:
             gh_repo_name = repo_settings['name']
