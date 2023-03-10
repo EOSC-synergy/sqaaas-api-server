@@ -11,6 +11,9 @@
           {%- if repo_data.get('repo', {})  -%}
 	  {{ "," if not loop.first else "" }}
 	  {
+            {%- if repo_data.get('credential_id', {})  -%}
+	    "credential_id": "{{ repo_data.credential_id }}",
+	    {%- endif -%}
 	    "repo": "{{ repo_data.repo }}",
 	    "branch": "{{ repo_data.branch }}"
 	  }
