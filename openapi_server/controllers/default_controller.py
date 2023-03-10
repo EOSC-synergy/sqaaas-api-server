@@ -441,23 +441,14 @@ async def add_pipeline_for_assessment(request: web.Request, body, user_requested
         return web.Response(status=e.http_code, reason=e.message, text=e.message)
 
     #2 Encrypt credentials before storing in DB
-    _repositories_encrypted = {}
-    f = crypto_utils.get_fernet_key()
     for _repo_key, _repo_data in repositories.items():
         _repo_creds = _repo_data.get('credential_id', {})
         if _repo_creds:
-            _token = _repo_creds.get('token', '').encode('utf-8')
-    #        _repo_creds_byte = json.dumps(_repo_creds).encode('utf-8')
-    #         _repo_creds = f.encrypt(_repo_creds_byte)
-            _token = f.encrypt(_token)
-    #         _repo_data['credential_id'] = _repo_creds
-            _repo_data['credential_id']['token'] = _token.decode('utf-8')
-    #     _repositories_encrypted[_repo_key] = _repo_data
-    print(json.dumps(repositories, indent=4))
-    data = f.decrypt(repositories['repo_code']['credential_id']['token'].encode('utf-8')).decode('utf-8')
-    print(json.dumps(data, indent=4))
-    import sys
-    sys.exit(0)
+            for prop in ['secret_id', 'token', 'user_id']:
+                _prop_value = _repo_creds.get(prop, '')
+                if _prop_value:
+                    _prop_encrypted = crypto_utils.encrypt_str(_prop_value)
+                    _repo_data['credential_id'][prop] = _prop_encrypted
 
     #3 Load request payload (same as passed to POST /pipeline) from templates
     env = Environment(
