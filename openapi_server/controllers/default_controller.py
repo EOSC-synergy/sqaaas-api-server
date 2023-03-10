@@ -512,7 +512,7 @@ async def add_pipeline_for_assessment(request: web.Request, body, user_requested
     })
     if repositories:
         platform = ctls_utils.supported_git_platform(
-            repositories[main_repo_key], platforms=SUPPORTED_PLATFORMS
+            repositories[main_repo_key]['repo'], platforms=SUPPORTED_PLATFORMS
         )
         if platform in ['github']:
             gh_repo_name = repo_settings['name']
