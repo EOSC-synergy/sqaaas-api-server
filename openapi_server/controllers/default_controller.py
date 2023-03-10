@@ -21,6 +21,7 @@ import namegenerator
 
 from openapi_server import config
 from openapi_server import controllers
+from openapi_server.controllers import crypto as crypto_utils
 from openapi_server.controllers import db
 from openapi_server.controllers.badgr import BadgrUtils
 from openapi_server.controllers.git import GitUtils
@@ -50,8 +51,6 @@ FAIR_PREFIX = 'QC.FAIR'
 FAIR_RDA_PREFIX = 'RDA'
 
 BADGE_CATEGORIES = ['bronze', 'silver', 'gold']
-
-KEY_ENCRYPTION_PATH = config.get('key_encryption_path')
 
 logger = logging.getLogger('sqaaas.api.controller')
 
@@ -442,11 +441,23 @@ async def add_pipeline_for_assessment(request: web.Request, body, user_requested
         return web.Response(status=e.http_code, reason=e.message, text=e.message)
 
     #2 Encrypt credentials before storing in DB
+    _repositories_encrypted = {}
+    f = crypto_utils.get_fernet_key()
     for _repo_key, _repo_data in repositories.items():
         _repo_creds = _repo_data.get('credential_id', {})
         if _repo_creds:
-            f = ctls_utils.generate_fernet_key(KEY_ENCRYPTION_PATH)
-            _repo_creds = f.encrypt(_repo_creds)
+            _token = _repo_creds.get('token', '').encode('utf-8')
+    #        _repo_creds_byte = json.dumps(_repo_creds).encode('utf-8')
+    #         _repo_creds = f.encrypt(_repo_creds_byte)
+            _token = f.encrypt(_token)
+    #         _repo_data['credential_id'] = _repo_creds
+            _repo_data['credential_id']['token'] = _token.decode('utf-8')
+    #     _repositories_encrypted[_repo_key] = _repo_data
+    print(json.dumps(repositories, indent=4))
+    data = f.decrypt(repositories['repo_code']['credential_id']['token'].encode('utf-8')).decode('utf-8')
+    print(json.dumps(data, indent=4))
+    import sys
+    sys.exit(0)
 
     #3 Load request payload (same as passed to POST /pipeline) from templates
     env = Environment(

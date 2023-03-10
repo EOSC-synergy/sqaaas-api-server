@@ -11,7 +11,6 @@ import uuid
 import yaml
 
 from aiohttp import web
-from cryptography.fernet import Fernet
 from urllib3.util import parse_url
 from urllib3.util import Url
 
@@ -1223,17 +1222,3 @@ def add_image_to_im(im_config_file, image_id, openstack_url, tech, repo, path='.
         'file_name': im_config_file,
         'file_data': data
     }
-
-
-def generate_fernet_key(path):
-    """Generates and stores a Fernet key for encryption.
-
-    Returns the key.
-
-    :param path: Fernet key location
-    """
-    key = Fernet.generate_key()
-    with open(path, 'wb') as fname:
-        fname.write(key)
-
-    return Fernet(key)
