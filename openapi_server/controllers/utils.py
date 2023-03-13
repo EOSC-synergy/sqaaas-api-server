@@ -600,7 +600,8 @@ def process_extra_data(config_json, composer_json, report_to_stdout=False):
             # Get default branch if None is defined
             if not project_repo.get('branch', None):
                 project_repo['branch'] = GitUtils.get_remote_active_branch(
-                    repo_url
+                    repo_url,
+                    repo_creds=project_repo.get('credential_id', {})
                 )
             # Check for empty values
             project_repo = del_empty_keys(project_repo)

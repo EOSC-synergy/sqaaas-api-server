@@ -421,6 +421,16 @@ async def add_pipeline_for_assessment(request: web.Request, body, user_requested
             'software/service/FAIRness assessment'
         )
         return web.Response(status=422, reason=_reason, text=_reason)
+    
+    #0 Encrypt credentials before storing in DB
+    for _repo_key, _repo_data in repositories.items():
+        _repo_creds = _repo_data.get('credential_id', {})
+        if _repo_creds:
+            for prop in ['secret_id', 'token', 'user_id']:
+                _prop_value = _repo_creds.get(prop, '')
+                if _prop_value:
+                    _prop_encrypted = crypto_utils.encrypt_str(_prop_value)
+                    _repo_data['credential_id'][prop] = _prop_encrypted
 
     #1 Filter per-criterion tools that will take part in the assessment
     repo_settings = {}
@@ -440,17 +450,7 @@ async def add_pipeline_for_assessment(request: web.Request, body, user_requested
     except SQAaaSAPIException as e:
         return web.Response(status=e.http_code, reason=e.message, text=e.message)
 
-    #2 Encrypt credentials before storing in DB
-    for _repo_key, _repo_data in repositories.items():
-        _repo_creds = _repo_data.get('credential_id', {})
-        if _repo_creds:
-            for prop in ['secret_id', 'token', 'user_id']:
-                _prop_value = _repo_creds.get(prop, '')
-                if _prop_value:
-                    _prop_encrypted = crypto_utils.encrypt_str(_prop_value)
-                    _repo_data['credential_id'][prop] = _prop_encrypted
-
-    #3 Load request payload (same as passed to POST /pipeline) from templates
+    #2 Load request payload (same as passed to POST /pipeline) from templates
     env = Environment(
         loader=PackageLoader('openapi_server', 'templates')
     )
@@ -480,7 +480,7 @@ async def add_pipeline_for_assessment(request: web.Request, body, user_requested
     json_data = json.loads(json_rendered)
     logger.debug('Generated JSON payload (from template) required to create the pipeline for the assessment: %s' % json_data)
 
-    #4 Create pipeline
+    #3 Create pipeline
     try:
         pipeline_id = await _add_pipeline_to_db(
             json_data,
@@ -489,7 +489,7 @@ async def add_pipeline_for_assessment(request: web.Request, body, user_requested
     except SQAaaSAPIException as e:
         return web.Response(status=e.http_code, reason=e.message, text=e.message)
 
-    #5 Store tool related data in the DB
+    #4 Store tool related data in the DB
     pipeline_data = db.get_entry(pipeline_id)
     criteria_tools = pipeline_data['tools']
     for criterion_data in criteria_data_list:
@@ -503,7 +503,7 @@ async def add_pipeline_for_assessment(request: web.Request, body, user_requested
             })
     db.add_tool_data(pipeline_id, criteria_tools)
 
-    #6 Store repo settings
+    #5 Store repo settings
     ## FIXME For the time being, just consider the main repo code. Still an
     ## array object must be returned
     repo_settings.update({
@@ -531,7 +531,7 @@ async def add_pipeline_for_assessment(request: web.Request, body, user_requested
         repo_settings
     )
 
-    #7 Store QAA data
+    #6 Store QAA data
     db.add_assessment_data(
         pipeline_id,
         criteria_filtered_out

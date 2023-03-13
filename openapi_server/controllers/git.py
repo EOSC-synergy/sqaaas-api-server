@@ -10,6 +10,7 @@ from git.exc import GitCommandError
 from urllib3.util import parse_url
 from urllib3.util import Url
 
+from openapi_server.controllers import crypto as crypto_utils
 from openapi_server.exception import SQAaaSAPIException
 
 
@@ -45,24 +46,50 @@ class GitUtils(object):
         return message
 
     @staticmethod
-    def _format_git_url(repo_url):
+    def _format_git_creds(repo_creds):
+        """Formats git URL to avoid asking for password when repos do not
+        exist.
+
+        :param repo_creds: dict with credential definition (Vault secret, Git
+        user/token)
+        """
+        _creds_prefix_template = '%s:%s@'
+        _user_id = ''
+        _token = ''
+        if 'user_id' and 'token' in list(repo_creds): # Git user/token
+            _user_id = repo_creds.get('user_id', '')
+            _user_id_decrypted = crypto_utils.decrypt_str(_user_id)
+            _token = repo_creds.get('token', '')
+            _token_decrypted = crypto_utils.decrypt_str(_token)
+        _creds_prefix_url = _creds_prefix_template % (
+            _user_id_decrypted, _token_decrypted
+        )
+
+        return _creds_prefix_url
+
+    @staticmethod
+    def _format_git_url(repo_url, repo_creds={}):
         """Formats git URL to avoid asking for password when repos do not exist.
 
         :param repo_url: URL of the git repository
+        :param repo_creds: dict with credential definition (Vault secret, Git
+        user/token)
         """
         logger.debug((
             'Format source repository URL to avoid git askpass when repo '
             'does not exist: %s' % repo_url
         ))
+        repo_url_prefix_creds = GitUtils._format_git_creds(repo_creds)
         repo_url_parsed = parse_url(repo_url)
         repo_url_final = Url(
             scheme=repo_url_parsed.scheme,
             auth=repo_url_parsed.auth,
-            host=':@'+repo_url_parsed.host,
+            host=repo_url_prefix_creds+repo_url_parsed.host,
             path=repo_url_parsed.path,
             query=repo_url_parsed.query,
             fragment=repo_url_parsed.fragment
         )
+
         return repo_url_final.url
 
     def setup_env(self, dirpath):
@@ -111,11 +138,16 @@ class GitUtils(object):
         return default_branch
 
     @staticmethod
-    def get_remote_active_branch(remote_repo):
+    def get_remote_active_branch(remote_repo, repo_creds={}):
         """Gets active branch from remote repository.
 
         :param remote_repo: Absolute URL of the source repository (e.g. https://example.org)
         """
+        if repo_creds:
+            remote_repo = GitUtils._format_git_url(
+                remote_repo, repo_creds=repo_creds
+            )
+
         branch = None
         with tempfile.TemporaryDirectory() as dirpath:
             try:
@@ -147,13 +179,17 @@ class GitUtils(object):
         """Decorator to perform some git work inside a cloned repository.
 
         The decorated method MUST have a kwarg 'repo' of type dict with
-        2 keys: {'repo': 'https://example.org/foo', 'branch': None}
+        2 keys: {'repo': 'https://example.org/foo', 'branch': None}. For
+        private repos the additional 'credential_id' key is present.
         """
         @functools.wraps(f)
         def decorated_function(*args, **kwargs):
             repo = kwargs.get('repo', None)
             if repo:
-                source_repo = GitUtils._format_git_url(repo['repo'])
+                repo_creds = repo.get('credential_id', {})
+                source_repo = GitUtils._format_git_url(
+                    repo['repo'], repo_creds=repo_creds
+                )
                 source_repo_branch = repo.get('branch', None)
                 branch = source_repo_branch
                 with tempfile.TemporaryDirectory() as dirpath:
