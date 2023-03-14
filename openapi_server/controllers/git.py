@@ -58,11 +58,11 @@ class GitUtils(object):
         _token = ''
         if 'user_id' and 'token' in list(repo_creds): # Git user/token
             _user_id = repo_creds.get('user_id', '')
-            _user_id_decrypted = crypto_utils.decrypt_str(_user_id)
+            _user_id = crypto_utils.decrypt_str(_user_id)
             _token = repo_creds.get('token', '')
-            _token_decrypted = crypto_utils.decrypt_str(_token)
+            _token = crypto_utils.decrypt_str(_token)
         _creds_prefix_url = _creds_prefix_template % (
-            _user_id_decrypted, _token_decrypted
+            _user_id, _token
         )
 
         return _creds_prefix_url
@@ -143,6 +143,7 @@ class GitUtils(object):
 
         :param remote_repo: Absolute URL of the source repository (e.g. https://example.org)
         """
+        remote_repo_no_creds = remote_repo # for logging purposes
         if repo_creds:
             remote_repo = GitUtils._format_git_url(
                 remote_repo, repo_creds=repo_creds
@@ -153,7 +154,7 @@ class GitUtils(object):
             try:
                 logger.debug((
                     'Inspecting content of repo <%s>' % (
-                        remote_repo
+                        remote_repo_no_creds
                     )
                 ))
                 repo = Repo.clone_from(
@@ -163,7 +164,7 @@ class GitUtils(object):
                 branch = branch.name
                 logger.debug(
                     'Active branch name from remote repository <%s>: %s' % (
-                        remote_repo, branch
+                        remote_repo_no_creds, branch
                 ))
             except GitCommandError as e:
                 raise SQAaaSAPIException(
@@ -190,6 +191,7 @@ class GitUtils(object):
                 source_repo = GitUtils._format_git_url(
                     repo['repo'], repo_creds=repo_creds
                 )
+                source_repo_no_creds = repo['repo'] # for logging purposes
                 source_repo_branch = repo.get('branch', None)
                 branch = source_repo_branch
                 with tempfile.TemporaryDirectory() as dirpath:
@@ -206,7 +208,7 @@ class GitUtils(object):
                             branch = repo.active_branch
                             branch = branch.name
                         msg = 'Repository <%s> was cloned (branch: %s)' % (
-                            source_repo, branch)
+                            source_repo_no_creds, branch)
                         logger.debug(msg)
                     except GitCommandError as e:
                         raise SQAaaSAPIException(
