@@ -231,24 +231,34 @@ class GitHubUtils(object):
                            '(base)' % (head, upstream_branch_name)))
         return pr.raw_data
 
-    def get_repository(self, repo_name, raise_exception=False):
+    def get_repository(self, repo_name, repo_creds={}, raise_exception=False):
         """Return a Repository from a GitHub repo if it exists, False otherwise.
 
         :param repo_name: Name of the repo (format: <user|org>/<repo_name>)
+        :param repo_creds: Credentials needed for successful authentication
         :param raise_exception: Boolean to mark whether the UnknownObjectException shall be raised
         """
+        _client = None
+        if repo_creds:
+            _user_id = repo_creds.get('user_id', '')
+            _token = repo_creds.get('token', '')
+            _client = Github(_user_id, _token)
+        else:
+            _client = self.client
+
         repo = False
         try:
-            repo = self.client.get_repo(repo_name)
+            repo = _client.get_repo(repo_name)
         except UnknownObjectException as e:
-            self.logger.debug('Unknown Github exception: %s' % e)
+            _reason = 'Github exception: %s' % e
+            self.logger.error(_reason)
             if raise_exception:
-                raise e
+                raise SQAaaSAPIException(422, _reason)
         finally:
             if repo:
                 self.logger.debug('Repository <%s> found' % repo_name)
             else:
-                self.logger.debug('Repository <%s> not found!' % repo_name)
+                self.logger.warning('Repository <%s> not found!' % repo_name)
         return repo
 
     def get_owner(self, repo_name):
