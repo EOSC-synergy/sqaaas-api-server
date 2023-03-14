@@ -1122,6 +1122,12 @@ async def _update_status(pipeline_id, triggered_by_run=False, build_task=None):
         if _status['result']:
             build_status = _status['result']
             logger.debug('Job result returned from Jenkins: %s' % _status['result'])
+            # Set as UNSTABLE when cleanup stage fails
+            if jk_utils.cleanup_stage_failed(jk_job_name, build_no):
+                build_status = 'UNSTABLE'
+                logger.info(
+                    'Cleanup stage failed: setting pipeline status to UNSTABLE'
+                )
         else:
             if _status.get('queueId', None):
                 build_status = 'EXECUTING'
