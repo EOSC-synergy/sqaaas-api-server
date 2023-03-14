@@ -261,15 +261,24 @@ class GitHubUtils(object):
                 self.logger.warning('Repository <%s> not found!' % repo_name)
         return repo
 
-    def get_owner(self, repo_name):
+    def get_owner(self, repo_name, repo_creds={}):
         """Gets the user that owns the repo.
 
         If found, it returns a NamedUser object.
 
         :param repo_name: Name of the repo (format: <user|org>/<repo_name>)
+        :param repo_creds: Credentials needed for successful authentication
         """
+        _client = None
+        if repo_creds:
+            _user_id = repo_creds.get('user_id', '')
+            _token = repo_creds.get('token', '')
+            _client = Github(_user_id, _token)
+        else:
+            _client = self.client
+
         _owner_name, _repo_name = repo_name.split('/', 1)
-        return self.client.get_user(_owner_name)
+        return _client.get_user(_owner_name)
 
     def get_org_repository(self, repo_name, org_name='eosc-synergy'):
         """Gets a repository from the given Github organization.
