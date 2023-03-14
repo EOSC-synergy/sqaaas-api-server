@@ -6,6 +6,7 @@ from github.GithubException import GithubException
 from github.GithubException import UnknownObjectException
 from jinja2 import Environment, PackageLoader
 
+from openapi_server.controllers import crypto as crypto_utils
 from openapi_server.exception import SQAaaSAPIException
 
 
@@ -241,8 +242,10 @@ class GitHubUtils(object):
         _client = None
         if repo_creds:
             _user_id = repo_creds.get('user_id', '')
+            _user_id_decrypted = crypto_utils.decrypt_str(_user_id)
             _token = repo_creds.get('token', '')
-            _client = Github(_user_id, _token)
+            _token_decrypted = crypto_utils.decrypt_str(_token)
+            _client = Github(_user_id_decrypted, _token_decrypted)
         else:
             _client = self.client
 
