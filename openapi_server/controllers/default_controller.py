@@ -514,18 +514,43 @@ async def add_pipeline_for_assessment(request: web.Request, body, user_requested
         platform = ctls_utils.supported_git_platform(
             repositories[main_repo_key]['repo'], platforms=SUPPORTED_PLATFORMS
         )
+        _main_repo_creds = repositories[main_repo_key].get(
+            'credential_id', {}
+        )
         if platform in ['github']:
             gh_repo_name = repo_settings['name']
-            repo_settings.update({
-                'avatar_url': gh_utils.get_avatar(gh_repo_name),
-                'description': gh_utils.get_description(gh_repo_name),
-                'languages': gh_utils.get_languages(gh_repo_name),
-                'topics': gh_utils.get_topics(gh_repo_name),
-                'stargazers_count': gh_utils.get_stargazers(gh_repo_name),
-                'watchers_count': gh_utils.get_watchers(gh_repo_name),
-                'contributors_count': gh_utils.get_contributors(gh_repo_name),
-                'forks_count': gh_utils.get_forks(gh_repo_name)
-            })
+            try:
+                repo_settings.update({
+                    'avatar_url': gh_utils.get_avatar(
+                        gh_repo_name, _main_repo_creds
+                    ),
+                    'description': gh_utils.get_description(
+                        gh_repo_name, _main_repo_creds
+                    ),
+                    'languages': gh_utils.get_languages(
+                        gh_repo_name, _main_repo_creds
+                    ),
+                    'topics': gh_utils.get_topics(
+                        gh_repo_name, _main_repo_creds
+                    ),
+                    'stargazers_count': gh_utils.get_stargazers(
+                        gh_repo_name, _main_repo_creds
+                    ),
+                    'watchers_count': gh_utils.get_watchers(
+                        gh_repo_name, _main_repo_creds
+                    ),
+                    'contributors_count': gh_utils.get_contributors(
+                        gh_repo_name, _main_repo_creds
+                    ),
+                    'forks_count': gh_utils.get_forks(
+                        gh_repo_name, _main_repo_creds
+                    ),
+                })
+            except SQAaaSAPIException as e:
+                _reason = e.message
+                return web.Response(
+                    status=e.http_code, reason=_reason, text=_reason
+                )
     db.add_repo_settings(
         pipeline_id,
         repo_settings

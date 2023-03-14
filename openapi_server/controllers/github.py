@@ -353,67 +353,69 @@ class GitHubUtils(object):
         self.logger.debug('Getting commit data for SHA <%s>' % commit_id)
         return repo.get_commit(commit_id).html_url
 
-    def get_description(self, repo_name):
+    def get_description(self, repo_name, repo_creds={}):
         """Gets the description from a Github repository.
 
         :param repo_name: Name of the repo to push (format: <user|org>/<repo_name>)
         """
-        repo = self.get_repository(repo_name)
+        repo = self.get_repository(
+            repo_name, repo_creds=repo_creds, raise_exception=True
+        )
         return repo.description
 
-    def get_languages(self, repo_name):
+    def get_languages(self, repo_name, repo_creds={}):
         """Gets the languages used in a Github repository.
 
         :param repo_name: Name of the repo to push (format: <user|org>/<repo_name>)
         """
-        repo = self.get_repository(repo_name)
+        repo = self.get_repository(repo_name, repo_creds=repo_creds)
         languages = repo.get_languages()
         return sorted(languages, key=languages.get, reverse=True)
 
-    def get_topics(self, repo_name):
+    def get_topics(self, repo_name, repo_creds={}):
         """Gets the topic list from a Github repository.
 
         :param repo_name: Name of the repo to push (format: <user|org>/<repo_name>)
         """
-        repo = self.get_repository(repo_name)
+        repo = self.get_repository(repo_name, repo_creds=repo_creds)
         return repo.get_topics()
 
-    def get_stargazers(self, repo_name):
+    def get_stargazers(self, repo_name, repo_creds={}):
         """Gets the star count from a Github repository.
 
         :param repo_name: Name of the repo to push (format: <user|org>/<repo_name>)
         """
-        repo = self.get_repository(repo_name)
+        repo = self.get_repository(repo_name, repo_creds=repo_creds)
         return repo.get_stargazers().totalCount
 
-    def get_watchers(self, repo_name):
+    def get_watchers(self, repo_name, repo_creds={}):
         """Gets the watcher count from a Github repository.
 
         :param repo_name: Name of the repo to push (format: <user|org>/<repo_name>)
         """
-        repo = self.get_repository(repo_name)
+        repo = self.get_repository(repo_name, repo_creds=repo_creds)
         return repo.get_watchers().totalCount
 
-    def get_contributors(self, repo_name):
+    def get_contributors(self, repo_name, repo_creds={}):
         """Gets the contributor count from a Github repository.
 
         :param repo_name: Name of the repo to push (format: <user|org>/<repo_name>)
         """
-        repo = self.get_repository(repo_name)
+        repo = self.get_repository(repo_name, repo_creds=repo_creds)
         return repo.get_contributors().totalCount
 
-    def get_forks(self, repo_name):
+    def get_forks(self, repo_name, repo_creds={}):
         """Gets the fork count from a Github repository.
 
         :param repo_name: Name of the repo to push (format: <user|org>/<repo_name>)
         """
-        repo = self.get_repository(repo_name)
+        repo = self.get_repository(repo_name, repo_creds=repo_creds)
         return repo.get_forks().totalCount
 
-    def get_avatar(self, repo_name):
+    def get_avatar(self, repo_name, repo_creds={}):
         """Gets the avatar URL from a Github repository.
 
         :param repo_name: Name of the repo to push (format: <user|org>/<repo_name>)
         """
-        owner = self.get_owner(repo_name)
+        owner = self.get_owner(repo_name, repo_creds=repo_creds)
         return owner.avatar_url
