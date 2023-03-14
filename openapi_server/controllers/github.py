@@ -272,7 +272,6 @@ class GitHubUtils(object):
         :param repo_name: Name of the repo (format: <user|org>/<repo_name>)
         :param repo_creds: Credentials needed for successful authentication
         """
-        _client = None
         if repo_creds:
             _user_id = repo_creds.get('user_id', '')
             _token = repo_creds.get('token', '')
@@ -356,63 +355,119 @@ class GitHubUtils(object):
         self.logger.debug('Getting commit data for SHA <%s>' % commit_id)
         return repo.get_commit(commit_id).html_url
 
-    def get_description(self, repo_name, repo_creds={}):
+    def get_description(self, repo=None, repo_name=None, repo_creds={}):
         """Gets the description from a Github repository.
 
+        :param repo: Repository object
         :param repo_name: Name of the repo to push (format: <user|org>/<repo_name>)
         """
-        repo = self.get_repository(
-            repo_name, repo_creds=repo_creds, raise_exception=True
-        )
+        if not repo:
+            if not repo_name:
+                _reason = (
+                    'Bad arguments: either the name of the repo or a repo '
+                    'object must be provided'
+                )
+                raise SQAaaSAPIException(422, _reason)
+            repo = self.get_repository(
+                repo_name, repo_creds=repo_creds, raise_exception=True
+            )
         return repo.description
 
-    def get_languages(self, repo_name, repo_creds={}):
+    def get_languages(self, repo=None, repo_name=None, repo_creds={}):
         """Gets the languages used in a Github repository.
 
+        :param repo: Repository object
         :param repo_name: Name of the repo to push (format: <user|org>/<repo_name>)
         """
-        repo = self.get_repository(repo_name, repo_creds=repo_creds)
+        if not repo:
+            if not repo_name:
+                _reason = (
+                    'Bad arguments: either the name of the repo or a repo '
+                    'object must be provided'
+                )
+                raise SQAaaSAPIException(422, _reason)
+            repo = self.get_repository(repo_name, repo_creds=repo_creds)
         languages = repo.get_languages()
         return sorted(languages, key=languages.get, reverse=True)
 
-    def get_topics(self, repo_name, repo_creds={}):
+    def get_topics(self, repo=None, repo_name=None, repo_creds={}):
         """Gets the topic list from a Github repository.
 
+        :param repo: Repository object
         :param repo_name: Name of the repo to push (format: <user|org>/<repo_name>)
         """
-        repo = self.get_repository(repo_name, repo_creds=repo_creds)
+        if not repo:
+            if not repo_name:
+                _reason = (
+                    'Bad arguments: either the name of the repo or a repo '
+                    'object must be provided'
+                )
+                raise SQAaaSAPIException(422, _reason)
+            repo = self.get_repository(repo_name, repo_creds=repo_creds)
         return repo.get_topics()
 
-    def get_stargazers(self, repo_name, repo_creds={}):
+    def get_stargazers(self, repo=None, repo_name=None, repo_creds={}):
         """Gets the star count from a Github repository.
 
+        :param repo: Repository object
         :param repo_name: Name of the repo to push (format: <user|org>/<repo_name>)
         """
-        repo = self.get_repository(repo_name, repo_creds=repo_creds)
+        if not repo:
+            if not repo_name:
+                _reason = (
+                    'Bad arguments: either the name of the repo or a repo '
+                    'object must be provided'
+                )
+                raise SQAaaSAPIException(422, _reason)
+            repo = self.get_repository(repo_name, repo_creds=repo_creds)
         return repo.get_stargazers().totalCount
 
-    def get_watchers(self, repo_name, repo_creds={}):
+    def get_watchers(self, repo=None, repo_name=None, repo_creds={}):
         """Gets the watcher count from a Github repository.
 
+        :param repo: Repository object
         :param repo_name: Name of the repo to push (format: <user|org>/<repo_name>)
         """
-        repo = self.get_repository(repo_name, repo_creds=repo_creds)
+        if not repo:
+            if not repo_name:
+                _reason = (
+                    'Bad arguments: either the name of the repo or a repo '
+                    'object must be provided'
+                )
+                raise SQAaaSAPIException(422, _reason)
+            repo = self.get_repository(repo_name, repo_creds=repo_creds)
         return repo.get_watchers().totalCount
 
-    def get_contributors(self, repo_name, repo_creds={}):
+    def get_contributors(self, repo=None, repo_name=None, repo_creds={}):
         """Gets the contributor count from a Github repository.
 
+        :param repo: Repository object
         :param repo_name: Name of the repo to push (format: <user|org>/<repo_name>)
         """
-        repo = self.get_repository(repo_name, repo_creds=repo_creds)
+        if not repo:
+            if not repo_name:
+                _reason = (
+                    'Bad arguments: either the name of the repo or a repo '
+                    'object must be provided'
+                )
+                raise SQAaaSAPIException(422, _reason)
+            repo = self.get_repository(repo_name, repo_creds=repo_creds)
         return repo.get_contributors().totalCount
 
-    def get_forks(self, repo_name, repo_creds={}):
+    def get_forks(self, repo=None, repo_name=None, repo_creds={}):
         """Gets the fork count from a Github repository.
 
+        :param repo: Repository object
         :param repo_name: Name of the repo to push (format: <user|org>/<repo_name>)
         """
-        repo = self.get_repository(repo_name, repo_creds=repo_creds)
+        if not repo:
+            if not repo_name:
+                _reason = (
+                    'Bad arguments: either the name of the repo or a repo '
+                    'object must be provided'
+                )
+                raise SQAaaSAPIException(422, _reason)
+            repo = self.get_repository(repo_name, repo_creds=repo_creds)
         return repo.get_forks().totalCount
 
     def get_avatar(self, repo_name, repo_creds={}):

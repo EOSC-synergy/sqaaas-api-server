@@ -421,7 +421,7 @@ async def add_pipeline_for_assessment(request: web.Request, body, user_requested
             'software/service/FAIRness assessment'
         )
         return web.Response(status=422, reason=_reason, text=_reason)
-    
+
     #0 Encrypt credentials before storing in DB
     for _repo_key, _repo_data in repositories.items():
         _repo_creds = _repo_data.get('credential_id', {})
@@ -520,31 +520,20 @@ async def add_pipeline_for_assessment(request: web.Request, body, user_requested
         if platform in ['github']:
             gh_repo_name = repo_settings['name']
             try:
+                gh_repo = gh_utils.get_repository(
+                    gh_repo_name, _main_repo_creds, raise_exception=True
+                )
                 repo_settings.update({
                     'avatar_url': gh_utils.get_avatar(
                         gh_repo_name, _main_repo_creds
                     ),
-                    'description': gh_utils.get_description(
-                        gh_repo_name, _main_repo_creds
-                    ),
-                    'languages': gh_utils.get_languages(
-                        gh_repo_name, _main_repo_creds
-                    ),
-                    'topics': gh_utils.get_topics(
-                        gh_repo_name, _main_repo_creds
-                    ),
-                    'stargazers_count': gh_utils.get_stargazers(
-                        gh_repo_name, _main_repo_creds
-                    ),
-                    'watchers_count': gh_utils.get_watchers(
-                        gh_repo_name, _main_repo_creds
-                    ),
-                    'contributors_count': gh_utils.get_contributors(
-                        gh_repo_name, _main_repo_creds
-                    ),
-                    'forks_count': gh_utils.get_forks(
-                        gh_repo_name, _main_repo_creds
-                    ),
+                    'description': gh_utils.get_description(gh_repo),
+                    'languages': gh_utils.get_languages(gh_repo),
+                    'topics': gh_utils.get_topics(gh_repo),
+                    'stargazers_count': gh_utils.get_stargazers(gh_repo),
+                    'watchers_count': gh_utils.get_watchers(gh_repo),
+                    'contributors_count': gh_utils.get_contributors(gh_repo),
+                    'forks_count': gh_utils.get_forks(gh_repo),
                 })
             except SQAaaSAPIException as e:
                 _reason = e.message
