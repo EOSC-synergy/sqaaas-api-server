@@ -440,7 +440,8 @@ class ProcessExtraData(object):
                             return value_list
                 return list([' '.join(value_list)])
             elif type(value) in [list]:
-                value = [value[0]] # note the type(list)
+                if not arg.get('repeatable', False):
+                    value = [value[0]] # note the type(list)
             return value
 
         def process_args(args, cmd_list=[]):
