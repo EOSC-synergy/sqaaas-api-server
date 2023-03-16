@@ -207,6 +207,15 @@ async def _get_tooling_for_assessment(
                                     'Found matching files in repository: '
                                     '%s' % files_found
                                 ))
+                                if tool['name'] in ['hadolint']:
+                                    # Check if 'explicit_paths' property is enabled
+                                    _relative_paths = [
+                                        os.path.relpath(_file, path)
+                                            for _file in files_found
+                                    ]
+                                    tool['args'] = ctls_utils.add_explicit_paths_for_tool(
+                                        tool['args'], _relative_paths
+                                    )
                                 break
                         if not files_found:
                             _reason = (

@@ -1090,6 +1090,23 @@ def find_files_by_language(field, value, repo, path='.'):
     return [str(file_name) for file_name in files_found]
 
 
+def add_explicit_paths_for_tool(tool_args, paths):
+    """Adds explicit paths when executing the tool.
+
+    Modifies the 'value' property (from the tooling's 'args' object) to
+    include the list of explicit paths.
+
+    :param tool_args: List of tool's argument (objects)
+    :param paths: List of paths to append to tool's argument 'value' property
+    """
+    for arg_data in tool_args:
+        if arg_data.get('explicit_paths', False):
+            arg_data['value'] = paths
+            break
+
+    return tool_args
+
+
 def get_registry_from_image(image_name):
     """Returns the Docker host URL from the image (<None> if not included).
 
