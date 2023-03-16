@@ -232,3 +232,27 @@ class JenkinsUtils(object):
             })
 
         return criteria_data_list
+
+    def cleanup_stage_failed(self, full_job_name, build_no):
+        _cleanup_failed = False
+        try:
+            stages_list = self.server.get_build_stages(
+                full_job_name, build_no
+            )['stages']
+        except Exception as e:
+            self.logger.warning(
+                'Could not check if cleanup stage failed for build #%s '
+                '(job: <%s>)' % (
+                    build_no, full_job_name
+                )
+            )
+        else:
+            stages_no = len(stages_list)
+            if stages_no > 10: # assume that QC.*** stages ran
+                for stage in stages_list:
+                    if stage['name'].find('cleanup') != -1:
+                        if stage['status'] in ['FAILED']:
+                            _cleanup_failed = True
+                            break
+
+        return _cleanup_failed
