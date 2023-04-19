@@ -5,7 +5,7 @@ from datetime import date, datetime
 from typing import List, Dict, Type
 
 from openapi_server.models.base_model_ import Model
-from openapi_server.models.creds_user_pass import CredsUserPass
+from openapi_server.models.repository_credential_id import RepositoryCredentialId
 from openapi_server import util
 
 
@@ -15,7 +15,7 @@ class Repository(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, repo: str=None, branch: str=None, credential_id: CredsUserPass=None):
+    def __init__(self, repo: str=None, branch: str=None, credential_id: RepositoryCredentialId=None):
         """Repository - a model defined in OpenAPI
 
         :param repo: The repo of this Repository.
@@ -25,7 +25,7 @@ class Repository(Model):
         self.openapi_types = {
             'repo': str,
             'branch': str,
-            'credential_id': CredsUserPass
+            'credential_id': RepositoryCredentialId
         }
 
         self.attribute_map = {
@@ -99,7 +99,7 @@ class Repository(Model):
 
 
         :return: The credential_id of this Repository.
-        :rtype: CredsUserPass
+        :rtype: RepositoryCredentialId
         """
         return self._credential_id
 
@@ -109,7 +109,7 @@ class Repository(Model):
 
 
         :param credential_id: The credential_id of this Repository.
-        :type credential_id: CredsUserPass
+        :type credential_id: RepositoryCredentialId
         """
 
         self._credential_id = credential_id

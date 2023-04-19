@@ -2,6 +2,7 @@
 
 # import models into model package
 from openapi_server.models.add_pipeline201_response import AddPipeline201Response
+from openapi_server.models.assessment_creds import AssessmentCreds
 from openapi_server.models.assessment_deployment import AssessmentDeployment
 from openapi_server.models.assessment_fair import AssessmentFAIR
 from openapi_server.models.assessment_output import AssessmentOutput
@@ -44,6 +45,7 @@ from openapi_server.models.je_pl_jenkinsfile_stages_inner_when import JePLJenkin
 from openapi_server.models.pipeline import Pipeline
 from openapi_server.models.pipeline_assessment import PipelineAssessment
 from openapi_server.models.repository import Repository
+from openapi_server.models.repository_credential_id import RepositoryCredentialId
 from openapi_server.models.service_docker_compose_value import ServiceDockerComposeValue
 from openapi_server.models.service_docker_compose_value_build import ServiceDockerComposeValueBuild
 from openapi_server.models.service_docker_compose_value_image import ServiceDockerComposeValueImage

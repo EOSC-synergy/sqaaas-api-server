@@ -1022,15 +1022,32 @@ components:
       - username_var
       title: Creds_user_pass
       type: object
+    AssessmentCreds:
+      properties:
+        secret_id:
+          description: Secret ID (required by Vault)
+          example: my_gitlab_secret
+          title: secret_id
+          type: string
+        user_id:
+          description: "Account name to be used for authentication (required by GitLab,\
+            \ GitHub)"
+          example: my_gitlab_user
+          title: user_id
+          type: string
+        token:
+          description: "Temporary (short-lived) token for authentication (required\
+            \ by GitLab, GitHub)"
+          example: my_gitlab_token
+          title: token
+          type: string
+      title: AssessmentCreds
+      type: object
     Repository:
       example:
         repo: https://github.com/eosc-synergy/sqaaas-api-spec
         branch: master
-        credential_id:
-          password_var: GIT_PASS
-          username_var: GIT_USER
-          id: my-dockerhub-token
-          type: username_password
+        credential_id: null
       properties:
         repo:
           description: URL of the repository
@@ -1044,7 +1061,7 @@ components:
           title: branch
           type: string
         credential_id:
-          $ref: '#/components/schemas/Creds_user_pass'
+          $ref: '#/components/schemas/Repository_credential_id'
       title: Repository
       type: object
     Commands_simplified:
@@ -1224,18 +1241,10 @@ components:
           project_repos:
           - repo: https://github.com/eosc-synergy/sqaaas-api-spec
             branch: master
-            credential_id:
-              password_var: GIT_PASS
-              username_var: GIT_USER
-              id: my-dockerhub-token
-              type: username_password
+            credential_id: null
           - repo: https://github.com/eosc-synergy/sqaaas-api-spec
             branch: master
-            credential_id:
-              password_var: GIT_PASS
-              username_var: GIT_USER
-              id: my-dockerhub-token
-              type: username_password
+            credential_id: null
           credentials:
           - password_var: GIT_PASS
             username_var: GIT_USER
@@ -1455,18 +1464,10 @@ components:
             project_repos:
             - repo: https://github.com/eosc-synergy/sqaaas-api-spec
               branch: master
-              credential_id:
-                password_var: GIT_PASS
-                username_var: GIT_USER
-                id: my-dockerhub-token
-                type: username_password
+              credential_id: null
             - repo: https://github.com/eosc-synergy/sqaaas-api-spec
               branch: master
-              credential_id:
-                password_var: GIT_PASS
-                username_var: GIT_USER
-                id: my-dockerhub-token
-                type: username_password
+              credential_id: null
             credentials:
             - password_var: GIT_PASS
               username_var: GIT_USER
@@ -1578,18 +1579,10 @@ components:
             project_repos:
             - repo: https://github.com/eosc-synergy/sqaaas-api-spec
               branch: master
-              credential_id:
-                password_var: GIT_PASS
-                username_var: GIT_USER
-                id: my-dockerhub-token
-                type: username_password
+              credential_id: null
             - repo: https://github.com/eosc-synergy/sqaaas-api-spec
               branch: master
-              credential_id:
-                password_var: GIT_PASS
-                username_var: GIT_USER
-                id: my-dockerhub-token
-                type: username_password
+              credential_id: null
             credentials:
             - password_var: GIT_PASS
               username_var: GIT_USER
@@ -2794,6 +2787,12 @@ components:
           type: string
       title: Criterion_description
       type: object
+    Repository_credential_id:
+      description: Credentials to use (if any)
+      oneOf:
+      - $ref: '#/components/schemas/Creds_user_pass'
+      - $ref: '#/components/schemas/AssessmentCreds'
+      title: Repository_credential_id
     CriterionBuild_value_repos_inner:
       additionalProperties: false
       example:
@@ -3001,18 +3000,10 @@ components:
         project_repos:
         - repo: https://github.com/eosc-synergy/sqaaas-api-spec
           branch: master
-          credential_id:
-            password_var: GIT_PASS
-            username_var: GIT_USER
-            id: my-dockerhub-token
-            type: username_password
+          credential_id: null
         - repo: https://github.com/eosc-synergy/sqaaas-api-spec
           branch: master
-          credential_id:
-            password_var: GIT_PASS
-            username_var: GIT_USER
-            id: my-dockerhub-token
-            type: username_password
+          credential_id: null
         credentials:
         - password_var: GIT_PASS
           username_var: GIT_USER
