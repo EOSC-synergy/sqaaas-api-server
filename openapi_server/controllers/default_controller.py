@@ -47,7 +47,7 @@ TOOLING_QAA_SPECIFIC_KEY = 'tools_qaa_specific'
 SW_PREFIX = 'QC'
 SRV_PREFIX = 'SvcQC'
 FAIR_PREFIX = 'QC.FAIR'
-FAIR_RDA_PREFIX = 'rda'
+FAIR_RDA_PREFIX = 'RDA'
 
 BADGE_CATEGORIES = ['bronze', 'silver', 'gold']
 
@@ -1764,7 +1764,7 @@ async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Re
                     if not _valid:
                         try:
                             _criterion = re.search(
-                                rf"(^({SW_PREFIX}|{SRV_PREFIX})\.[A-Za-z]+)|(^({FAIR_RDA_PREFIX})_[a-z][0-9]+)",
+                                rf"(^({SW_PREFIX}|{SRV_PREFIX})\.[A-Za-z]+)|(^({FAIR_RDA_PREFIX})_[A-Z][0-9]+)",
                                 subcriterion
                             ).group(0)
                         except AttributeError:
