@@ -1359,7 +1359,8 @@ async def _validate_output(stage_data_list, pipeline_data):
             if criterion_name in list(pipeline_data['qaa']):
                 logger.error((
                     'Broken criterion <%s> is already present in the list '
-                    'of filtered criteria. Overriding content..'
+                    'of filtered criteria. Overriding '
+                    'content..' % criterion_name
                 ))
             broken_validation_data[criterion_name] = broken_data
             logger.info(
