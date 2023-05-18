@@ -155,6 +155,7 @@ class GitUtils(object):
             if repo:
                 source_repo = GitUtils._format_git_url(repo['repo'])
                 source_repo_branch = repo.get('branch', None)
+                branch = source_repo_branch
                 with tempfile.TemporaryDirectory() as dirpath:
                     try:
                         if source_repo_branch:
@@ -166,8 +167,8 @@ class GitUtils(object):
                             repo = Repo.clone_from(
                                 source_repo, dirpath
                             )
-                        branch = repo.active_branch
-                        branch = branch.name
+                            branch = repo.active_branch
+                            branch = branch.name
                         msg = 'Repository <%s> was cloned (branch: %s)' % (
                             source_repo, branch)
                         logger.debug(msg)
