@@ -392,6 +392,8 @@ async def add_pipeline_for_assessment(request: web.Request, body, user_requested
     deployment = body.get('deployment', {})
     fair = body.get('fair', {})
     repositories = {}
+    # NOTE Only allow one CI credential for assessment
+    ci_credential_id = None
     
     # FIXME This requires that a healthy check (i.e. exclusively one among
     # code, services and data is defined) is performed first (right now this
@@ -424,13 +426,31 @@ async def add_pipeline_for_assessment(request: web.Request, body, user_requested
 
     #0 Encrypt credentials before storing in DB
     for _repo_key, _repo_data in repositories.items():
-        _repo_creds = _repo_data.get('credential_id', {})
-        if _repo_creds:
+        _repo_creds = _repo_data.get('credential_id', None)
+        # type(str) == CI credentials (only id required)
+        if type(_repo_creds) in [str]:
+            ci_credential_id = _repo_creds
+        # type(dict) == Credentials directly provided (user_id, token needed)
+        elif type(_repo_creds) in [dict]:
+            # Generate a new 'credential_data' key
+            _repo_data['credential_data'] = {}
+            _repo_creds_data = _repo_data.pop('credential_id', None)
             for prop in ['secret_id', 'token', 'user_id']:
-                _prop_value = _repo_creds.get(prop, '')
+                _prop_value = _repo_creds_data.get(prop, '')
                 if _prop_value:
                     _prop_encrypted = crypto_utils.encrypt_str(_prop_value)
-                    _repo_data['credential_id'][prop] = _prop_encrypted
+                    _repo_data['credential_data'][prop] = _prop_encrypted
+            # Generate and add Jenkins credential ID
+            ci_credential_id = '-'.join([
+                'sqaaas_tmp_cred', namegenerator.gen()
+            ])
+            _repo_data['credential_id'] = ci_credential_id
+        else:
+            logger.error((
+                'Provided credentials are not valid: format <%s> is not '
+                'recognized' % type(_repo_creds)
+            ))
+            # FIXME Exit here?
 
     #1 Filter per-criterion tools that will take part in the assessment
     repo_settings = {}
@@ -475,7 +495,8 @@ async def add_pipeline_for_assessment(request: web.Request, body, user_requested
         pipeline_name=pipeline_name,
         repositories=repositories,
         criteria_data_list=criteria_data_list,
-        tooling_qaa_specific_key=TOOLING_QAA_SPECIFIC_KEY
+        tooling_qaa_specific_key=TOOLING_QAA_SPECIFIC_KEY,
+        ci_credential_id = ci_credential_id
     )
     json_data = json.loads(json_rendered)
     logger.debug('Generated JSON payload (from template) required to create the pipeline for the assessment: %s' % json_data)
@@ -515,7 +536,7 @@ async def add_pipeline_for_assessment(request: web.Request, body, user_requested
             repositories[main_repo_key]['repo'], platforms=SUPPORTED_PLATFORMS
         )
         _main_repo_creds = repositories[main_repo_key].get(
-            'credential_id', {}
+            'credential_data', {}
         )
         if platform in ['github']:
             gh_repo_name = repo_settings['name']

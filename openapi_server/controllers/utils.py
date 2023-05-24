@@ -592,16 +592,19 @@ def process_extra_data(config_json, composer_json, report_to_stdout=False):
     :param report_to_stdout: Flag to indicate whether the pipeline shall print via via stdout the reports produced by the tool (required by QAA module)
     """
     # CONFIG:CONFIG (Generate short url-based repo name & mapping)
+    # Compose 'project_repos'
     project_repos_mapping = {}
     if 'project_repos' in config_json['config'].keys():
         project_repos_final = {}
         for project_repo in config_json['config']['project_repos']:
             repo_url = project_repo.pop('repo')
+            # Pop 'credential_data' (if any)
+            repo_creds = project_repo.pop('credential_data', {})
             # Get default branch if None is defined
             if not project_repo.get('branch', None):
                 project_repo['branch'] = GitUtils.get_remote_active_branch(
                     repo_url,
-                    repo_creds=project_repo.get('credential_id', {})
+                    repo_creds=repo_creds
                 )
             # Check for empty values
             project_repo = del_empty_keys(project_repo)

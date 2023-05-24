@@ -185,13 +185,13 @@ class GitUtils(object):
 
         The decorated method MUST have a kwarg 'repo' of type dict with
         2 keys: {'repo': 'https://example.org/foo', 'branch': None}. For
-        private repos the additional 'credential_id' key is present.
+        private repos the additional 'credential_data' key is present.
         """
         @functools.wraps(f)
         def decorated_function(*args, **kwargs):
             repo = kwargs.get('repo', None)
             if repo:
-                repo_creds = repo.get('credential_id', {})
+                repo_creds = repo.get('credential_data', {})
                 source_repo = GitUtils._format_git_url(
                     repo['repo'], repo_creds=repo_creds
                 )
