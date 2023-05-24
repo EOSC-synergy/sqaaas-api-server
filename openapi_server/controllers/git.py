@@ -39,9 +39,13 @@ class GitUtils(object):
         """
         message = str(exc)
         if message.find('remote: Repository not found') != -1:
-            message = 'Repository not found: %s' % kwargs['repo']
+            message = (
+                'Repository not found or not accessible: %s' % kwargs['repo']
+            )
         elif re.search("fatal: repository '(.+)' not found", message):
-            message = 'Repository not found: %s' % kwargs['repo']
+            message = (
+                'Repository not found or not accessible: %s' % kwargs['repo']
+            )
 
         return message
 
@@ -123,11 +127,11 @@ class GitUtils(object):
                 else:
                     repo = Repo.clone_from(source_repo, dirpath)
             except GitCommandError as e:
-                raise SQAaaSAPIException(
-                    422, GitUtils._custom_exception_messages(
-                        e, repo=source_repo
-                    )
+                _msg = GitUtils._custom_exception_messages(
+                    e, repo=source_repo
                 )
+                logger.error(_msg)
+                raise SQAaaSAPIException(422, _msg)
             else:
                 self.setup_env(dirpath)
 
@@ -167,11 +171,11 @@ class GitUtils(object):
                         remote_repo_no_creds, branch
                 ))
             except GitCommandError as e:
-                raise SQAaaSAPIException(
-                    422, GitUtils._custom_exception_messages(
-                        e, repo=remote_repo
-                    )
+                _msg = GitUtils._custom_exception_messages(
+                    e, repo=remote_repo
                 )
+                logger.error(_msg)
+                raise SQAaaSAPIException(422, _msg)
             else:
                 return branch
 
@@ -211,11 +215,11 @@ class GitUtils(object):
                             source_repo_no_creds, branch)
                         logger.debug(msg)
                     except GitCommandError as e:
-                        raise SQAaaSAPIException(
-                            422, GitUtils._custom_exception_messages(
-                                e, repo=repo['repo']
-                            )
+                        _msg = GitUtils._custom_exception_messages(
+                            e, repo=repo['repo']
                         )
+                        logger.error(_msg)
+                        raise SQAaaSAPIException(422, _msg)
                     else:
                         # Set path to the temporary directory
                         kwargs['path'] = dirpath
