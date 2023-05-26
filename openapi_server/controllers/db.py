@@ -151,6 +151,7 @@ def update_jenkins(
         build_url=None,
         scan_org_wait=False,
         build_status='NOT_EXECUTED',
+        creds_tmp=[],
         issue_badge=False):
     """Updates the Jenkins data in the DB for the given pipeline ID.
 
@@ -163,6 +164,7 @@ def update_jenkins(
     :param build_url: Jenkins' job build URL.
     :param scan_org_wait: Boolean that represents whether the Jenkins' scan organisation has been triggered.
     :param build_status: String representing the build status.
+    :param creds_tmp: List of temporary credentials associated with the job.
     :param issue_badge: Flag to indicate whether to issue a badge when the pipeline succeeds.
     """
     db = load_content()
@@ -177,7 +179,8 @@ def update_jenkins(
             'url': build_url,
             'status': build_status
         },
-        'scan_org_wait': scan_org_wait
+        'scan_org_wait': scan_org_wait,
+        'creds_tmp': creds_tmp
     }
     store_content(db)
     logger.debug('Jenkins data updated for pipeline <%s>: %s' % (pipeline_id, db[pipeline_id]['jenkins']))

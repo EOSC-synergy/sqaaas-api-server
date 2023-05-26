@@ -36,6 +36,9 @@ url = https://jenkins.example.org/
 user = paco
 ## - Name in Jenkins of the base repository organization
 github_organization_name = my_org
+## - Name of the temporary folder for storing the credentials in Jenkins. This
+##   is required for accessing private repositories.
+# credentials_folder = my_creds_folder
 
 ## ------------------------------------------ ##
 ## Optional parameters (incl. default values) ##

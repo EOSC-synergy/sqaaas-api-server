@@ -21,6 +21,7 @@
               "user_id": "{{ user_id }}",
               "token": "{{ token }}"
 	    },
+	    "credential_tmp": true,
 	    {%- endif -%}
 	    {%- if ci_credential_id -%}
 	    "credentials_id": "{{ ci_credential_id }}",

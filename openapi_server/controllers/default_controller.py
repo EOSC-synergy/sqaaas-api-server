@@ -43,6 +43,7 @@ REPOSITORY_BACKEND = config.get(
 )
 GITHUB_ORG = config.get_repo('organization')
 JENKINS_GITHUB_ORG = config.get_ci('github_organization_name')
+JENKINS_CREDENTIALS_FOLDER = config.get_ci('credentials_folder')
 TOOLING_QAA_SPECIFIC_KEY = 'tools_qaa_specific'
 
 SW_PREFIX = 'QC'
@@ -426,7 +427,7 @@ async def add_pipeline_for_assessment(request: web.Request, body, user_requested
 
     #0 Encrypt credentials before storing in DB
     for _repo_key, _repo_data in repositories.items():
-        _repo_creds = _repo_data.get('credential_id', None)
+        _repo_creds = _repo_data.get('credentials_id', None)
         # type(str) == CI credentials (only id required)
         if type(_repo_creds) in [str]:
             ci_credential_id = _repo_creds
@@ -434,7 +435,7 @@ async def add_pipeline_for_assessment(request: web.Request, body, user_requested
         elif type(_repo_creds) in [dict]:
             # Generate a new 'credential_data' key
             _repo_data['credential_data'] = {}
-            _repo_creds_data = _repo_data.pop('credential_id', None)
+            _repo_creds_data = _repo_data.pop('credentials_id', None)
             for prop in ['secret_id', 'token', 'user_id']:
                 _prop_value = _repo_creds_data.get(prop, '')
                 if _prop_value:
@@ -444,7 +445,8 @@ async def add_pipeline_for_assessment(request: web.Request, body, user_requested
             ci_credential_id = '-'.join([
                 'sqaaas_tmp_cred', namegenerator.gen()
             ])
-            _repo_data['credential_id'] = ci_credential_id
+            _repo_data['credentials_id'] = ci_credential_id
+            _repo_data['credential_tmp'] = True
         else:
             logger.error((
                 'Provided credentials are not valid: format <%s> is not '
@@ -905,6 +907,7 @@ async def run_pipeline(
         db.update_environment(pipeline_id, {'JPL_KEEPGOING': 'enabled'})
 
     pipeline_data = db.get_entry(pipeline_id)
+    pipeline_data_raw = pipeline_data['raw_request']
     pipeline_repo = pipeline_data['pipeline_repo']
     pipeline_repo_url = pipeline_data['pipeline_repo_url']
     pipeline_repo_branch = repo_branch
@@ -993,6 +996,30 @@ async def run_pipeline(
     scan_org_wait = False
     reason = ''
 
+    # 0) Create CI temporary credentials ('credential_tmp') if needed
+    creds_tmp = []
+    ci_credentials = config_data_list[0]['data_json']['config']['credentials']
+    for ci_credential in ci_credentials:
+        _id = ci_credential['id']
+        credential_data, credential_tmp = ctls_utils.get_credential_data(
+            _id, pipeline_data_raw
+        )
+        if credential_tmp:
+            logger.info(
+                'Credential <%s> will be added temporarily to the CI '
+                'server' % _id
+            )
+            _user_id = crypto_utils.decrypt_str(credential_data['user_id'])
+            _token = crypto_utils.decrypt_str(credential_data['token'])
+
+            jk_utils.create_credential(
+                _id,
+                _user_id,
+                _token,
+                folder_name=JENKINS_CREDENTIALS_FOLDER
+            )
+            creds_tmp.append(_id)
+
     # 1) Check if job already exists on Jenkins
     job_exists = False
     last_build_no = None
@@ -1048,6 +1075,7 @@ async def run_pipeline(
         build_url=build_url,
         build_status=build_status,
         scan_org_wait=scan_org_wait,
+        creds_tmp=creds_tmp,
         issue_badge=issue_badge
     )
 

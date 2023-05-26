@@ -1226,3 +1226,34 @@ def add_image_to_im(im_config_file, image_id, openstack_url, tech, repo, path='.
         'file_name': im_config_file,
         'file_data': data
     }
+
+
+def get_credential_data(credential_id, pipeline_data):
+    """Returns credential data and validity from the given credential ID.
+
+    :param credential_id: Name of the credential
+    :param pipeline_data: Raw data from the DB ('raw_request' key)
+    """
+    # 'credential_data' available in config_data[]:config:project_repos[]
+    # (see controllers/db.py)
+    logger.debug('Get credential data for credential ID: %s' % credential_id)
+    project_repos = pipeline_data['config_data'][0]['config']['project_repos']
+    credential_data = {}
+    credential_tmp = False
+    for project_repo in project_repos:
+        project_repo_name = project_repo['repo']
+        if project_repo.get('credentials_id', '') == credential_id:
+            credential_data = project_repo['credential_data']
+            credential_tmp = project_repo.get('credential_tmp', False)
+            logger.debug(
+                'Found credential data for credential ID <%s> (repository '
+                '%s)' % (credential_id, project_repo_name)
+            )
+            break
+    if not credential_data:
+        logger.warning(
+            'Could not find any credential data for credential: '
+            '%s' % credential_id
+        )
+
+    return credential_data, credential_tmp
