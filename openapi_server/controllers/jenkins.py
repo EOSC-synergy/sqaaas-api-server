@@ -7,6 +7,7 @@ from urllib.parse import quote_plus
 
 from bs4 import BeautifulSoup
 import jenkins
+from jinja2 import Environment, PackageLoader
 
 from openapi_server.exception import SQAaaSAPIException
 
@@ -256,3 +257,53 @@ class JenkinsUtils(object):
                             break
 
         return _cleanup_failed
+
+    def _manage_credentials_folder(self, folder_name):
+        """Creates a folder for storing the credentials if id does not exist.
+
+        :param folder_name: Credential folder name in Jenkins
+        """
+        try:
+            self.server.is_folder(folder_name)
+            self.logger.debug(
+                'Credentials folder <%s> already exists' % folder_name
+            )
+        except Exception as e:
+            self.server.create_folder(folder_name)
+            self.logger.debug(
+                'Created credentials folder: <%s>' % folder_name
+            )
+
+    def create_credential(
+            self,
+            credential_id,
+            credential_user,
+            credential_token,
+            folder_name='SQAaaS_creds'
+        ):
+        """Creates a temporary credential in Jenkins.
+
+        :param credential_user: User identifier
+        :param credential_token: Secret token
+        :param folder_name: Credential folder name in Jenkins
+        :param domain_name: Credential domain in Jenkins
+        """
+        self.logger.debug(
+            'Creating a temporary credential <%s> in Jenkins' % credential_id
+        )
+        self._manage_credentials_folder(folder_name)
+
+        env = Environment(
+            loader=PackageLoader('openapi_server', 'templates/jenkins')
+        )
+        template = env.get_template('credentials.xml')
+        xml_rendered = template.render(
+            credential_id=credential_id,
+            credential_user=credential_user,
+            credential_token=credential_token
+        )
+        r = self.server.create_credential(
+            folder_name=folder_name,
+            config_xml=xml_rendered
+        )
+        self.logger.debug('Credential <%s> created' % credential_id)
