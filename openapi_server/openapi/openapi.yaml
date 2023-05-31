@@ -990,6 +990,53 @@ components:
           type: array
       title: Criterion
       type: object
+    Creds_input:
+      description: Credentials provided directly to the API
+      properties:
+        secret_id:
+          description: Secret ID (required by Vault)
+          example: my_gitlab_secret
+          title: secret_id
+          type: string
+        user_id:
+          description: "Account name to be used for authentication (required by GitLab,\
+            \ GitHub)"
+          example: my_gitlab_user
+          title: user_id
+          type: string
+        token:
+          description: "Temporary (short-lived) token for authentication (required\
+            \ by GitLab, GitHub)"
+          example: my_gitlab_token
+          title: token
+          type: string
+      title: Creds_input
+      type: object
+    Creds_CI:
+      description: Credential ID as defined in the CI server
+      example: my_credential_id
+      type: string
+    Repository:
+      example:
+        credentials_id: null
+        repo: https://github.com/eosc-synergy/sqaaas-api-spec
+        branch: master
+      properties:
+        repo:
+          description: URL of the repository
+          example: https://github.com/eosc-synergy/sqaaas-api-spec
+          format: uri
+          title: repo
+          type: string
+        branch:
+          description: Branch name
+          example: master
+          title: branch
+          type: string
+        credentials_id:
+          $ref: '#/components/schemas/Repository_credentials_id'
+      title: Repository
+      type: object
     Creds_user_pass:
       example:
         password_var: GIT_PASS
@@ -1021,48 +1068,6 @@ components:
       - password_var
       - username_var
       title: Creds_user_pass
-      type: object
-    AssessmentCreds:
-      properties:
-        secret_id:
-          description: Secret ID (required by Vault)
-          example: my_gitlab_secret
-          title: secret_id
-          type: string
-        user_id:
-          description: "Account name to be used for authentication (required by GitLab,\
-            \ GitHub)"
-          example: my_gitlab_user
-          title: user_id
-          type: string
-        token:
-          description: "Temporary (short-lived) token for authentication (required\
-            \ by GitLab, GitHub)"
-          example: my_gitlab_token
-          title: token
-          type: string
-      title: AssessmentCreds
-      type: object
-    Repository:
-      example:
-        repo: https://github.com/eosc-synergy/sqaaas-api-spec
-        branch: master
-        credential_id: null
-      properties:
-        repo:
-          description: URL of the repository
-          example: https://github.com/eosc-synergy/sqaaas-api-spec
-          format: uri
-          title: repo
-          type: string
-        branch:
-          description: Branch name
-          example: master
-          title: branch
-          type: string
-        credential_id:
-          $ref: '#/components/schemas/Repository_credential_id'
-      title: Repository
       type: object
     Commands_simplified:
       description: List of commands to execute
@@ -1239,12 +1244,12 @@ components:
                 pattern: release-\\d+
         config:
           project_repos:
-          - repo: https://github.com/eosc-synergy/sqaaas-api-spec
+          - credentials_id: null
+            repo: https://github.com/eosc-synergy/sqaaas-api-spec
             branch: master
-            credential_id: null
-          - repo: https://github.com/eosc-synergy/sqaaas-api-spec
+          - credentials_id: null
+            repo: https://github.com/eosc-synergy/sqaaas-api-spec
             branch: master
-            credential_id: null
           credentials:
           - password_var: GIT_PASS
             username_var: GIT_USER
@@ -1462,12 +1467,12 @@ components:
                   pattern: release-\\d+
           config:
             project_repos:
-            - repo: https://github.com/eosc-synergy/sqaaas-api-spec
+            - credentials_id: null
+              repo: https://github.com/eosc-synergy/sqaaas-api-spec
               branch: master
-              credential_id: null
-            - repo: https://github.com/eosc-synergy/sqaaas-api-spec
+            - credentials_id: null
+              repo: https://github.com/eosc-synergy/sqaaas-api-spec
               branch: master
-              credential_id: null
             credentials:
             - password_var: GIT_PASS
               username_var: GIT_USER
@@ -1577,12 +1582,12 @@ components:
                   pattern: release-\\d+
           config:
             project_repos:
-            - repo: https://github.com/eosc-synergy/sqaaas-api-spec
+            - credentials_id: null
+              repo: https://github.com/eosc-synergy/sqaaas-api-spec
               branch: master
-              credential_id: null
-            - repo: https://github.com/eosc-synergy/sqaaas-api-spec
+            - credentials_id: null
+              repo: https://github.com/eosc-synergy/sqaaas-api-spec
               branch: master
-              credential_id: null
             credentials:
             - password_var: GIT_PASS
               username_var: GIT_USER
@@ -2787,12 +2792,12 @@ components:
           type: string
       title: Criterion_description
       type: object
-    Repository_credential_id:
+    Repository_credentials_id:
       description: Credentials to use (if any)
       oneOf:
-      - $ref: '#/components/schemas/Creds_user_pass'
-      - $ref: '#/components/schemas/AssessmentCreds'
-      title: Repository_credential_id
+      - $ref: '#/components/schemas/Creds_input'
+      - $ref: '#/components/schemas/Creds_CI'
+      title: Repository_credentials_id
     CriterionBuild_value_repos_inner:
       additionalProperties: false
       example:
@@ -2998,12 +3003,12 @@ components:
       description: JePL's main configuration
       example:
         project_repos:
-        - repo: https://github.com/eosc-synergy/sqaaas-api-spec
+        - credentials_id: null
+          repo: https://github.com/eosc-synergy/sqaaas-api-spec
           branch: master
-          credential_id: null
-        - repo: https://github.com/eosc-synergy/sqaaas-api-spec
+        - credentials_id: null
+          repo: https://github.com/eosc-synergy/sqaaas-api-spec
           branch: master
-          credential_id: null
         credentials:
         - password_var: GIT_PASS
           username_var: GIT_USER
