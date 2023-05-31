@@ -1012,11 +1012,20 @@ async def run_pipeline(
             _user_id = crypto_utils.decrypt_str(credential_data['user_id'])
             _token = crypto_utils.decrypt_str(credential_data['token'])
 
+            creds_folder = JENKINS_CREDENTIALS_FOLDER
+            if not creds_folder:
+                logger.info(
+                    'Jenkins credential folder (<credentials_folder> '
+                    'property) not defined in config. Using project\'s '
+                    'organisation folder name: %s' % JENKINS_GITHUB_ORG
+                )
+                creds_folder = JENKINS_GITHUB_ORG
+
             jk_utils.create_credential(
                 _id,
                 _user_id,
                 _token,
-                folder_name=JENKINS_CREDENTIALS_FOLDER
+                folder_name=creds_folder
             )
             creds_tmp.append(_id)
 

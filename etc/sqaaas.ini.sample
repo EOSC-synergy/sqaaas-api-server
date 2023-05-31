@@ -37,7 +37,8 @@ user = paco
 ## - Name in Jenkins of the base repository organization
 github_organization_name = my_org
 ## - Name of the temporary folder for storing the credentials in Jenkins. This
-##   is required for accessing private repositories.
+##   is required for accessing private repositories. If not defined, the
+##   'github_organization_name' will be used instead.
 # credentials_folder = my_creds_folder
 
 ## ------------------------------------------ ##
