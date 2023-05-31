@@ -12,6 +12,10 @@ from jinja2 import Environment, PackageLoader
 from openapi_server.exception import SQAaaSAPIException
 
 
+CREATE_CREDENTIAL_ORG = '/job/%(folder_name)s/credentials/store/folder/' \
+                        'domain/%(domain_name)s/createCredentials'
+
+
 class JenkinsUtils(object):
     """Class for handling requests to Jenkins API.
 
@@ -258,28 +262,13 @@ class JenkinsUtils(object):
 
         return _cleanup_failed
 
-    def _manage_credentials_folder(self, folder_name):
-        """Creates a folder for storing the credentials if id does not exist.
-
-        :param folder_name: Credential folder name in Jenkins
-        """
-        try:
-            self.server.is_folder(folder_name)
-            self.logger.debug(
-                'Credentials folder <%s> already exists' % folder_name
-            )
-        except Exception as e:
-            self.server.create_folder(folder_name)
-            self.logger.debug(
-                'Created credentials folder: <%s>' % folder_name
-            )
-
     def create_credential(
             self,
             credential_id,
             credential_user,
             credential_token,
-            folder_name='SQAaaS_creds'
+            folder_name,
+            domain_name='_'
         ):
         """Creates a temporary credential in Jenkins.
 
@@ -291,8 +280,16 @@ class JenkinsUtils(object):
         self.logger.debug(
             'Creating a temporary credential <%s> in Jenkins' % credential_id
         )
-        self._manage_credentials_folder(folder_name)
-
+        self.logger.debug('Removing existing credential (if any)')
+        try:
+            self.server.delete_credential(
+                credential_id, folder_name=folder_name
+            )
+            self.logger.debug('Credential <%s> removed' % credential_id)
+        except jenkins.NotFoundException as e:
+            self.logger.debug(
+                'Could not remove credential <%s>: not found' % credential_id
+            )
         env = Environment(
             loader=PackageLoader('openapi_server', 'templates/jenkins')
         )
@@ -302,8 +299,11 @@ class JenkinsUtils(object):
             credential_user=credential_user,
             credential_token=credential_token
         )
-        r = self.server.create_credential(
-            folder_name=folder_name,
-            config_xml=xml_rendered
+        r = requests.post(
+            urljoin(self.endpoint, CREATE_CREDENTIAL_ORG % locals()),
+            data=xml_rendered.encode('utf-8'),
+            auth=(self.access_user, self.access_token),
+            headers={'Content-Type': 'text/xml; charset=utf-8'}
         )
+        r.raise_for_status()
         self.logger.debug('Credential <%s> created' % credential_id)
