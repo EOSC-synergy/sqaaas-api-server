@@ -152,6 +152,7 @@ def update_jenkins(
         scan_org_wait=False,
         build_status='NOT_EXECUTED',
         creds_tmp=[],
+        creds_folder=None,
         issue_badge=False):
     """Updates the Jenkins data in the DB for the given pipeline ID.
 
@@ -180,7 +181,8 @@ def update_jenkins(
             'status': build_status
         },
         'scan_org_wait': scan_org_wait,
-        'creds_tmp': creds_tmp
+        'creds_tmp': creds_tmp,
+        'creds_folder': creds_folder
     }
     store_content(db)
     logger.debug('Jenkins data updated for pipeline <%s>: %s' % (pipeline_id, db[pipeline_id]['jenkins']))

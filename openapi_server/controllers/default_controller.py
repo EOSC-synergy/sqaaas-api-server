@@ -998,6 +998,7 @@ async def run_pipeline(
 
     # 0) Create CI temporary credentials ('credential_tmp') if needed
     creds_tmp = []
+    creds_folder = JENKINS_CREDENTIALS_FOLDER
     ci_credentials = config_data_list[0]['data_json']['config']['credentials']
     for ci_credential in ci_credentials:
         _id = ci_credential['id']
@@ -1012,7 +1013,6 @@ async def run_pipeline(
             _user_id = crypto_utils.decrypt_str(credential_data['user_id'])
             _token = crypto_utils.decrypt_str(credential_data['token'])
 
-            creds_folder = JENKINS_CREDENTIALS_FOLDER
             if not creds_folder:
                 logger.info(
                     'Jenkins credential folder (<credentials_folder> '
@@ -1085,6 +1085,7 @@ async def run_pipeline(
         build_status=build_status,
         scan_org_wait=scan_org_wait,
         creds_tmp=creds_tmp,
+        creds_folder=creds_folder,
         issue_badge=issue_badge
     )
 
@@ -1267,6 +1268,15 @@ async def get_pipeline_status(request: web.Request, pipeline_id) -> web.Response
     except SQAaaSAPIException as e:
         return web.Response(status=e.http_code, reason=e.message, text=e.message)
 
+    # Remove any temporary credential
+    pipeline_data = db.get_entry(pipeline_id)
+    jenkins_info = pipeline_data['jenkins']
+    creds_folder = jenkins_info['creds_folder']
+
+    for _id in jenkins_info.get('creds_tmp', []):
+        jk_utils.remove_credential(_id, folder_name=creds_folder)
+
+    # Return values
     r = {
         'build_url': build_url,
         'build_status': build_status

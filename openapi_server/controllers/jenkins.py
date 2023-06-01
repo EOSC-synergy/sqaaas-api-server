@@ -262,6 +262,31 @@ class JenkinsUtils(object):
 
         return _cleanup_failed
 
+    def remove_credential(
+            self,
+            credential_id,
+            folder_name,
+            domain_name='_'
+        ):
+        """Removes a temporary credential in Jenkins.
+
+        :param credential_id: Identifier of the credential in Jenkins
+        :param folder_name: Credential folder name in Jenkins
+        :param domain_name: Credential domain in Jenkins
+        """
+        self.logger.debug(
+            'Removing a temporary credential <%s> in Jenkins' % credential_id
+        )
+        try:
+            self.server.delete_credential(
+                credential_id, folder_name=folder_name
+            )
+            self.logger.debug('Credential <%s> removed' % credential_id)
+        except jenkins.NotFoundException as e:
+            self.logger.debug(
+                'Could not remove credential <%s>: not found' % credential_id
+            )
+
     def create_credential(
             self,
             credential_id,
@@ -281,15 +306,9 @@ class JenkinsUtils(object):
             'Creating a temporary credential <%s> in Jenkins' % credential_id
         )
         self.logger.debug('Removing existing credential (if any)')
-        try:
-            self.server.delete_credential(
-                credential_id, folder_name=folder_name
-            )
-            self.logger.debug('Credential <%s> removed' % credential_id)
-        except jenkins.NotFoundException as e:
-            self.logger.debug(
-                'Could not remove credential <%s>: not found' % credential_id
-            )
+        self.remove_credential(
+            credential_id, folder_name=folder_name
+        )
         env = Environment(
             loader=PackageLoader('openapi_server', 'templates/jenkins')
         )
