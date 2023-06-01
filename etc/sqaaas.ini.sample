@@ -23,6 +23,8 @@ repository_backend = github
 # language_metadata_file = languages.yml
 ## - Interrupt execution and return a HTTP code error if any validation action fails
 # interrupt_on_validation_error = no
+## - Path to store Fernet key for encryption
+# key_encryption_path = etc/.fernet.key
 
 [jenkins]
 ## -------------------- ##
@@ -34,6 +36,10 @@ url = https://jenkins.example.org/
 user = paco
 ## - Name in Jenkins of the base repository organization
 github_organization_name = my_org
+## - Name of the temporary folder for storing the credentials in Jenkins. This
+##   is required for accessing private repositories. If not defined, the
+##   'github_organization_name' will be used instead.
+# credentials_folder = my_creds_folder
 
 ## ------------------------------------------ ##
 ## Optional parameters (incl. default values) ##

@@ -592,15 +592,19 @@ def process_extra_data(config_json, composer_json, report_to_stdout=False):
     :param report_to_stdout: Flag to indicate whether the pipeline shall print via via stdout the reports produced by the tool (required by QAA module)
     """
     # CONFIG:CONFIG (Generate short url-based repo name & mapping)
+    # Compose 'project_repos'
     project_repos_mapping = {}
     if 'project_repos' in config_json['config'].keys():
         project_repos_final = {}
         for project_repo in config_json['config']['project_repos']:
             repo_url = project_repo.pop('repo')
+            # Pop 'credential_data' (if any)
+            repo_creds = project_repo.pop('credential_data', {})
             # Get default branch if None is defined
             if not project_repo.get('branch', None):
                 project_repo['branch'] = GitUtils.get_remote_active_branch(
-                    repo_url
+                    repo_url,
+                    repo_creds=repo_creds
                 )
             # Check for empty values
             project_repo = del_empty_keys(project_repo)
@@ -1222,3 +1226,34 @@ def add_image_to_im(im_config_file, image_id, openstack_url, tech, repo, path='.
         'file_name': im_config_file,
         'file_data': data
     }
+
+
+def get_credential_data(credential_id, pipeline_data):
+    """Returns credential data and validity from the given credential ID.
+
+    :param credential_id: Name of the credential
+    :param pipeline_data: Raw data from the DB ('raw_request' key)
+    """
+    # 'credential_data' available in config_data[]:config:project_repos[]
+    # (see controllers/db.py)
+    logger.debug('Get credential data for credential ID: %s' % credential_id)
+    project_repos = pipeline_data['config_data'][0]['config']['project_repos']
+    credential_data = {}
+    credential_tmp = False
+    for project_repo in project_repos:
+        project_repo_name = project_repo['repo']
+        if project_repo.get('credentials_id', '') == credential_id:
+            credential_data = project_repo['credential_data']
+            credential_tmp = project_repo.get('credential_tmp', False)
+            logger.debug(
+                'Found credential data for credential ID <%s> (repository '
+                '%s)' % (credential_id, project_repo_name)
+            )
+            break
+    if not credential_data:
+        logger.warning(
+            'Could not find any credential data for credential: '
+            '%s' % credential_id
+        )
+
+    return credential_data, credential_tmp

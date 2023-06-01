@@ -5,7 +5,7 @@ from datetime import date, datetime
 from typing import List, Dict, Type
 
 from openapi_server.models.base_model_ import Model
-from openapi_server.models.repository_credential_id import RepositoryCredentialId
+from openapi_server.models.repository_credentials_id import RepositoryCredentialsId
 from openapi_server import util
 
 
@@ -15,28 +15,28 @@ class Repository(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, repo: str=None, branch: str=None, credential_id: RepositoryCredentialId=None):
+    def __init__(self, repo: str=None, branch: str=None, credentials_id: RepositoryCredentialsId=None):
         """Repository - a model defined in OpenAPI
 
         :param repo: The repo of this Repository.
         :param branch: The branch of this Repository.
-        :param credential_id: The credential_id of this Repository.
+        :param credentials_id: The credentials_id of this Repository.
         """
         self.openapi_types = {
             'repo': str,
             'branch': str,
-            'credential_id': RepositoryCredentialId
+            'credentials_id': RepositoryCredentialsId
         }
 
         self.attribute_map = {
             'repo': 'repo',
             'branch': 'branch',
-            'credential_id': 'credential_id'
+            'credentials_id': 'credentials_id'
         }
 
         self._repo = repo
         self._branch = branch
-        self._credential_id = credential_id
+        self._credentials_id = credentials_id
 
     @classmethod
     def from_dict(cls, dikt: dict) -> 'Repository':
@@ -94,22 +94,22 @@ class Repository(Model):
         self._branch = branch
 
     @property
-    def credential_id(self):
-        """Gets the credential_id of this Repository.
+    def credentials_id(self):
+        """Gets the credentials_id of this Repository.
 
 
-        :return: The credential_id of this Repository.
-        :rtype: RepositoryCredentialId
+        :return: The credentials_id of this Repository.
+        :rtype: RepositoryCredentialsId
         """
-        return self._credential_id
+        return self._credentials_id
 
-    @credential_id.setter
-    def credential_id(self, credential_id):
-        """Sets the credential_id of this Repository.
+    @credentials_id.setter
+    def credentials_id(self, credentials_id):
+        """Sets the credentials_id of this Repository.
 
 
-        :param credential_id: The credential_id of this Repository.
-        :type credential_id: RepositoryCredentialId
+        :param credentials_id: The credentials_id of this Repository.
+        :type credentials_id: RepositoryCredentialsId
         """
 
-        self._credential_id = credential_id
+        self._credentials_id = credentials_id

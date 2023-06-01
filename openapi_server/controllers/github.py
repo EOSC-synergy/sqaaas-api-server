@@ -6,6 +6,7 @@ from github.GithubException import GithubException
 from github.GithubException import UnknownObjectException
 from jinja2 import Environment, PackageLoader
 
+from openapi_server.controllers import crypto as crypto_utils
 from openapi_server.exception import SQAaaSAPIException
 
 
@@ -21,6 +22,24 @@ class GitHubUtils(object):
         """
         self.client = Github(access_token)
         self.logger = logging.getLogger('sqaaas.api.github')
+
+    def _check_repo_args(f):
+        def decorated_function(self, *args, **kwargs):
+            repo = kwargs.get('repo', None)
+            repo_name = kwargs.get('repo_name', None)
+            repo_creds = kwargs.get('repo_creds', None)
+            if not repo:
+                if not repo_name:
+                    _reason = (
+                        'Bad arguments: either the name of the repo or a repo '
+                        'object must be provided'
+                    )
+                    raise SQAaaSAPIException(422, _reason)
+                repo = self.get_repository(
+                    repo_name, repo_creds=repo_creds, raise_exception=True
+                )
+            f(self, repo)
+        return decorated_function
 
     def get_repo_content(self, repo_name, branch=None, path='.'):
         """Gets the repository content from the given branch.
@@ -231,35 +250,55 @@ class GitHubUtils(object):
                            '(base)' % (head, upstream_branch_name)))
         return pr.raw_data
 
-    def get_repository(self, repo_name, raise_exception=False):
+    def get_repository(self, repo_name, repo_creds={}, raise_exception=False):
         """Return a Repository from a GitHub repo if it exists, False otherwise.
 
         :param repo_name: Name of the repo (format: <user|org>/<repo_name>)
+        :param repo_creds: Credentials needed for successful authentication
         :param raise_exception: Boolean to mark whether the UnknownObjectException shall be raised
         """
+        _client = None
+        if repo_creds:
+            _user_id = repo_creds.get('user_id', '')
+            _user_id_decrypted = crypto_utils.decrypt_str(_user_id)
+            _token = repo_creds.get('token', '')
+            _token_decrypted = crypto_utils.decrypt_str(_token)
+            _client = Github(_user_id_decrypted, _token_decrypted)
+        else:
+            _client = self.client
+
         repo = False
         try:
-            repo = self.client.get_repo(repo_name)
+            repo = _client.get_repo(repo_name)
         except UnknownObjectException as e:
-            self.logger.debug('Unknown Github exception: %s' % e)
+            _reason = 'Github exception: %s' % e
+            self.logger.error(_reason)
             if raise_exception:
-                raise e
+                raise SQAaaSAPIException(422, _reason)
         finally:
             if repo:
                 self.logger.debug('Repository <%s> found' % repo_name)
             else:
-                self.logger.debug('Repository <%s> not found!' % repo_name)
+                self.logger.warning('Repository <%s> not found!' % repo_name)
         return repo
 
-    def get_owner(self, repo_name):
+    def get_owner(self, repo_name, repo_creds={}):
         """Gets the user that owns the repo.
 
         If found, it returns a NamedUser object.
 
         :param repo_name: Name of the repo (format: <user|org>/<repo_name>)
+        :param repo_creds: Credentials needed for successful authentication
         """
+        if repo_creds:
+            _user_id = repo_creds.get('user_id', '')
+            _token = repo_creds.get('token', '')
+            _client = Github(_user_id, _token)
+        else:
+            _client = self.client
+
         _owner_name, _repo_name = repo_name.split('/', 1)
-        return self.client.get_user(_owner_name)
+        return _client.get_user(_owner_name)
 
     def get_org_repository(self, repo_name, org_name='eosc-synergy'):
         """Gets a repository from the given Github organization.
@@ -334,67 +373,74 @@ class GitHubUtils(object):
         self.logger.debug('Getting commit data for SHA <%s>' % commit_id)
         return repo.get_commit(commit_id).html_url
 
-    def get_description(self, repo_name):
+    @_check_repo_args
+    def get_description(self, repo=None, repo_name=None, repo_creds={}):
         """Gets the description from a Github repository.
 
+        :param repo: Repository object
         :param repo_name: Name of the repo to push (format: <user|org>/<repo_name>)
         """
-        repo = self.get_repository(repo_name)
         return repo.description
 
-    def get_languages(self, repo_name):
+    @_check_repo_args
+    def get_languages(self, repo=None, repo_name=None, repo_creds={}):
         """Gets the languages used in a Github repository.
 
+        :param repo: Repository object
         :param repo_name: Name of the repo to push (format: <user|org>/<repo_name>)
         """
-        repo = self.get_repository(repo_name)
         languages = repo.get_languages()
         return sorted(languages, key=languages.get, reverse=True)
 
-    def get_topics(self, repo_name):
+    @_check_repo_args
+    def get_topics(self, repo=None, repo_name=None, repo_creds={}):
         """Gets the topic list from a Github repository.
 
+        :param repo: Repository object
         :param repo_name: Name of the repo to push (format: <user|org>/<repo_name>)
         """
-        repo = self.get_repository(repo_name)
         return repo.get_topics()
 
-    def get_stargazers(self, repo_name):
+    @_check_repo_args
+    def get_stargazers(self, repo=None, repo_name=None, repo_creds={}):
         """Gets the star count from a Github repository.
 
+        :param repo: Repository object
         :param repo_name: Name of the repo to push (format: <user|org>/<repo_name>)
         """
-        repo = self.get_repository(repo_name)
         return repo.get_stargazers().totalCount
 
-    def get_watchers(self, repo_name):
+    @_check_repo_args
+    def get_watchers(self, repo=None, repo_name=None, repo_creds={}):
         """Gets the watcher count from a Github repository.
 
+        :param repo: Repository object
         :param repo_name: Name of the repo to push (format: <user|org>/<repo_name>)
         """
-        repo = self.get_repository(repo_name)
         return repo.get_watchers().totalCount
 
-    def get_contributors(self, repo_name):
+    @_check_repo_args
+    def get_contributors(self, repo=None, repo_name=None, repo_creds={}):
         """Gets the contributor count from a Github repository.
 
+        :param repo: Repository object
         :param repo_name: Name of the repo to push (format: <user|org>/<repo_name>)
         """
-        repo = self.get_repository(repo_name)
         return repo.get_contributors().totalCount
 
-    def get_forks(self, repo_name):
+    @_check_repo_args
+    def get_forks(self, repo=None, repo_name=None, repo_creds={}):
         """Gets the fork count from a Github repository.
 
+        :param repo: Repository object
         :param repo_name: Name of the repo to push (format: <user|org>/<repo_name>)
         """
-        repo = self.get_repository(repo_name)
         return repo.get_forks().totalCount
 
-    def get_avatar(self, repo_name):
+    def get_avatar(self, repo_name, repo_creds={}):
         """Gets the avatar URL from a Github repository.
 
         :param repo_name: Name of the repo to push (format: <user|org>/<repo_name>)
         """
-        owner = self.get_owner(repo_name)
+        owner = self.get_owner(repo_name, repo_creds=repo_creds)
         return owner.avatar_url
