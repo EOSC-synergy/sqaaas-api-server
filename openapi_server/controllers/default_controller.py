@@ -1244,8 +1244,10 @@ async def _update_status(pipeline_id, triggered_by_run=False, build_task=None):
         build_item_no=build_item_no,
         build_no=build_no,
         build_url=build_url,
-        scan_org_wait=jenkins_info['scan_org_wait'],
         build_status=build_status,
+        scan_org_wait=jenkins_info['scan_org_wait'],
+        creds_tmp=jenkins_info.get('creds_tmp', []),
+        creds_folder=jenkins_info.get('creds_folder', None),
         issue_badge=jenkins_info['issue_badge']
     )
 
@@ -1271,10 +1273,15 @@ async def get_pipeline_status(request: web.Request, pipeline_id) -> web.Response
     # Remove any temporary credential
     pipeline_data = db.get_entry(pipeline_id)
     jenkins_info = pipeline_data['jenkins']
-    creds_folder = jenkins_info['creds_folder']
+    creds_tmp = jenkins_info.get('creds_tmp', [])
+    creds_folder = jenkins_info.get('creds_folder', None)
+    build_status = jenkins_info['build_info'].get('status', '')
 
-    for _id in jenkins_info.get('creds_tmp', []):
-        jk_utils.remove_credential(_id, folder_name=creds_folder)
+    creds_tmp_copy = copy.deepcopy(creds_tmp)
+    if build_status in ['SUCCESS', 'FAILURE', 'UNSTABLE']:
+        for _id in creds_tmp:
+            jk_utils.remove_credential(_id, folder_name=creds_folder)
+            creds_tmp_copy.delete(_id)
 
     # Return values
     r = {
