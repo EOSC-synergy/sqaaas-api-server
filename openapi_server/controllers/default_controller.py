@@ -1281,7 +1281,7 @@ async def get_pipeline_status(request: web.Request, pipeline_id) -> web.Response
     if build_status in ['SUCCESS', 'FAILURE', 'UNSTABLE']:
         for _id in creds_tmp:
             jk_utils.remove_credential(_id, folder_name=creds_folder)
-            creds_tmp_copy.delete(_id)
+            creds_tmp_copy.remove(_id)
 
     # Return values
     r = {
