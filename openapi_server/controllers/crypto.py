@@ -5,7 +5,9 @@ from cryptography.fernet import Fernet
 from openapi_server import config
 
 
-KEY_ENCRYPTION_PATH = config.get('key_encryption_path')
+KEY_ENCRYPTION_PATH = config.get(
+    'key_encryption_path', fallback='.fernet_key'
+)
 
 logger = logging.getLogger('sqaaas.api.controller')
 
