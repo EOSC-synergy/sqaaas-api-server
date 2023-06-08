@@ -454,6 +454,7 @@ async def add_pipeline_for_assessment(request: web.Request, body, user_requested
     # part of the validate_request() decorator
     body = ctls_utils.del_empty_keys(body)
     repositories, main_repo_key = _validate_assessment_input(body)
+    ci_credential_id = None
     
     #0 Encrypt credentials before storing in DB
     for _repo_key, _repo_data in repositories.items():
