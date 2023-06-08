@@ -135,14 +135,13 @@ async def _get_tooling_for_assessment(
             criterion_data_copy = copy.deepcopy(criterion_data)
             criterion_id = criterion_data_copy['id']
             # Exception for 'SvcQC.Dep' & 'QC.FAIR': the tool to be used is
-            # already provided through the <repo> object. We use pop() as
-            # it will be no longer needed
+            # already provided through the <repo> object.
             if criterion_id in ['SvcQC.Dep']:
-                _tool_to_be_used = repo.pop('deploy_tool')
+                _tool_to_be_used = repo['deploy_tool']
                 criterion_data_copy['tools'] = [_tool_to_be_used]
             elif criterion_id in ['QC.FAIR']:
-                _tool_to_be_used = repo.pop('fair_tool')
-                criteria_data_copy['tools'] = [_tool_to_be_used]
+                _tool_to_be_used = repo['fair_tool']
+                criterion_data_copy['tools'] = [_tool_to_be_used]
             criterion_has_required_level = False
             filter_tool_by_requirement_level = True
             toolset_for_reporting = []
@@ -348,7 +347,8 @@ async def _get_criteria_for_digital_object(repositories):
     )
 
     relevant_criteria_data = []
-    # Exception: repo_docs
+    # Exception 'repo_docs': add a separate entry if docs are in
+    # a different repo
     _has_individual_doc_repo = 'repo_docs' in _repo_keys
     if _has_individual_doc_repo:
         # Get only the 'QC.Doc' criterion & add the rest to new list
@@ -424,10 +424,13 @@ def _validate_assessment_input(body):
         # Exception for 'repo_deploy': add 'deploy_tool' at the same level as
         # 'repo_deploy' so that we can pop it afterwards in _filter_tool
         repositories['repo_deploy']['deploy_tool'] = deployment['deploy_tool']
-    # FAIR
+    # FAIR: set 'repo' property to None to avoid git clone in _filter_tools()
     elif fair:
         main_repo_key = 'fair'
-        repositories['fair'] = fair['fair_tool']
+        repositories['fair'] = {
+            'repo': None,
+            'fair_tool': fair['fair_tool']
+        }
     else:
         # FIXME This will change when FAIR is integrated
         _reason = (
@@ -513,7 +516,7 @@ async def add_pipeline_for_assessment(request: web.Request, body, user_requested
     build_repo_name = repositories[main_repo_key].get('repo', None)
     if 'fair' in list(repositories):
         # FIXME Temporary hack until the web provides all required input fields
-        _fair_tool = repositories['fair']
+        _fair_tool = repositories['fair']['fair_tool']
         for arg in _fair_tool['args']:
             if arg.get('id', '') in ['persistent_identifier']:
                 build_repo_name = arg['value']
@@ -564,7 +567,7 @@ async def add_pipeline_for_assessment(request: web.Request, body, user_requested
         'name': ctls_utils.get_short_repo_name(build_repo_name),
         'url': build_repo_name
     })
-    if repositories:
+    if 'repo_code' in list(repositories) or 'repo_deploy' in list(repositories):
         platform = ctls_utils.supported_git_platform(
             repositories[main_repo_key]['repo'], platforms=SUPPORTED_PLATFORMS
         )

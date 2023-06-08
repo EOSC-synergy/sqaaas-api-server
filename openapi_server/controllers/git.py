@@ -190,7 +190,7 @@ class GitUtils(object):
         @functools.wraps(f)
         def decorated_function(*args, **kwargs):
             repo = kwargs.get('repo', None)
-            if repo:
+            if repo['repo']:
                 repo_creds = repo.get('credential_data', {})
                 source_repo = GitUtils._format_git_url(
                     repo['repo'], repo_creds=repo_creds
