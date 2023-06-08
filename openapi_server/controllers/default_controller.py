@@ -107,7 +107,7 @@ async def add_pipeline(request: web.Request, body, report_to_stdout=None) -> web
 
 
 async def _get_tooling_for_assessment(
-    body,
+    repositories,
     user_requested_tools=[]
 ):
     """Returns per-criterion tooling metadata filtered for assessment.
@@ -128,12 +128,22 @@ async def _get_tooling_for_assessment(
     """
     @GitUtils.do_git_work
     def _filter_tools(repo, criteria_data_list, path='.', **kwargs):
+        levels_for_assessment = ['REQUIRED', 'RECOMMENDED']
         criteria_data_list_filtered = []
         criteria_filtered_out = {}
         for criterion_data in criteria_data_list:
             criterion_data_copy = copy.deepcopy(criterion_data)
-            criterion_has_required_level = False
             criterion_id = criterion_data_copy['id']
+            # Exception for 'SvcQC.Dep' & 'QC.FAIR': the tool to be used is
+            # already provided through the <repo> object. We use pop() as
+            # it will be no longer needed
+            if criterion_id in ['SvcQC.Dep']:
+                _tool_to_be_used = repo.pop('deploy_tool')
+                criterion_data_copy['tools'] = [_tool_to_be_used]
+            elif criterion_id in ['QC.FAIR']:
+                _tool_to_be_used = repo.pop('fair_tool')
+                criteria_data_copy['tools'] = [_tool_to_be_used]
+            criterion_has_required_level = False
             filter_tool_by_requirement_level = True
             toolset_for_reporting = []
             filtered_required_tools = []
@@ -267,88 +277,13 @@ async def _get_tooling_for_assessment(
         
         return criteria_data_list_filtered, criteria_filtered_out, kwargs
 
-    repo_code = body.get('repo_code', {})
-    repo_docs = body.get('repo_docs', {})
-    deployment = body.get('deployment', {})
-    fair = body.get('fair', {})
     
-    levels_for_assessment = ['REQUIRED', 'RECOMMENDED']
-    criteria_data_list = await _get_criteria()
+    # Get the relevant criteria for the type of assessment/digital object
+    relevant_criteria_data = await _get_criteria_for_digital_object(repositories)
 
-    # NOTE Not allowing multiple assessments for the moment
-    relevant_criteria_data = [] 
-    if repo_code:
-        # healthy check
-        if deployment:
-            logger.warning((
-                'Provided URLs both for the source code and deployment '
-                'assessment. Ignoring service assessment and continuing with '
-                'source code assessment.'
-            ))
-        # are repo_code and repo_docs different?
-        _same_repo = True
-        if repo_docs:
-            _same_repo = list(repo_code.values()) == list(repo_docs.values())
-
-        _code_criteria = []
-        for _data in criteria_data_list:
-            _criterion_id = _data['id']
-            if (
-                _criterion_id.startswith('QC') and
-                not _criterion_id in ['QC.FAIR']
-            ):
-                if _criterion_id in ['QC.Doc'] and not _same_repo:
-                    relevant_criteria_data.append({
-                        'repo': repo_docs,
-                        'criteria_data_list': [_data]
-                    })
-                else:
-                    _code_criteria.append(_data)
-        relevant_criteria_data.append({
-            'repo': repo_code,
-            'criteria_data_list': _code_criteria
-        })
-    elif deployment:
-        _code_criteria = []
-        # deployment tool
-        _deploy_tool = deployment['deploy_tool']
-        for _data in criteria_data_list:
-            if _data['id'].startswith('SvcQC'):
-                if _data['id'] in ['SvcQC.Dep']:
-                    _data['tools'] = [_deploy_tool]
-                    user_requested_tools.append(_deploy_tool)
-                _code_criteria.append(_data)
-
-        # relevant_criteria_data
-        relevant_criteria_data.append({
-            'repo': deployment['repo_deploy'],
-            'criteria_data_list': _code_criteria
-        })
-    elif fair:
-        _code_criteria = []
-        # fair tool
-        _fair_tool = fair['fair_tool']
-        for _data in criteria_data_list:
-            if _data['id'] in ['QC.FAIR']:
-                _data['tools'] = [_fair_tool]
-                user_requested_tools.append(_fair_tool)
-                _code_criteria.append(_data)
-        relevant_criteria_data.append({
-            'repo': None,
-            'criteria_data_list': _code_criteria
-        })
-    else:
-        # FIXME This will change when FAIR is integrated
-        _reason = (
-            'Neither source code/deployment repositories nor FAIR inputs have '
-            'been provided for the assessment'
-        )
-        raise SQAaaSAPIException(422, _reason)
-    logger.debug(
-        'Resultant repository and criteria mapping: '
-        '%s' % relevant_criteria_data
-    )
-
+    # Get the tools that are relevant based on the repo content (add them to
+    # <criteria_data_list_filtered>) and also the ones that are not (add them
+    # in <criteria_filtered_out>)
     criteria_data_list_filtered = []
     criteria_filtered_out = {}
     for repo_criteria_mapping in relevant_criteria_data:
@@ -368,8 +303,140 @@ async def _get_tooling_for_assessment(
         _reason = 'Could not find any tool for criteria assessment'
         logger.error(_reason)
         raise SQAaaSAPIException(422, _reason)
-    
+
     return criteria_data_list_filtered, criteria_filtered_out, repo_settings
+
+
+async def _get_criteria_for_digital_object(repositories):
+    """Returns the criteria associated with the digital object to be assessed.
+
+    The type of digital object is guessed from the repository key name, so 
+    - 'repo_code' is source code DO type 
+    - 'deployment' is service DO type
+    - 'fair' is data DO type
+
+    :param repositories: dict with the repositories (and associated data) to
+                         validate
+    :type repositories: dict
+    """
+    _repo_keys = list(repositories)
+    _digital_object_type = None
+    # source code
+    if 'repo_code' in _repo_keys:
+        _repo_key = 'repo_code'
+        _digital_object_type = 'software'
+    # service
+    elif 'repo_deploy' in _repo_keys:
+        _repo_key = 'repo_deploy'
+        _digital_object_type = 'service'
+    # fair
+    elif 'fair' in _repo_keys:
+        _repo_key = 'fair'
+        _digital_object_type = 'fair'
+    # not known/supported
+    else:
+        _reason = (
+            'Neither source code/deployment repositories nor FAIR inputs have '
+            'been provided for the assessment'
+        )
+        logger.error(_reason)
+        raise SQAaaSAPIException(422, _reason)
+    
+    # Get the criteria that corresponds to the DO type
+    criteria_data_list = await _get_criteria(
+        digital_object_type = _digital_object_type
+    )
+
+    relevant_criteria_data = []
+    # Exception: repo_docs
+    _has_individual_doc_repo = 'repo_docs' in _repo_keys
+    if _has_individual_doc_repo:
+        # Get only the 'QC.Doc' criterion & add the rest to new list
+        criteria_data_list_new = []
+        for criterion_data in criteria_data_list:
+            if criterion_data['id'] not in ['QC.Doc']:
+                criteria_data_list_new.append(criterion_data)
+            else:
+                relevant_criteria_data.append({
+                    'repo': repositories['repo_docs'],
+                    'criteria_data_list': [criterion_data]
+                })
+        criteria_data_list = criteria_data_list_new
+
+    # Add criteria list for the digital object type
+    relevant_criteria_data.append({
+        'repo': repositories[_repo_key],
+        'criteria_data_list': criteria_data_list
+    })
+    logger.debug(
+        'Resultant repository and criteria mapping: '
+        '%s' % relevant_criteria_data
+    )
+
+    return relevant_criteria_data
+
+
+def _validate_assessment_input(body):
+    """Validates input data from the assessment request.
+
+    Current policy: only allow one type of DO assessment, either 'source code',
+    'service' or 'fair. If multiple are provided, it will follow the priority:
+    source code -> services -> data.
+
+    :param body: JSON payload request.
+    :type body: dict | bytes
+    """
+    repo_code = body.get('repo_code', {})
+    repo_docs = body.get('repo_docs', {})
+    deployment = body.get('deployment', {})
+    fair = body.get('fair', {})
+
+    repositories = {}
+    main_repo_key = None
+
+    # source code
+    if repo_code:
+        main_repo_key = 'repo_code'
+        # healthy check
+        if deployment:
+            logger.warning((
+                'Provided URLs both for the source code and deployment '
+                'assessment. Ignoring service assessment and continuing with '
+                'source code assessment.'
+            ))
+        # Add repo/s for source code assessment
+        if repo_docs:
+            # healthy check: are repo_code and repo_docs the same URL?
+            _same_code_and_docs_repo = list(repo_code.values()) == list(repo_docs.values())
+            if not _same_code_and_docs_repo:
+                repositories['repo_docs'] = repo_docs
+        repositories['repo_code'] = repo_code
+    # deployment
+    elif deployment:
+        main_repo_key = 'repo_deploy'
+        if fair:
+            logger.warning((
+                'Provided input both for deployment and FAIR assessment. '
+                'Ignoring FAIR assessment and continuing with service '
+                'assessment.'
+            ))
+        repositories['repo_deploy'] = deployment['repo_deploy']
+        # Exception for 'repo_deploy': add 'deploy_tool' at the same level as
+        # 'repo_deploy' so that we can pop it afterwards in _filter_tool
+        repositories['repo_deploy']['deploy_tool'] = deployment['deploy_tool']
+    # FAIR
+    elif fair:
+        main_repo_key = 'fair'
+        repositories['fair'] = fair['fair_tool']
+    else:
+        # FIXME This will change when FAIR is integrated
+        _reason = (
+            'Neither source code, deployment repositories nor FAIR inputs have '
+            'been provided for the assessment'
+        )
+        raise SQAaaSAPIException(422, _reason)
+
+    return repositories, main_repo_key
 
 
 async def add_pipeline_for_assessment(request: web.Request, body, user_requested_tools=[]) -> web.Response:
@@ -386,45 +453,8 @@ async def add_pipeline_for_assessment(request: web.Request, body, user_requested
     # FIXME If it is applicable to every HTTP request, it shall be added as
     # part of the validate_request() decorator
     body = ctls_utils.del_empty_keys(body)
-
-    #0 Validate request
-    repo_code = body.get('repo_code', {})
-    repo_docs = body.get('repo_docs', {})
-    deployment = body.get('deployment', {})
-    fair = body.get('fair', {})
-    repositories = {}
-    # NOTE Only allow one CI credential for assessment
-    ci_credential_id = None
+    repositories, main_repo_key = _validate_assessment_input(body)
     
-    # FIXME This requires that a healthy check (i.e. exclusively one among
-    # code, services and data is defined) is performed first (right now this
-    # is done in _get_tooling_for_assessment(), so MUST be moved here)
-    _keys_to_purge = []
-    for _repo in [
-        (repo_code, 'repo_code'),
-        (repo_docs, 'repo_docs'),
-        (deployment, 'deployment')
-    ]:
-        _repo_data, _repo_key = _repo
-        _has_content = _repo_data.get('repo', None)
-        if _has_content:
-            repositories[_repo_key] = _repo_data
-        else:
-            _keys_to_purge.append(_repo_key)
-    for _key in _keys_to_purge:
-        body.pop(_key, {})
-    main_repo_key = list(
-        set(['repo_code', 'deployment'])-set(_keys_to_purge)
-    )[0] # this variable MUST be removed when fixed
-
-    # Health check: nothing defined
-    if not repositories and not fair:
-        _reason = (
-            'Invalid request: not valid data found for a '
-            'software/service/FAIRness assessment'
-        )
-        return web.Response(status=422, reason=_reason, text=_reason)
-
     #0 Encrypt credentials before storing in DB
     for _repo_key, _repo_data in repositories.items():
         _repo_creds = _repo_data.get('credentials_id', None)
@@ -462,7 +492,7 @@ async def add_pipeline_for_assessment(request: web.Request, body, user_requested
             criteria_filtered_out,
             repo_settings
         ) = await _get_tooling_for_assessment(
-                body=body,
+                repositories=repositories,
                 user_requested_tools=user_requested_tools
             )
         logger.debug((
@@ -480,9 +510,9 @@ async def add_pipeline_for_assessment(request: web.Request, body, user_requested
 
     # FIXME This only considers one repo
     build_repo_name = repositories[main_repo_key].get('repo', None)
-    if fair:
+    if 'fair' in list(repositories):
         # FIXME Temporary hack until the web provides all required input fields
-        _fair_tool = body['fair']['fair_tool']
+        _fair_tool = repositories['fair']
         for arg in _fair_tool['args']:
             if arg.get('id', '') in ['persistent_identifier']:
                 build_repo_name = arg['value']
@@ -2372,13 +2402,17 @@ async def _sort_tooling_by_criteria(tooling_metadata_json, criteria_id_list=[]):
     return criteria_data_list
 
 
-async def _get_criteria(criteria_id_list=[], assessment=False):
+async def _get_criteria(
+        criteria_id_list=[], assessment=False, digital_object_type=None
+    ):
     """Gets and filters criteria from tooling.
 
     :param criterion_id_list: Specific list of criteria to check
     :type criterion_id_list: list
     :param assessment: Flag to indicate whether the criteria shall consider only assessment-related tools
     :type assessment: bool
+    :param digital_object_type: one of ['software', 'service', 'fair']. This matches "type" in tooling
+    :type digital_object_type: str
 
     """
     try:
@@ -2396,6 +2430,15 @@ async def _get_criteria(criteria_id_list=[], assessment=False):
                 if tool_data['name'] not in ['commands']:
                     _tool_list.append(tool_data)
             criterion_data['tools'] = _tool_list
+
+    _criteria_data_list_new = []
+    if digital_object_type: # include only the criteria matching 'type'
+        _criteria_data_list_new = [
+            criterion_data
+                for criterion_data in criteria_data_list
+                    if digital_object_type in [criterion_data['type']]
+        ]
+        criteria_data_list = _criteria_data_list_new
 
     return criteria_data_list
 
