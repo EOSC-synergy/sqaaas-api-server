@@ -1018,18 +1018,19 @@ def del_empty_keys(data):
 
     :param data: dict or json data
     """
-    props_to_remove = []
-    for prop, prop_value in data.items():
-        pop_prop = False
-        if isinstance(prop_value, dict):
-            if not any(prop_value.values()):
-                pop_prop = True
-        elif isinstance(prop_value, (list, str)):
-            if not prop_value:
-                pop_prop = True
-        if pop_prop:
-            props_to_remove.append(prop)
-    [data.pop(prop) for prop in props_to_remove]
+    if isinstance(data, dict):
+        for key in list(data):
+            value = data[key]
+            if isinstance(value, (dict, list)):
+                value = del_empty_keys(value)
+            if not value:
+                del data[key]
+    elif isinstance(data, list):
+        for value in data:
+            if isinstance(value, (dict, list)):
+                value = del_empty_keys(value)
+            if not value:
+                data.remove(value)
     return data
 
 
