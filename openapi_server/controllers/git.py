@@ -51,6 +51,11 @@ class GitUtils(object):
                 'Authentication failed when cloning repository: '
                 '%s' % kwargs['repo']
             )
+        elif re.search("fatal: unable to access", message):
+            message = (
+                'Insufficient privileges to access repository: '
+                '%s' % kwargs['repo']
+            )
 
         return message
 
