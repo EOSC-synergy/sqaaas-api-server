@@ -46,6 +46,11 @@ class GitUtils(object):
             message = (
                 'Repository not found or not accessible: %s' % kwargs['repo']
             )
+        elif re.search("fatal: Authentication failed", message):
+            message = (
+                'Authentication failed when cloning repository: '
+                '%s' % kwargs['repo']
+            )
 
         return message
 
