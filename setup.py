@@ -40,6 +40,7 @@ setup(
         'templates/commands_script_im.sh',
         'templates/pipeline_assessment.json',
         'templates/README',
+        'templates/jenkins/credentials.xml',
         '../etc/sqaaas.ini.sample']},
     include_package_data=False,
     entry_points={

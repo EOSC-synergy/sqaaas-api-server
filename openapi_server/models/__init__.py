@@ -21,6 +21,7 @@ from openapi_server.models.badge_assertion_recipient import BadgeAssertionRecipi
 from openapi_server.models.badge_criteria_stats import BadgeCriteriaStats
 from openapi_server.models.create_pull_request200_response import CreatePullRequest200Response
 from openapi_server.models.create_pull_request_request import CreatePullRequestRequest
+from openapi_server.models.creds_input import CredsInput
 from openapi_server.models.creds_user_pass import CredsUserPass
 from openapi_server.models.criterion import Criterion
 from openapi_server.models.criterion_build_value import CriterionBuildValue
@@ -44,6 +45,7 @@ from openapi_server.models.je_pl_jenkinsfile_stages_inner_when import JePLJenkin
 from openapi_server.models.pipeline import Pipeline
 from openapi_server.models.pipeline_assessment import PipelineAssessment
 from openapi_server.models.repository import Repository
+from openapi_server.models.repository_credentials_id import RepositoryCredentialsId
 from openapi_server.models.service_docker_compose_value import ServiceDockerComposeValue
 from openapi_server.models.service_docker_compose_value_build import ServiceDockerComposeValueBuild
 from openapi_server.models.service_docker_compose_value_image import ServiceDockerComposeValueImage

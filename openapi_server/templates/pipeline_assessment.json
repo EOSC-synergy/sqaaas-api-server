@@ -1,25 +1,46 @@
-{%- if repo_code -%}
-{%- set repositories = [repo_code, repo_docs] -%}
-{%- elif repo_deploy -%}
-{%- set repositories = [repo_deploy] -%}
-{%- endif -%}
+{%- set repo_docs = repositories.get('repo_docs', {}) -%}
+{%- set repo_code = repositories.get('repo_code', {}) -%}
+{%- set repo_deploy = repositories.get('deployment', {}) -%}
 {
   "name": "{{ pipeline_name }}",
   "config_data": [
     {
       "config": {
         "project_repos": [
-	  {%- for repo in repositories -%}
-          {%- if repo.get('repo', {})  -%}
+	  {%- for repo_key, repo_data in repositories.items() -%}
+          {%- if repo_data.get('repo', {})  -%}
 	  {{ "," if not loop.first else "" }}
-          {
-            "repo": "{{ repo.repo }}",
-            "branch": "{{ repo.branch }}"
+	  {
+            {%- set repo_creds = repo_data.get('credential_data', {})  -%}
+            {%- if repo_creds -%}
+            {%- set secret_id = repo_creds.get('secret_id', '')  -%}
+            {%- set user_id = repo_creds.get('user_id', '')  -%}
+            {%- set token = repo_creds.get('token', '')  -%}
+	    "credential_data": {
+              "secret_id": "{{ secret_id }}",
+              "user_id": "{{ user_id }}",
+              "token": "{{ token }}"
+	    },
+	    "credential_tmp": true,
+	    {%- endif -%}
+	    {%- if ci_credential_id -%}
+	    "credentials_id": "{{ ci_credential_id }}",
+	    {%- endif -%}
+	    "repo": "{{ repo_data.repo }}",
+	    "branch": "{{ repo_data.branch }}"
 	  }
 	  {%- endif -%}
 	  {%- endfor -%}
         ],
-        "credentials": []
+	"credentials": [
+	{%- if ci_credential_id -%}
+	  {
+	    "id": "{{ ci_credential_id }}",
+	    "username_var": "GIT_USER",
+	    "password_var": "GIT_PASSWORD"
+	  }
+	{%- endif -%}
+	]
       },
       "sqa_criteria": {
         {%- for criterion_data in criteria_data_list %}
