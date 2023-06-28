@@ -44,6 +44,7 @@ REPOSITORY_BACKEND = config.get(
 GITHUB_ORG = config.get_repo('organization')
 JENKINS_GITHUB_ORG = config.get_ci('github_organization_name')
 JENKINS_CREDENTIALS_FOLDER = config.get_ci('credentials_folder')
+JENKINS_COMPLETED_STATUS = ['SUCCESS', 'FAILURE', 'UNSTABLE']
 TOOLING_QAA_SPECIFIC_KEY = 'tools_qaa_specific'
 
 SW_PREFIX = 'QC'
@@ -1313,7 +1314,7 @@ async def get_pipeline_status(request: web.Request, pipeline_id) -> web.Response
     build_status = jenkins_info['build_info'].get('status', '')
 
     creds_tmp_copy = copy.deepcopy(creds_tmp)
-    if build_status in ['SUCCESS', 'FAILURE', 'UNSTABLE']:
+    if build_status in JENKINS_COMPLETED_STATUS:
         for _id in creds_tmp:
             jk_utils.remove_credential(_id, folder_name=creds_folder)
             creds_tmp_copy.remove(_id)
