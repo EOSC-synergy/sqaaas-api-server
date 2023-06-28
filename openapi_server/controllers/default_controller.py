@@ -521,6 +521,7 @@ async def add_pipeline_for_assessment(request: web.Request, body, user_requested
             if arg.get('id', '') in ['persistent_identifier']:
                 build_repo_name = arg['value']
                 break
+    build_repo_name = build_repo_name.strip('/')
     pipeline_name = '.'.join([
         os.path.basename(build_repo_name),
         'assess'
