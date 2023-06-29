@@ -1124,7 +1124,7 @@ async def run_pipeline(
     build_job_task = None
     if job_exists:
         _build_to_check = last_build_no+1
-        # Fire & forget _update_status()
+        # Fire & forget _handle_job_building()
         build_job_task = asyncio.create_task(_handle_job_building(jk_job_name, _build_to_check))
         if build_job_task.done():
             build_no, build_status, build_url, build_item_no = build_job_task.result()
