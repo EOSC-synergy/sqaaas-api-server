@@ -44,7 +44,7 @@ REPOSITORY_BACKEND = config.get(
 GITHUB_ORG = config.get_repo('organization')
 JENKINS_GITHUB_ORG = config.get_ci('github_organization_name')
 JENKINS_CREDENTIALS_FOLDER = config.get_ci('credentials_folder')
-JENKINS_COMPLETED_STATUS = ['SUCCESS', 'FAILURE', 'UNSTABLE']
+JENKINS_COMPLETED_STATUS = ['SUCCESS', 'FAILURE', 'UNSTABLE', 'ABORTED']
 TOOLING_QAA_SPECIFIC_KEY = 'tools_qaa_specific'
 
 SW_PREFIX = 'QC'
