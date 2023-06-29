@@ -1215,10 +1215,15 @@ async def _update_status(pipeline_id, triggered_by_run=False, build_task=None):
 
     _pipeline_executed = False
 
-    if 'jenkins' not in pipeline_data.keys():
-        _pipeline_executed = False
-    else:
-        jenkins_info = pipeline_data['jenkins']
+    if build_task:
+        if build_task.done():
+            build_no, build_status, build_item_no = build_job_task.result()
+        else:
+            _pipeline_executed = False
+
+    jenkins_info = pipeline_data.get('jenkins', {})
+    if jenkins_info:
+        _pipeline_executed = True
         build_info = jenkins_info['build_info']
         jk_job_name = jenkins_info['job_name']
         build_no = build_info['number']
@@ -1226,17 +1231,10 @@ async def _update_status(pipeline_id, triggered_by_run=False, build_task=None):
         build_url = build_info['url']
         build_item_no = build_info['item_number']
     
-    if build_task:
-        if build_task.done():
-            build_no, build_status, build_item_no = build_job_task.result()
-        else:
-            _pipeline_executed = False
-
-    if _pipeline_executed:
+    if not _pipeline_executed:
         _reason = 'Could not retrieve Jenkins job information: Pipeline <%s> has not yet ran' % pipeline_id
         logger.error(_reason)
         raise SQAaaSAPIException(422, _reason)
-
 
     if jenkins_info['scan_org_wait']:
         logger.debug('scan_org_wait still enabled for pipeline job: %s' % jk_job_name)
