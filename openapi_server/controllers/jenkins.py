@@ -133,6 +133,15 @@ class JenkinsUtils(object):
             )
         return build_info
 
+    def stop_build(self, full_job_name, build_no):
+        """Stop a build from a job.
+
+        :param full_job_name: job name including folder/s, name & branch
+        :param build_no: build number.
+        """
+        self.logger.debug('Stopping build for job <%s> (build_no: %s)' % (full_job_name, build_no))
+        return self.server.stop_build(full_job_name, build_no)
+
     def delete_job(self, full_job_name):
         self.logger.debug('Deleting Jenkins job: %s' % full_job_name)
         self.server.delete_job(full_job_name)

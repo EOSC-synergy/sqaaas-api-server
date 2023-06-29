@@ -671,21 +671,53 @@ async def delete_pipeline_by_id(request: web.Request, pipeline_id) -> web.Respon
     :type pipeline_id: str
 
     """
-    pipeline_data = db.get_entry(pipeline_id)
-    pipeline_repo = pipeline_data['pipeline_repo']
+    try:
+        build_url, build_status = await _update_status(pipeline_id)
+    except SQAaaSAPIException as e:
+        return web.Response(status=e.http_code, reason=e.message, text=e.message)
 
-    if gh_utils.get_repository(pipeline_repo):
-        gh_utils.delete_repo(pipeline_repo)
-    if 'jenkins' in pipeline_data.keys():
-        jk_job_name = pipeline_data['jenkins']['job_name']
-        if jk_utils.exist_job(jk_job_name):
-            jk_utils.scan_organization()
+    _message = None
+    if not build_url:
+        _message = (
+            'Cannot stop pipeline <%s>: build not already started (current '
+            'status: %s)' % (pipeline_id, build_status)
+        )
+        logger.info(_message)
     else:
-        logger.debug('Jenkins job not found. Pipeline might not have been yet executed')
+        pipeline_data = db.get_entry(pipeline_id)
+        pipeline_repo = pipeline_data['pipeline_repo']
+        jenkins_info = pipeline_data['jenkins']
+        build_info = jenkins_info['build_info']
 
-    db.del_entry(pipeline_id)
+        jk_job_name = jenkins_info['job_name']
+        build_no = build_info['number']
+        if build_status in JENKINS_COMPLETED_STATUS:
+            _message = (
+                'Cannot stop pipeline <%s>: pipeline has finalized (status: '
+                '%s)' % (pipeline_id, build_status)
+            )
+        else:
+            jk_utils.stop_build(jk_job_name, build_no)
+            logger.info('Stopping current build of pipeline <%s>' % pipeline_id)
+            logger.debug('Stopping build: %s' % build_info['url'])
+            # Set build status to ABORTED
+            db.update_jenkins(
+                pipeline_id,
+                jk_job_name=jenkins_info['job_name'],
+                commit_id=build_info['commit_id'],
+                commit_url=build_info['commit_url'],
+                build_item_no=build_info['item_number'],
+                build_no=build_info['number'],
+                build_url=build_info['url'],
+                build_status='ABORTED',
+                scan_org_wait=jenkins_info['scan_org_wait'],
+                creds_tmp=jenkins_info['creds_tmp'],
+                creds_folder=jenkins_info['creds_folder'],
+                issue_badge=jenkins_info['issue_badge']
+            )
+            logger.info('Set ABORTED status to pipeline <%s>' % pipeline_id)
 
-    return web.Response(status=204)
+    return web.Response(status=204, reason=_message, text=_message)
 
 
 @ctls_utils.debug_request
