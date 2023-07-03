@@ -44,6 +44,7 @@ REPOSITORY_BACKEND = config.get(
 GITHUB_ORG = config.get_repo('organization')
 JENKINS_GITHUB_ORG = config.get_ci('github_organization_name')
 JENKINS_CREDENTIALS_FOLDER = config.get_ci('credentials_folder')
+JENKINS_COMPLETED_STATUS = ['SUCCESS', 'FAILURE', 'UNSTABLE', 'ABORTED']
 TOOLING_QAA_SPECIFIC_KEY = 'tools_qaa_specific'
 
 SW_PREFIX = 'QC'
@@ -521,6 +522,7 @@ async def add_pipeline_for_assessment(request: web.Request, body, user_requested
             if arg.get('id', '') in ['persistent_identifier']:
                 build_repo_name = arg['value']
                 break
+    build_repo_name = build_repo_name.strip('/')
     pipeline_name = '.'.join([
         os.path.basename(build_repo_name),
         'assess'
@@ -669,21 +671,53 @@ async def delete_pipeline_by_id(request: web.Request, pipeline_id) -> web.Respon
     :type pipeline_id: str
 
     """
-    pipeline_data = db.get_entry(pipeline_id)
-    pipeline_repo = pipeline_data['pipeline_repo']
+    try:
+        build_url, build_status = await _update_status(pipeline_id)
+    except SQAaaSAPIException as e:
+        return web.Response(status=e.http_code, reason=e.message, text=e.message)
 
-    if gh_utils.get_repository(pipeline_repo):
-        gh_utils.delete_repo(pipeline_repo)
-    if 'jenkins' in pipeline_data.keys():
-        jk_job_name = pipeline_data['jenkins']['job_name']
-        if jk_utils.exist_job(jk_job_name):
-            jk_utils.scan_organization()
+    _message = None
+    if not build_url:
+        _message = (
+            'Cannot stop pipeline <%s>: build not already started (current '
+            'status: %s)' % (pipeline_id, build_status)
+        )
+        logger.info(_message)
     else:
-        logger.debug('Jenkins job not found. Pipeline might not have been yet executed')
+        pipeline_data = db.get_entry(pipeline_id)
+        pipeline_repo = pipeline_data['pipeline_repo']
+        jenkins_info = pipeline_data['jenkins']
+        build_info = jenkins_info['build_info']
 
-    db.del_entry(pipeline_id)
+        jk_job_name = jenkins_info['job_name']
+        build_no = build_info['number']
+        if build_status in JENKINS_COMPLETED_STATUS:
+            _message = (
+                'Cannot stop pipeline <%s>: pipeline has finalized (status: '
+                '%s)' % (pipeline_id, build_status)
+            )
+        else:
+            jk_utils.stop_build(jk_job_name, build_no)
+            logger.info('Stopping current build of pipeline <%s>' % pipeline_id)
+            logger.debug('Stopping build: %s' % build_info['url'])
+            # Set build status to ABORTED
+            db.update_jenkins(
+                pipeline_id,
+                jk_job_name=jenkins_info['job_name'],
+                commit_id=build_info['commit_id'],
+                commit_url=build_info['commit_url'],
+                build_item_no=build_info['item_number'],
+                build_no=build_info['number'],
+                build_url=build_info['url'],
+                build_status='ABORTED',
+                scan_org_wait=jenkins_info['scan_org_wait'],
+                creds_tmp=jenkins_info['creds_tmp'],
+                creds_folder=jenkins_info['creds_folder'],
+                issue_badge=jenkins_info['issue_badge']
+            )
+            logger.info('Set ABORTED status to pipeline <%s>' % pipeline_id)
 
-    return web.Response(status=204)
+    return web.Response(status=204, reason=_message, text=_message)
 
 
 @ctls_utils.debug_request
@@ -1090,7 +1124,7 @@ async def run_pipeline(
     build_job_task = None
     if job_exists:
         _build_to_check = last_build_no+1
-        # Fire & forget _update_status()
+        # Fire & forget _handle_job_building()
         build_job_task = asyncio.create_task(_handle_job_building(jk_job_name, _build_to_check))
         if build_job_task.done():
             build_no, build_status, build_url, build_item_no = build_job_task.result()
@@ -1181,10 +1215,15 @@ async def _update_status(pipeline_id, triggered_by_run=False, build_task=None):
 
     _pipeline_executed = False
 
-    if 'jenkins' not in pipeline_data.keys():
-        _pipeline_executed = False
-    else:
-        jenkins_info = pipeline_data['jenkins']
+    if build_task:
+        if build_task.done():
+            build_no, build_status, build_item_no = build_job_task.result()
+        else:
+            _pipeline_executed = False
+
+    jenkins_info = pipeline_data.get('jenkins', {})
+    if jenkins_info:
+        _pipeline_executed = True
         build_info = jenkins_info['build_info']
         jk_job_name = jenkins_info['job_name']
         build_no = build_info['number']
@@ -1192,17 +1231,10 @@ async def _update_status(pipeline_id, triggered_by_run=False, build_task=None):
         build_url = build_info['url']
         build_item_no = build_info['item_number']
     
-    if build_task:
-        if build_task.done():
-            build_no, build_status, build_item_no = build_job_task.result()
-        else:
-            _pipeline_executed = False
-
-    if _pipeline_executed:
+    if not _pipeline_executed:
         _reason = 'Could not retrieve Jenkins job information: Pipeline <%s> has not yet ran' % pipeline_id
         logger.error(_reason)
         raise SQAaaSAPIException(422, _reason)
-
 
     if jenkins_info['scan_org_wait']:
         logger.debug('scan_org_wait still enabled for pipeline job: %s' % jk_job_name)
@@ -1312,7 +1344,7 @@ async def get_pipeline_status(request: web.Request, pipeline_id) -> web.Response
     build_status = jenkins_info['build_info'].get('status', '')
 
     creds_tmp_copy = copy.deepcopy(creds_tmp)
-    if build_status in ['SUCCESS', 'FAILURE', 'UNSTABLE']:
+    if build_status in JENKINS_COMPLETED_STATUS:
         for _id in creds_tmp:
             jk_utils.remove_credential(_id, folder_name=creds_folder)
             creds_tmp_copy.remove(_id)
