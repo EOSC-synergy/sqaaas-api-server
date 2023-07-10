@@ -14,7 +14,9 @@
 </p>
 
 ## Overview
-API server implementation for the SQA-as-a-Service (SQAaaS) platform. **This software is open source. If you want to access to it, send an e-mail to sqaaas@ibergrid.eu**
+API server implementation for the SQA-as-a-Service (SQAaaS) platform. 
+
+**This software is open source. If you want to access to it, send an e-mail to sqaaas@ibergrid.eu**
 
 ### API First strategy
 The SQAaaS API implementation follows an API First strategy, where changes in the specification
