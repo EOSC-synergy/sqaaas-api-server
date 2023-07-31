@@ -187,7 +187,7 @@ class GitUtils(object):
                 ))
             except GitCommandError as e:
                 _msg = GitUtils._custom_exception_messages(
-                    e, repo=remote_repo
+                    e, repo=remote_repo, branch=branch
                 )
                 logger.error(_msg)
                 raise SQAaaSAPIException(422, _msg)
@@ -231,7 +231,7 @@ class GitUtils(object):
                         logger.debug(msg)
                     except GitCommandError as e:
                         _msg = GitUtils._custom_exception_messages(
-                            e, repo=repo['repo']
+                            e, repo=repo['repo'], branch=branch
                         )
                         logger.error(_msg)
                         raise SQAaaSAPIException(422, _msg)
