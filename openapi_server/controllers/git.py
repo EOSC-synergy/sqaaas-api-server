@@ -46,6 +46,11 @@ class GitUtils(object):
             message = (
                 'Repository not found or not accessible: %s' % kwargs['repo']
             )
+        elif re.search("fatal: Remote branch (.+) not found", message):
+            message = (
+                'Repository branch \'%s\'not found or not accessible for '
+                'repository: %s' % (kwargs['repo'], kwargs['branch'])
+            )
         elif re.search("fatal: Authentication failed", message):
             message = (
                 'Authentication failed when cloning repository: '
