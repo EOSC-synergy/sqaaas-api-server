@@ -21,25 +21,29 @@ class AssessmentOutput(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, repository: List[AssessmentOutputRepository]=None, report: Dict[str, AssessmentOutputReportValue]=None, badge: AssessmentOutputBadge=None):
+    def __init__(self, version: str=None, repository: List[AssessmentOutputRepository]=None, report: Dict[str, AssessmentOutputReportValue]=None, badge: AssessmentOutputBadge=None):
         """AssessmentOutput - a model defined in OpenAPI
 
+        :param version: The version of this AssessmentOutput.
         :param repository: The repository of this AssessmentOutput.
         :param report: The report of this AssessmentOutput.
         :param badge: The badge of this AssessmentOutput.
         """
         self.openapi_types = {
+            'version': str,
             'repository': List[AssessmentOutputRepository],
             'report': Dict[str, AssessmentOutputReportValue],
             'badge': AssessmentOutputBadge
         }
 
         self.attribute_map = {
+            'version': 'version',
             'repository': 'repository',
             'report': 'report',
             'badge': 'badge'
         }
 
+        self._version = version
         self._repository = repository
         self._report = report
         self._badge = badge
@@ -54,9 +58,33 @@ class AssessmentOutput(Model):
         return util.deserialize_model(dikt, cls)
 
     @property
+    def version(self):
+        """Gets the version of this AssessmentOutput.
+
+        Version of the API spec the generated report payload is based on
+
+        :return: The version of this AssessmentOutput.
+        :rtype: str
+        """
+        return self._version
+
+    @version.setter
+    def version(self, version):
+        """Sets the version of this AssessmentOutput.
+
+        Version of the API spec the generated report payload is based on
+
+        :param version: The version of this AssessmentOutput.
+        :type version: str
+        """
+
+        self._version = version
+
+    @property
     def repository(self):
         """Gets the repository of this AssessmentOutput.
 
+        Details about the (code, data) repository
 
         :return: The repository of this AssessmentOutput.
         :rtype: List[AssessmentOutputRepository]
@@ -67,6 +95,7 @@ class AssessmentOutput(Model):
     def repository(self, repository):
         """Sets the repository of this AssessmentOutput.
 
+        Details about the (code, data) repository
 
         :param repository: The repository of this AssessmentOutput.
         :type repository: List[AssessmentOutputRepository]
