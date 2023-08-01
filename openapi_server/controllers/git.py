@@ -46,6 +46,11 @@ class GitUtils(object):
             message = (
                 'Repository not found or not accessible: %s' % kwargs['repo']
             )
+        elif re.search("fatal: Remote branch (.+) not found", message):
+            message = (
+                'Repository branch \'%s\'not found or not accessible for '
+                'repository: %s' % (kwargs['branch'], kwargs['repo'])
+            )
         elif re.search("fatal: Authentication failed", message):
             message = (
                 'Authentication failed when cloning repository: '
@@ -138,7 +143,7 @@ class GitUtils(object):
                     repo = Repo.clone_from(source_repo, dirpath)
             except GitCommandError as e:
                 _msg = GitUtils._custom_exception_messages(
-                    e, repo=source_repo
+                    e, repo=source_repo, branch=source_repo_branch
                 )
                 logger.error(_msg)
                 raise SQAaaSAPIException(422, _msg)
@@ -182,7 +187,7 @@ class GitUtils(object):
                 ))
             except GitCommandError as e:
                 _msg = GitUtils._custom_exception_messages(
-                    e, repo=remote_repo
+                    e, repo=remote_repo, branch=branch
                 )
                 logger.error(_msg)
                 raise SQAaaSAPIException(422, _msg)
@@ -226,7 +231,7 @@ class GitUtils(object):
                         logger.debug(msg)
                     except GitCommandError as e:
                         _msg = GitUtils._custom_exception_messages(
-                            e, repo=repo['repo']
+                            e, repo=repo['repo'], branch=branch
                         )
                         logger.error(_msg)
                         raise SQAaaSAPIException(422, _msg)
