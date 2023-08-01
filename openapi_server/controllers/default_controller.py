@@ -7,7 +7,8 @@ import base64
 import calendar
 from datetime import datetime
 import copy
-from importlib.metadata import version
+from importlib.metadata import version as impversion
+from importlib.resources import files as impfiles
 import io
 import itertools
 import logging
@@ -16,6 +17,7 @@ import os
 import re
 import urllib
 import uuid
+import yaml
 from zipfile import ZipFile, ZipInfo
 
 from aiohttp import web
@@ -23,6 +25,7 @@ from jinja2 import Environment, PackageLoader
 from deepdiff import DeepDiff
 import namegenerator
 
+import openapi_server
 from openapi_server import config
 from openapi_server import controllers
 from openapi_server.controllers import crypto as crypto_utils
@@ -1438,7 +1441,7 @@ async def _run_validation(criterion_name, **kwargs):
             ])
             out.update({
                 'package_name': validator_package_name,
-                'package_version': version(validator_package_name)
+                'package_version': impversion(validator_package_name)
             })
 
     return (reporting_data, out, broken_validation_data)
@@ -1836,6 +1839,19 @@ async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Re
             #     criteria_fulfilled_map[badge_type].append(criterion)
         return criteria_fulfilled_map
 
+    def _get_spec_version():
+        """Returns the version of the SQAaaS API specification.
+
+        This method reads the specification version from the file stored
+        locally at 'openapi_server/openapi/openapi.yaml'.
+        """
+        input_file = (impfiles(openapi_server) / 'openapi/openapi.yaml')
+        with open(input_file, 'r') as fspec:
+            spec_data = yaml.safe_load(fspec)
+
+        return spec_data['info']['version']
+
+
     # Iterate over the criteria and associated tool results to compose the payload of the HTTP response:
     #    - <report> property
     #       + If any(valid is False and requirement_level in REQUIRED), then <QC.xxx>:valid=False
@@ -1971,6 +1987,7 @@ async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Re
                             ) = _required_for_next_level
 
     r = {
+        'version': _get_spec_version(),
         'repository': [pipeline_data.get('repo_settings', {})],
         'report': report_data_copy,
         'badge': badge_data
