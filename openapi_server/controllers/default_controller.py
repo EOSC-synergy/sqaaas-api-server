@@ -1855,7 +1855,10 @@ async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Re
 
         return spec_data['info']['version']
 
-
+    # ----------------------------------------------
+    # -- Main body of get_output_for_assessment() --
+    # ----------------------------------------------
+    #
     # Iterate over the criteria and associated tool results to compose the payload of the HTTP response:
     #    - <report> property
     #       + If any(valid is False and requirement_level in REQUIRED), then <QC.xxx>:valid=False
