@@ -29,6 +29,8 @@ repository_backend = github
 # interrupt_on_validation_error = no
 ## - Path to store Fernet key for encryption
 # key_encryption_path = etc/.fernet.key
+## - Repository (relative) path to store the assessment report
+# assessment_report_location = .report/assessment_output.json
 
 [jenkins]
 ## -------------------- ##

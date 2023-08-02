@@ -53,6 +53,10 @@ JENKINS_GITHUB_ORG = config.get_ci('github_organization_name')
 JENKINS_CREDENTIALS_FOLDER = config.get_ci('credentials_folder')
 JENKINS_COMPLETED_STATUS = ['SUCCESS', 'FAILURE', 'UNSTABLE', 'ABORTED']
 TOOLING_QAA_SPECIFIC_KEY = 'tools_qaa_specific'
+ASSESSMENT_REPORT_LOCATION = config.get(
+    'assessment_report_location',
+    fallback='.report/assessment_output.json'
+)
 
 SW_PREFIX = 'QC'
 SRV_PREFIX = 'SvcQC'
@@ -1992,6 +1996,30 @@ async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Re
         'report': report_data_copy,
         'badge': badge_data
     }
+
+    # Store JSON report in the assessment repository
+    assessment_repo = pipeline_data['pipeline_repo']
+    logger.debug(
+        'Store resultant JSON report in the assessment '
+        'repository: %s' % assessment_repo
+    )
+    print(json.dumps(pipeline_data, indent=4))
+    commit = gh_utils.push_file(
+        file_name=ASSESSMENT_REPORT_LOCATION,
+        file_data=json.dumps(r, indent=4),
+        commit_msg='Add assessment report',
+        repo_name=assessment_repo,
+    )
+    if commit:
+        logger.info(
+            'Assessment report stored in repository <%s>' % assessment_repo
+        )
+    else:
+        logger.warning(
+            'Could not store assessment report in repository '
+            '<%s>' % assessment_repo
+        )
+
     return web.json_response(r, status=200)
 
 
