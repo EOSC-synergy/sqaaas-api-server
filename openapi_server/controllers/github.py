@@ -66,7 +66,13 @@ class GitHubUtils(object):
 
         return contents
 
-    def get_file(self, file_name, repo_name, branch, fail_if_not_exists=False):
+    def get_file(
+            self,
+            file_name,
+            repo_name,
+            branch=GithubObject.NotSet,
+            fail_if_not_exists=False
+        ):
         """Gets the file's content from a GitHub repository.
 
         Returns a ContentFile object.

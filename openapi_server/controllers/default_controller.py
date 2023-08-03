@@ -1996,10 +1996,10 @@ async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Re
     r = {
         'meta': {
             'version': _get_spec_version(),
-            'report_json_url': urllib.parse.urljoin(
-                pipeline_data['pipeline_repo_url'],
-                ASSESSMENT_REPORT_LOCATION
-            )
+            'report_json_url': gh_utils.get_file(
+                ASSESSMENT_REPORT_LOCATION,
+                pipeline_data['pipeline_repo']
+            ).download_url
         },
         'repository': [pipeline_data.get('repo_settings', {})],
         'report': report_data_copy,
