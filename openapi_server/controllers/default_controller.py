@@ -2012,7 +2012,6 @@ async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Re
         'Store resultant JSON report in the assessment '
         'repository: %s' % assessment_repo
     )
-    print(json.dumps(pipeline_data, indent=4))
     commit = gh_utils.push_file(
         file_name=ASSESSMENT_REPORT_LOCATION,
         file_data=json.dumps(r, indent=4),
