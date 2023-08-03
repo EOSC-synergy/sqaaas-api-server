@@ -1994,7 +1994,13 @@ async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Re
                             ) = _required_for_next_level
 
     r = {
-        'version': _get_spec_version(),
+        'meta': {
+            'version': _get_spec_version(),
+            'report_json_url': urllib.parse.urljoin(
+                pipeline_data['pipeline_repo_url'],
+                ASSESSMENT_REPORT_LOCATION
+            )
+        },
         'repository': [pipeline_data.get('repo_settings', {})],
         'report': report_data_copy,
         'badge': badge_data
