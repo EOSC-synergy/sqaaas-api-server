@@ -2305,6 +2305,9 @@ components:
                 - criterion_id
             share: <html>..</html>
             verification_url: https://openapi-generator.tech
+        meta:
+          report_json_url: https://openapi-generator.tech
+          version: version
         report:
           key:
             valid: false
@@ -2412,13 +2415,9 @@ components:
           watchers_count: 2
           url: https://github.com/eosc-synergy/sqaaas-api-spec
           forks_count: 2
-        version: version
       properties:
-        version:
-          description: Version of the API spec the generated report payload is based
-            on
-          title: version
-          type: string
+        meta:
+          $ref: '#/components/schemas/AssessmentOutput_meta'
         repository:
           description: "Details about the (code, data) repository"
           items:
@@ -3286,6 +3285,24 @@ components:
           title: plaintextIdentity
           type: string
       title: BadgeAssertion_recipient
+      type: object
+    AssessmentOutput_meta:
+      example:
+        report_json_url: https://openapi-generator.tech
+        version: version
+      properties:
+        version:
+          description: Version of the API spec the generated report payload is based
+            on
+          title: version
+          type: string
+        report_json_url:
+          description: location in the build repository with the resultant assessment
+            report (JSON format)
+          format: uri
+          title: report_json_url
+          type: string
+      title: AssessmentOutput_meta
       type: object
     AssessmentOutput_report_value_coverage:
       example:
