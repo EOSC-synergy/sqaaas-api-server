@@ -1855,6 +1855,23 @@ async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Re
 
         return spec_data['info']['version']
 
+    def _get_report_url_raw(pipeline_repo, pipeline_repo_branch):
+        """Returns the raw URL of the SQAaaS assessment report.
+
+        :param pipeline_repo: the assessment repo (*.assess.sqaaas)
+        :param pipeline_repo: the assessment repo branch
+        """
+        _raw_url = None
+        if REPOSITORY_BACKEND in ['github']:
+            _raw_url = os.path.join(
+                'https://raw.githubusercontent.com/',
+                pipeline_repo,
+                pipeline_repo_branch,
+                ASSESSMENT_REPORT_LOCATION
+            )
+
+        return _raw_url
+
     # ----------------------------------------------
     # -- Main body of get_output_for_assessment() --
     # ----------------------------------------------
@@ -1993,13 +2010,15 @@ async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Re
                                              ['required_for_next_level_badge']
                             ) = _required_for_next_level
 
+    # Compose the final payload
+    pipeline_repo = pipeline_data['pipeline_repo']
+    pipeline_repo_branch = pipeline_data['pipeline_repo_branch']
     r = {
         'meta': {
             'version': _get_spec_version(),
-            'report_json_url': gh_utils.get_file(
-                ASSESSMENT_REPORT_LOCATION,
-                pipeline_data['pipeline_repo']
-            ).download_url
+            'report_json_url': _get_report_url_raw(
+                pipeline_repo, pipeline_repo_branch
+            )
         },
         'repository': [pipeline_data.get('repo_settings', {})],
         'report': report_data_copy,
@@ -2007,25 +2026,24 @@ async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Re
     }
 
     # Store JSON report in the assessment repository
-    assessment_repo = pipeline_data['pipeline_repo']
     logger.debug(
         'Store resultant JSON report in the assessment '
-        'repository: %s' % assessment_repo
+        'repository: %s' % pipeline_repo
     )
     commit = gh_utils.push_file(
         file_name=ASSESSMENT_REPORT_LOCATION,
         file_data=json.dumps(r, indent=4),
         commit_msg='Add assessment report',
-        repo_name=assessment_repo,
+        repo_name=pipeline_repo,
     )
     if commit:
         logger.info(
-            'Assessment report stored in repository <%s>' % assessment_repo
+            'Assessment report stored in repository <%s>' % pipeline_repo
         )
     else:
         logger.warning(
             'Could not store assessment report in repository '
-            '<%s>' % assessment_repo
+            '<%s>' % pipeline_repo
         )
 
     return web.json_response(r, status=200)
