@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: Copyright contributors to the Software Quality Assurance as a Service (SQAaaS) project <sqaaas@ibergrid.eu>
+#
+# SPDX-License-Identifier: GPL-3.0-only
+
 # Defines all Languages known to GitHub.
 #
 # fs_name               - Optional field. Only necessary as a replacement for the sample directory name if the
