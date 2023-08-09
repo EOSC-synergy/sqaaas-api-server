@@ -621,6 +621,10 @@ async def add_pipeline_for_assessment(request: web.Request, body, user_requested
         criteria_filtered_out
     )
 
+    logger.info(
+        'Pipeline for the QA assessment successfully created: %s' % pipeline_id
+    )
+
     r = {'id': pipeline_id}
     return web.json_response(r, status=201)
 
@@ -859,6 +863,12 @@ async def get_pipeline_commands_scripts(request: web.Request, pipeline_id) -> we
     """
     pipeline_data = db.get_entry(pipeline_id)
     commands_scripts = pipeline_data['data']['commands_scripts']
+
+    logger.info(
+        'Successfully returned the list of scripts\'s content '
+        'for pipeline <%s>' % pipeline_id
+    )
+    logger.debug(commands_scripts)
 
     return web.json_response(commands_scripts, status=200)
 
@@ -1369,6 +1379,13 @@ async def get_pipeline_status(request: web.Request, pipeline_id) -> web.Response
         'build_url': build_url,
         'build_status': build_status
     }
+
+    logger.info(
+        'Successfully obtained the current status of the '
+        'pipeline <%s>' % pipeline_id
+    )
+    logger.debug(r)
+
     return web.json_response(r, status=200)
 
 
