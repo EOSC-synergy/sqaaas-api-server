@@ -454,6 +454,7 @@ def _validate_assessment_input(body):
     return repositories, main_repo_key
 
 
+@ctls_utils.debug_request
 async def add_pipeline_for_assessment(request: web.Request, body, user_requested_tools=[]) -> web.Response:
     """Creates a pipeline for assessment (QAA module).
 
