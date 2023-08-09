@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: Copyright contributors to the Software Quality Assurance as a Service (SQAaaS) project <sqaaas@ibergrid.eu>
+#
+# SPDX-License-Identifier: GPL-3.0-only
+
 (
 {%- set im_server = template_kwargs.get("im_server") -%}
 {%- set im_auth_file = "/im/auth.dat" -%}

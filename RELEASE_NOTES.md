@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: Copyright contributors to the Software Quality Assurance as a Service (SQAaaS) project <sqaaas@ibergrid.eu>
+
+SPDX-License-Identifier: GPL-3.0-only
+-->
+
 ## Implementation notes on prototype/1.1
 
 SQAaaS API server's prototype 1.1 aims at covering the full set of features offered by JePL-2.1.0, and thus, it extends the MVP (released early 2021) to cover:

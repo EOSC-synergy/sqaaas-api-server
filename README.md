@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: Copyright contributors to the Software Quality Assurance as a Service (SQAaaS) project <sqaaas@ibergrid.eu>
+
+SPDX-License-Identifier: GPL-3.0-only
+-->
+
 # SQAaaS OpenAPI server
 
 [![SQAaaS badge shields.io](https://img.shields.io/badge/sqaaas%20software-silver-lightgrey)](https://api.eu.badgr.io/public/assertions/U-GSO-5DS-qHf5I3MernmQ "SQAaaS silver badge achieved")

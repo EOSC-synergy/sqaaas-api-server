@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: Copyright contributors to the Software Quality Assurance as a Service (SQAaaS) project <sqaaas@ibergrid.eu>
+#
+# SPDX-License-Identifier: GPL-3.0-only
+
 connexion[aiohttp,swagger-ui] >= 2.6.0; python_version>="3.6"
 # 2.3 is the last version that supports python 3.5
 connexion[aiohttp,swagger-ui] <= 2.3.0; python_version=="3.5" or python_version=="3.4"
