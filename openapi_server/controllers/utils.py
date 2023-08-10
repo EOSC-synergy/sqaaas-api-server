@@ -82,6 +82,7 @@ def debug_request(f):
     async def decorated_function(*args, **kwargs):
         logger.debug('Received request (keyword args): %s' % kwargs)
         ret = await f(*args, **kwargs)
+        logger.debug('Finished method <%s>' % f.__name__)
         return ret
     return decorated_function
 
@@ -846,7 +847,7 @@ def process_extra_data(config_json, composer_json, report_to_stdout=False):
                             template_name=tool['template'],
                             template_kwargs=template_kwargs
                         )
-                    # tox 
+                    # tox
                     tox_checkout_dir = stage_name
 
                 # add creds to config

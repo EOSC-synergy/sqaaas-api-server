@@ -285,10 +285,10 @@ async def _get_tooling_for_assessment(
                 ))
                 criterion_data_copy['tools'] = toolset_for_reporting
                 criteria_data_list_filtered.append(criterion_data_copy)
-        
+
         return criteria_data_list_filtered, criteria_filtered_out, kwargs
 
-    
+
     # Get the relevant criteria for the type of assessment/digital object
     relevant_criteria_data = await _get_criteria_for_digital_object(repositories)
 
@@ -321,8 +321,8 @@ async def _get_tooling_for_assessment(
 async def _get_criteria_for_digital_object(repositories):
     """Returns the criteria associated with the digital object to be assessed.
 
-    The type of digital object is guessed from the repository key name, so 
-    - 'repo_code' is source code DO type 
+    The type of digital object is guessed from the repository key name, so
+    - 'repo_code' is source code DO type
     - 'deployment' is service DO type
     - 'fair' is data DO type
 
@@ -352,7 +352,7 @@ async def _get_criteria_for_digital_object(repositories):
         )
         logger.error(_reason)
         raise SQAaaSAPIException(422, _reason)
-    
+
     # Get the criteria that corresponds to the DO type
     criteria_data_list = await _get_criteria(
         digital_object_type = _digital_object_type
@@ -454,6 +454,7 @@ def _validate_assessment_input(body):
     return repositories, main_repo_key
 
 
+@ctls_utils.debug_request
 async def add_pipeline_for_assessment(request: web.Request, body, user_requested_tools=[]) -> web.Response:
     """Creates a pipeline for assessment (QAA module).
 
@@ -470,7 +471,7 @@ async def add_pipeline_for_assessment(request: web.Request, body, user_requested
     body = ctls_utils.del_empty_keys(body)
     repositories, main_repo_key = _validate_assessment_input(body)
     ci_credential_id = None
-    
+
     #0 Encrypt credentials before storing in DB
     for _repo_key, _repo_data in repositories.items():
         _repo_creds = _repo_data.get('credentials_id', None)
@@ -619,6 +620,10 @@ async def add_pipeline_for_assessment(request: web.Request, body, user_requested
     db.add_assessment_data(
         pipeline_id,
         criteria_filtered_out
+    )
+
+    logger.info(
+        'Pipeline for the QA assessment successfully created: %s' % pipeline_id
     )
 
     r = {'id': pipeline_id}
@@ -859,6 +864,12 @@ async def get_pipeline_commands_scripts(request: web.Request, pipeline_id) -> we
     """
     pipeline_data = db.get_entry(pipeline_id)
     commands_scripts = pipeline_data['data']['commands_scripts']
+
+    logger.info(
+        'Successfully returned the list of scripts\'s content '
+        'for pipeline <%s>' % pipeline_id
+    )
+    logger.debug(commands_scripts)
 
     return web.json_response(commands_scripts, status=200)
 
@@ -1170,11 +1181,15 @@ async def run_pipeline(
 
     # Fire & forget _update_status()
     asyncio.create_task(_update_status(pipeline_id, triggered_by_run=True, build_task=build_job_task))
+    logger.info(
+        'Creating a parallel task to watch for the start of the '
+        'pipeline <%s>' % pipeline_id
+    )
 
     return web.Response(status=204, reason=reason, text=reason)
 
 
-async def _handle_job_building(jk_job_name, build_to_check): 
+async def _handle_job_building(jk_job_name, build_to_check):
     # wait for automated triggering
     _build_triggered = False
     _max_tries = 8
@@ -1208,8 +1223,8 @@ async def _handle_job_building(jk_job_name, build_to_check):
             _reason = 'Could not trigger build job'
             logger.error(_reason)
             raise SQAaaSAPIException(422, _reason)
-    
-    return (build_no, build_status, build_url, build_item_no) 
+
+    return (build_no, build_status, build_url, build_item_no)
 
 
 async def _update_status(pipeline_id, triggered_by_run=False, build_task=None):
@@ -1241,7 +1256,7 @@ async def _update_status(pipeline_id, triggered_by_run=False, build_task=None):
         build_status = build_info.get('status', None)
         build_url = build_info['url']
         build_item_no = build_info['item_number']
-    
+
     if not _pipeline_executed:
         _reason = 'Could not retrieve Jenkins job information: Pipeline <%s> has not yet ran' % pipeline_id
         logger.error(_reason)
@@ -1276,7 +1291,7 @@ async def _update_status(pipeline_id, triggered_by_run=False, build_task=None):
                 if not build_task.done():
                     await build_task
                 build_no, build_status, build_url, build_item_no = build_task.result()
-                if build_item_no:    
+                if build_item_no:
                     build_data = await jk_utils.get_queue_item(build_item_no)
                     if build_data:
                         build_no = build_data['number']
@@ -1365,6 +1380,13 @@ async def get_pipeline_status(request: web.Request, pipeline_id) -> web.Response
         'build_url': build_url,
         'build_status': build_status
     }
+
+    logger.info(
+        'Successfully obtained the current status of the '
+        'pipeline <%s>' % pipeline_id
+    )
+    logger.debug(r)
+
     return web.json_response(r, status=200)
 
 
@@ -1792,7 +1814,7 @@ async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Re
                 success_subcriteria,
                 percentage_criterion
             ) = _get_coverage(filtered_criteria[_criterion]['subcriteria'])
-            
+
             filtered_criteria[_criterion]['coverage'] = {
                 'percentage': percentage_criterion,
                 'total_subcriteria': total_subcriteria,
@@ -1963,7 +1985,7 @@ async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Re
                     badge_data[badge_type]['verification_url'] = (
                         'https://badgecheck.io/?url=%s' % embed_url
                     )
-                
+
             next_level_badge = await _get_next_level_badge(badge_category)
             if next_level_badge:
                 missing_criteria_all.extend(
@@ -2038,7 +2060,8 @@ async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Re
     )
     if commit:
         logger.info(
-            'Assessment report stored in repository <%s>' % pipeline_repo
+            'Assessment report stored in repository <%s> under <%s> '
+            'location' % (pipeline_repo, ASSESSMENT_REPORT_LOCATION)
         )
     else:
         logger.warning(
@@ -2280,7 +2303,7 @@ async def _issue_badge(pipeline_id, badge_type, badgeclass_name):
 
     :param pipeline_id: ID of the pipeline to get
     :type pipeline_id: str
-    :param badge_type: String that identifies the type of badge 
+    :param badge_type: String that identifies the type of badge
     :type badge_type: str
     :param badgeclass_name: String that corresponds to the BadgeClass name (as it appears in Badgr web)
     :type badgeclass_name: str
