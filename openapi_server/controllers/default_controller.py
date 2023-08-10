@@ -2060,7 +2060,8 @@ async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Re
     )
     if commit:
         logger.info(
-            'Assessment report stored in repository <%s>' % pipeline_repo
+            'Assessment report stored in repository <%s> under <%s> '
+            'location' % (pipeline_repo, ASSESSMENT_REPORT_LOCATION)
         )
     else:
         logger.warning(
