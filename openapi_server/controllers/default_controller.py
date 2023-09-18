@@ -2266,7 +2266,6 @@ async def _get_badge_share(badge_data, commit_url):
     )
     template = env.get_template('embed_badge.html')
 
-    dt = datetime.strptime(
     dt = pandas.to_datetime(
         badge_data['createdAt'],
         format='%Y-%m-%dT%H:%M:%S.%fZ'
