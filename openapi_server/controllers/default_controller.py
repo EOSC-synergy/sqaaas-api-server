@@ -14,6 +14,7 @@ import itertools
 import logging
 import json
 import os
+import pandas
 import re
 import urllib
 import uuid
@@ -2359,9 +2360,9 @@ async def _get_badge_share(badge_data, commit_url):
     )
     template = env.get_template('embed_badge.html')
 
-    dt = datetime.strptime(
+    dt = pandas.to_datetime(
         badge_data['createdAt'],
-        '%Y-%m-%dT%H:%M:%S.%fZ'
+        format='%Y-%m-%dT%H:%M:%S.%fZ'
     )
     html_rendered = template.render({
         'openBadgeId': badge_data['openBadgeId'],
