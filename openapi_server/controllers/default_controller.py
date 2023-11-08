@@ -14,6 +14,7 @@ import itertools
 import logging
 import json
 import os
+import pandas
 import re
 import urllib
 import uuid
@@ -1201,12 +1202,22 @@ async def _handle_job_building(jk_job_name, build_to_check):
         if _count_tries >= _max_tries:
             break
         _job_info = jk_utils.get_job_info(jk_job_name)
-        _builds = len(_job_info['builds'])
-        if _builds == build_to_check:
+        # NOTE (Jenkins API specific) First element of _builds
+        # should match 'build_to_check'
+        _builds = _job_info['builds']
+        _builds_last = _builds[0]['number']
+        if _builds_last == build_to_check:
             _build_triggered = True
             build_no = build_to_check
             build_status = 'EXECUTING'
             build_url = _job_info['lastBuild']['url']
+        else:
+            logger.debug((
+                'Last build number in Jenkins (%s) does not match with the '
+                'required build number to check (%s) for job: %s' % (
+                    _builds_last, build_to_check, jk_job_name
+                )
+            ))
         _count_tries += 1
         await asyncio.sleep(5)
     # Build manually if not triggered automatically
@@ -2359,9 +2370,9 @@ async def _get_badge_share(badge_data, commit_url):
     )
     template = env.get_template('embed_badge.html')
 
-    dt = datetime.strptime(
+    dt = pandas.to_datetime(
         badge_data['createdAt'],
-        '%Y-%m-%dT%H:%M:%S.%fZ'
+        format='%Y-%m-%dT%H:%M:%S.%fZ'
     )
     html_rendered = template.render({
         'openBadgeId': badge_data['openBadgeId'],
