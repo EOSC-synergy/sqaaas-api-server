@@ -2,7 +2,7 @@
 #
 # SPDX-License-Identifier: GPL-3.0-only
 
-FROM python
+FROM python:3.10-bullseye
 MAINTAINER Pablo Orviz <orviz@ifca.unican.es>
 
 RUN mkdir /sqaaas-api-server
