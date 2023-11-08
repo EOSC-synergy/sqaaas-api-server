@@ -1186,6 +1186,13 @@ async def _handle_job_building(jk_job_name, build_to_check):
             build_no = build_to_check
             build_status = 'EXECUTING'
             build_url = _job_info['lastBuild']['url']
+        else:
+            logger.debug((
+                'Number of builds (%s) does not match with the required build '
+                'number to check (%s) for job: %s' % (
+                    _builds, build_to_check, jk_job_name
+                )
+            ))
         _count_tries += 1
         await asyncio.sleep(5)
     # Build manually if not triggered automatically
