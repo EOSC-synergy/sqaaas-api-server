@@ -1180,8 +1180,10 @@ async def _handle_job_building(jk_job_name, build_to_check):
         if _count_tries >= _max_tries:
             break
         _job_info = jk_utils.get_job_info(jk_job_name)
-        _builds = len(_job_info['builds'])
-        if _builds == build_to_check:
+        # NOTE (Jenkins API specific) First element of _builds
+        # should match 'build_to_check'
+        _builds = _job_info['builds']
+        if _builds[0]['number'] == build_to_check:
             _build_triggered = True
             build_no = build_to_check
             build_status = 'EXECUTING'
