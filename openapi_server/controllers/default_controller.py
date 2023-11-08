@@ -1183,16 +1183,17 @@ async def _handle_job_building(jk_job_name, build_to_check):
         # NOTE (Jenkins API specific) First element of _builds
         # should match 'build_to_check'
         _builds = _job_info['builds']
-        if _builds[0]['number'] == build_to_check:
+        _builds_last = _builds[0]['number']
+        if _builds_last == build_to_check:
             _build_triggered = True
             build_no = build_to_check
             build_status = 'EXECUTING'
             build_url = _job_info['lastBuild']['url']
         else:
             logger.debug((
-                'Number of builds (%s) does not match with the required build '
-                'number to check (%s) for job: %s' % (
-                    _builds, build_to_check, jk_job_name
+                'Last build number in Jenkins (%s) does not match with the '
+                'required build number to check (%s) for job: %s' % (
+                    _builds_last, build_to_check, jk_job_name
                 )
             ))
         _count_tries += 1
