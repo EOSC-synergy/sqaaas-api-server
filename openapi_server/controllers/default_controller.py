@@ -1131,17 +1131,21 @@ async def run_pipeline(
         last_build_no = _job_info['lastBuild']['number']
 
     # 2) Do the commit
-    commit_id = JePLUtils.push_files(
-        gh_utils,
-        pipeline_repo,
-        config_data_list,
-        composer_data,
-        jenkinsfile,
-        pipeline_data['data']['commands_scripts'],
-        additional_files_list,
-        branch=pipeline_repo_branch
-    )
-    commit_url = gh_utils.get_commit_url(pipeline_repo, commit_id)
+    try:
+        commit_id = JePLUtils.push_files(
+            gh_utils,
+            pipeline_repo,
+            config_data_list,
+            composer_data,
+            jenkinsfile,
+            pipeline_data['data']['commands_scripts'],
+            additional_files_list,
+            branch=pipeline_repo_branch
+        )
+    except SQAaaSAPIException as e:
+        return web.Response(status=e.http_code, reason=e.message, text=e.message)
+    else:
+        commit_url = gh_utils.get_commit_url(pipeline_repo, commit_id)
 
     # 3) Automated-run check: previous commit should trigger the build
     build_job_task = None

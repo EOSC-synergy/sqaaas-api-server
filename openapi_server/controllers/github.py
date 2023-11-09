@@ -167,7 +167,12 @@ class GitHubUtils(object):
             element_list.append(InputGitTreeElement(
                 path=file_name, mode='100644', type='blob', sha=blob_sha
             ))
-        branch_sha = repo.get_branch(branch).commit.sha
+        try:
+            branch_sha = repo.get_branch(branch).commit.sha
+        except GithubException as e:
+            _reason = 'Github exception: %s' % e
+            self.logger.error(_reason)
+            raise SQAaaSAPIException(422, _reason)
         base_tree = repo.get_git_tree(sha=branch_sha)
         tree = repo.create_git_tree(element_list, base_tree)
         parent = repo.get_git_commit(sha=branch_sha)
