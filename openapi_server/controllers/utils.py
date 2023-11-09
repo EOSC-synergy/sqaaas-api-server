@@ -47,15 +47,6 @@ docker_credential_org = config.get_ci(
     'docker_credential_org',
     fallback=None
 )
-
-tooling_repo_url = config.get(
-    'tooling_repo_url',
-    fallback='https://github.com/EOSC-synergy/sqaaas-tooling'
-)
-tooling_repo_branch = config.get(
-    'tooling_repo_branch',
-    fallback='main'
-)
 docker_credential_id = config.get_ci(
     'docker_credential_id',
     fallback=None
