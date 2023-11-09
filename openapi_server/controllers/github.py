@@ -279,6 +279,24 @@ class GitHubUtils(object):
                            '(base)' % (head, upstream_branch_name)))
         return pr.raw_data
 
+    def get_branch(self, repo_name, branch_name):
+        """Look for a a branch in the given Github repository.
+
+        Returns a Branch object.
+
+        :param repo_name: Name of the repo to push (format: <user|org>/<repo_name>)
+        :param branch_name: Name of the branch to look for
+        """
+        repo = self.get_repository(repo_name)
+        branch = None
+        try:
+            branch = repo.get_branch(branch_name)
+        except GithubException as e:
+            self.logger.debug('Branch not found in repository <%s>: %s' % (
+                repo_name, branch_name
+            ))
+        return branch
+
     def get_repository(self, repo_name, repo_creds={}, raise_exception=False):
         """Return a Repository from a GitHub repo if it exists, False otherwise.
 
