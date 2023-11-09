@@ -379,7 +379,7 @@ class GitHubUtils(object):
         # Use a specific branch? (if not, take the default one)
         _branch = branch
         if _branch:
-            self.client.create_branch(
+            self.create_branch(
                 repo_name, _branch, repo.default_branch
             )
             self.logger.debug(
