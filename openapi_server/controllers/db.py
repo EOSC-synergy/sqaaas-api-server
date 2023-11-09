@@ -46,7 +46,7 @@ def add_entry(
         pipeline_repo,
         pipeline_repo_url,
         body,
-        pipeline_repo_branch='main',
+        pipeline_repo_branch=None,
         files_to_commit=[],
         report_to_stdout=False
     ):

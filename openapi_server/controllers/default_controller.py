@@ -72,13 +72,15 @@ logger = logging.getLogger('sqaaas.api.controller')
 git_utils, gh_utils, jk_utils, badgr_utils = controllers.init_utils()
 
 
-async def _add_pipeline_to_db(body, report_to_stdout=False):
+async def _add_pipeline_to_db(body, branch_upstream=None, report_to_stdout=False):
     """Stores the pipeline into the database.
 
     Returns an UUID that identifies the pipeline in the database.
 
     :param body: JSON request payload, as defined in the spec when 'POST /pipeline'
     :type body: dict | bytes
+    :param branch_upstream: Name of the upstream branch
+    :type branch_upstream: str
     :param report_to_stdout: Flag to indicate whether the pipeline shall print via via stdout the reports produced by the tools (required by QAA module)
     :type report_to_stdout: bool
     """
@@ -94,6 +96,7 @@ async def _add_pipeline_to_db(body, report_to_stdout=False):
         pipeline_repo,
         pipeline_repo_url,
         body,
+        pipeline_repo_branch=branch_upstream,
         report_to_stdout=report_to_stdout
     )
 
@@ -528,6 +531,7 @@ async def add_pipeline_for_assessment(request: web.Request, body, user_requested
 
     # FIXME This only considers one repo
     build_repo_name = repositories[main_repo_key].get('repo', None)
+    build_repo_branch = repositories[main_repo_key].get('branch', None)
     if 'fair' in list(repositories):
         # FIXME Temporary hack until the web provides all required input fields
         _fair_tool = repositories['fair']['fair_tool']
@@ -556,6 +560,7 @@ async def add_pipeline_for_assessment(request: web.Request, body, user_requested
     try:
         pipeline_id = await _add_pipeline_to_db(
             json_data,
+            branch_upstream=build_repo_branch,
             report_to_stdout=True
         )
     except SQAaaSAPIException as e:
@@ -1001,7 +1006,10 @@ async def run_pipeline(
     pipeline_data_raw = pipeline_data['raw_request']
     pipeline_repo = pipeline_data['pipeline_repo']
     pipeline_repo_url = pipeline_data['pipeline_repo_url']
-    pipeline_repo_branch = repo_branch
+    pipeline_repo_branch = pipeline_data['pipeline_repo_branch']
+    if repo_branch:
+        pipeline_repo_branch = repo_branch
+        logger.info('Repository branch provided: %s' % repo_branch)
 
     config_data_list = pipeline_data['data']['config']
     composer_data = pipeline_data['data']['composer']
@@ -1060,13 +1068,30 @@ async def run_pipeline(
         if not _repo:
             _create_repo = True
         else:
+            # Remove repo if empty
             if not gh_utils.get_repo_content(pipeline_repo):
                 _repo.delete()
                 _create_repo = True
+                self.logger.debug(
+                    'Removing repository as part of re-creation:'
+                    '%s' % pipeline_repo
+                )
+            # Uses a specific branch, not the default one
+            if pipeline_repo_branch:
+                if not gh_utils.get_branch(pipeline_repo, pipeline_repo_branch):
+                    _create_repo = True
+            else:
+                pipeline_repo_branch = _repo.default_branch
+
         if _create_repo:
-            # Create repo with content (i.e. README)
-            _repo = gh_utils.create_org_repository(pipeline_repo)
-        pipeline_repo_branch = _repo.default_branch
+            # Create repo from template (incl. README): use the same branch
+            # name as upstream
+            _repo = gh_utils.create_org_repository(
+                pipeline_repo,
+                branch=pipeline_repo_branch,
+                include_readme=True
+            )
+            pipeline_repo_branch = _repo.default_branch
 
     logger.debug('Using pipeline repository <%s> (branch: %s)' % (
         pipeline_repo, pipeline_repo_branch))
