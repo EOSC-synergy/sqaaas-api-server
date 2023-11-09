@@ -339,42 +339,67 @@ class GitHubUtils(object):
         except UnknownObjectException:
             return False
 
-    def create_org_repository(self, repo_name, include_readme=True):
+    def create_org_repository(
+            self,
+            repo_name,
+            branch=GithubObject.NotSet,
+            include_readme=True):
         """Creates a GitHub repository for the current organization.
 
         Returns the Repository object.
 
         :param repo_name: Name of the repo (format: <user|org>/<repo_name>)
+        :param branch: Name of the branch
+        :param include_readme: Whether to include README from template
         """
         _org_name, _repo_name = repo_name.split('/', 1)
         _repo_name = _repo_name.rsplit('/', 1)[0] # remove any trailing slash
         repo = self.get_org_repository(repo_name)
+        # Create repo
         if not repo:
+            self.logger.debug(
+                'GitHub repository does not exist: %s' % repo_name
+            )
             org = self.client.get_organization(_org_name)
             repo = org.create_repo(_repo_name)
-            self.logger.debug('GitHub repository <%s> does not exist, creating..' % repo_name)
-            if include_readme:
-                # Get README
-                env = Environment(
-                    loader=PackageLoader('openapi_server', 'templates')
-                )
-                template = env.get_template('README')
-                file_data = template.render({
-                    'repo_name': repo_name
-                })
-                branch = repo.default_branch
-                self.push_file(
-                    'README.md', file_data, 'Add README', repo_name, branch
-                )
             self.logger.debug(
-                'Created new repository <%s> (default branch: %s)' % (
-                    repo_name, branch)
+                'Created new GitHub repository <%s> (branch: %s)' % (
+                    repo_name, repo.default_branch
+                )
             )
         else:
-            self.logger.debug((
-                'GitHub repository <%s> already exists (default '
-                'branch: %s)' % (repo_name, repo.default_branch)
-            ))
+            self.logger.debug(
+                'GitHub repository already exists: %s' % repo_name
+            )
+        # Use a specific branch? (if not, take the default one)
+        _branch = branch
+        if _branch:
+            self.client.create_branch(
+                repo_name, _branch, repo.default_branch
+            )
+            self.logger.debug(
+                'Branch <%s> created for repo: %s' % (_branch, repo_name)
+            )
+        else:
+            _branch = repo.default_branch
+        # Push README
+        if include_readme:
+            env = Environment(
+                loader=PackageLoader('openapi_server', 'templates')
+            )
+            template = env.get_template('README')
+            file_data = template.render({
+                'repo_name': repo_name
+            })
+            self.push_file(
+                'README.md', file_data, 'Add README', repo_name, _branch
+            )
+            self.logger.debug(
+                'README file pushed to repository <%s> (branch: %s)' % (
+                    repo_name, _branch
+                )
+            )
+
         return repo
 
     def delete_repo(self, repo_name):
