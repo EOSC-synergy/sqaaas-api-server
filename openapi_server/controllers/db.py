@@ -46,6 +46,7 @@ def add_entry(
         pipeline_repo,
         pipeline_repo_url,
         body,
+        pipeline_repo_branch='main',
         files_to_commit=[],
         report_to_stdout=False
     ):
@@ -56,8 +57,9 @@ def add_entry(
     is indexed by the pipeline ID
 
     |-- <pipeline_id>: ID of the pipeline
-        |-- 'pipeline_repo': [String] Name of the repository in the remote platform.
-        |-- 'pipeline_repo_url': [String] Absolute URL of the repository in the remote platform.
+        |-- 'pipeline_repo': [String] Name of the build/assessment repository in the remote platform.
+        |-- 'pipeline_repo_url': [String] Absolute URL of the build/assessment repository in the remote platform.
+        |-- 'pipeline_repo_branch': [String] Name of the branch in the build/assessment repository.
         |-- 'data': [Dict] Internal representation of the data.
             |-- 'config': [List] Each independent JePL-compliant config data.
                 |-- 'data_json'
@@ -102,6 +104,7 @@ def add_entry(
     db[pipeline_id] = {
         'pipeline_repo': pipeline_repo,
         'pipeline_repo_url': pipeline_repo_url,
+        'pipeline_repo_branch': pipeline_repo_branch,
         'data': {
             'config': config_data_list,
             'composer': composer_data,

@@ -10,7 +10,7 @@ info:
     name: GPLv3
     url: https://www.gnu.org/licenses/gpl-3.0.txt
   title: SQAaaS API
-  version: 2.6.0
+  version: 2.9.3
 servers:
 - description: Main (production) API server
   url: http://api.sqaaas.eosc-synergy.eu/v1
@@ -559,7 +559,7 @@ paths:
         schema:
           type: string
         style: simple
-      - description: Flag to indicate whether the returned output shall be validate
+      - description: Flag to indicate whether the returned output shall be validated
           using sqaaas-reporting tool
         explode: true
         in: query
@@ -2305,6 +2305,9 @@ components:
                 - criterion_id
             share: <html>..</html>
             verification_url: https://openapi-generator.tech
+        meta:
+          report_json_url: https://openapi-generator.tech
+          version: version
         report:
           key:
             valid: false
@@ -2413,7 +2416,10 @@ components:
           url: https://github.com/eosc-synergy/sqaaas-api-spec
           forks_count: 2
       properties:
+        meta:
+          $ref: '#/components/schemas/AssessmentOutput_meta'
         repository:
+          description: "Details about the (code, data) repository"
           items:
             $ref: '#/components/schemas/AssessmentOutputRepository'
           title: repository
@@ -3279,6 +3285,24 @@ components:
           title: plaintextIdentity
           type: string
       title: BadgeAssertion_recipient
+      type: object
+    AssessmentOutput_meta:
+      example:
+        report_json_url: https://openapi-generator.tech
+        version: version
+      properties:
+        version:
+          description: Version of the API spec the generated report payload is based
+            on
+          title: version
+          type: string
+        report_json_url:
+          description: location in the build repository with the resultant assessment
+            report (JSON format)
+          format: uri
+          title: report_json_url
+          type: string
+      title: AssessmentOutput_meta
       type: object
     AssessmentOutput_report_value_coverage:
       example:

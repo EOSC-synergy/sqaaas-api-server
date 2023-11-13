@@ -7,7 +7,8 @@ import base64
 import calendar
 from datetime import datetime
 import copy
-from importlib.metadata import version
+from importlib.metadata import version as impversion
+from importlib.resources import files as impfiles
 import io
 import itertools
 import logging
@@ -17,6 +18,7 @@ import pandas
 import re
 import urllib
 import uuid
+import yaml
 from zipfile import ZipFile, ZipInfo
 
 from aiohttp import web
@@ -24,6 +26,7 @@ from jinja2 import Environment, PackageLoader
 from deepdiff import DeepDiff
 import namegenerator
 
+import openapi_server
 from openapi_server import config
 from openapi_server import controllers
 from openapi_server.controllers import crypto as crypto_utils
@@ -51,6 +54,10 @@ JENKINS_GITHUB_ORG = config.get_ci('github_organization_name')
 JENKINS_CREDENTIALS_FOLDER = config.get_ci('credentials_folder')
 JENKINS_COMPLETED_STATUS = ['SUCCESS', 'FAILURE', 'UNSTABLE', 'ABORTED']
 TOOLING_QAA_SPECIFIC_KEY = 'tools_qaa_specific'
+ASSESSMENT_REPORT_LOCATION = config.get(
+    'assessment_report_location',
+    fallback='.report/assessment_output.json'
+)
 
 SW_PREFIX = 'QC'
 SRV_PREFIX = 'SvcQC'
@@ -448,6 +455,7 @@ def _validate_assessment_input(body):
     return repositories, main_repo_key
 
 
+@ctls_utils.debug_request
 async def add_pipeline_for_assessment(request: web.Request, body, user_requested_tools=[]) -> web.Response:
     """Creates a pipeline for assessment (QAA module).
 
@@ -613,6 +621,10 @@ async def add_pipeline_for_assessment(request: web.Request, body, user_requested
     db.add_assessment_data(
         pipeline_id,
         criteria_filtered_out
+    )
+
+    logger.info(
+        'Pipeline for the QA assessment successfully created: %s' % pipeline_id
     )
 
     r = {'id': pipeline_id}
@@ -853,6 +865,12 @@ async def get_pipeline_commands_scripts(request: web.Request, pipeline_id) -> we
     """
     pipeline_data = db.get_entry(pipeline_id)
     commands_scripts = pipeline_data['data']['commands_scripts']
+
+    logger.info(
+        'Successfully returned the list of scripts\'s content '
+        'for pipeline <%s>' % pipeline_id
+    )
+    logger.debug(commands_scripts)
 
     return web.json_response(commands_scripts, status=200)
 
@@ -1164,6 +1182,10 @@ async def run_pipeline(
 
     # Fire & forget _update_status()
     asyncio.create_task(_update_status(pipeline_id, triggered_by_run=True, build_task=build_job_task))
+    logger.info(
+        'Creating a parallel task to watch for the start of the '
+        'pipeline <%s>' % pipeline_id
+    )
 
     return web.Response(status=204, reason=reason, text=reason)
 
@@ -1369,6 +1391,13 @@ async def get_pipeline_status(request: web.Request, pipeline_id) -> web.Response
         'build_url': build_url,
         'build_status': build_status
     }
+
+    logger.info(
+        'Successfully obtained the current status of the '
+        'pipeline <%s>' % pipeline_id
+    )
+    logger.debug(r)
+
     return web.json_response(r, status=200)
 
 
@@ -1449,7 +1478,7 @@ async def _run_validation(criterion_name, **kwargs):
             ])
             out.update({
                 'package_name': validator_package_name,
-                'package_version': version(validator_package_name)
+                'package_version': impversion(validator_package_name)
             })
 
     return (reporting_data, out, broken_validation_data)
@@ -1847,6 +1876,39 @@ async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Re
             #     criteria_fulfilled_map[badge_type].append(criterion)
         return criteria_fulfilled_map
 
+    def _get_spec_version():
+        """Returns the version of the SQAaaS API specification.
+
+        This method reads the specification version from the file stored
+        locally at 'openapi_server/openapi/openapi.yaml'.
+        """
+        input_file = (impfiles(openapi_server) / 'openapi/openapi.yaml')
+        with open(input_file, 'r') as fspec:
+            spec_data = yaml.safe_load(fspec)
+
+        return spec_data['info']['version']
+
+    def _get_report_url_raw(pipeline_repo, pipeline_repo_branch):
+        """Returns the raw URL of the SQAaaS assessment report.
+
+        :param pipeline_repo: the assessment repo (*.assess.sqaaas)
+        :param pipeline_repo: the assessment repo branch
+        """
+        _raw_url = None
+        if REPOSITORY_BACKEND in ['github']:
+            _raw_url = os.path.join(
+                'https://raw.githubusercontent.com/',
+                pipeline_repo,
+                pipeline_repo_branch,
+                ASSESSMENT_REPORT_LOCATION
+            )
+
+        return _raw_url
+
+    # ----------------------------------------------
+    # -- Main body of get_output_for_assessment() --
+    # ----------------------------------------------
+    #
     # Iterate over the criteria and associated tool results to compose the payload of the HTTP response:
     #    - <report> property
     #       + If any(valid is False and requirement_level in REQUIRED), then <QC.xxx>:valid=False
@@ -1981,11 +2043,43 @@ async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Re
                                              ['required_for_next_level_badge']
                             ) = _required_for_next_level
 
+    # Compose the final payload
+    pipeline_repo = pipeline_data['pipeline_repo']
+    pipeline_repo_branch = pipeline_data['pipeline_repo_branch']
     r = {
+        'meta': {
+            'version': _get_spec_version(),
+            'report_json_url': _get_report_url_raw(
+                pipeline_repo, pipeline_repo_branch
+            )
+        },
         'repository': [pipeline_data.get('repo_settings', {})],
         'report': report_data_copy,
         'badge': badge_data
     }
+
+    # Store JSON report in the assessment repository
+    logger.debug(
+        'Store resultant JSON report in the assessment '
+        'repository: %s' % pipeline_repo
+    )
+    commit = gh_utils.push_file(
+        file_name=ASSESSMENT_REPORT_LOCATION,
+        file_data=json.dumps(r, indent=4),
+        commit_msg='Add assessment report',
+        repo_name=pipeline_repo,
+    )
+    if commit:
+        logger.info(
+            'Assessment report stored in repository <%s> under <%s> '
+            'location' % (pipeline_repo, ASSESSMENT_REPORT_LOCATION)
+        )
+    else:
+        logger.warning(
+            'Could not store assessment report in repository '
+            '<%s>' % pipeline_repo
+        )
+
     return web.json_response(r, status=200)
 
 

@@ -5,6 +5,7 @@
 import logging
 
 from github import Github
+from github import GithubObject
 from github import InputGitTreeElement
 from github.GithubException import GithubException
 from github.GithubException import UnknownObjectException
@@ -65,7 +66,13 @@ class GitHubUtils(object):
 
         return contents
 
-    def get_file(self, file_name, repo_name, branch, fail_if_not_exists=False):
+    def get_file(
+            self,
+            file_name,
+            repo_name,
+            branch=GithubObject.NotSet,
+            fail_if_not_exists=False
+        ):
         """Gets the file's content from a GitHub repository.
 
         Returns a ContentFile object.
@@ -93,7 +100,14 @@ class GitHubUtils(object):
                 self.logger.debug(_reason)
                 return False
 
-    def push_file(self, file_name, file_data, commit_msg, repo_name, branch):
+    def push_file(
+            self,
+            file_name,
+            file_data,
+            commit_msg,
+            repo_name,
+            branch=GithubObject.NotSet
+        ):
         """Pushes a file into GitHub repository.
 
         Returns the commit ID (SHA format).
@@ -115,7 +129,13 @@ class GitHubUtils(object):
             r = repo.create_file(file_name, commit_msg, file_data, branch)
         return r['commit'].sha
 
-    def push_files(self, file_list, commit_msg, repo_name, branch):
+    def push_files(
+            self,
+            file_list,
+            commit_msg,
+            repo_name,
+            branch=GithubObject.NotSet
+        ):
         """Pushes multiple files into a GitHub repository.
 
         Returns the commit ID (SHA format).
