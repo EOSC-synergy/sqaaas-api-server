@@ -10,7 +10,7 @@ info:
     name: GPLv3
     url: https://www.gnu.org/licenses/gpl-3.0.txt
   title: SQAaaS API
-  version: 2.9.3
+  version: 2.10.0
 servers:
 - description: Main (production) API server
   url: http://api.sqaaas.eosc-synergy.eu/v1
