@@ -46,7 +46,7 @@ def add_entry(
         pipeline_repo,
         pipeline_repo_url,
         body,
-        pipeline_repo_branch='main',
+        pipeline_repo_branch=None,
         files_to_commit=[],
         report_to_stdout=False
     ):
@@ -146,6 +146,24 @@ def del_entry(pipeline_id):
     db.pop(pipeline_id)
     store_content(db)
     logger.debug('Pipeline <%s> removed from DB' % pipeline_id)
+
+
+def update_entry(pipeline_id, **kwargs):
+    """Updates any of the root properties for the given pipeline ID.
+
+    :param pipeline_id: UUID-format identifier for the pipeline.
+    :param kwargs: map with the required properties and values to update.
+    """
+    db = load_content()
+    for k, v in kwargs.items():
+        if k in db[pipeline_id].keys():
+            db[pipeline_id][k] = v
+    store_content(db)
+    logger.debug(
+        'Updated values in DB for pipeline <%s>. Keys updated: %s' % (
+            pipeline_id, list(kwargs)
+        )
+    )
 
 
 def update_jenkins(

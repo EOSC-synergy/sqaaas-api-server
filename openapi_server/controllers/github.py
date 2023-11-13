@@ -167,7 +167,12 @@ class GitHubUtils(object):
             element_list.append(InputGitTreeElement(
                 path=file_name, mode='100644', type='blob', sha=blob_sha
             ))
-        branch_sha = repo.get_branch(branch).commit.sha
+        try:
+            branch_sha = repo.get_branch(branch).commit.sha
+        except GithubException as e:
+            _reason = 'Github exception: %s' % e
+            self.logger.error(_reason)
+            raise SQAaaSAPIException(422, _reason)
         base_tree = repo.get_git_tree(sha=branch_sha)
         tree = repo.create_git_tree(element_list, base_tree)
         parent = repo.get_git_commit(sha=branch_sha)
@@ -274,6 +279,24 @@ class GitHubUtils(object):
                            '(base)' % (head, upstream_branch_name)))
         return pr.raw_data
 
+    def get_branch(self, repo_name, branch_name):
+        """Look for a a branch in the given Github repository.
+
+        Returns a Branch object.
+
+        :param repo_name: Name of the repo to push (format: <user|org>/<repo_name>)
+        :param branch_name: Name of the branch to look for
+        """
+        repo = self.get_repository(repo_name)
+        branch = None
+        try:
+            branch = repo.get_branch(branch_name)
+        except GithubException as e:
+            self.logger.debug('Branch not found in repository <%s>: %s' % (
+                repo_name, branch_name
+            ))
+        return branch
+
     def get_repository(self, repo_name, repo_creds={}, raise_exception=False):
         """Return a Repository from a GitHub repo if it exists, False otherwise.
 
@@ -339,42 +362,67 @@ class GitHubUtils(object):
         except UnknownObjectException:
             return False
 
-    def create_org_repository(self, repo_name, include_readme=True):
+    def create_org_repository(
+            self,
+            repo_name,
+            branch=GithubObject.NotSet,
+            include_readme=True):
         """Creates a GitHub repository for the current organization.
 
         Returns the Repository object.
 
         :param repo_name: Name of the repo (format: <user|org>/<repo_name>)
+        :param branch: Name of the branch
+        :param include_readme: Whether to include README from template
         """
         _org_name, _repo_name = repo_name.split('/', 1)
         _repo_name = _repo_name.rsplit('/', 1)[0] # remove any trailing slash
         repo = self.get_org_repository(repo_name)
+        # Create repo
         if not repo:
+            self.logger.debug(
+                'GitHub repository does not exist: %s' % repo_name
+            )
             org = self.client.get_organization(_org_name)
             repo = org.create_repo(_repo_name)
-            self.logger.debug('GitHub repository <%s> does not exist, creating..' % repo_name)
-            if include_readme:
-                # Get README
-                env = Environment(
-                    loader=PackageLoader('openapi_server', 'templates')
-                )
-                template = env.get_template('README')
-                file_data = template.render({
-                    'repo_name': repo_name
-                })
-                branch = repo.default_branch
-                self.push_file(
-                    'README.md', file_data, 'Add README', repo_name, branch
-                )
             self.logger.debug(
-                'Created new repository <%s> (default branch: %s)' % (
-                    repo_name, branch)
+                'Created new GitHub repository <%s> (branch: %s)' % (
+                    repo_name, repo.default_branch
+                )
             )
         else:
-            self.logger.debug((
-                'GitHub repository <%s> already exists (default '
-                'branch: %s)' % (repo_name, repo.default_branch)
-            ))
+            self.logger.debug(
+                'GitHub repository already exists: %s' % repo_name
+            )
+        # Use a specific branch? (if not, take the default one)
+        _branch = branch
+        if _branch:
+            self.create_branch(
+                repo_name, _branch, repo.default_branch
+            )
+            self.logger.debug(
+                'Branch <%s> created for repo: %s' % (_branch, repo_name)
+            )
+        else:
+            _branch = repo.default_branch
+        # Push README
+        if include_readme:
+            env = Environment(
+                loader=PackageLoader('openapi_server', 'templates')
+            )
+            template = env.get_template('README')
+            file_data = template.render({
+                'repo_name': repo_name
+            })
+            self.push_file(
+                'README.md', file_data, 'Add README', repo_name, _branch
+            )
+            self.logger.debug(
+                'README file pushed to repository <%s> (branch: %s)' % (
+                    repo_name, _branch
+                )
+            )
+
         return repo
 
     def delete_repo(self, repo_name):
