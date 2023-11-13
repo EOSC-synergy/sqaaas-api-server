@@ -1192,6 +1192,12 @@ async def run_pipeline(
             'build: %s' % commit_id
         ))
 
+    # Update pipeline in DB
+    db.update_entry(
+        pipeline_id,
+        pipeline_repo_branch=pipeline_repo_branch
+    )
+
     # FIXME Just need to update build data:
     #   <build_status>, <build_item_no>, <scan_org_wait>, <issue_badge>?
     db.update_jenkins(

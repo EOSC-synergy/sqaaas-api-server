@@ -148,6 +148,24 @@ def del_entry(pipeline_id):
     logger.debug('Pipeline <%s> removed from DB' % pipeline_id)
 
 
+def update_entry(pipeline_id, **kwargs):
+    """Updates any of the root properties for the given pipeline ID.
+
+    :param pipeline_id: UUID-format identifier for the pipeline.
+    :param kwargs: map with the required properties and values to update.
+    """
+    db = load_content()
+    for k, v in kwargs.items():
+        if k in db[pipeline_id].keys():
+            db[pipeline_id][k] = v
+    store_content(db)
+    logger.debug(
+        'Updated values in DB for pipeline <%s>. Keys updated: %s' % (
+            pipeline_id, list(kwargs)
+        )
+    )
+
+
 def update_jenkins(
         pipeline_id,
         jk_job_name,
