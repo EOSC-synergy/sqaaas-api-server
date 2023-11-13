@@ -31,7 +31,7 @@ ec3-cli~=2.2.1
 cryptography
 pandas
 # report2sqaaas == 1.10.0
-git+https://github.com/EOSC-synergy/sqaaas-reporting@feature/qc_uni#egg=report2sqaaas
+git+https://github.com/EOSC-synergy/sqaaas-reporting@1.10.0#egg=report2sqaaas
 # report2sqaaas-plugin-markdownlint = 1.12.2
 git+https://github.com/EOSC-synergy/sqaaas-reporting-plugins@1.12.2#egg=report2sqaaas-plugin-markdownlint&subdirectory=qc_doc_markdownlint
 # report2sqaaas-plugin-find_doc_files = 1.12.2
