@@ -30,6 +30,7 @@ RADL~=1.2.0
 ec3-cli~=2.2.1
 cryptography
 pandas
+anybadge==1.14.0
 # report2sqaaas == 1.10.0
 git+https://github.com/EOSC-synergy/sqaaas-reporting@1.10.0#egg=report2sqaaas
 # report2sqaaas-plugin-markdownlint = 1.12.2
