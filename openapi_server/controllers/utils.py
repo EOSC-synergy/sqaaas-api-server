@@ -1265,16 +1265,16 @@ def get_status_badge(status):
     """
     status_badge_map = {
         'building': {
-            'value': 'building'
-            'default_color': 'lightsteelblue',
+            'value': 'building',
+            'default_color': 'lightsteelblue'
         },
         'aborted': {
             'value': 'aborted',
-            'default_color': 'lightcoral',
+            'default_color': 'lightcoral'
         },
         'no_badge': {
             'value': 'no badge',
-            'default_color': 'lightcoral',
+            'default_color': 'lightcoral'
         },
         'gold': {
             'value': 'gold',
@@ -1287,7 +1287,7 @@ def get_status_badge(status):
         'bronze': {
             'value': 'bronze',
             'default_color': '#E6AE77'
-        },
+        }
     }
     badge = anybadge.Badge(
         label='SQAaaS',
