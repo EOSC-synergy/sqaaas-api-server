@@ -28,6 +28,8 @@ from github.GithubException import GithubException
 from github.GithubException import UnknownObjectException
 from jenkins import JenkinsException
 
+import anybadge
+
 
 logger = logging.getLogger('sqaaas.api.controller')
 
@@ -1254,3 +1256,44 @@ def get_credential_data(credential_id, pipeline_data):
         )
 
     return credential_data, credential_tmp
+
+
+def get_status_badge(status):
+    """Generates a badge with the given information.
+
+    :param status: One of the valid status of the assessment.
+    """
+    status_badge_map = {
+        'building': {
+            'value': 'building'
+            'default_color': 'lightsteelblue',
+        },
+        'aborted': {
+            'value': 'aborted',
+            'default_color': 'lightcoral',
+        },
+        'no_badge': {
+            'value': 'no badge',
+            'default_color': 'lightcoral',
+        },
+        'gold': {
+            'value': 'gold',
+            'default_color': 'golden'
+        },
+        'silver': {
+            'value': 'silver',
+            'default_color': 'silver'
+        },
+        'bronze': {
+            'value': 'bronze',
+            'default_color': '#E6AE77'
+        },
+    }
+    badge = anybadge.Badge(
+        label='SQAaaS',
+        num_padding_chars=1,
+        **status_badge_map.get(status, {
+            'value': 'not supported status', 'default_color': 'darkgray'
+        })
+    )
+    return badge.badge_svg_text
