@@ -260,7 +260,7 @@ def add_repo_settings(pipeline_id, repo_settings):
     db[pipeline_id]['repo_settings'] = repo_settings
     store_content(db)
     logger.debug((
-        'Repository information (metadata) added in DB for pipeline '
+        'Repository information (metadata) updated in DB for pipeline '
         '<%s>: %s' % (pipeline_id, db[pipeline_id]['repo_settings'])
     ))
 
