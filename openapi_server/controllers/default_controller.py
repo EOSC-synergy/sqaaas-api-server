@@ -58,6 +58,10 @@ ASSESSMENT_REPORT_LOCATION = config.get(
     'assessment_report_location',
     fallback='.report/assessment_output.json'
 )
+STATUS_BADGE_LOCATION = config.get(
+    'status_badge_location',
+    fallback='.badge/status_shields.svg'
+)
 
 SW_PREFIX = 'QC'
 SRV_PREFIX = 'SvcQC'
@@ -617,6 +621,20 @@ async def add_pipeline_for_assessment(request: web.Request, body, user_requested
                 return web.Response(
                     status=e.http_code, reason=_reason, text=_reason
                 )
+    # Manage status badge
+    badge_status = 'building'
+    repo_settings['badge_status'] = badge_status
+    gh_utils.push_file(
+        file_name=STATUS_BADGE_LOCATION,
+        file_data=get_status_badge(badge_status),
+        commit_msg='Update status badge',
+        repo_name=pipeline_repo,
+    )
+    logger.info('Status badge pushed to repository <%s>: status <%s>' % (
+        pipeline_repo, badge_status)
+    )
+
+    # Update 'repo_settings' on DB
     db.add_repo_settings(
         pipeline_id,
         repo_settings
