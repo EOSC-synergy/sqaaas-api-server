@@ -1391,6 +1391,17 @@ async def _update_status(pipeline_id, triggered_by_run=False, build_task=None):
                 logger.debug('Jenkins job queueId found: setting job status to <EXECUTING>')
     logger.info('Build status <%s> for job: %s (build_no: %s)' % (build_status, jk_job_name, build_no))
 
+    # Update assessment status on DB (and push payload)
+    if build_status in [
+        'NOT_EXECUTED', 'WAITING_SCAN_ORG', 'EXECUTING',  'QUEUED'
+    ]:
+        assessment_status = 'building'
+    elif build_status in ['ABORTED', 'FAILURE']:
+        assessment_status = 'aborted'
+    logger.debug('Setting current assessment status (build: %s): %s' % (
+        build_status, assessment_status)
+    )
+
     # Add build status to DB
     db.update_jenkins(
         pipeline_id,
@@ -1988,6 +1999,7 @@ async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Re
     share_data = None
     pipeline_data = {}
     report_data_copy = {}
+    assessment_status = 'no_badge'
     # List of fullfilled criteria per badge type (i.e. [software, services, fair])
     criteria_fulfilled_map = _get_criteria_per_badge_type(report_data)
     if criteria_fulfilled_map:
@@ -2024,6 +2036,7 @@ async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Re
 
             badge_data[badge_type]['data'] = {}
             if badgeclass_name:
+                assessment_status = badgeclass_name
                 try:
                     badge_obj = await _issue_badge(
                         pipeline_id,
