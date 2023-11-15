@@ -1266,15 +1266,15 @@ def get_status_badge(status):
     status_badge_map = {
         'building': {
             'value': 'building',
-            'default_color': 'lightsteelblue'
+            'default_color': 'skyblue'
         },
-        'aborted': {
-            'value': 'aborted',
+        'nullified': {
+            'value': 'nullified',
             'default_color': 'lightcoral'
         },
         'no_badge': {
             'value': 'no badge',
-            'default_color': 'lightcoral'
+            'default_color': 'chocolate'
         },
         'gold': {
             'value': 'gold',
