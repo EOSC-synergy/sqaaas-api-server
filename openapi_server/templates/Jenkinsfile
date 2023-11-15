@@ -14,7 +14,9 @@ pipeline {
         stage('SQA baseline criterion: {{ config_data.data_json.sqa_criteria |list |join(" & " ) }}') {
             when {
                 allOf {
-                    changeset pattern: "\\.sqa+|Jenkinsfile", comparator: "REGEXP"
+                    not {
+                        changeset pattern: "\\.badge+|\\.report+|\\.README+", comparator: "REGEXP"
+                    }
                     {%- if config_data.data_when %}
                     {%- for k,v in config_data.data_when.items() %}
                     {%- if k == 'branch' %}
