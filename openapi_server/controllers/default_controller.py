@@ -1380,9 +1380,12 @@ async def _update_status(pipeline_id, triggered_by_run=False, build_task=None):
     logger.info('Build status <%s> for job: %s (build_no: %s)' % (build_status, jk_job_name, build_no))
 
     # Update assessment status on DB (and push payload)
-    if build_status in [
-        'NOT_EXECUTED', 'WAITING_SCAN_ORG', 'EXECUTING',  'QUEUED'
-    ]:
+    build_status = None
+    if build_status in ['SUCCESS', 'UNSTABLE']: # done, success
+        pass # keep previous status
+    elif build_status in ['ABORTED', 'FAILURE']: # done, failure
+        badge_status = 'nullified'
+    else:
         badge_status = 'building'
     logger.debug('Got current badge status for assessment (build: %s): %s' % (
         build_status, badge_status
