@@ -2007,59 +2007,60 @@ async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Re
             return web.Response(status=422, reason=_reason, text=_reason)
         # Get Badgr's badgeclass and proceed with badge issuance
         missing_criteria_all = [] # required_for_next_level flag
-        for badge_type, criteria_fulfilled_list in criteria_fulfilled_map.items():
-            (
-                badgeclass_name,
-                badge_category,
-                criteria_summary
-            ) = await _badgeclass_matchmaking(
-                pipeline_id, badge_type, criteria_fulfilled_list
-            )
-            # Generate criteria summary
-            criteria_summary_copy = copy.deepcopy(criteria_summary)
-            for _badge_category, _badge_category_data in criteria_summary_copy.items():
-                to_fulfill_set = set(_badge_category_data['to_fulfill'])
-                missing_set = set(_badge_category_data['missing'])
-                fulfilled_list = list(to_fulfill_set.difference(missing_set))
-                criteria_summary[_badge_category]['fulfilled'] = fulfilled_list
-            badge_data[badge_type] = {
-                'criteria': criteria_summary
-            }
+        # NOTE: 1-to-1 relationship between badge_type and assessment
+        badge_type, criteria_fulfilled_list = list(criteria_fulfilled_map.items())[0]
+        (
+            badgeclass_name,
+            badge_category,
+            criteria_summary
+        ) = await _badgeclass_matchmaking(
+            pipeline_id, badge_type, criteria_fulfilled_list
+        )
+        # Generate criteria summary
+        criteria_summary_copy = copy.deepcopy(criteria_summary)
+        for _badge_category, _badge_category_data in criteria_summary_copy.items():
+            to_fulfill_set = set(_badge_category_data['to_fulfill'])
+            missing_set = set(_badge_category_data['missing'])
+            fulfilled_list = list(to_fulfill_set.difference(missing_set))
+            criteria_summary[_badge_category]['fulfilled'] = fulfilled_list
+        badge_data[badge_type] = {
+            'criteria': criteria_summary
+        }
 
-            badge_data[badge_type]['data'] = {}
-            if badgeclass_name:
-                badge_status = badgeclass_name
-                try:
-                    badge_obj = await _issue_badge(
-                        pipeline_id,
-                        badge_type,
-                        badgeclass_name,
-                    )
-                    badge_data[badge_type]['data'] = badge_obj
-                except SQAaaSAPIException as e:
-                    return web.Response(status=e.http_code, reason=e.message, text=e.message)
-                else:
-                    # Generate & store share
-                    share_data = await _get_badge_share(badge_obj, commit_url)
-                    badge_data[badge_type]['share'] = share_data
-                    # Generate verification URL
-                    openbadgeid = badge_obj['openBadgeId']
-                    openbadgeid_urlencode = urllib.parse.quote_plus(openbadgeid)
-                    commit_urlencode = urllib.parse.quote_plus(commit_url)
-                    embed_url = (
-                        f'{openbadgeid_urlencode}?identity__url='
-                        f'{commit_urlencode}&amp;identity__url='
-                        f'{commit_urlencode}'
-                    )
-                    badge_data[badge_type]['verification_url'] = (
-                        'https://badgecheck.io/?url=%s' % embed_url
-                    )
-
-            next_level_badge = await _get_next_level_badge(badge_category)
-            if next_level_badge:
-                missing_criteria_all.extend(
-                    criteria_summary[next_level_badge]['missing']
+        badge_data[badge_type]['data'] = {}
+        if badgeclass_name:
+            badge_status = badgeclass_name
+            try:
+                badge_obj = await _issue_badge(
+                    pipeline_id,
+                    badge_type,
+                    badgeclass_name,
                 )
+                badge_data[badge_type]['data'] = badge_obj
+            except SQAaaSAPIException as e:
+                return web.Response(status=e.http_code, reason=e.message, text=e.message)
+            else:
+                # Generate & store share
+                share_data = await _get_badge_share(badge_obj, commit_url)
+                badge_data[badge_type]['share'] = share_data
+                # Generate verification URL
+                openbadgeid = badge_obj['openBadgeId']
+                openbadgeid_urlencode = urllib.parse.quote_plus(openbadgeid)
+                commit_urlencode = urllib.parse.quote_plus(commit_url)
+                embed_url = (
+                    f'{openbadgeid_urlencode}?identity__url='
+                    f'{commit_urlencode}&amp;identity__url='
+                    f'{commit_urlencode}'
+                )
+                badge_data[badge_type]['verification_url'] = (
+                    'https://badgecheck.io/?url=%s' % embed_url
+                )
+
+        next_level_badge = await _get_next_level_badge(badge_category)
+        if next_level_badge:
+            missing_criteria_all.extend(
+                criteria_summary[next_level_badge]['missing']
+            )
 
         # Store badge data in DB
         db.add_badge_data(pipeline_id, badge_data)
