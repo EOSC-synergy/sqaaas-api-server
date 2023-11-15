@@ -621,9 +621,6 @@ async def add_pipeline_for_assessment(request: web.Request, body, user_requested
                 return web.Response(
                     status=e.http_code, reason=_reason, text=_reason
                 )
-    # Status badge
-    badge_status = 'building'
-    _handle_badge_status(pipeline_data, badge_status)
 
     # Update 'repo_settings' on DB
     db.add_repo_settings(
