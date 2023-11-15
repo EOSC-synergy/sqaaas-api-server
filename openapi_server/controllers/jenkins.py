@@ -265,10 +265,16 @@ class JenkinsUtils(object):
                 )
             )
         else:
+            stage_no = len(stage_list)
+            self.logger.debug(
+                'Number of stages identified for job <%s> '
+                '(build no: %s): %s' % (full_job_name, build_no, stage_no)
+            )
             # Assume that cleanup stage is the last one
-            cleanup_stage = stage_list[-1]
-            if cleanup_stage['status'] in ['FAILED']:
-                _cleanup_failed = True
+            if stage_no > 0:
+                cleanup_stage = stage_list[-1]
+                if cleanup_stage['status'] in ['FAILED']:
+                    _cleanup_failed = True
 
         return _cleanup_failed
 
