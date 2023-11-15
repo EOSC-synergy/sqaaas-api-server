@@ -1990,6 +1990,7 @@ async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Re
     pipeline_data = {}
     report_data_copy = {}
     badge_status = 'no_badge'
+    _repo_settings = {}
     # List of fullfilled criteria per badge type (i.e. [software, services, fair])
     criteria_fulfilled_map = _get_criteria_per_badge_type(report_data)
     if criteria_fulfilled_map:
@@ -2036,6 +2037,7 @@ async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Re
                 )
                 badge_data[badge_type]['data'] = badge_obj
             except SQAaaSAPIException as e:
+                badge_status = 'nullified'
                 return web.Response(status=e.http_code, reason=e.message, text=e.message)
             else:
                 # Generate & store share
@@ -2053,7 +2055,13 @@ async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Re
                 badge_data[badge_type]['verification_url'] = (
                     'https://badgecheck.io/?url=%s' % embed_url
                 )
+            finally:
+                # Manage repo_settings
+                _repo_settings = await _handle_badge_status(
+                    pipeline_id, pipeline_data, badge_status
+                )
 
+        # Next level badge
         next_level_badge = await _get_next_level_badge(badge_category)
         if next_level_badge:
             missing_criteria_all.extend(
@@ -2100,8 +2108,6 @@ async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Re
                                              ['required_for_next_level_badge']
                             ) = _required_for_next_level
 
-    # Manage repo_settings
-    _handle_badge_status(pipeline_data, badge_status)
 
     # Compose the final payload
     pipeline_repo = pipeline_data['pipeline_repo']
@@ -2113,7 +2119,7 @@ async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Re
                 pipeline_repo, pipeline_repo_branch
             )
         },
-        'repository': repo_settings,
+        'repository': _repo_settings,
         'report': report_data_copy,
         'badge': badge_data
     }
