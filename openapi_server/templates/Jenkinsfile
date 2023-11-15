@@ -13,20 +13,22 @@ pipeline {
         {%- for config_data in config_data_list %}
         stage('SQA baseline criterion: {{ config_data.data_json.sqa_criteria |list |join(" & " ) }}') {
             when {
-                allOf {
-                    not {
-                        changeset pattern: "\\.badge+|\\.report+|\\.README+", comparator: "REGEXP"
+                not {
+                    anyOf {
+                        changeset ".badge/*"
+                        changeset ".report/*"
+                        changeset "README.md"
                     }
-                    {%- if config_data.data_when %}
-                    {%- for k,v in config_data.data_when.items() %}
-                    {%- if k == 'branch' %}
-                    branch pattern: '{{ v.pattern }}', comparator: '{{ v.comparator }}'
-                    {%- elif k == 'building_tag' and v %}
-                    buildingTag()
-                    {%- endif %}
-                    {%- endfor %}
-                    {%- endif %}
                 }
+                {%- if config_data.data_when %}
+                {%- for k,v in config_data.data_when.items() %}
+                {%- if k == 'branch' %}
+                branch pattern: '{{ v.pattern }}', comparator: '{{ v.comparator }}'
+                {%- elif k == 'building_tag' and v %}
+                buildingTag()
+                {%- endif %}
+                {%- endfor %}
+                {%- endif %}
             }
             steps {
                 script {
