@@ -1384,12 +1384,10 @@ async def _update_status(pipeline_id, triggered_by_run=False, build_task=None):
         'NOT_EXECUTED', 'WAITING_SCAN_ORG', 'EXECUTING',  'QUEUED'
     ]:
         badge_status = 'building'
-    elif build_status in ['ABORTED', 'FAILURE']:
-        badge_status = 'aborted'
-    logger.debug('Setting current assessment status (build: %s): %s' % (
-        build_status, badge_status)
-    )
-    _handle_badge_status(pipeline_data, badge_status)
+    logger.debug('Got current badge status for assessment (build: %s): %s' % (
+        build_status, badge_status
+    ))
+    await _handle_badge_status(pipeline_id, pipeline_data, badge_status)
 
     # Add build status to DB
     db.update_jenkins(
@@ -2666,9 +2664,11 @@ async def get_criteria(request: web.Request, criterion_id=None, assessment=None)
     return web.json_response(criteria_data_list, status=200)
 
 
-async def _handle_badge_status(pipeline_data, badge_status):
+async def _handle_badge_status(pipeline_id, pipeline_data, badge_status=None):
     """Returns data about criteria.
 
+    :param pipeline_id: ID of the pipeline to get
+    :type pipeline_id: str
     :param pipeline_data: Pipeline's data from DB
     :type pipeline_data: dict
     :param badge_status: status string to be displayed on the badge.
@@ -2676,18 +2676,22 @@ async def _handle_badge_status(pipeline_data, badge_status):
     """
     repo_settings = pipeline_data.get('repo_settings', {})
     badge_status_previous = repo_settings.get('badge_status', None)
+    if not badge_status:
+        badge_status = badge_status_previous
     if badge_status != badge_status_previous:
-        logger.debug('Badge status changed from <%s> to <%s>' % (
+        logger.debug('Status badge changed from <%s> to <%s>' % (
             badge_status_previous, badge_status
         ))
         repo_settings['badge_status'] = badge_status
-        db.add_repo_settings(repo_settings)
+        db.add_repo_settings(pipeline_id, repo_settings)
         logger.info('New status badge updated in DB for pipeline <%s>: status <%s>' % (
             pipeline_id, badge_status)
         )
+        # Push badge
+        pipeline_repo = pipeline_data['pipeline_repo']
         gh_utils.push_file(
             file_name=STATUS_BADGE_LOCATION,
-            file_data=get_status_badge(badge_status),
+            file_data=ctls_utils.get_status_badge(badge_status),
             commit_msg='Update status badge',
             repo_name=pipeline_repo,
         )
@@ -2696,3 +2700,5 @@ async def _handle_badge_status(pipeline_data, badge_status):
         )
     else:
         logger.debug('No change in status badge: %s' % badge_status)
+
+    return repo_settings
