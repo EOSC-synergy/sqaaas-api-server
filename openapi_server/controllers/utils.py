@@ -1292,8 +1292,6 @@ def get_status_badge(status):
     badge = anybadge.Badge(
         label='SQAaaS',
         num_padding_chars=1,
-        **status_badge_map.get(status, {
-            'value': 'not supported status', 'default_color': 'darkgray'
-        })
+        **status_badge_map.get(status, status_badge_map['nullified'])
     )
     return badge.badge_svg_text
