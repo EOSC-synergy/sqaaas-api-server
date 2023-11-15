@@ -58,6 +58,10 @@ ASSESSMENT_REPORT_LOCATION = config.get(
     'assessment_report_location',
     fallback='.report/assessment_output.json'
 )
+STATUS_BADGE_LOCATION = config.get(
+    'status_badge_location',
+    fallback='.badge/status_shields.svg'
+)
 
 SW_PREFIX = 'QC'
 SRV_PREFIX = 'SvcQC'
@@ -617,6 +621,8 @@ async def add_pipeline_for_assessment(request: web.Request, body, user_requested
                 return web.Response(
                     status=e.http_code, reason=_reason, text=_reason
                 )
+
+    # Update 'repo_settings' on DB
     db.add_repo_settings(
         pipeline_id,
         repo_settings
@@ -1373,6 +1379,19 @@ async def _update_status(pipeline_id, triggered_by_run=False, build_task=None):
                 logger.debug('Jenkins job queueId found: setting job status to <EXECUTING>')
     logger.info('Build status <%s> for job: %s (build_no: %s)' % (build_status, jk_job_name, build_no))
 
+    # Update assessment status on DB (and push payload)
+    badge_status = None
+    if build_status in ['SUCCESS', 'UNSTABLE']: # done, success
+        pass # keep previous status
+    elif build_status in ['ABORTED', 'FAILURE']: # done, failure
+        badge_status = 'nullified'
+    else:
+        badge_status = 'building'
+    logger.debug('Got current badge status for assessment (build: %s): %s' % (
+        build_status, badge_status
+    ))
+    await _handle_badge_status(pipeline_id, pipeline_data, badge_status)
+
     # Add build status to DB
     db.update_jenkins(
         pipeline_id,
@@ -1970,6 +1989,8 @@ async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Re
     share_data = None
     pipeline_data = {}
     report_data_copy = {}
+    badge_status = 'no_badge'
+    _repo_settings = {}
     # List of fullfilled criteria per badge type (i.e. [software, services, fair])
     criteria_fulfilled_map = _get_criteria_per_badge_type(report_data)
     if criteria_fulfilled_map:
@@ -1985,58 +2006,67 @@ async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Re
             return web.Response(status=422, reason=_reason, text=_reason)
         # Get Badgr's badgeclass and proceed with badge issuance
         missing_criteria_all = [] # required_for_next_level flag
-        for badge_type, criteria_fulfilled_list in criteria_fulfilled_map.items():
-            (
-                badgeclass_name,
-                badge_category,
-                criteria_summary
-            ) = await _badgeclass_matchmaking(
-                pipeline_id, badge_type, criteria_fulfilled_list
-            )
-            # Generate criteria summary
-            criteria_summary_copy = copy.deepcopy(criteria_summary)
-            for _badge_category, _badge_category_data in criteria_summary_copy.items():
-                to_fulfill_set = set(_badge_category_data['to_fulfill'])
-                missing_set = set(_badge_category_data['missing'])
-                fulfilled_list = list(to_fulfill_set.difference(missing_set))
-                criteria_summary[_badge_category]['fulfilled'] = fulfilled_list
-            badge_data[badge_type] = {
-                'criteria': criteria_summary
-            }
+        # NOTE: 1-to-1 relationship between badge_type and assessment
+        badge_type, criteria_fulfilled_list = list(criteria_fulfilled_map.items())[0]
+        (
+            badgeclass_name,
+            badge_category,
+            criteria_summary
+        ) = await _badgeclass_matchmaking(
+            pipeline_id, badge_type, criteria_fulfilled_list
+        )
+        # Generate criteria summary
+        criteria_summary_copy = copy.deepcopy(criteria_summary)
+        for _badge_category, _badge_category_data in criteria_summary_copy.items():
+            to_fulfill_set = set(_badge_category_data['to_fulfill'])
+            missing_set = set(_badge_category_data['missing'])
+            fulfilled_list = list(to_fulfill_set.difference(missing_set))
+            criteria_summary[_badge_category]['fulfilled'] = fulfilled_list
+        badge_data[badge_type] = {
+            'criteria': criteria_summary
+        }
 
-            badge_data[badge_type]['data'] = {}
-            if badgeclass_name:
-                try:
-                    badge_obj = await _issue_badge(
-                        pipeline_id,
-                        badge_type,
-                        badgeclass_name,
-                    )
-                    badge_data[badge_type]['data'] = badge_obj
-                except SQAaaSAPIException as e:
-                    return web.Response(status=e.http_code, reason=e.message, text=e.message)
-                else:
-                    # Generate & store share
-                    share_data = await _get_badge_share(badge_obj, commit_url)
-                    badge_data[badge_type]['share'] = share_data
-                    # Generate verification URL
-                    openbadgeid = badge_obj['openBadgeId']
-                    openbadgeid_urlencode = urllib.parse.quote_plus(openbadgeid)
-                    commit_urlencode = urllib.parse.quote_plus(commit_url)
-                    embed_url = (
-                        f'{openbadgeid_urlencode}?identity__url='
-                        f'{commit_urlencode}&amp;identity__url='
-                        f'{commit_urlencode}'
-                    )
-                    badge_data[badge_type]['verification_url'] = (
-                        'https://badgecheck.io/?url=%s' % embed_url
-                    )
-
-            next_level_badge = await _get_next_level_badge(badge_category)
-            if next_level_badge:
-                missing_criteria_all.extend(
-                    criteria_summary[next_level_badge]['missing']
+        badge_data[badge_type]['data'] = {}
+        if badgeclass_name:
+            badge_status = badgeclass_name
+            try:
+                badge_obj = await _issue_badge(
+                    pipeline_id,
+                    badge_type,
+                    badgeclass_name,
                 )
+                badge_data[badge_type]['data'] = badge_obj
+            except SQAaaSAPIException as e:
+                badge_status = 'nullified'
+                return web.Response(status=e.http_code, reason=e.message, text=e.message)
+            else:
+                # Generate & store share
+                share_data = await _get_badge_share(badge_obj, commit_url)
+                badge_data[badge_type]['share'] = share_data
+                # Generate verification URL
+                openbadgeid = badge_obj['openBadgeId']
+                openbadgeid_urlencode = urllib.parse.quote_plus(openbadgeid)
+                commit_urlencode = urllib.parse.quote_plus(commit_url)
+                embed_url = (
+                    f'{openbadgeid_urlencode}?identity__url='
+                    f'{commit_urlencode}&amp;identity__url='
+                    f'{commit_urlencode}'
+                )
+                badge_data[badge_type]['verification_url'] = (
+                    'https://badgecheck.io/?url=%s' % embed_url
+                )
+            finally:
+                # Manage repo_settings
+                _repo_settings = await _handle_badge_status(
+                    pipeline_id, pipeline_data, badge_status
+                )
+
+        # Next level badge
+        next_level_badge = await _get_next_level_badge(badge_category)
+        if next_level_badge:
+            missing_criteria_all.extend(
+                criteria_summary[next_level_badge]['missing']
+            )
 
         # Store badge data in DB
         db.add_badge_data(pipeline_id, badge_data)
@@ -2078,6 +2108,7 @@ async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Re
                                              ['required_for_next_level_badge']
                             ) = _required_for_next_level
 
+
     # Compose the final payload
     pipeline_repo = pipeline_data['pipeline_repo']
     pipeline_repo_branch = pipeline_data['pipeline_repo_branch']
@@ -2088,7 +2119,7 @@ async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Re
                 pipeline_repo, pipeline_repo_branch
             )
         },
-        'repository': [pipeline_data.get('repo_settings', {})],
+        'repository': _repo_settings,
         'report': report_data_copy,
         'badge': badge_data
     }
@@ -2640,3 +2671,43 @@ async def get_criteria(request: web.Request, criterion_id=None, assessment=None)
     )
 
     return web.json_response(criteria_data_list, status=200)
+
+
+async def _handle_badge_status(pipeline_id, pipeline_data, badge_status=None):
+    """Returns data about criteria.
+
+    :param pipeline_id: ID of the pipeline to get
+    :type pipeline_id: str
+    :param pipeline_data: Pipeline's data from DB
+    :type pipeline_data: dict
+    :param badge_status: status string to be displayed on the badge.
+    :type badge_status: str
+    """
+    repo_settings = pipeline_data.get('repo_settings', {})
+    badge_status_previous = repo_settings.get('badge_status', None)
+    if not badge_status:
+        badge_status = badge_status_previous
+    if badge_status != badge_status_previous:
+        logger.debug('Status badge changed from <%s> to <%s>' % (
+            badge_status_previous, badge_status
+        ))
+        repo_settings['badge_status'] = badge_status
+        db.add_repo_settings(pipeline_id, repo_settings)
+        logger.info('New status badge updated in DB for pipeline <%s>: status <%s>' % (
+            pipeline_id, badge_status)
+        )
+        # Push badge
+        pipeline_repo = pipeline_data['pipeline_repo']
+        gh_utils.push_file(
+            file_name=STATUS_BADGE_LOCATION,
+            file_data=ctls_utils.get_status_badge(badge_status),
+            commit_msg='Update status badge',
+            repo_name=pipeline_repo,
+        )
+        logger.info('New status badge pushed to repository <%s>: status <%s>' % (
+            pipeline_repo, badge_status)
+        )
+    else:
+        logger.debug('No change in status badge: %s' % badge_status)
+
+    return repo_settings

@@ -79,6 +79,7 @@ def add_entry(
         |-- 'tools': [Dict] Tool-related data (per-criterion mapping)
             |-- 'criterion_id': tools
         |-- 'badge': [Dict] Badge data for each badge type in [software, services, fair]
+        |-- 'repo_settings': [Dict] Information (metadata) about the code repository
 
     :param pipeline_id: UUID-format identifier for the pipeline.
     :param pipeline_repo: URL of the remote repository for the Jenkins integration.
@@ -259,7 +260,7 @@ def add_repo_settings(pipeline_id, repo_settings):
     db[pipeline_id]['repo_settings'] = repo_settings
     store_content(db)
     logger.debug((
-        'Repository information (metadata) added in DB for pipeline '
+        'Repository information (metadata) updated in DB for pipeline '
         '<%s>: %s' % (pipeline_id, db[pipeline_id]['repo_settings'])
     ))
 

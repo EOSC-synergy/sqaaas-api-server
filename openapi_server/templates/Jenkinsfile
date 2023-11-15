@@ -12,8 +12,15 @@ pipeline {
     stages {
         {%- for config_data in config_data_list %}
         stage('SQA baseline criterion: {{ config_data.data_json.sqa_criteria |list |join(" & " ) }}') {
-            {%- if config_data.data_when %}
             when {
+                not {
+                    anyOf {
+                        changeset ".badge/*"
+                        changeset ".report/*"
+                        changeset "README.md"
+                    }
+                }
+                {%- if config_data.data_when %}
                 {%- for k,v in config_data.data_when.items() %}
                 {%- if k == 'branch' %}
                 branch pattern: '{{ v.pattern }}', comparator: '{{ v.comparator }}'
@@ -21,8 +28,8 @@ pipeline {
                 buildingTag()
                 {%- endif %}
                 {%- endfor %}
+                {%- endif %}
             }
-            {%- endif %}
             steps {
                 script {
                     projectConfig = pipelineConfig(
