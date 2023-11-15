@@ -2028,7 +2028,7 @@ async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Re
 
         badge_data[badge_type]['data'] = {}
         if badgeclass_name:
-            badge_status = badgeclass_name
+            badge_status = badge_category
             try:
                 badge_obj = await _issue_badge(
                     pipeline_id,
