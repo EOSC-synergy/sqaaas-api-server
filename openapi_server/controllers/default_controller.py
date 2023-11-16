@@ -2109,6 +2109,11 @@ async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Re
                             ) = _required_for_next_level
 
 
+    # Manage repo_settings
+    _repo_settings = await _handle_badge_status(
+        pipeline_id, pipeline_data, badge_status
+    )
+
     # Compose the final payload
     pipeline_repo = pipeline_data['pipeline_repo']
     pipeline_repo_branch = pipeline_data['pipeline_repo_branch']
