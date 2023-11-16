@@ -2703,11 +2703,13 @@ async def _handle_badge_status(pipeline_id, pipeline_data, badge_status=None):
         )
         # Push badge
         pipeline_repo = pipeline_data['pipeline_repo']
+        pipeline_repo_branch = pipeline_data['pipeline_repo_branch']
         gh_utils.push_file(
             file_name=STATUS_BADGE_LOCATION,
             file_data=ctls_utils.get_status_badge(badge_status),
             commit_msg='Update status badge',
             repo_name=pipeline_repo,
+            branch=pipeline_repo_branch
         )
         logger.info('New status badge pushed to repository <%s>: status <%s>' % (
             pipeline_repo, badge_status)
