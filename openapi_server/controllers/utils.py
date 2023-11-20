@@ -1258,10 +1258,11 @@ def get_credential_data(credential_id, pipeline_data):
     return credential_data, credential_tmp
 
 
-def get_status_badge(status):
+def get_status_badge(status, digital_object_type):
     """Generates a badge with the given information.
 
     :param status: One of the valid status of the assessment.
+    :param digital_object_type: Type of assessment
     """
     status_badge_map = {
         'building': {
@@ -1290,7 +1291,7 @@ def get_status_badge(status):
         }
     }
     badge = anybadge.Badge(
-        label='SQAaaS',
+        label='SQAaaS | %s' % digital_object_type,
         num_padding_chars=1,
         **status_badge_map.get(status, status_badge_map['nullified'])
     )
