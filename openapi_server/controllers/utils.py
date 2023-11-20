@@ -1290,6 +1290,9 @@ def get_status_badge(status, digital_object_type):
             'default_color': '#E6AE77'
         }
     }
+    # FIXME: software -> source code shall be done elsewhere
+    if digital_object_type in ['software']
+        digital_object_type = 'source code'
     badge = anybadge.Badge(
         label='SQAaaS | %s' % digital_object_type,
         num_padding_chars=1,
