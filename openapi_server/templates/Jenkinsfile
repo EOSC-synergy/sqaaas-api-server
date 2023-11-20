@@ -18,6 +18,7 @@ pipeline {
                         changeset ".badge/*"
                         changeset ".report/*"
                         changeset "README.md"
+                        changeset ""
                     }
                 }
                 {%- if config_data.data_when %}
@@ -32,6 +33,7 @@ pipeline {
             }
             steps {
                 script {
+                    println(currentBuild.changeSets.size())
                     projectConfig = pipelineConfig(
                         configFile: '{{ config_data.file_name }}',
                         scmConfigs: [ localBranch: true ],
