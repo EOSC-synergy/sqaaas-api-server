@@ -2151,6 +2151,7 @@ async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Re
         file_data=json.dumps(r, indent=4),
         commit_msg='Add assessment report',
         repo_name=pipeline_repo,
+        branch=pipeline_repo_branch
     )
     if commit:
         logger.info(

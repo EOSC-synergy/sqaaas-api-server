@@ -1291,7 +1291,7 @@ def get_status_badge(status, digital_object_type):
         }
     }
     # FIXME: software -> source code shall be done elsewhere
-    if digital_object_type in ['software']
+    if digital_object_type in ['software']:
         digital_object_type = 'source code'
     badge = anybadge.Badge(
         label='SQAaaS | %s' % digital_object_type,
