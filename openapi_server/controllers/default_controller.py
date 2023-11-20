@@ -150,7 +150,7 @@ async def _get_tooling_for_assessment(
     def _filter_tools(repo, criteria_data_list, path='.', **kwargs):
         levels_for_assessment = ['REQUIRED', 'RECOMMENDED']
         criteria_data_list_filtered = []
-        criteria_filtered_out = {}
+        criteria_filtered = {}
         for criterion_data in criteria_data_list:
             criterion_data_copy = copy.deepcopy(criterion_data)
             criterion_id = criterion_data_copy['id']
@@ -280,7 +280,7 @@ async def _get_tooling_for_assessment(
                         False,
                         filtered_required_tools
                     )
-                    criteria_filtered_out[criterion_id] = filtered_out_data
+                    criteria_filtered[criterion_id] = filtered_out_data
                     logger.warn(_reason)
                 else:
                     logger.debug(_reason)
@@ -294,36 +294,44 @@ async def _get_tooling_for_assessment(
                 criterion_data_copy['tools'] = toolset_for_reporting
                 criteria_data_list_filtered.append(criterion_data_copy)
 
-        return criteria_data_list_filtered, criteria_filtered_out, kwargs
+        return criteria_data_list_filtered, criteria_filtered, kwargs
 
 
     # Get the relevant criteria for the type of assessment/digital object
-    relevant_criteria_data = await _get_criteria_for_digital_object(repositories)
+    (
+        relevant_criteria_data,
+        digital_object_type
+    ) = await _get_criteria_for_digital_object(repositories)
 
     # Get the tools that are relevant based on the repo content (add them to
     # <criteria_data_list_filtered>) and also the ones that are not (add them
-    # in <criteria_filtered_out>)
+    # in <criteria_filtered>)
     criteria_data_list_filtered = []
-    criteria_filtered_out = {}
+    criteria_filtered = {}
     for repo_criteria_mapping in relevant_criteria_data:
         try:
             (
                 _criteria_data_list_filtered,
-                _criteria_filtered_out,
+                _criteria_filtered,
                 repo_settings
             ) = _filter_tools(**repo_criteria_mapping)
         except SQAaaSAPIException as e:
             raise e
         else:
             criteria_data_list_filtered.extend(_criteria_data_list_filtered)
-            criteria_filtered_out.update(_criteria_filtered_out)
+            criteria_filtered.update(_criteria_filtered)
 
     if not criteria_data_list_filtered:
         _reason = 'Could not find any tool for criteria assessment'
         logger.error(_reason)
         raise SQAaaSAPIException(422, _reason)
 
-    return criteria_data_list_filtered, criteria_filtered_out, repo_settings
+    return (
+        criteria_data_list_filtered,
+        criteria_filtered,
+        repo_settings,
+        digital_object_type
+    )
 
 
 async def _get_criteria_for_digital_object(repositories):
@@ -393,7 +401,7 @@ async def _get_criteria_for_digital_object(repositories):
         '%s' % relevant_criteria_data
     )
 
-    return relevant_criteria_data
+    return relevant_criteria_data, _digital_object_type
 
 
 def _validate_assessment_input(body):
@@ -514,8 +522,9 @@ async def add_pipeline_for_assessment(request: web.Request, body, user_requested
     try:
         (
             criteria_data_list,
-            criteria_filtered_out,
-            repo_settings
+            criteria_filtered,
+            repo_settings,
+            digital_object_type
         ) = await _get_tooling_for_assessment(
                 repositories=repositories,
                 user_requested_tools=user_requested_tools
@@ -631,7 +640,10 @@ async def add_pipeline_for_assessment(request: web.Request, body, user_requested
     #6 Store QAA data
     db.add_assessment_data(
         pipeline_id,
-        criteria_filtered_out
+        {
+            'digital_object_type': digital_object_type,
+            'criteria_filtered': criteria_filtered
+        }
     )
 
     logger.info(
@@ -1628,7 +1640,7 @@ async def _validate_output(stage_data_list, pipeline_data):
         if broken_data:
             # Health check: broken criteria should not be already in
             # the list of filtered criteria
-            if criterion_name in list(pipeline_data['qaa']):
+            if criterion_name in list(pipeline_data['qaa']['criteria_filtered']):
                 logger.error((
                     'Broken criterion <%s> is already present in the list '
                     'of filtered criteria. Overriding '
@@ -1682,7 +1694,7 @@ async def _get_output(pipeline_id, validate=False):
             stage_data_list, pipeline_data
         )
         if broken_validation_data:
-            pipeline_data['qaa'].update(broken_validation_data)
+            pipeline_data['qaa']['criteria_filtered'].update(broken_validation_data)
             db.add_assessment_data(pipeline_id, pipeline_data['qaa'])
             logger.info((
                 'Updated broken criteria in DB\'s QAA assessment: '
@@ -1750,13 +1762,13 @@ async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Re
     def _format_report():
         report_data = {}
         pipeline_data = db.get_entry(pipeline_id)
-        criteria_filtered_out = pipeline_data['qaa']
+        criteria_filtered = pipeline_data['qaa']
         criteria_tools = pipeline_data['tools']
 
         for criterion_name, criterion_output_data_list in output_data.items():
             # Health check: a given criterion MUST NOT be present both in the
             # filtered list and as part of the pipeline execution stages
-            # if criterion_name in list(criteria_filtered_out):
+            # if criterion_name in list(criteria_filtered):
             #     _reason = ((
             #         'Criterion <%s> has been both filtered out and executed '
             #         'in the pipeline' % criterion_name
@@ -1844,7 +1856,7 @@ async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Re
             }
 
         # Report filtered-out criteria
-        # report_data.update(criteria_filtered_out)
+        # report_data.update(criteria_filtered)
         #
         # Subcriterion data shall be in the form:
         # {
@@ -1853,15 +1865,15 @@ async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Re
         #   'evidence': [ .. ]
         #   'required_for_next_level_badge': true/false
         # }
-        filtered_criteria = {}
-        for _criterion, _data in criteria_filtered_out.items():
-            filtered_criteria[_criterion] = {
+        _criteria_filtered = {}
+        for _criterion, _data in criteria_filtered.items():
+            _criteria_filtered[_criterion] = {
                 'valid': False,
                 'subcriteria': {}
             }
             _metadata = r2s_utils.load_criterion_from_standard(_criterion)
             for _subcriterion, _subcriterion_metadata in _metadata.items():
-                filtered_criteria[_criterion]['subcriteria'][_subcriterion] = {
+                _criteria_filtered[_criterion]['subcriteria'][_subcriterion] = {
                     'description': _subcriterion_metadata['description'],
                     'valid': _data.get('valid', False),
                     'hint': _subcriterion_metadata['hint'],
@@ -1878,15 +1890,15 @@ async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Re
                 total_subcriteria,
                 success_subcriteria,
                 percentage_criterion
-            ) = _get_coverage(filtered_criteria[_criterion]['subcriteria'])
+            ) = _get_coverage(_criteria_filtered[_criterion]['subcriteria'])
 
-            filtered_criteria[_criterion]['coverage'] = {
+            _criteria_filtered[_criterion]['coverage'] = {
                 'percentage': percentage_criterion,
                 'total_subcriteria': total_subcriteria,
                 'success_subcriteria': success_subcriteria
             }
             # Add filtered criterion to reporting data
-            report_data.update(filtered_criteria)
+            report_data.update(_criteria_filtered)
 
         return report_data
 
