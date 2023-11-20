@@ -298,7 +298,10 @@ async def _get_tooling_for_assessment(
 
 
     # Get the relevant criteria for the type of assessment/digital object
-    relevant_criteria_data = await _get_criteria_for_digital_object(repositories)
+    (
+        relevant_criteria_data,
+        digital_object_type
+    ) = await _get_criteria_for_digital_object(repositories)
 
     # Get the tools that are relevant based on the repo content (add them to
     # <criteria_data_list_filtered>) and also the ones that are not (add them
@@ -323,7 +326,12 @@ async def _get_tooling_for_assessment(
         logger.error(_reason)
         raise SQAaaSAPIException(422, _reason)
 
-    return criteria_data_list_filtered, criteria_filtered_out, repo_settings
+    return (
+        criteria_data_list_filtered,
+        criteria_filtered_out,
+        repo_settings,
+        digital_object_type
+    )
 
 
 async def _get_criteria_for_digital_object(repositories):
@@ -393,7 +401,7 @@ async def _get_criteria_for_digital_object(repositories):
         '%s' % relevant_criteria_data
     )
 
-    return relevant_criteria_data
+    return relevant_criteria_data, _digital_object_type
 
 
 def _validate_assessment_input(body):
@@ -515,7 +523,8 @@ async def add_pipeline_for_assessment(request: web.Request, body, user_requested
         (
             criteria_data_list,
             criteria_filtered_out,
-            repo_settings
+            repo_settings,
+            digital_object_type
         ) = await _get_tooling_for_assessment(
                 repositories=repositories,
                 user_requested_tools=user_requested_tools
