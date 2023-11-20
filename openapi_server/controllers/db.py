@@ -80,6 +80,9 @@ def add_entry(
             |-- 'criterion_id': tools
         |-- 'badge': [Dict] Badge data for each badge type in [software, services, fair]
         |-- 'repo_settings': [Dict] Information (metadata) about the code repository
+        |-- 'qaa': [Dict] Assessment results
+            |-- 'digital_object_type': [String] type of assessment (e.g. 'source code', 'service', 'fair')
+            |-- 'criteria_filtered': [Dict] criteria being filtered out
 
     :param pipeline_id: UUID-format identifier for the pipeline.
     :param pipeline_repo: URL of the remote repository for the Jenkins integration.

@@ -640,7 +640,10 @@ async def add_pipeline_for_assessment(request: web.Request, body, user_requested
     #6 Store QAA data
     db.add_assessment_data(
         pipeline_id,
-        criteria_filtered_out
+        {
+            'digital_object_type': digital_object_type,
+            'criteria_filtered': criteria_filtered_out
+        }
     )
 
     logger.info(
@@ -1637,7 +1640,7 @@ async def _validate_output(stage_data_list, pipeline_data):
         if broken_data:
             # Health check: broken criteria should not be already in
             # the list of filtered criteria
-            if criterion_name in list(pipeline_data['qaa']):
+            if criterion_name in list(pipeline_data['qaa']['criteria_filtered']):
                 logger.error((
                     'Broken criterion <%s> is already present in the list '
                     'of filtered criteria. Overriding '
@@ -1691,7 +1694,7 @@ async def _get_output(pipeline_id, validate=False):
             stage_data_list, pipeline_data
         )
         if broken_validation_data:
-            pipeline_data['qaa'].update(broken_validation_data)
+            pipeline_data['qaa']['criteria_filtered'].update(broken_validation_data)
             db.add_assessment_data(pipeline_id, pipeline_data['qaa'])
             logger.info((
                 'Updated broken criteria in DB\'s QAA assessment: '
