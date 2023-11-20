@@ -8,7 +8,7 @@ import sys
 from setuptools import setup, find_packages
 
 NAME = "sqaaas_api_server"
-VERSION = "2.3.0"
+VERSION = "2.21.0"
 
 # To install the library, run the following
 #
@@ -22,7 +22,7 @@ REQUIRES = [
     "swagger-ui-bundle==0.0.6",
     "PyGithub>=1.53",
     "python-jenkins>=1.7.0",
-    "deepdiff>=5.2.3"
+    "deepdiff>=5.2.3",
     "GitPython>=3.1.17"
 ]
 
