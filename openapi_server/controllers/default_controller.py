@@ -150,7 +150,7 @@ async def _get_tooling_for_assessment(
     def _filter_tools(repo, criteria_data_list, path='.', **kwargs):
         levels_for_assessment = ['REQUIRED', 'RECOMMENDED']
         criteria_data_list_filtered = []
-        criteria_filtered_out = {}
+        criteria_filtered = {}
         for criterion_data in criteria_data_list:
             criterion_data_copy = copy.deepcopy(criterion_data)
             criterion_id = criterion_data_copy['id']
@@ -280,7 +280,7 @@ async def _get_tooling_for_assessment(
                         False,
                         filtered_required_tools
                     )
-                    criteria_filtered_out[criterion_id] = filtered_out_data
+                    criteria_filtered[criterion_id] = filtered_out_data
                     logger.warn(_reason)
                 else:
                     logger.debug(_reason)
@@ -294,7 +294,7 @@ async def _get_tooling_for_assessment(
                 criterion_data_copy['tools'] = toolset_for_reporting
                 criteria_data_list_filtered.append(criterion_data_copy)
 
-        return criteria_data_list_filtered, criteria_filtered_out, kwargs
+        return criteria_data_list_filtered, criteria_filtered, kwargs
 
 
     # Get the relevant criteria for the type of assessment/digital object
@@ -305,21 +305,21 @@ async def _get_tooling_for_assessment(
 
     # Get the tools that are relevant based on the repo content (add them to
     # <criteria_data_list_filtered>) and also the ones that are not (add them
-    # in <criteria_filtered_out>)
+    # in <criteria_filtered>)
     criteria_data_list_filtered = []
-    criteria_filtered_out = {}
+    criteria_filtered = {}
     for repo_criteria_mapping in relevant_criteria_data:
         try:
             (
                 _criteria_data_list_filtered,
-                _criteria_filtered_out,
+                _criteria_filtered,
                 repo_settings
             ) = _filter_tools(**repo_criteria_mapping)
         except SQAaaSAPIException as e:
             raise e
         else:
             criteria_data_list_filtered.extend(_criteria_data_list_filtered)
-            criteria_filtered_out.update(_criteria_filtered_out)
+            criteria_filtered.update(_criteria_filtered)
 
     if not criteria_data_list_filtered:
         _reason = 'Could not find any tool for criteria assessment'
@@ -328,7 +328,7 @@ async def _get_tooling_for_assessment(
 
     return (
         criteria_data_list_filtered,
-        criteria_filtered_out,
+        criteria_filtered,
         repo_settings,
         digital_object_type
     )
@@ -522,7 +522,7 @@ async def add_pipeline_for_assessment(request: web.Request, body, user_requested
     try:
         (
             criteria_data_list,
-            criteria_filtered_out,
+            criteria_filtered,
             repo_settings,
             digital_object_type
         ) = await _get_tooling_for_assessment(
@@ -642,7 +642,7 @@ async def add_pipeline_for_assessment(request: web.Request, body, user_requested
         pipeline_id,
         {
             'digital_object_type': digital_object_type,
-            'criteria_filtered': criteria_filtered_out
+            'criteria_filtered': criteria_filtered
         }
     )
 
@@ -1762,13 +1762,13 @@ async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Re
     def _format_report():
         report_data = {}
         pipeline_data = db.get_entry(pipeline_id)
-        criteria_filtered_out = pipeline_data['qaa']
+        criteria_filtered = pipeline_data['qaa']
         criteria_tools = pipeline_data['tools']
 
         for criterion_name, criterion_output_data_list in output_data.items():
             # Health check: a given criterion MUST NOT be present both in the
             # filtered list and as part of the pipeline execution stages
-            # if criterion_name in list(criteria_filtered_out):
+            # if criterion_name in list(criteria_filtered):
             #     _reason = ((
             #         'Criterion <%s> has been both filtered out and executed '
             #         'in the pipeline' % criterion_name
@@ -1856,7 +1856,7 @@ async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Re
             }
 
         # Report filtered-out criteria
-        # report_data.update(criteria_filtered_out)
+        # report_data.update(criteria_filtered)
         #
         # Subcriterion data shall be in the form:
         # {
@@ -1866,7 +1866,7 @@ async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Re
         #   'required_for_next_level_badge': true/false
         # }
         filtered_criteria = {}
-        for _criterion, _data in criteria_filtered_out.items():
+        for _criterion, _data in criteria_filtered.items():
             filtered_criteria[_criterion] = {
                 'valid': False,
                 'subcriteria': {}
