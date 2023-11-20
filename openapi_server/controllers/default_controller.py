@@ -1865,15 +1865,15 @@ async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Re
         #   'evidence': [ .. ]
         #   'required_for_next_level_badge': true/false
         # }
-        filtered_criteria = {}
+        _criteria_filtered = {}
         for _criterion, _data in criteria_filtered.items():
-            filtered_criteria[_criterion] = {
+            _criteria_filtered[_criterion] = {
                 'valid': False,
                 'subcriteria': {}
             }
             _metadata = r2s_utils.load_criterion_from_standard(_criterion)
             for _subcriterion, _subcriterion_metadata in _metadata.items():
-                filtered_criteria[_criterion]['subcriteria'][_subcriterion] = {
+                _criteria_filtered[_criterion]['subcriteria'][_subcriterion] = {
                     'description': _subcriterion_metadata['description'],
                     'valid': _data.get('valid', False),
                     'hint': _subcriterion_metadata['hint'],
@@ -1890,15 +1890,15 @@ async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Re
                 total_subcriteria,
                 success_subcriteria,
                 percentage_criterion
-            ) = _get_coverage(filtered_criteria[_criterion]['subcriteria'])
+            ) = _get_coverage(_criteria_filtered[_criterion]['subcriteria'])
 
-            filtered_criteria[_criterion]['coverage'] = {
+            _criteria_filtered[_criterion]['coverage'] = {
                 'percentage': percentage_criterion,
                 'total_subcriteria': total_subcriteria,
                 'success_subcriteria': success_subcriteria
             }
             # Add filtered criterion to reporting data
-            report_data.update(filtered_criteria)
+            report_data.update(_criteria_filtered)
 
         return report_data
 
