@@ -1762,7 +1762,7 @@ async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Re
     def _format_report():
         report_data = {}
         pipeline_data = db.get_entry(pipeline_id)
-        criteria_filtered = pipeline_data['qaa']
+        criteria_filtered = pipeline_data['qaa']['criteria_filtered']
         criteria_tools = pipeline_data['tools']
 
         for criterion_name, criterion_output_data_list in output_data.items():
