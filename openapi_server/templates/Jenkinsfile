@@ -13,13 +13,9 @@ pipeline {
         {%- for config_data in config_data_list %}
         stage('SQA baseline criterion: {{ config_data.data_json.sqa_criteria |list |join(" & " ) }}') {
             when {
-                not {
-                    anyOf {
-                        changeset ".badge/*"
-                        changeset ".report/*"
-                        changeset "README.md"
-                        changeset ""
-                    }
+                anyOf {
+                    changeset ".sqa/*"
+                    changeset "Jenkinsfile"
                 }
                 {%- if config_data.data_when %}
                 {%- for k,v in config_data.data_when.items() %}
@@ -33,7 +29,6 @@ pipeline {
             }
             steps {
                 script {
-                    println(currentBuild.changeSets.size())
                     projectConfig = pipelineConfig(
                         configFile: '{{ config_data.file_name }}',
                         scmConfigs: [ localBranch: true ],
