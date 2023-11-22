@@ -6,7 +6,7 @@ from typing import List, Dict, Type
 
 from openapi_server.models.base_model_ import Model
 from openapi_server.models.agent import Agent
-from openapi_server.models.step import Step
+from openapi_server.models.tool import Tool
 from openapi_server import util
 
 
@@ -16,28 +16,28 @@ class CriterionWorkflow(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, id: str=None, agent: Agent=None, steps: List[Step]=None):
+    def __init__(self, id: str=None, agent: Agent=None, tools: List[Tool]=None):
         """CriterionWorkflow - a model defined in OpenAPI
 
         :param id: The id of this CriterionWorkflow.
         :param agent: The agent of this CriterionWorkflow.
-        :param steps: The steps of this CriterionWorkflow.
+        :param tools: The tools of this CriterionWorkflow.
         """
         self.openapi_types = {
             'id': str,
             'agent': Agent,
-            'steps': List[Step]
+            'tools': List[Tool]
         }
 
         self.attribute_map = {
             'id': 'id',
             'agent': 'agent',
-            'steps': 'steps'
+            'tools': 'tools'
         }
 
         self._id = id
         self._agent = agent
-        self._steps = steps
+        self._tools = tools
 
     @classmethod
     def from_dict(cls, dikt: dict) -> 'CriterionWorkflow':
@@ -93,24 +93,24 @@ class CriterionWorkflow(Model):
         self._agent = agent
 
     @property
-    def steps(self):
-        """Gets the steps of this CriterionWorkflow.
+    def tools(self):
+        """Gets the tools of this CriterionWorkflow.
 
-        steps containing the workflow to validate a given criterion
+        tools to run as workflow steps for the given criterion
 
-        :return: The steps of this CriterionWorkflow.
-        :rtype: List[Step]
+        :return: The tools of this CriterionWorkflow.
+        :rtype: List[Tool]
         """
-        return self._steps
+        return self._tools
 
-    @steps.setter
-    def steps(self, steps):
-        """Sets the steps of this CriterionWorkflow.
+    @tools.setter
+    def tools(self, tools):
+        """Sets the tools of this CriterionWorkflow.
 
-        steps containing the workflow to validate a given criterion
+        tools to run as workflow steps for the given criterion
 
-        :param steps: The steps of this CriterionWorkflow.
-        :type steps: List[Step]
+        :param tools: The tools of this CriterionWorkflow.
+        :type tools: List[Tool]
         """
 
-        self._steps = steps
+        self._tools = tools

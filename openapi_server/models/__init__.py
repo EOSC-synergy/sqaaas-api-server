@@ -58,7 +58,6 @@ from openapi_server.models.service_docker_compose_value_build import ServiceDock
 from openapi_server.models.service_docker_compose_value_image import ServiceDockerComposeValueImage
 from openapi_server.models.service_docker_compose_value_image_registry import ServiceDockerComposeValueImageRegistry
 from openapi_server.models.service_docker_compose_value_volumes_inner import ServiceDockerComposeValueVolumesInner
-from openapi_server.models.step import Step
 from openapi_server.models.tool import Tool
 from openapi_server.models.tool_arg import ToolArg
 from openapi_server.models.tool_docker import ToolDocker

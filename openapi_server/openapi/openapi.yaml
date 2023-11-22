@@ -1815,90 +1815,6 @@ components:
           type: string
       title: Agent
       type: object
-    Step:
-      example:
-        tools:
-        - args:
-          - summary: summary
-            args:
-            - null
-            - null
-            repeatable: false
-            selectable: true
-            format: string
-            description: Detect the license of the given project
-            id: id
-            type: subcommand
-            value: detect
-            option: option
-          - summary: summary
-            args:
-            - null
-            - null
-            repeatable: false
-            selectable: true
-            format: string
-            description: Detect the license of the given project
-            id: id
-            type: subcommand
-            value: detect
-            option: option
-          docs: https://openapi-generator.tech
-          name: flake8
-          lang: Python
-          jepl_support: true
-          version: 4.0.1
-          executable: executable
-          docker:
-            image: image
-            dockerfile: dockerfile
-            reviewed: 2000-01-23
-            oneshot: true
-        - args:
-          - summary: summary
-            args:
-            - null
-            - null
-            repeatable: false
-            selectable: true
-            format: string
-            description: Detect the license of the given project
-            id: id
-            type: subcommand
-            value: detect
-            option: option
-          - summary: summary
-            args:
-            - null
-            - null
-            repeatable: false
-            selectable: true
-            format: string
-            description: Detect the license of the given project
-            id: id
-            type: subcommand
-            value: detect
-            option: option
-          docs: https://openapi-generator.tech
-          name: flake8
-          lang: Python
-          jepl_support: true
-          version: 4.0.1
-          executable: executable
-          docker:
-            image: image
-            dockerfile: dockerfile
-            reviewed: 2000-01-23
-            oneshot: true
-      properties:
-        tools:
-          description: set of tools to be used in the step
-          items:
-            $ref: '#/components/schemas/Tool'
-          title: tools
-          type: array
-      title: Step
-      type: object
     CriterionWorkflow:
       example:
         agent:
@@ -1906,153 +1822,79 @@ components:
           name: name
           type: docker_compose
         id: QC.Sty
-        steps:
-        - tools:
-          - args:
-            - summary: summary
-              args:
-              - null
-              - null
-              repeatable: false
-              selectable: true
-              format: string
-              description: Detect the license of the given project
-              id: id
-              type: subcommand
-              value: detect
-              option: option
-            - summary: summary
-              args:
-              - null
-              - null
-              repeatable: false
-              selectable: true
-              format: string
-              description: Detect the license of the given project
-              id: id
-              type: subcommand
-              value: detect
-              option: option
-            docs: https://openapi-generator.tech
-            name: flake8
-            lang: Python
-            jepl_support: true
-            version: 4.0.1
-            executable: executable
-            docker:
-              image: image
-              dockerfile: dockerfile
-              reviewed: 2000-01-23
-              oneshot: true
-          - args:
-            - summary: summary
-              args:
-              - null
-              - null
-              repeatable: false
-              selectable: true
-              format: string
-              description: Detect the license of the given project
-              id: id
-              type: subcommand
-              value: detect
-              option: option
-            - summary: summary
-              args:
-              - null
-              - null
-              repeatable: false
-              selectable: true
-              format: string
-              description: Detect the license of the given project
-              id: id
-              type: subcommand
-              value: detect
-              option: option
-            docs: https://openapi-generator.tech
-            name: flake8
-            lang: Python
-            jepl_support: true
-            version: 4.0.1
-            executable: executable
-            docker:
-              image: image
-              dockerfile: dockerfile
-              reviewed: 2000-01-23
-              oneshot: true
-        - tools:
-          - args:
-            - summary: summary
-              args:
-              - null
-              - null
-              repeatable: false
-              selectable: true
-              format: string
-              description: Detect the license of the given project
-              id: id
-              type: subcommand
-              value: detect
-              option: option
-            - summary: summary
-              args:
-              - null
-              - null
-              repeatable: false
-              selectable: true
-              format: string
-              description: Detect the license of the given project
-              id: id
-              type: subcommand
-              value: detect
-              option: option
-            docs: https://openapi-generator.tech
-            name: flake8
-            lang: Python
-            jepl_support: true
-            version: 4.0.1
-            executable: executable
-            docker:
-              image: image
-              dockerfile: dockerfile
-              reviewed: 2000-01-23
-              oneshot: true
-          - args:
-            - summary: summary
-              args:
-              - null
-              - null
-              repeatable: false
-              selectable: true
-              format: string
-              description: Detect the license of the given project
-              id: id
-              type: subcommand
-              value: detect
-              option: option
-            - summary: summary
-              args:
-              - null
-              - null
-              repeatable: false
-              selectable: true
-              format: string
-              description: Detect the license of the given project
-              id: id
-              type: subcommand
-              value: detect
-              option: option
-            docs: https://openapi-generator.tech
-            name: flake8
-            lang: Python
-            jepl_support: true
-            version: 4.0.1
-            executable: executable
-            docker:
-              image: image
-              dockerfile: dockerfile
-              reviewed: 2000-01-23
-              oneshot: true
+        tools:
+        - args:
+          - summary: summary
+            args:
+            - null
+            - null
+            repeatable: false
+            selectable: true
+            format: string
+            description: Detect the license of the given project
+            id: id
+            type: subcommand
+            value: detect
+            option: option
+          - summary: summary
+            args:
+            - null
+            - null
+            repeatable: false
+            selectable: true
+            format: string
+            description: Detect the license of the given project
+            id: id
+            type: subcommand
+            value: detect
+            option: option
+          docs: https://openapi-generator.tech
+          name: flake8
+          lang: Python
+          jepl_support: true
+          version: 4.0.1
+          executable: executable
+          docker:
+            image: image
+            dockerfile: dockerfile
+            reviewed: 2000-01-23
+            oneshot: true
+        - args:
+          - summary: summary
+            args:
+            - null
+            - null
+            repeatable: false
+            selectable: true
+            format: string
+            description: Detect the license of the given project
+            id: id
+            type: subcommand
+            value: detect
+            option: option
+          - summary: summary
+            args:
+            - null
+            - null
+            repeatable: false
+            selectable: true
+            format: string
+            description: Detect the license of the given project
+            id: id
+            type: subcommand
+            value: detect
+            option: option
+          docs: https://openapi-generator.tech
+          name: flake8
+          lang: Python
+          jepl_support: true
+          version: 4.0.1
+          executable: executable
+          docker:
+            image: image
+            dockerfile: dockerfile
+            reviewed: 2000-01-23
+            oneshot: true
       properties:
         id:
           description: ID of the criterion
@@ -2061,11 +1903,11 @@ components:
           type: string
         agent:
           $ref: '#/components/schemas/Agent'
-        steps:
-          description: steps containing the workflow to validate a given criterion
+        tools:
+          description: tools to run as workflow steps for the given criterion
           items:
-            $ref: '#/components/schemas/Step'
-          title: steps
+            $ref: '#/components/schemas/Tool'
+          title: tools
           type: array
       title: CriterionWorkflow
       type: object
@@ -2092,305 +1934,157 @@ components:
             name: name
             type: docker_compose
           id: QC.Sty
-          steps:
-          - tools:
-            - args:
-              - summary: summary
-                args:
-                - null
-                - null
-                repeatable: false
-                selectable: true
-                format: string
-                description: Detect the license of the given project
-                id: id
-                type: subcommand
-                value: detect
-                option: option
-              - summary: summary
-                args:
-                - null
-                - null
-                repeatable: false
-                selectable: true
-                format: string
-                description: Detect the license of the given project
-                id: id
-                type: subcommand
-                value: detect
-                option: option
-              docs: https://openapi-generator.tech
-              name: flake8
-              lang: Python
-              jepl_support: true
-              version: 4.0.1
-              executable: executable
-              docker:
-                image: image
-                dockerfile: dockerfile
-                reviewed: 2000-01-23
-                oneshot: true
-            - args:
-              - summary: summary
-                args:
-                - null
-                - null
-                repeatable: false
-                selectable: true
-                format: string
-                description: Detect the license of the given project
-                id: id
-                type: subcommand
-                value: detect
-                option: option
-              - summary: summary
-                args:
-                - null
-                - null
-                repeatable: false
-                selectable: true
-                format: string
-                description: Detect the license of the given project
-                id: id
-                type: subcommand
-                value: detect
-                option: option
-              docs: https://openapi-generator.tech
-              name: flake8
-              lang: Python
-              jepl_support: true
-              version: 4.0.1
-              executable: executable
-              docker:
-                image: image
-                dockerfile: dockerfile
-                reviewed: 2000-01-23
-                oneshot: true
-          - tools:
-            - args:
-              - summary: summary
-                args:
-                - null
-                - null
-                repeatable: false
-                selectable: true
-                format: string
-                description: Detect the license of the given project
-                id: id
-                type: subcommand
-                value: detect
-                option: option
-              - summary: summary
-                args:
-                - null
-                - null
-                repeatable: false
-                selectable: true
-                format: string
-                description: Detect the license of the given project
-                id: id
-                type: subcommand
-                value: detect
-                option: option
-              docs: https://openapi-generator.tech
-              name: flake8
-              lang: Python
-              jepl_support: true
-              version: 4.0.1
-              executable: executable
-              docker:
-                image: image
-                dockerfile: dockerfile
-                reviewed: 2000-01-23
-                oneshot: true
-            - args:
-              - summary: summary
-                args:
-                - null
-                - null
-                repeatable: false
-                selectable: true
-                format: string
-                description: Detect the license of the given project
-                id: id
-                type: subcommand
-                value: detect
-                option: option
-              - summary: summary
-                args:
-                - null
-                - null
-                repeatable: false
-                selectable: true
-                format: string
-                description: Detect the license of the given project
-                id: id
-                type: subcommand
-                value: detect
-                option: option
-              docs: https://openapi-generator.tech
-              name: flake8
-              lang: Python
-              jepl_support: true
-              version: 4.0.1
-              executable: executable
-              docker:
-                image: image
-                dockerfile: dockerfile
-                reviewed: 2000-01-23
-                oneshot: true
+          tools:
+          - args:
+            - summary: summary
+              args:
+              - null
+              - null
+              repeatable: false
+              selectable: true
+              format: string
+              description: Detect the license of the given project
+              id: id
+              type: subcommand
+              value: detect
+              option: option
+            - summary: summary
+              args:
+              - null
+              - null
+              repeatable: false
+              selectable: true
+              format: string
+              description: Detect the license of the given project
+              id: id
+              type: subcommand
+              value: detect
+              option: option
+            docs: https://openapi-generator.tech
+            name: flake8
+            lang: Python
+            jepl_support: true
+            version: 4.0.1
+            executable: executable
+            docker:
+              image: image
+              dockerfile: dockerfile
+              reviewed: 2000-01-23
+              oneshot: true
+          - args:
+            - summary: summary
+              args:
+              - null
+              - null
+              repeatable: false
+              selectable: true
+              format: string
+              description: Detect the license of the given project
+              id: id
+              type: subcommand
+              value: detect
+              option: option
+            - summary: summary
+              args:
+              - null
+              - null
+              repeatable: false
+              selectable: true
+              format: string
+              description: Detect the license of the given project
+              id: id
+              type: subcommand
+              value: detect
+              option: option
+            docs: https://openapi-generator.tech
+            name: flake8
+            lang: Python
+            jepl_support: true
+            version: 4.0.1
+            executable: executable
+            docker:
+              image: image
+              dockerfile: dockerfile
+              reviewed: 2000-01-23
+              oneshot: true
         - agent:
             template: template
             name: name
             type: docker_compose
           id: QC.Sty
-          steps:
-          - tools:
-            - args:
-              - summary: summary
-                args:
-                - null
-                - null
-                repeatable: false
-                selectable: true
-                format: string
-                description: Detect the license of the given project
-                id: id
-                type: subcommand
-                value: detect
-                option: option
-              - summary: summary
-                args:
-                - null
-                - null
-                repeatable: false
-                selectable: true
-                format: string
-                description: Detect the license of the given project
-                id: id
-                type: subcommand
-                value: detect
-                option: option
-              docs: https://openapi-generator.tech
-              name: flake8
-              lang: Python
-              jepl_support: true
-              version: 4.0.1
-              executable: executable
-              docker:
-                image: image
-                dockerfile: dockerfile
-                reviewed: 2000-01-23
-                oneshot: true
-            - args:
-              - summary: summary
-                args:
-                - null
-                - null
-                repeatable: false
-                selectable: true
-                format: string
-                description: Detect the license of the given project
-                id: id
-                type: subcommand
-                value: detect
-                option: option
-              - summary: summary
-                args:
-                - null
-                - null
-                repeatable: false
-                selectable: true
-                format: string
-                description: Detect the license of the given project
-                id: id
-                type: subcommand
-                value: detect
-                option: option
-              docs: https://openapi-generator.tech
-              name: flake8
-              lang: Python
-              jepl_support: true
-              version: 4.0.1
-              executable: executable
-              docker:
-                image: image
-                dockerfile: dockerfile
-                reviewed: 2000-01-23
-                oneshot: true
-          - tools:
-            - args:
-              - summary: summary
-                args:
-                - null
-                - null
-                repeatable: false
-                selectable: true
-                format: string
-                description: Detect the license of the given project
-                id: id
-                type: subcommand
-                value: detect
-                option: option
-              - summary: summary
-                args:
-                - null
-                - null
-                repeatable: false
-                selectable: true
-                format: string
-                description: Detect the license of the given project
-                id: id
-                type: subcommand
-                value: detect
-                option: option
-              docs: https://openapi-generator.tech
-              name: flake8
-              lang: Python
-              jepl_support: true
-              version: 4.0.1
-              executable: executable
-              docker:
-                image: image
-                dockerfile: dockerfile
-                reviewed: 2000-01-23
-                oneshot: true
-            - args:
-              - summary: summary
-                args:
-                - null
-                - null
-                repeatable: false
-                selectable: true
-                format: string
-                description: Detect the license of the given project
-                id: id
-                type: subcommand
-                value: detect
-                option: option
-              - summary: summary
-                args:
-                - null
-                - null
-                repeatable: false
-                selectable: true
-                format: string
-                description: Detect the license of the given project
-                id: id
-                type: subcommand
-                value: detect
-                option: option
-              docs: https://openapi-generator.tech
-              name: flake8
-              lang: Python
-              jepl_support: true
-              version: 4.0.1
-              executable: executable
-              docker:
-                image: image
-                dockerfile: dockerfile
-                reviewed: 2000-01-23
-                oneshot: true
+          tools:
+          - args:
+            - summary: summary
+              args:
+              - null
+              - null
+              repeatable: false
+              selectable: true
+              format: string
+              description: Detect the license of the given project
+              id: id
+              type: subcommand
+              value: detect
+              option: option
+            - summary: summary
+              args:
+              - null
+              - null
+              repeatable: false
+              selectable: true
+              format: string
+              description: Detect the license of the given project
+              id: id
+              type: subcommand
+              value: detect
+              option: option
+            docs: https://openapi-generator.tech
+            name: flake8
+            lang: Python
+            jepl_support: true
+            version: 4.0.1
+            executable: executable
+            docker:
+              image: image
+              dockerfile: dockerfile
+              reviewed: 2000-01-23
+              oneshot: true
+          - args:
+            - summary: summary
+              args:
+              - null
+              - null
+              repeatable: false
+              selectable: true
+              format: string
+              description: Detect the license of the given project
+              id: id
+              type: subcommand
+              value: detect
+              option: option
+            - summary: summary
+              args:
+              - null
+              - null
+              repeatable: false
+              selectable: true
+              format: string
+              description: Detect the license of the given project
+              id: id
+              type: subcommand
+              value: detect
+              option: option
+            docs: https://openapi-generator.tech
+            name: flake8
+            lang: Python
+            jepl_support: true
+            version: 4.0.1
+            executable: executable
+            docker:
+              image: image
+              dockerfile: dockerfile
+              reviewed: 2000-01-23
+              oneshot: true
         deployment:
           repo_deploy:
             credentials_id: null
