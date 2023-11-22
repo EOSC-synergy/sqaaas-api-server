@@ -10,7 +10,7 @@ info:
     name: GPLv3
     url: https://www.gnu.org/licenses/gpl-3.0.txt
   title: SQAaaS API
-  version: 2.10.0
+  version: 3.0.0
 servers:
 - description: Main (production) API server
   url: http://api.sqaaas.eosc-synergy.eu/v1
@@ -135,7 +135,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Pipeline_assessment'
+              $ref: '#/components/schemas/Assessment'
         required: true
         x-body-name: body
       responses:
@@ -758,6 +758,7 @@ components:
         selectable: true
         format: string
         description: Detect the license of the given project
+        id: id
         type: subcommand
         value: detect
         option: option
@@ -769,6 +770,10 @@ components:
           - positional
           - optional
           title: type
+          type: string
+        id:
+          description: Identifier of the argument
+          title: id
           type: string
         description:
           description: hint about what the command does
@@ -814,6 +819,7 @@ components:
       required:
       - description
       - type
+      - value
       title: ToolArg
       type: object
     Tool:
@@ -828,6 +834,7 @@ components:
           selectable: true
           format: string
           description: Detect the license of the given project
+          id: id
           type: subcommand
           value: detect
           option: option
@@ -839,6 +846,7 @@ components:
           selectable: true
           format: string
           description: Detect the license of the given project
+          id: id
           type: subcommand
           value: detect
           option: option
@@ -887,9 +895,6 @@ components:
           title: args
           type: array
       required:
-      - docker
-      - docs
-      - lang
       - name
       title: Tool
       type: object
@@ -911,6 +916,7 @@ components:
             selectable: true
             format: string
             description: Detect the license of the given project
+            id: id
             type: subcommand
             value: detect
             option: option
@@ -922,6 +928,7 @@ components:
             selectable: true
             format: string
             description: Detect the license of the given project
+            id: id
             type: subcommand
             value: detect
             option: option
@@ -945,6 +952,7 @@ components:
             selectable: true
             format: string
             description: Detect the license of the given project
+            id: id
             type: subcommand
             value: detect
             option: option
@@ -956,6 +964,7 @@ components:
             selectable: true
             format: string
             description: Detect the license of the given project
+            id: id
             type: subcommand
             value: detect
             option: option
@@ -1173,6 +1182,7 @@ components:
                   selectable: true
                   format: string
                   description: Detect the license of the given project
+                  id: id
                   type: subcommand
                   value: detect
                   option: option
@@ -1184,6 +1194,7 @@ components:
                   selectable: true
                   format: string
                   description: Detect the license of the given project
+                  id: id
                   type: subcommand
                   value: detect
                   option: option
@@ -1216,6 +1227,7 @@ components:
                   selectable: true
                   format: string
                   description: Detect the license of the given project
+                  id: id
                   type: subcommand
                   value: detect
                   option: option
@@ -1227,6 +1239,7 @@ components:
                   selectable: true
                   format: string
                   description: Detect the license of the given project
+                  id: id
                   type: subcommand
                   value: detect
                   option: option
@@ -1396,6 +1409,7 @@ components:
                     selectable: true
                     format: string
                     description: Detect the license of the given project
+                    id: id
                     type: subcommand
                     value: detect
                     option: option
@@ -1407,6 +1421,7 @@ components:
                     selectable: true
                     format: string
                     description: Detect the license of the given project
+                    id: id
                     type: subcommand
                     value: detect
                     option: option
@@ -1439,6 +1454,7 @@ components:
                     selectable: true
                     format: string
                     description: Detect the license of the given project
+                    id: id
                     type: subcommand
                     value: detect
                     option: option
@@ -1450,6 +1466,7 @@ components:
                     selectable: true
                     format: string
                     description: Detect the license of the given project
+                    id: id
                     type: subcommand
                     value: detect
                     option: option
@@ -1511,6 +1528,7 @@ components:
                     selectable: true
                     format: string
                     description: Detect the license of the given project
+                    id: id
                     type: subcommand
                     value: detect
                     option: option
@@ -1522,6 +1540,7 @@ components:
                     selectable: true
                     format: string
                     description: Detect the license of the given project
+                    id: id
                     type: subcommand
                     value: detect
                     option: option
@@ -1554,6 +1573,7 @@ components:
                     selectable: true
                     format: string
                     description: Detect the license of the given project
+                    id: id
                     type: subcommand
                     value: detect
                     option: option
@@ -1565,6 +1585,7 @@ components:
                     selectable: true
                     format: string
                     description: Detect the license of the given project
+                    id: id
                     type: subcommand
                     value: detect
                     option: option
@@ -1679,6 +1700,48 @@ components:
       title: Pipeline
       type: object
     AssessmentDeployment:
+      example:
+        repo_deploy:
+          credentials_id: null
+          repo: https://github.com/eosc-synergy/sqaaas-api-spec
+          branch: master
+        deploy_tool:
+          args:
+          - summary: summary
+            args:
+            - null
+            - null
+            repeatable: false
+            selectable: true
+            format: string
+            description: Detect the license of the given project
+            id: id
+            type: subcommand
+            value: detect
+            option: option
+          - summary: summary
+            args:
+            - null
+            - null
+            repeatable: false
+            selectable: true
+            format: string
+            description: Detect the license of the given project
+            id: id
+            type: subcommand
+            value: detect
+            option: option
+          docs: https://openapi-generator.tech
+          name: flake8
+          lang: Python
+          jepl_support: true
+          version: 4.0.1
+          executable: executable
+          docker:
+            image: image
+            dockerfile: dockerfile
+            reviewed: 2000-01-23
+            oneshot: true
       properties:
         repo_deploy:
           $ref: '#/components/schemas/Repository'
@@ -1687,6 +1750,13 @@ components:
       title: AssessmentDeployment
       type: object
     AssessmentFAIR:
+      example:
+        metadata_protocol: oai-pmh
+        metadata_endpoint: http://digital.csic.es/dspace-oai/request
+        badge_policy_url: https://example.org/badge-matchmaking-policies.ini
+        evaluator_endpoint: http://localhost:9090/v1.0/rda/rda_all
+        evaluator_tool: fair-eva
+        persistent_identifier: https://doi.org/10.5281/zenodo.5993188
       properties:
         persistent_identifier:
           description: Persistent identifier for the dataset
@@ -1723,7 +1793,646 @@ components:
           type: string
       title: AssessmentFAIR
       type: object
-    Pipeline_assessment:
+    Agent:
+      example:
+        template: template
+        name: name
+        type: docker_compose
+      properties:
+        type:
+          description: Orchestration technology to deploy the pipeline stages
+          enum:
+          - docker_compose
+          title: type
+          type: string
+        name:
+          description: Container name
+          title: name
+          type: string
+        template:
+          description: Relative path (in the repository) to the container definition
+          title: template
+          type: string
+      title: Agent
+      type: object
+    Step:
+      example:
+        tools:
+        - args:
+          - summary: summary
+            args:
+            - null
+            - null
+            repeatable: false
+            selectable: true
+            format: string
+            description: Detect the license of the given project
+            id: id
+            type: subcommand
+            value: detect
+            option: option
+          - summary: summary
+            args:
+            - null
+            - null
+            repeatable: false
+            selectable: true
+            format: string
+            description: Detect the license of the given project
+            id: id
+            type: subcommand
+            value: detect
+            option: option
+          docs: https://openapi-generator.tech
+          name: flake8
+          lang: Python
+          jepl_support: true
+          version: 4.0.1
+          executable: executable
+          docker:
+            image: image
+            dockerfile: dockerfile
+            reviewed: 2000-01-23
+            oneshot: true
+        - args:
+          - summary: summary
+            args:
+            - null
+            - null
+            repeatable: false
+            selectable: true
+            format: string
+            description: Detect the license of the given project
+            id: id
+            type: subcommand
+            value: detect
+            option: option
+          - summary: summary
+            args:
+            - null
+            - null
+            repeatable: false
+            selectable: true
+            format: string
+            description: Detect the license of the given project
+            id: id
+            type: subcommand
+            value: detect
+            option: option
+          docs: https://openapi-generator.tech
+          name: flake8
+          lang: Python
+          jepl_support: true
+          version: 4.0.1
+          executable: executable
+          docker:
+            image: image
+            dockerfile: dockerfile
+            reviewed: 2000-01-23
+            oneshot: true
+      properties:
+        tools:
+          description: set of tools to be used in the step
+          items:
+            $ref: '#/components/schemas/Tool'
+          title: tools
+          type: array
+      title: Step
+      type: object
+    CriterionWorkflow:
+      example:
+        agent:
+          template: template
+          name: name
+          type: docker_compose
+        id: QC.Sty
+        steps:
+        - tools:
+          - args:
+            - summary: summary
+              args:
+              - null
+              - null
+              repeatable: false
+              selectable: true
+              format: string
+              description: Detect the license of the given project
+              id: id
+              type: subcommand
+              value: detect
+              option: option
+            - summary: summary
+              args:
+              - null
+              - null
+              repeatable: false
+              selectable: true
+              format: string
+              description: Detect the license of the given project
+              id: id
+              type: subcommand
+              value: detect
+              option: option
+            docs: https://openapi-generator.tech
+            name: flake8
+            lang: Python
+            jepl_support: true
+            version: 4.0.1
+            executable: executable
+            docker:
+              image: image
+              dockerfile: dockerfile
+              reviewed: 2000-01-23
+              oneshot: true
+          - args:
+            - summary: summary
+              args:
+              - null
+              - null
+              repeatable: false
+              selectable: true
+              format: string
+              description: Detect the license of the given project
+              id: id
+              type: subcommand
+              value: detect
+              option: option
+            - summary: summary
+              args:
+              - null
+              - null
+              repeatable: false
+              selectable: true
+              format: string
+              description: Detect the license of the given project
+              id: id
+              type: subcommand
+              value: detect
+              option: option
+            docs: https://openapi-generator.tech
+            name: flake8
+            lang: Python
+            jepl_support: true
+            version: 4.0.1
+            executable: executable
+            docker:
+              image: image
+              dockerfile: dockerfile
+              reviewed: 2000-01-23
+              oneshot: true
+        - tools:
+          - args:
+            - summary: summary
+              args:
+              - null
+              - null
+              repeatable: false
+              selectable: true
+              format: string
+              description: Detect the license of the given project
+              id: id
+              type: subcommand
+              value: detect
+              option: option
+            - summary: summary
+              args:
+              - null
+              - null
+              repeatable: false
+              selectable: true
+              format: string
+              description: Detect the license of the given project
+              id: id
+              type: subcommand
+              value: detect
+              option: option
+            docs: https://openapi-generator.tech
+            name: flake8
+            lang: Python
+            jepl_support: true
+            version: 4.0.1
+            executable: executable
+            docker:
+              image: image
+              dockerfile: dockerfile
+              reviewed: 2000-01-23
+              oneshot: true
+          - args:
+            - summary: summary
+              args:
+              - null
+              - null
+              repeatable: false
+              selectable: true
+              format: string
+              description: Detect the license of the given project
+              id: id
+              type: subcommand
+              value: detect
+              option: option
+            - summary: summary
+              args:
+              - null
+              - null
+              repeatable: false
+              selectable: true
+              format: string
+              description: Detect the license of the given project
+              id: id
+              type: subcommand
+              value: detect
+              option: option
+            docs: https://openapi-generator.tech
+            name: flake8
+            lang: Python
+            jepl_support: true
+            version: 4.0.1
+            executable: executable
+            docker:
+              image: image
+              dockerfile: dockerfile
+              reviewed: 2000-01-23
+              oneshot: true
+      properties:
+        id:
+          description: ID of the criterion
+          example: QC.Sty
+          title: id
+          type: string
+        agent:
+          $ref: '#/components/schemas/Agent'
+        steps:
+          description: steps containing the workflow to validate a given criterion
+          items:
+            $ref: '#/components/schemas/Step'
+          title: steps
+          type: array
+      title: CriterionWorkflow
+      type: object
+    Assessment:
+      example:
+        repo_docs:
+          credentials_id: null
+          repo: https://github.com/eosc-synergy/sqaaas-api-spec
+          branch: master
+        repo_code:
+          credentials_id: null
+          repo: https://github.com/eosc-synergy/sqaaas-api-spec
+          branch: master
+        fair:
+          metadata_protocol: oai-pmh
+          metadata_endpoint: http://digital.csic.es/dspace-oai/request
+          badge_policy_url: https://example.org/badge-matchmaking-policies.ini
+          evaluator_endpoint: http://localhost:9090/v1.0/rda/rda_all
+          evaluator_tool: fair-eva
+          persistent_identifier: https://doi.org/10.5281/zenodo.5993188
+        criteria_workflow:
+        - agent:
+            template: template
+            name: name
+            type: docker_compose
+          id: QC.Sty
+          steps:
+          - tools:
+            - args:
+              - summary: summary
+                args:
+                - null
+                - null
+                repeatable: false
+                selectable: true
+                format: string
+                description: Detect the license of the given project
+                id: id
+                type: subcommand
+                value: detect
+                option: option
+              - summary: summary
+                args:
+                - null
+                - null
+                repeatable: false
+                selectable: true
+                format: string
+                description: Detect the license of the given project
+                id: id
+                type: subcommand
+                value: detect
+                option: option
+              docs: https://openapi-generator.tech
+              name: flake8
+              lang: Python
+              jepl_support: true
+              version: 4.0.1
+              executable: executable
+              docker:
+                image: image
+                dockerfile: dockerfile
+                reviewed: 2000-01-23
+                oneshot: true
+            - args:
+              - summary: summary
+                args:
+                - null
+                - null
+                repeatable: false
+                selectable: true
+                format: string
+                description: Detect the license of the given project
+                id: id
+                type: subcommand
+                value: detect
+                option: option
+              - summary: summary
+                args:
+                - null
+                - null
+                repeatable: false
+                selectable: true
+                format: string
+                description: Detect the license of the given project
+                id: id
+                type: subcommand
+                value: detect
+                option: option
+              docs: https://openapi-generator.tech
+              name: flake8
+              lang: Python
+              jepl_support: true
+              version: 4.0.1
+              executable: executable
+              docker:
+                image: image
+                dockerfile: dockerfile
+                reviewed: 2000-01-23
+                oneshot: true
+          - tools:
+            - args:
+              - summary: summary
+                args:
+                - null
+                - null
+                repeatable: false
+                selectable: true
+                format: string
+                description: Detect the license of the given project
+                id: id
+                type: subcommand
+                value: detect
+                option: option
+              - summary: summary
+                args:
+                - null
+                - null
+                repeatable: false
+                selectable: true
+                format: string
+                description: Detect the license of the given project
+                id: id
+                type: subcommand
+                value: detect
+                option: option
+              docs: https://openapi-generator.tech
+              name: flake8
+              lang: Python
+              jepl_support: true
+              version: 4.0.1
+              executable: executable
+              docker:
+                image: image
+                dockerfile: dockerfile
+                reviewed: 2000-01-23
+                oneshot: true
+            - args:
+              - summary: summary
+                args:
+                - null
+                - null
+                repeatable: false
+                selectable: true
+                format: string
+                description: Detect the license of the given project
+                id: id
+                type: subcommand
+                value: detect
+                option: option
+              - summary: summary
+                args:
+                - null
+                - null
+                repeatable: false
+                selectable: true
+                format: string
+                description: Detect the license of the given project
+                id: id
+                type: subcommand
+                value: detect
+                option: option
+              docs: https://openapi-generator.tech
+              name: flake8
+              lang: Python
+              jepl_support: true
+              version: 4.0.1
+              executable: executable
+              docker:
+                image: image
+                dockerfile: dockerfile
+                reviewed: 2000-01-23
+                oneshot: true
+        - agent:
+            template: template
+            name: name
+            type: docker_compose
+          id: QC.Sty
+          steps:
+          - tools:
+            - args:
+              - summary: summary
+                args:
+                - null
+                - null
+                repeatable: false
+                selectable: true
+                format: string
+                description: Detect the license of the given project
+                id: id
+                type: subcommand
+                value: detect
+                option: option
+              - summary: summary
+                args:
+                - null
+                - null
+                repeatable: false
+                selectable: true
+                format: string
+                description: Detect the license of the given project
+                id: id
+                type: subcommand
+                value: detect
+                option: option
+              docs: https://openapi-generator.tech
+              name: flake8
+              lang: Python
+              jepl_support: true
+              version: 4.0.1
+              executable: executable
+              docker:
+                image: image
+                dockerfile: dockerfile
+                reviewed: 2000-01-23
+                oneshot: true
+            - args:
+              - summary: summary
+                args:
+                - null
+                - null
+                repeatable: false
+                selectable: true
+                format: string
+                description: Detect the license of the given project
+                id: id
+                type: subcommand
+                value: detect
+                option: option
+              - summary: summary
+                args:
+                - null
+                - null
+                repeatable: false
+                selectable: true
+                format: string
+                description: Detect the license of the given project
+                id: id
+                type: subcommand
+                value: detect
+                option: option
+              docs: https://openapi-generator.tech
+              name: flake8
+              lang: Python
+              jepl_support: true
+              version: 4.0.1
+              executable: executable
+              docker:
+                image: image
+                dockerfile: dockerfile
+                reviewed: 2000-01-23
+                oneshot: true
+          - tools:
+            - args:
+              - summary: summary
+                args:
+                - null
+                - null
+                repeatable: false
+                selectable: true
+                format: string
+                description: Detect the license of the given project
+                id: id
+                type: subcommand
+                value: detect
+                option: option
+              - summary: summary
+                args:
+                - null
+                - null
+                repeatable: false
+                selectable: true
+                format: string
+                description: Detect the license of the given project
+                id: id
+                type: subcommand
+                value: detect
+                option: option
+              docs: https://openapi-generator.tech
+              name: flake8
+              lang: Python
+              jepl_support: true
+              version: 4.0.1
+              executable: executable
+              docker:
+                image: image
+                dockerfile: dockerfile
+                reviewed: 2000-01-23
+                oneshot: true
+            - args:
+              - summary: summary
+                args:
+                - null
+                - null
+                repeatable: false
+                selectable: true
+                format: string
+                description: Detect the license of the given project
+                id: id
+                type: subcommand
+                value: detect
+                option: option
+              - summary: summary
+                args:
+                - null
+                - null
+                repeatable: false
+                selectable: true
+                format: string
+                description: Detect the license of the given project
+                id: id
+                type: subcommand
+                value: detect
+                option: option
+              docs: https://openapi-generator.tech
+              name: flake8
+              lang: Python
+              jepl_support: true
+              version: 4.0.1
+              executable: executable
+              docker:
+                image: image
+                dockerfile: dockerfile
+                reviewed: 2000-01-23
+                oneshot: true
+        deployment:
+          repo_deploy:
+            credentials_id: null
+            repo: https://github.com/eosc-synergy/sqaaas-api-spec
+            branch: master
+          deploy_tool:
+            args:
+            - summary: summary
+              args:
+              - null
+              - null
+              repeatable: false
+              selectable: true
+              format: string
+              description: Detect the license of the given project
+              id: id
+              type: subcommand
+              value: detect
+              option: option
+            - summary: summary
+              args:
+              - null
+              - null
+              repeatable: false
+              selectable: true
+              format: string
+              description: Detect the license of the given project
+              id: id
+              type: subcommand
+              value: detect
+              option: option
+            docs: https://openapi-generator.tech
+            name: flake8
+            lang: Python
+            jepl_support: true
+            version: 4.0.1
+            executable: executable
+            docker:
+              image: image
+              dockerfile: dockerfile
+              reviewed: 2000-01-23
+              oneshot: true
       properties:
         repo_code:
           $ref: '#/components/schemas/Repository'
@@ -1733,7 +2442,12 @@ components:
           $ref: '#/components/schemas/AssessmentDeployment'
         fair:
           $ref: '#/components/schemas/AssessmentFAIR'
-      title: Pipeline_assessment
+        criteria_workflow:
+          items:
+            $ref: '#/components/schemas/CriterionWorkflow'
+          title: criteria_workflow
+          type: array
+      title: Assessment
       type: object
     AssessmentOutputRepository:
       example:
@@ -2497,6 +3211,7 @@ components:
                   selectable: true
                   format: string
                   description: Detect the license of the given project
+                  id: id
                   type: subcommand
                   value: detect
                   option: option
@@ -2508,6 +3223,7 @@ components:
                   selectable: true
                   format: string
                   description: Detect the license of the given project
+                  id: id
                   type: subcommand
                   value: detect
                   option: option
@@ -2540,6 +3256,7 @@ components:
                   selectable: true
                   format: string
                   description: Detect the license of the given project
+                  id: id
                   type: subcommand
                   value: detect
                   option: option
@@ -2551,6 +3268,7 @@ components:
                   selectable: true
                   format: string
                   description: Detect the license of the given project
+                  id: id
                   type: subcommand
                   value: detect
                   option: option
@@ -2829,6 +3547,7 @@ components:
             selectable: true
             format: string
             description: Detect the license of the given project
+            id: id
             type: subcommand
             value: detect
             option: option
@@ -2840,6 +3559,7 @@ components:
             selectable: true
             format: string
             description: Detect the license of the given project
+            id: id
             type: subcommand
             value: detect
             option: option
@@ -2921,6 +3641,7 @@ components:
               selectable: true
               format: string
               description: Detect the license of the given project
+              id: id
               type: subcommand
               value: detect
               option: option
@@ -2932,6 +3653,7 @@ components:
               selectable: true
               format: string
               description: Detect the license of the given project
+              id: id
               type: subcommand
               value: detect
               option: option
@@ -2964,6 +3686,7 @@ components:
               selectable: true
               format: string
               description: Detect the license of the given project
+              id: id
               type: subcommand
               value: detect
               option: option
@@ -2975,6 +3698,7 @@ components:
               selectable: true
               format: string
               description: Detect the license of the given project
+              id: id
               type: subcommand
               value: detect
               option: option

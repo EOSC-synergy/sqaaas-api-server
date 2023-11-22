@@ -18,10 +18,11 @@ class ToolArg(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, type: str=None, description: str=None, value: object=None, option: str=None, summary: str=None, format: str=None, selectable: bool=True, repeatable: bool=False, args: List['ToolArg']=None):
+    def __init__(self, type: str=None, id: str=None, description: str=None, value: object=None, option: str=None, summary: str=None, format: str=None, selectable: bool=True, repeatable: bool=False, args: List['ToolArg']=None):
         """ToolArg - a model defined in OpenAPI
 
         :param type: The type of this ToolArg.
+        :param id: The id of this ToolArg.
         :param description: The description of this ToolArg.
         :param value: The value of this ToolArg.
         :param option: The option of this ToolArg.
@@ -33,6 +34,7 @@ class ToolArg(Model):
         """
         self.openapi_types = {
             'type': str,
+            'id': str,
             'description': str,
             'value': object,
             'option': str,
@@ -45,6 +47,7 @@ class ToolArg(Model):
 
         self.attribute_map = {
             'type': 'type',
+            'id': 'id',
             'description': 'description',
             'value': 'value',
             'option': 'option',
@@ -56,6 +59,7 @@ class ToolArg(Model):
         }
 
         self._type = type
+        self._id = id
         self._description = description
         self._value = value
         self._option = option
@@ -104,6 +108,29 @@ class ToolArg(Model):
         self._type = type
 
     @property
+    def id(self):
+        """Gets the id of this ToolArg.
+
+        Identifier of the argument
+
+        :return: The id of this ToolArg.
+        :rtype: str
+        """
+        return self._id
+
+    @id.setter
+    def id(self, id):
+        """Sets the id of this ToolArg.
+
+        Identifier of the argument
+
+        :param id: The id of this ToolArg.
+        :type id: str
+        """
+
+        self._id = id
+
+    @property
     def description(self):
         """Gets the description of this ToolArg.
 
@@ -148,6 +175,8 @@ class ToolArg(Model):
         :param value: The value of this ToolArg.
         :type value: object
         """
+        if value is None:
+            raise ValueError("Invalid value for `value`, must not be `None`")
 
         self._value = value
 

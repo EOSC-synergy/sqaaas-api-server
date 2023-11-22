@@ -117,8 +117,6 @@ class Tool(Model):
         :param lang: The lang of this Tool.
         :type lang: str
         """
-        if lang is None:
-            raise ValueError("Invalid value for `lang`, must not be `None`")
 
         self._lang = lang
 
@@ -184,8 +182,6 @@ class Tool(Model):
         :param docs: The docs of this Tool.
         :type docs: str
         """
-        if docs is None:
-            raise ValueError("Invalid value for `docs`, must not be `None`")
 
         self._docs = docs
 
@@ -207,8 +203,6 @@ class Tool(Model):
         :param docker: The docker of this Tool.
         :type docker: ToolDocker
         """
-        if docker is None:
-            raise ValueError("Invalid value for `docker`, must not be `None`")
 
         self._docker = docker
 

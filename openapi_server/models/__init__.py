@@ -6,6 +6,8 @@
 
 # import models into model package
 from openapi_server.models.add_pipeline201_response import AddPipeline201Response
+from openapi_server.models.agent import Agent
+from openapi_server.models.assessment import Assessment
 from openapi_server.models.assessment_deployment import AssessmentDeployment
 from openapi_server.models.assessment_fair import AssessmentFAIR
 from openapi_server.models.assessment_output import AssessmentOutput
@@ -35,6 +37,7 @@ from openapi_server.models.criterion_build_value_when import CriterionBuildValue
 from openapi_server.models.criterion_description import CriterionDescription
 from openapi_server.models.criterion_output_value_inner import CriterionOutputValueInner
 from openapi_server.models.criterion_output_value_inner_validation import CriterionOutputValueInnerValidation
+from openapi_server.models.criterion_workflow import CriterionWorkflow
 from openapi_server.models.get_pipeline_commands_scripts200_response_inner import GetPipelineCommandsScripts200ResponseInner
 from openapi_server.models.get_pipeline_composer_jepl200_response import GetPipelineComposerJepl200Response
 from openapi_server.models.get_pipeline_config_jepl200_response_inner import GetPipelineConfigJepl200ResponseInner
@@ -48,7 +51,6 @@ from openapi_server.models.je_pl_jenkinsfile_stages_inner import JePLJenkinsfile
 from openapi_server.models.je_pl_jenkinsfile_stages_inner_pipeline_config import JePLJenkinsfileStagesInnerPipelineConfig
 from openapi_server.models.je_pl_jenkinsfile_stages_inner_when import JePLJenkinsfileStagesInnerWhen
 from openapi_server.models.pipeline import Pipeline
-from openapi_server.models.pipeline_assessment import PipelineAssessment
 from openapi_server.models.repository import Repository
 from openapi_server.models.repository_credentials_id import RepositoryCredentialsId
 from openapi_server.models.service_docker_compose_value import ServiceDockerComposeValue
@@ -56,6 +58,7 @@ from openapi_server.models.service_docker_compose_value_build import ServiceDock
 from openapi_server.models.service_docker_compose_value_image import ServiceDockerComposeValueImage
 from openapi_server.models.service_docker_compose_value_image_registry import ServiceDockerComposeValueImageRegistry
 from openapi_server.models.service_docker_compose_value_volumes_inner import ServiceDockerComposeValueVolumesInner
+from openapi_server.models.step import Step
 from openapi_server.models.tool import Tool
 from openapi_server.models.tool_arg import ToolArg
 from openapi_server.models.tool_docker import ToolDocker
