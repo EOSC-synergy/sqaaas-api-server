@@ -119,13 +119,19 @@ class GitHubUtils(object):
         :param branch: Branch to push
         """
         repo = self.get_org_repository(repo_name)
+        if not branch:
+            branch = repo.default_branch
         contents = self.get_file(file_name, repo_name, branch)
         r = {}
         if contents:
-            self.logger.debug('File <%s> already exists in the repository, updating..' % file_name)
+            self.logger.debug('File <%s> already exists in the repository (branch %s), updating..' % (
+                file_name, branch
+            ))
             r = repo.update_file(contents.path, commit_msg, file_data, contents.sha, branch)
         else:
-            self.logger.debug('File <%s> does not currently exist in the repository, creating..' % file_name)
+            self.logger.debug('File <%s> does not currently exist in the repository (branch %s), creating..' % (
+                file_name, branch
+            ))
             r = repo.create_file(file_name, commit_msg, file_data, branch)
         return r['commit'].sha
 
