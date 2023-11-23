@@ -1099,12 +1099,6 @@ async def run_pipeline(
                     'Removing repository as part of re-creation:'
                     '%s' % pipeline_repo
                 )
-            # Uses a specific branch, not the default one
-            if pipeline_repo_branch:
-                if not gh_utils.get_branch(pipeline_repo, pipeline_repo_branch):
-                    _create_repo = True
-            else:
-                pipeline_repo_branch = _repo.default_branch
 
         if _create_repo:
             # Create repo from template (incl. README): use the same branch
@@ -1114,7 +1108,8 @@ async def run_pipeline(
                 branch=pipeline_repo_branch,
                 include_readme=True
             )
-            pipeline_repo_branch = _repo.default_branch
+            if not pipeline_repo_branch:
+                pipeline_repo_branch = _repo.default_branch
 
     logger.debug('Using pipeline repository <%s> (branch: %s)' % (
         pipeline_repo, pipeline_repo_branch))

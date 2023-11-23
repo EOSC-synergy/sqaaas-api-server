@@ -385,26 +385,11 @@ class GitHubUtils(object):
             )
             org = self.client.get_organization(_org_name)
             repo = org.create_repo(_repo_name)
-            self.logger.debug(
-                'Created new GitHub repository <%s> (branch: %s)' % (
-                    repo_name, repo.default_branch
-                )
-            )
+            self.logger.debug('Created new GitHub repository: %s' % repo_name)
         else:
             self.logger.debug(
                 'GitHub repository already exists: %s' % repo_name
             )
-        # Use a specific branch? (if not, take the default one)
-        _branch = branch
-        if _branch:
-            self.create_branch(
-                repo_name, _branch, repo.default_branch
-            )
-            self.logger.debug(
-                'Branch <%s> created for repo: %s' % (_branch, repo_name)
-            )
-        else:
-            _branch = repo.default_branch
         # Push README
         if include_readme:
             env = Environment(
@@ -415,12 +400,7 @@ class GitHubUtils(object):
                 'repo_name': repo_name
             })
             self.push_file(
-                'README.md', file_data, 'Add README', repo_name, _branch
-            )
-            self.logger.debug(
-                'README file pushed to repository <%s> (branch: %s)' % (
-                    repo_name, _branch
-                )
+                'README.md', file_data, 'Add README', repo_name, branch=branch
             )
 
         return repo
