@@ -219,6 +219,7 @@ class GitHubUtils(object):
         :param head_branch_name: Name of the branch to do the checkout from
         """
         repo = self.get_repository(repo_name)
+        git_refs = repo.get_git_refs()
         head_branch = repo.get_branch(head_branch_name)
         repo.create_git_ref(
             ref='refs/heads/' + branch_name,
