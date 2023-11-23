@@ -593,7 +593,7 @@ async def add_pipeline_for_assessment(request: web.Request, body, user_requested
             _tool_name = _tool_data['name']
             criteria_tools[_criterion_id][_tool_name].update({
                 'lang': _tool_data['lang'],
-                'version': _tool_data['version'],
+                'version': _tool_data.get('version', 'not-provided'),
                 'docker': _tool_data['docker']
             })
     db.add_tool_data(pipeline_id, criteria_tools)
