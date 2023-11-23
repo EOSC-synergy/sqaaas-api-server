@@ -466,12 +466,13 @@ class ProcessExtraData(object):
         tool_map = {} # tool DB data
         tool_name = tool['name']
         # special treatment for 'commands' builder
+        cmd_list = [tool_name]
         commands_builder = False
         if tool_name in ['commands']:
             commands_builder = True
+            cmd_list = []
         # when existing, use executable instead of name
         # if executable exists but empty, then no name & no executable (commands)
-        cmd_list = [tool_name]
         if 'executable' in list(tool):
             if not tool['executable']:
                 cmd_list = []
