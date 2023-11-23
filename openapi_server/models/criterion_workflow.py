@@ -5,7 +5,6 @@ from datetime import date, datetime
 from typing import List, Dict, Type
 
 from openapi_server.models.base_model_ import Model
-from openapi_server.models.agent import Agent
 from openapi_server.models.tool import Tool
 from openapi_server import util
 
@@ -16,27 +15,23 @@ class CriterionWorkflow(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, id: str=None, agent: Agent=None, tools: List[Tool]=None):
+    def __init__(self, id: str=None, tools: List[Tool]=None):
         """CriterionWorkflow - a model defined in OpenAPI
 
         :param id: The id of this CriterionWorkflow.
-        :param agent: The agent of this CriterionWorkflow.
         :param tools: The tools of this CriterionWorkflow.
         """
         self.openapi_types = {
             'id': str,
-            'agent': Agent,
             'tools': List[Tool]
         }
 
         self.attribute_map = {
             'id': 'id',
-            'agent': 'agent',
             'tools': 'tools'
         }
 
         self._id = id
-        self._agent = agent
         self._tools = tools
 
     @classmethod
@@ -70,27 +65,6 @@ class CriterionWorkflow(Model):
         """
 
         self._id = id
-
-    @property
-    def agent(self):
-        """Gets the agent of this CriterionWorkflow.
-
-
-        :return: The agent of this CriterionWorkflow.
-        :rtype: Agent
-        """
-        return self._agent
-
-    @agent.setter
-    def agent(self, agent):
-        """Sets the agent of this CriterionWorkflow.
-
-
-        :param agent: The agent of this CriterionWorkflow.
-        :type agent: Agent
-        """
-
-        self._agent = agent
 
     @property
     def tools(self):

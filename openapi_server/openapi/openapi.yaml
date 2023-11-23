@@ -1793,34 +1793,8 @@ components:
           type: string
       title: AssessmentFAIR
       type: object
-    Agent:
-      example:
-        template: template
-        name: name
-        type: docker_compose
-      properties:
-        type:
-          description: Orchestration technology to deploy the pipeline stages
-          enum:
-          - docker_compose
-          title: type
-          type: string
-        name:
-          description: Container name
-          title: name
-          type: string
-        template:
-          description: Relative path (in the repository) to the container definition
-          title: template
-          type: string
-      title: Agent
-      type: object
     CriterionWorkflow:
       example:
-        agent:
-          template: template
-          name: name
-          type: docker_compose
         id: QC.Sty
         tools:
         - args:
@@ -1901,8 +1875,6 @@ components:
           example: QC.Sty
           title: id
           type: string
-        agent:
-          $ref: '#/components/schemas/Agent'
         tools:
           description: tools to run as workflow steps for the given criterion
           items:
@@ -1929,11 +1901,7 @@ components:
           evaluator_tool: fair-eva
           persistent_identifier: https://doi.org/10.5281/zenodo.5993188
         criteria_workflow:
-        - agent:
-            template: template
-            name: name
-            type: docker_compose
-          id: QC.Sty
+        - id: QC.Sty
           tools:
           - args:
             - summary: summary
@@ -2007,11 +1975,7 @@ components:
               dockerfile: dockerfile
               reviewed: 2000-01-23
               oneshot: true
-        - agent:
-            template: template
-            name: name
-            type: docker_compose
-          id: QC.Sty
+        - id: QC.Sty
           tools:
           - args:
             - summary: summary
