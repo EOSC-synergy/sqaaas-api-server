@@ -536,6 +536,11 @@ async def add_pipeline_for_assessment(request: web.Request, body, user_requested
     except SQAaaSAPIException as e:
         return web.Response(status=e.http_code, reason=e.message, text=e.message)
 
+    #1.1 Add custom criteria
+    criteria_workflow = body.get('criteria_workflow', [])
+    if criteria_workflow:
+        criteria_data_list.extend(criteria_workflow)
+
     #2 Load request payload (same as passed to POST /pipeline) from templates
     env = Environment(
         loader=PackageLoader('openapi_server', 'templates')
