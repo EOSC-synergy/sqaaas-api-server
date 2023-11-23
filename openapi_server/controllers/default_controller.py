@@ -1095,7 +1095,7 @@ async def run_pipeline(
             if not gh_utils.get_repo_content(pipeline_repo):
                 _repo.delete()
                 _create_repo = True
-                self.logger.debug(
+                logger.debug(
                     'Removing repository as part of re-creation:'
                     '%s' % pipeline_repo
                 )
