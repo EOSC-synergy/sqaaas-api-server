@@ -1124,8 +1124,8 @@ async def run_pipeline(
                 branch=pipeline_repo_branch,
                 include_readme=True
             )
-            if not pipeline_repo_branch:
-                pipeline_repo_branch = _repo.default_branch
+        if not pipeline_repo_branch:
+            pipeline_repo_branch = _repo.default_branch
 
     logger.debug('Using pipeline repository <%s> (branch: %s)' % (
         pipeline_repo, pipeline_repo_branch))
