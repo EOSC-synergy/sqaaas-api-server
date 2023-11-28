@@ -539,7 +539,23 @@ async def add_pipeline_for_assessment(request: web.Request, body, user_requested
     #1.1 Add custom criteria
     criteria_workflow = body.get('criteria_workflow', [])
     if criteria_workflow:
-        criteria_data_list.extend(criteria_workflow)
+        criteria_data_list_new = []
+        # Overwrite the criterion id (if present)
+        # FIXME This is a costly operation, it might be better to move to a dict instead of a list
+        for criterion_data in criteria_data_list:
+            _criterion_id = criterion_data['id']
+            _need_update = False
+            for updated_criterion_data in criteria_workflow:
+                _updated_criterion_id = updated_criterion_data['id']
+                if _updated_criterion_id in [_criterion_id]:
+                    criteria_data_list_new.append(updated_criterion_data)
+                    _need_update = True
+            if not _need_update:
+                criteria_data_list_new.append(criterion_data)
+        criteria_data_list = criteria_data_list_new
+        logger.debug(
+            'Criteria workflow added to current criteria data list: %s' % criteria_workflow
+        )
 
     #2 Load request payload (same as passed to POST /pipeline) from templates
     env = Environment(
