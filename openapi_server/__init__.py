@@ -35,9 +35,10 @@ def set_parser():
     parser.add_argument(
         '-p',
         '--port',
+        type=int,
         metavar='PORT',
         dest='port',
-        default='8080',
+        default=8080,
         help='Port number to be used when exposing the API server (default: 8080)')
     parser.add_argument(
         '-d',
