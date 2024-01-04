@@ -1266,6 +1266,10 @@ def get_status_badge(status, digital_object_type):
     :param digital_object_type: Type of assessment
     """
     status_badge_map = {
+        'not assessed': {
+            'value': 'not assessed',
+            'default_color': 'skyblue'
+        },
         'building': {
             'value': 'building',
             'default_color': 'skyblue'
