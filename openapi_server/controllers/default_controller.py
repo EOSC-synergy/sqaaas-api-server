@@ -1196,6 +1196,10 @@ async def run_pipeline(
         'file_name': STATUS_BADGE_LOCATION,
         'file_data': ctls_utils.get_status_badge(badge_status, digital_object_type)
     })
+    # Update DB
+    _repo_settings = pipeline_data.get('repo_settings', {})
+    _repo_settings['badge_status'] = badge_status
+    db.add_repo_settings(pipeline_id, _repo_settings)
 
     # 3) Do the commit
     try:
