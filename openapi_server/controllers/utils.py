@@ -601,7 +601,7 @@ def process_extra_data(config_json, composer_json, report_to_stdout=False):
             repo_creds = project_repo.pop('credential_data', {})
             # Get default branch if None is defined
             if not project_repo.get('branch', None):
-                project_repo['branch'] = GitUtils.get_remote_active_branch(
+                project_repo['branch'] = GitUtils.get_default_branch_from_remote(
                     repo_url,
                     repo_creds=repo_creds
                 )
