@@ -1189,7 +1189,19 @@ async def run_pipeline(
         jk_job_name = _job_info['fullName']
         last_build_no = _job_info['lastBuild']['number']
 
-    # 2) Do the commit
+    # 2) Include badge status in the commit
+    badge_status = 'not assessed'
+    digital_object_type = pipeline_data['qaa']['digital_object_type']
+    additional_files_list.append({
+        'file_name': STATUS_BADGE_LOCATION,
+        'file_data': ctls_utils.get_status_badge(badge_status, digital_object_type)
+    })
+    # Update DB
+    _repo_settings = pipeline_data.get('repo_settings', {})
+    _repo_settings['badge_status'] = badge_status
+    db.add_repo_settings(pipeline_id, _repo_settings)
+
+    # 3) Do the commit
     try:
         commit_id = JePLUtils.push_files(
             gh_utils,
@@ -1206,7 +1218,7 @@ async def run_pipeline(
     else:
         commit_url = gh_utils.get_commit_url(pipeline_repo, commit_id)
 
-    # 3) Automated-run check: previous commit should trigger the build
+    # 4) Automated-run check: previous commit should trigger the build
     build_job_task = None
     if job_exists:
         _build_to_check = last_build_no+1
@@ -1413,6 +1425,8 @@ async def _update_status(pipeline_id, triggered_by_run=False, build_task=None):
         pass # keep previous status
     elif build_status in ['ABORTED', 'FAILURE']: # done, failure
         badge_status = 'nullified'
+    elif build_status in ['WAITING_SCAN_ORG']:
+        badge_status = "not assessed" # hack to avoid doing a new commit
     else:
         badge_status = 'building'
     logger.debug('Got current badge status for assessment (build: %s): %s' % (
