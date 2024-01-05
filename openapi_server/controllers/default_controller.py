@@ -167,10 +167,11 @@ async def _get_tooling_for_assessment(
             toolset_for_reporting = []
             filtered_required_tools = []
             for tool in criterion_data_copy['tools']:
-                _tool_name = tool['name']
+                tool_name = tool['name']
                 # Tool filter #1: <reporting:requirement_level> property
-                logger.info(
-                    'Running filtering #1 (requirement level) for tool: %s' % _tool_name
+                logger.debug(
+                    'Running filtering #1 (requirement level) for tool: '
+                    '%s' % _tool_name
                 )
                 if filter_tool_by_requirement_level:
                     account_tool_by_requirement_level = False
@@ -192,14 +193,14 @@ async def _get_tooling_for_assessment(
                     except KeyError:
                         logger.warning(
                             'Skipping tool as it does not have reporting data '
-                            'defined: %s' % _tool_name
+                            'defined: %s' % tool_name
                         )
                     else:
                         if account_tool_by_requirement_level:
                             logger.debug(
                                 'Tool passess filtering #1 (requirement '
                                 'level). Reason: %s' % (
-                                    _tool_name, _reason
+                                    tool_name, _reason
                                 )
                             )
                     finally:
@@ -213,16 +214,20 @@ async def _get_tooling_for_assessment(
 
                 # Tool filter #2: presence of file extensions or filenames in the
                 # repository based on the language
-                if account_tool_by_requirement_level :
+                logger.debug(
+                    'Running filtering #2 (file extensions/names) for tool: '
+                    '%s' % _tool_name
+                )
+                if account_tool_by_requirement_level:
                     account_tool = False
                     lang = tool['lang']
                     lang_entry = ctls_utils.get_language_entry(lang)
                     if not lang_entry:
                         account_tool = True
-                        logger.debug((
+                        logger.warning((
                             'Skipping file matching for tool <%s>: entry for '
                             'language <%s> has not been found in metadata file' % (
-                                tool['name'], lang
+                                tool_name, lang
                             )
                         ))
                     else:
@@ -266,24 +271,29 @@ async def _get_tooling_for_assessment(
                             )
                             if criterion_has_required_level:
                                 filtered_required_tools.append(_reason)
-                            logger.debug(_reason)
+                            logger.warning(_reason)
+                        else:
+                            logger.debug(
+                                'Tool passes filtering #2 (file extensions): '
+                                '%s' % tool_name
+                            )
                     if account_tool:
                         logger.info(
-                            'Tool <%s> accounted for assessment' % tool['name']
+                            'Tool added for the assessment after filtering: '
+                            '%s' % tool_name
                         )
                         toolset_for_reporting.append(tool)
                     else:
-                        logger.info((
-                            'Not adding tool <%s> for the assessment. No matching '
-                            'files (language: %s) found in the repository <%s>' % (
-                                tool['name'], lang, repo['repo']
-                            )
-                        ))
+                        logger.warning(
+                            'Tool <%s> not considered for the assessment: no '
+                            'matching files (language: %s) found in the '
+                            'repository <%s>' % (tool_name, lang, repo['repo'])
+                        )
 
             if not toolset_for_reporting:
                 _reason = ((
                     'No tool defined for assessment (missing <reporting> '
-                    'property) in <%s> criterion' % criterion_id
+                    'property) in criterion: %s' % criterion_id
                 ))
                 if criterion_has_required_level:
                     filtered_out_data = ctls_utils.format_filtered_data(
@@ -291,16 +301,18 @@ async def _get_tooling_for_assessment(
                         filtered_required_tools
                     )
                     criteria_filtered[criterion_id] = filtered_out_data
-                    logger.warn(_reason)
+                    logger.warning(_reason)
                 else:
                     logger.debug(_reason)
             else:
-                logger.info((
-                    'Found %s tool/s for assessment of criterion <%s>: %s' % (
+                logger.info(
+                    'Found %s tool/s for the assessment of criterion <%s>: '
+                    '%s' % (
                         len(toolset_for_reporting),
                         criterion_id,
-                        [tool['name'] for tool in toolset_for_reporting])
-                ))
+                        [tool['name'] for tool in toolset_for_reporting]
+                    )
+                )
                 criterion_data_copy['tools'] = toolset_for_reporting
                 criteria_data_list_filtered.append(criterion_data_copy)
 
