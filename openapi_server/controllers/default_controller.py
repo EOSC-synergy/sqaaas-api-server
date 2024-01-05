@@ -42,6 +42,7 @@ from openapi_server.models.inline_object import InlineObject
 
 from report2sqaaas import utils as r2s_utils
 
+LEVELS_FOR_ASSESSMENT = ['REQUIRED', 'RECOMMENDED']
 
 SUPPORTED_PLATFORMS = {
     'github': 'https://github.com'
@@ -148,7 +149,6 @@ async def _get_tooling_for_assessment(
     """
     @GitUtils.do_git_work
     def _filter_tools(repo, criteria_data_list, path='.', **kwargs):
-        levels_for_assessment = ['REQUIRED', 'RECOMMENDED']
         criteria_data_list_filtered = []
         criteria_filtered = {}
         for criterion_data in criteria_data_list:
@@ -167,40 +167,50 @@ async def _get_tooling_for_assessment(
             toolset_for_reporting = []
             filtered_required_tools = []
             for tool in criterion_data_copy['tools']:
+                _tool_name = tool['name']
                 # Tool filter #1: <reporting:requirement_level> property
+                logger.info(
+                    'Running filtering #1 (requirement level) for tool: %s' % _tool_name
+                )
                 if filter_tool_by_requirement_level:
                     account_tool_by_requirement_level = False
+                    _reason = None
                     try:
                         level = tool['reporting']['requirement_level']
-                        if level in levels_for_assessment:
+                        if level in LEVELS_FOR_ASSESSMENT:
                             account_tool_by_requirement_level = True
-                            logger.debug((
-                                'Accounting for QAA the tool <%s> (reason: '
-                                'REQUIRED/RECOMMENDED): %s' % (
-                                    tool['name'], tool
-                                )
-                            ))
+                            _reason = (
+                                'flagged as REQUIRED/RECOMMENDED '
+                                'in the tooling definition'
+                            )
                             if level in ['REQUIRED']:
                                 criterion_has_required_level = True
                         else:
                             if tool in user_requested_tools:
                                 account_tool_by_requirement_level = True
-                                logger.debug((
-                                    'Accounting for QAA the tool <%s> (reason: '
-                                    'tool requested by user): %s' % (
-                                        tool['name'], tool
-                                    )
-                                ))
+                                _reason = 'tool requested by user'
                     except KeyError:
-                        logger.debug((
-                            'Skipping tool <%s> as it does not have reporting data '
-                            'defined: %s' % (tool['name'], tool)
-                        ))
+                        logger.warning(
+                            'Skipping tool as it does not have reporting data '
+                            'defined: %s' % _tool_name
+                        )
+                    else:
+                        if account_tool_by_requirement_level:
+                            logger.debug(
+                                'Tool passess filtering #1 (requirement '
+                                'level). Reason: %s' % (
+                                    _tool_name, _reason
+                                )
+                            )
+                    finally:
+                        logger.debug('Tool <%s> definition: %s' % tool)
+
                 else:
                     # NOTE: Setting this flag to true is a trick to make tools that
                     # have been requested not to be filtered-by-requirement-level
                     # can enter the next conditional block (lang files)
                     account_tool_by_requirement_level = True
+
                 # Tool filter #2: presence of file extensions or filenames in the
                 # repository based on the language
                 if account_tool_by_requirement_level :
