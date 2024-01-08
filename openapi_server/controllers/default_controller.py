@@ -170,8 +170,8 @@ async def _get_tooling_for_assessment(
                 tool_name = tool['name']
                 # Tool filter #1: <reporting:requirement_level> property
                 logger.debug(
-                    'Running filtering #1 (requirement level) for tool: '
-                    '%s' % _tool_name
+                    '[tool: <%s>] Running filtering #1 (requirement '
+                    'level)' % tool_name
                 )
                 if filter_tool_by_requirement_level:
                     account_tool_by_requirement_level = False
@@ -192,20 +192,22 @@ async def _get_tooling_for_assessment(
                                 _reason = 'tool requested by user'
                     except KeyError:
                         logger.warning(
-                            'Skipping tool as it does not have reporting data '
-                            'defined: %s' % tool_name
+                            '[tool: <%s>] Skipping tool as it does not have '
+                            'reporting data defined' % tool_name
                         )
                     else:
                         if account_tool_by_requirement_level:
                             logger.debug(
-                                'Tool passess filtering #1 (requirement '
+                                '[tool: <%s>] Passes filtering #1 (requirement '
                                 'level). Reason: %s' % (
                                     tool_name, _reason
                                 )
                             )
                     finally:
-                        logger.debug('Tool <%s> definition: %s' % tool)
-
+                        logger.debug(
+                            '[tool: <%s>] Tool definition from SQAaaaS tooling: '
+                            '%s' % (tool_name, tool)
+                        )
                 else:
                     # NOTE: Setting this flag to true is a trick to make tools that
                     # have been requested not to be filtered-by-requirement-level
@@ -214,21 +216,20 @@ async def _get_tooling_for_assessment(
 
                 # Tool filter #2: presence of file extensions or filenames in the
                 # repository based on the language
-                logger.debug(
-                    'Running filtering #2 (file extensions/names) for tool: '
-                    '%s' % _tool_name
-                )
                 if account_tool_by_requirement_level:
+                    logger.debug(
+                        '[tool: <%s>] Running filtering #2 (file '
+                        'extensions/names)' % tool_name
+                    )
                     account_tool = False
                     lang = tool['lang']
                     lang_entry = ctls_utils.get_language_entry(lang)
                     if not lang_entry:
                         account_tool = True
                         logger.warning((
-                            'Skipping file matching for tool <%s>: entry for '
-                            'language <%s> has not been found in metadata file' % (
-                                tool_name, lang
-                            )
+                            '[tool: <%s>] Skipping file matching: entry for '
+                            'language <%s> has not been found in metadata '
+                            'file' % (tool_name, lang)
                         ))
                     else:
                         files_found = []
@@ -239,9 +240,9 @@ async def _get_tooling_for_assessment(
                             if not value:
                                 continue
                             logger.debug(
-                                'Matching repo files by <%s> for language <%s>: '
-                                '%s' % (
-                                    field_name, lang, value
+                                '[tool: <%s>] Matching repo files by <%s> for '
+                                'language <%s>: %s' % (
+                                    tool_name, field_name, lang, value
                                 )
                             )
                             files_found = ctls_utils.find_files_by_language(
@@ -249,11 +250,11 @@ async def _get_tooling_for_assessment(
                             )
                             if files_found:
                                 account_tool = True
-                                logger.debug((
-                                    'Found matching files in repository: '
-                                    '%s' % files_found
-                                ))
-                                if tool['name'] in ['hadolint']:
+                                logger.debug(
+                                    '[tool: <%s>] Found matching files in '
+                                    'repository: %s' % (tool_name, files_found)
+                                )
+                                if tool_name in ['hadolint']:
                                     # Check if 'explicit_paths' property is enabled
                                     _relative_paths = [
                                         os.path.relpath(_file, path)
@@ -274,8 +275,8 @@ async def _get_tooling_for_assessment(
                             logger.warning(_reason)
                         else:
                             logger.debug(
-                                'Tool passes filtering #2 (file extensions): '
-                                '%s' % tool_name
+                                '[tool: <%s>] Tool passes filtering #2 (file '
+                                'extensions)' % tool_name
                             )
                     if account_tool:
                         logger.info(
@@ -289,6 +290,12 @@ async def _get_tooling_for_assessment(
                             'matching files (language: %s) found in the '
                             'repository <%s>' % (tool_name, lang, repo['repo'])
                         )
+                else:
+                    logger.debug(
+                        '[tool: <%s>] Not running filtering #2 (file '
+                        'extensions/names) as the tool did not pass filtering '
+                        '#1' % tool_name
+                    )
 
             if not toolset_for_reporting:
                 _reason = ((
