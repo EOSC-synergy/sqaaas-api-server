@@ -1863,7 +1863,7 @@ async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Re
                     'version': criteria_tools[criterion_name][tool].get('version', None),
                     'docker': criteria_tools[criterion_name][tool].get('docker', None),
                     'ci': ci_data,
-                    'level': criterion_output_data['requirement_level'],
+                    'level': criterion_output_data.get('requirement_level', None),
                     'build_repo': pipeline_data.get('pipeline_repo_url', None)
                 }
 
