@@ -256,7 +256,6 @@ class GitUtils(object):
                     # repo settings
                     kwargs['tag'] = source_repo_branch
                     kwargs['commit_id'] = repo.commit(source_repo_branch).hexsha
-
-            ret = f(*args, **kwargs)
+                ret = f(*args, **kwargs)
             return ret
         return decorated_function
