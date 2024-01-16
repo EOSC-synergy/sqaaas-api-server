@@ -323,7 +323,10 @@ async def _get_tooling_for_assessment(
                 criterion_data_copy['tools'] = toolset_for_reporting
                 criteria_data_list_filtered.append(criterion_data_copy)
 
-        return criteria_data_list_filtered, criteria_filtered, kwargs
+        _repo_settings = copy.deepcopy(kwargs)
+        _repo_settings['repo'] = repo['repo']
+
+        return criteria_data_list_filtered, criteria_filtered, _repo_settings
 
 
     # Get the relevant criteria for the type of assessment/digital object
