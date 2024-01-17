@@ -621,7 +621,11 @@ async def add_pipeline_for_assessment(request: web.Request, body, user_requested
         'assess'
     ])
     logger.debug('Generated pipeline name for the assessment: %s' % pipeline_name)
-
+    # Render template for JSON payload
+    env = Environment(
+        loader=PackageLoader('openapi_server', 'templates')
+    )
+    template = env.get_template('pipeline_assessment.json')
     json_rendered = template.render(
         pipeline_name=pipeline_name,
         repositories=repositories,
