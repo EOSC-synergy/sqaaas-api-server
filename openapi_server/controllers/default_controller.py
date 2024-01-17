@@ -327,6 +327,7 @@ async def _get_tooling_for_assessment(
         _repo_settings = copy.deepcopy(kwargs)
         _repo_settings['url'] = _repo_name
         _repo_settings['name'] = ctls_utils.get_short_repo_name(_repo_name)
+        _repo_settings['is_main_repo'] = repo.get("is_main_repo", False)
 
         return criteria_data_list_filtered, criteria_filtered, _repo_settings
 
@@ -428,8 +429,10 @@ async def _get_criteria_for_digital_object(repositories):
         criteria_data_list = criteria_data_list_new
 
     # Add criteria list for the digital object type
+    _repo = repositories[_repo_key]
+    _repo['is_main_repo'] = True
     relevant_criteria_data.append({
-        'repo': repositories[_repo_key],
+        'repo': _repo,
         'criteria_data_list': criteria_data_list
     })
     logger.debug(
