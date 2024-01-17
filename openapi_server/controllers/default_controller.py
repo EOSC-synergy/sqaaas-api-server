@@ -149,6 +149,7 @@ async def _get_tooling_for_assessment(
     """
     @GitUtils.do_git_work
     def _filter_tools(repo, criteria_data_list, path='.', **kwargs):
+        _repo_name = repo['repo']
         criteria_data_list_filtered = []
         criteria_filtered = {}
         for criterion_data in criteria_data_list:
@@ -288,7 +289,7 @@ async def _get_tooling_for_assessment(
                         logger.warning(
                             'Tool <%s> not considered for the assessment: no '
                             'matching files (language: %s) found in the '
-                            'repository <%s>' % (tool_name, lang, repo['repo'])
+                            'repository <%s>' % (tool_name, lang, _repo_name)
                         )
                 else:
                     logger.debug(
@@ -324,7 +325,8 @@ async def _get_tooling_for_assessment(
                 criteria_data_list_filtered.append(criterion_data_copy)
 
         _repo_settings = copy.deepcopy(kwargs)
-        _repo_settings['repo'] = repo['repo']
+        _repo_settings['url'] = _repo_name
+        _repo_settings['name'] = ctls_utils.get_short_repo_name(_repo_name)
 
         return criteria_data_list_filtered, criteria_filtered, _repo_settings
 
