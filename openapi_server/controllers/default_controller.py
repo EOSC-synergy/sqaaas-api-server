@@ -533,10 +533,10 @@ async def add_pipeline_for_assessment(request: web.Request, body, user_requested
     # part of the validate_request() decorator
     body = ctls_utils.del_empty_keys(body)
     repositories, main_repo_key = _validate_assessment_input(body)
-    ci_credential_id = None
 
     #0 Encrypt credentials before storing in DB
     for _repo_key, _repo_data in repositories.items():
+        ci_credential_id = None
         _repo_creds = _repo_data.get('credentials_id', None)
         # type(str) == CI credentials (only id required)
         if type(_repo_creds) in [str]:
@@ -631,7 +631,6 @@ async def add_pipeline_for_assessment(request: web.Request, body, user_requested
         repositories=repositories,
         criteria_data_list=criteria_data_list,
         tooling_qaa_specific_key=TOOLING_QAA_SPECIFIC_KEY,
-        ci_credential_id = ci_credential_id
     )
     json_data = json.loads(json_rendered)
     logger.debug('Generated JSON payload (from template) required to create the pipeline for the assessment: %s' % json_data)

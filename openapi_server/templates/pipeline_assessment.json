@@ -23,7 +23,7 @@
 	    },
 	    "credential_tmp": true,
 	    {%- endif -%}
-	    {%- if ci_credential_id -%}
+	    {%- if repo_data.get('ci_credential_id', None) -%}
 	    "credentials_id": "{{ ci_credential_id }}",
 	    {%- endif -%}
 	    "repo": "{{ repo_data.repo }}",
