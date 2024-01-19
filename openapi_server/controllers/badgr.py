@@ -203,8 +203,8 @@ class BadgrUtils(object):
             badge_type,
             badgeclass_name,
             url,
-            tag=None,
-            commit_id=None,
+            tag=[],
+            commit_id=[],
             build_commit_id=None,
             build_commit_url=None,
             ci_build_url=None,
@@ -245,18 +245,30 @@ class BadgrUtils(object):
             'Authorization': 'Bearer %s' % self.access_token,
             'Content-Type': 'application/json'
         }
-        # Assertion data
+        # First item is the main repository
+        main_repo = url.pop(0)
+        main_repo_tag = tag.pop(0)
+        main_repo_commit_id = commit_id.pop(0)
+        # Assertion data: narrative
         narrative = None
         if badge_type in ['fair']:
             narrative = 'SQAaaS assessment results for dataset %s' % url
         else:
             narrative = (
                 'SQAaaS assessment results for repository %s '
-                '(commit: %s, branch/tag: %s)' % (url, commit_id, tag)
+                '(commit: %s, branch/tag: %s)' % (
+                    main_repo, main_repo_commit_id, main_repo_tag)
             )
+            if len(url) > 0:
+                narrative += '\n Additional repositories being analysed:'
+                for index in range(len(url)):
+                    narrative += '\n\t- %s (commit: %s, branch/tag: %s)' % (
+                        url[index], commit_id[index], tag[index]
+                    )
+
         assertion_data = json.dumps({
             'recipient': {
-              'identity': url,
+              'identity': main_repo,
               'hashed': True,
               'type': 'url'
             },
