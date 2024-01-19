@@ -533,10 +533,10 @@ async def add_pipeline_for_assessment(request: web.Request, body, user_requested
     # part of the validate_request() decorator
     body = ctls_utils.del_empty_keys(body)
     repositories, main_repo_key = _validate_assessment_input(body)
-    ci_credential_id = None
 
     #0 Encrypt credentials before storing in DB
     for _repo_key, _repo_data in repositories.items():
+        ci_credential_id = None
         _repo_creds = _repo_data.get('credentials_id', None)
         # type(str) == CI credentials (only id required)
         if type(_repo_creds) in [str]:
@@ -631,7 +631,6 @@ async def add_pipeline_for_assessment(request: web.Request, body, user_requested
         repositories=repositories,
         criteria_data_list=criteria_data_list,
         tooling_qaa_specific_key=TOOLING_QAA_SPECIFIC_KEY,
-        ci_credential_id = ci_credential_id
     )
     json_data = json.loads(json_rendered)
     logger.debug('Generated JSON payload (from template) required to create the pipeline for the assessment: %s' % json_data)
@@ -675,7 +674,6 @@ async def add_pipeline_for_assessment(request: web.Request, body, user_requested
         )
         if platform in ['github']:
             gh_repo_name = _repo_data['name']
-            print(gh_repo_name)
             try:
                 gh_repo = gh_utils.get_repository(
                     gh_repo_name, _main_repo_creds, raise_exception=True
@@ -1245,8 +1243,9 @@ async def run_pipeline(
         'file_data': ctls_utils.get_status_badge(badge_status, digital_object_type)
     })
     # Update DB
-    _repo_settings = pipeline_data.get('repo_settings', {})
-    _repo_settings['badge_status'] = badge_status
+    _repo_settings = pipeline_data.get('repo_settings', [])
+    for _repo_data in _repo_settings:
+        _repo_data['badge_status'] = badge_status
     db.add_repo_settings(pipeline_id, _repo_settings)
 
     # 3) Do the commit
@@ -2495,16 +2494,21 @@ async def _issue_badge(pipeline_id, badge_type, badgeclass_name):
 
     badge_args = {}
     if badge_type not in ['fair']:
-        badge_args = {
-            'tag': pipeline_data['repo_settings']['tag'],
-            'commit_id': pipeline_data['repo_settings']['commit_id'],
-        }
-
+        repo_settings = pipeline_data['repo_settings']
+        repo_params = ['url', 'tag', 'commit_id']
+        badge_args = {param:[] for param in repo_params}
+        logger.debug('Checking multi-repository for badge arguments: %s' % repo_params)
+        for _repo_settings in repo_settings:
+            for param in repo_params:
+                if _repo_settings.get('is_main_repo', False):
+                    badge_args[param].insert(0, _repo_settings[param])
+                else:
+                    badge_args[param].append(_repo_settings[param])
+        logger.debug('Resultant badge arguments: %s' % badge_args)
     try:
         badge_data = badgr_utils.issue_badge(
             badge_type=badge_type,
             badgeclass_name=badgeclass_name,
-            url=pipeline_data['repo_settings']['url'],
             build_commit_id=build_info['commit_id'],
             build_commit_url=build_info['commit_url'],
             ci_build_url=build_info['url'],
@@ -2779,34 +2783,38 @@ async def _handle_badge_status(pipeline_id, pipeline_data, badge_status=None):
     :param badge_status: status string to be displayed on the badge.
     :type badge_status: str
     """
-    repo_settings = pipeline_data.get('repo_settings', {})
-    badge_status_previous = repo_settings.get('badge_status', None)
-    if not badge_status:
-        badge_status = badge_status_previous
-    if badge_status != badge_status_previous:
-        logger.debug('Status badge changed from <%s> to <%s>' % (
-            badge_status_previous, badge_status
-        ))
-        repo_settings['badge_status'] = badge_status
-        db.add_repo_settings(pipeline_id, repo_settings)
-        logger.info('New status badge updated in DB for pipeline <%s>: status <%s>' % (
-            pipeline_id, badge_status)
-        )
-        # Push badge
-        pipeline_repo = pipeline_data['pipeline_repo']
-        pipeline_repo_branch = pipeline_data['pipeline_repo_branch']
-        digital_object_type = pipeline_data['qaa']['digital_object_type']
-        gh_utils.push_file(
-            file_name=STATUS_BADGE_LOCATION,
-            file_data=ctls_utils.get_status_badge(badge_status, digital_object_type),
-            commit_msg='Update status badge',
-            repo_name=pipeline_repo,
-            branch=pipeline_repo_branch
-        )
-        logger.info('New status badge pushed to repository <%s>: status <%s>' % (
-            pipeline_repo, badge_status)
-        )
-    else:
-        logger.debug('No change in status badge: %s' % badge_status)
+    repo_settings = pipeline_data.get('repo_settings', [])
+    # badge_status_previous = repo_settings.get('badge_status', None)
+    # Badge status is the same for all the repositories
+    if repo_settings:
+        badge_status_previous = repo_settings[0].get('badge_status', None)
+        if not badge_status:
+            badge_status = badge_status_previous
+        if badge_status != badge_status_previous:
+            logger.debug('Status badge changed from <%s> to <%s>' % (
+                badge_status_previous, badge_status
+            ))
+            for _repo_settings in repo_settings:
+                _repo_settings['badge_status'] = badge_status
+            db.add_repo_settings(pipeline_id, repo_settings)
+            logger.info('New status badge updated in DB for pipeline <%s>: status <%s>' % (
+                pipeline_id, badge_status)
+            )
+            # Push badge
+            pipeline_repo = pipeline_data['pipeline_repo']
+            pipeline_repo_branch = pipeline_data['pipeline_repo_branch']
+            digital_object_type = pipeline_data['qaa']['digital_object_type']
+            gh_utils.push_file(
+                file_name=STATUS_BADGE_LOCATION,
+                file_data=ctls_utils.get_status_badge(badge_status, digital_object_type),
+                commit_msg='Update status badge',
+                repo_name=pipeline_repo,
+                branch=pipeline_repo_branch
+            )
+            logger.info('New status badge pushed to repository <%s>: status <%s>' % (
+                pipeline_repo, badge_status)
+            )
+        else:
+            logger.debug('No change in status badge: %s' % badge_status)
 
     return repo_settings

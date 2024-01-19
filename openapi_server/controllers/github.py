@@ -174,6 +174,10 @@ class GitHubUtils(object):
                 path=file_name, mode='100644', type='blob', sha=blob_sha
             ))
         try:
+            # Avoid GH redirections (such as master to main)
+            branch_data = repo.get_branch(branch)
+            if branch_data.name not in [branch]:
+                raise GithubException('Auto-raised exception')
             branch_sha = repo.get_branch(branch).commit.sha
             self.logger.debug('Branch already exists in repo <%s>: %s' % (
                 repo_name, branch
