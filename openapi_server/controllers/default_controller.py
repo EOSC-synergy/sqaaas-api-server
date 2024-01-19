@@ -674,7 +674,6 @@ async def add_pipeline_for_assessment(request: web.Request, body, user_requested
         )
         if platform in ['github']:
             gh_repo_name = _repo_data['name']
-            print(gh_repo_name)
             try:
                 gh_repo = gh_utils.get_repository(
                     gh_repo_name, _main_repo_creds, raise_exception=True
