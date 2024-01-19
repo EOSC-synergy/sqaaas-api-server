@@ -129,6 +129,7 @@ async def add_pipeline(request: web.Request, body, report_to_stdout=None) -> web
 
 async def _get_tooling_for_assessment(
     repositories,
+    main_repo_key,
     user_requested_tools=[]
 ):
     """Returns per-criterion tooling metadata filtered for assessment.
@@ -149,6 +150,7 @@ async def _get_tooling_for_assessment(
     """
     @GitUtils.do_git_work
     def _filter_tools(repo, criteria_data_list, path='.', **kwargs):
+        _repo_name = repo['repo']
         criteria_data_list_filtered = []
         criteria_filtered = {}
         for criterion_data in criteria_data_list:
@@ -288,7 +290,7 @@ async def _get_tooling_for_assessment(
                         logger.warning(
                             'Tool <%s> not considered for the assessment: no '
                             'matching files (language: %s) found in the '
-                            'repository <%s>' % (tool_name, lang, repo['repo'])
+                            'repository <%s>' % (tool_name, lang, _repo_name)
                         )
                 else:
                     logger.debug(
@@ -323,7 +325,12 @@ async def _get_tooling_for_assessment(
                 criterion_data_copy['tools'] = toolset_for_reporting
                 criteria_data_list_filtered.append(criterion_data_copy)
 
-        return criteria_data_list_filtered, criteria_filtered, kwargs
+        _repo_settings = copy.deepcopy(kwargs)
+        _repo_settings['url'] = _repo_name
+        _repo_settings['name'] = ctls_utils.get_short_repo_name(_repo_name)
+        _repo_settings['is_main_repo'] = repo.get("is_main_repo", False)
+
+        return criteria_data_list_filtered, criteria_filtered, _repo_settings
 
 
     # Get the relevant criteria for the type of assessment/digital object
@@ -342,13 +349,22 @@ async def _get_tooling_for_assessment(
             (
                 _criteria_data_list_filtered,
                 _criteria_filtered,
-                repo_settings
+                _repo_settings
             ) = _filter_tools(**repo_criteria_mapping)
         except SQAaaSAPIException as e:
             raise e
         else:
             criteria_data_list_filtered.extend(_criteria_data_list_filtered)
             criteria_filtered.update(_criteria_filtered)
+            # Feed 'repositories' with '_repo_settings'
+            _update_key = None
+            if _repo_settings.get('is_main_repo', False):
+                _update_key = main_repo_key
+            else:
+                if 'repo_docs' in repositories.keys():
+                    _update_key = 'repo_docs'
+            if _update_key:
+                repositories[_update_key].update(_repo_settings)
 
     if not criteria_data_list_filtered:
         _reason = 'Could not find any tool for criteria assessment'
@@ -358,7 +374,7 @@ async def _get_tooling_for_assessment(
     return (
         criteria_data_list_filtered,
         criteria_filtered,
-        repo_settings,
+        repositories,
         digital_object_type
     )
 
@@ -421,8 +437,10 @@ async def _get_criteria_for_digital_object(repositories):
         criteria_data_list = criteria_data_list_new
 
     # Add criteria list for the digital object type
+    _repo = repositories[_repo_key]
+    _repo['is_main_repo'] = True
     relevant_criteria_data.append({
-        'repo': repositories[_repo_key],
+        'repo': _repo,
         'criteria_data_list': criteria_data_list
     })
     logger.debug(
@@ -547,17 +565,17 @@ async def add_pipeline_for_assessment(request: web.Request, body, user_requested
             # FIXME Exit here?
 
     #1 Filter per-criterion tools that will take part in the assessment
-    repo_settings = {}
     try:
         (
             criteria_data_list,
             criteria_filtered,
-            repo_settings,
+            repositories,
             digital_object_type
         ) = await _get_tooling_for_assessment(
-                repositories=repositories,
-                user_requested_tools=user_requested_tools
-            )
+            repositories=repositories,
+            main_repo_key=main_repo_key,
+            user_requested_tools=user_requested_tools
+        )
         logger.debug((
             'Gathered tooling data enabled for assessment'
             ': %s' % criteria_data_list
@@ -587,28 +605,27 @@ async def add_pipeline_for_assessment(request: web.Request, body, user_requested
         )
 
     #2 Load request payload (same as passed to POST /pipeline) from templates
-    env = Environment(
-        loader=PackageLoader('openapi_server', 'templates')
-    )
-    template = env.get_template('pipeline_assessment.json')
-
-    # FIXME This only considers one repo
-    build_repo_name = repositories[main_repo_key].get('repo', None)
-    build_repo_branch = repositories[main_repo_key].get('branch', None)
+    # Use the main repo as the reference
+    main_repo = repositories[main_repo_key]
+    main_repo_name = main_repo['url']
+    main_repo_branch = main_repo['tag']
     if 'fair' in list(repositories):
         # FIXME Temporary hack until the web provides all required input fields
         _fair_tool = repositories['fair']['fair_tool']
         for arg in _fair_tool['args']:
             if arg.get('id', '') in ['persistent_identifier']:
-                build_repo_name = arg['value']
+                main_repo_name = arg['value']
                 break
-    build_repo_name = build_repo_name.strip('/')
     pipeline_name = '.'.join([
-        os.path.basename(build_repo_name),
+        os.path.basename(main_repo_name),
         'assess'
     ])
     logger.debug('Generated pipeline name for the assessment: %s' % pipeline_name)
-
+    # Render template for JSON payload
+    env = Environment(
+        loader=PackageLoader('openapi_server', 'templates')
+    )
+    template = env.get_template('pipeline_assessment.json')
     json_rendered = template.render(
         pipeline_name=pipeline_name,
         repositories=repositories,
@@ -623,7 +640,7 @@ async def add_pipeline_for_assessment(request: web.Request, body, user_requested
     try:
         pipeline_id = await _add_pipeline_to_db(
             json_data,
-            branch_upstream=build_repo_branch,
+            branch_upstream=main_repo_branch,
             report_to_stdout=True
         )
     except SQAaaSAPIException as e:
@@ -644,26 +661,26 @@ async def add_pipeline_for_assessment(request: web.Request, body, user_requested
     db.add_tool_data(pipeline_id, criteria_tools)
 
     #5 Store repo settings
-    ## FIXME For the time being, just consider the main repo code. Still an
-    ## array object must be returned
-    repo_settings.update({
-        'name': ctls_utils.get_short_repo_name(build_repo_name),
-        'url': build_repo_name
-    })
-    if 'repo_code' in list(repositories) or 'repo_deploy' in list(repositories):
+    repo_settings = []
+    for _repo_key, _repo_data in repositories.items():
+        # Get required keys from <repositories>
+        _repo_settings = {_key: _repo_data.get(_key, None)
+            for _key in ['url', 'name', 'tag', 'commit_id', 'is_main_repo']
+        }
         platform = ctls_utils.supported_git_platform(
-            repositories[main_repo_key]['repo'], platforms=SUPPORTED_PLATFORMS
+            _repo_data['url'], platforms=SUPPORTED_PLATFORMS
         )
-        _main_repo_creds = repositories[main_repo_key].get(
+        _main_repo_creds = _repo_data.get(
             'credential_data', {}
         )
         if platform in ['github']:
-            gh_repo_name = repo_settings['name']
+            gh_repo_name = _repo_data['name']
+            print(gh_repo_name)
             try:
                 gh_repo = gh_utils.get_repository(
                     gh_repo_name, _main_repo_creds, raise_exception=True
                 )
-                repo_settings.update({
+                _repo_settings.update({
                     'avatar_url': gh_utils.get_avatar(
                         gh_repo_name, _main_repo_creds
                     ),
@@ -680,6 +697,8 @@ async def add_pipeline_for_assessment(request: web.Request, body, user_requested
                 return web.Response(
                     status=e.http_code, reason=_reason, text=_reason
                 )
+        repo_settings.append(_repo_settings)
+        logger.debug("Repository settings generated for repo <%s>: %s" % (_repo_data['url'], _repo_settings))
 
     # Update 'repo_settings' on DB
     db.add_repo_settings(
