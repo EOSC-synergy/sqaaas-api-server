@@ -16,7 +16,7 @@ import uuid
 from datetime import datetime
 from importlib.metadata import version as impversion
 from importlib.resources import files as impfiles
-from typing import List, Dict
+from typing import Dict, List
 from urllib import parse as urllib_parse
 from zipfile import ZipFile, ZipInfo
 
