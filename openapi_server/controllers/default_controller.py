@@ -326,9 +326,10 @@ async def _get_tooling_for_assessment(
                 criteria_data_list_filtered.append(criterion_data_copy)
 
         _repo_settings = copy.deepcopy(kwargs)
-        _repo_settings['url'] = _repo_name
-        _repo_settings['name'] = ctls_utils.get_short_repo_name(_repo_name)
-        _repo_settings['is_main_repo'] = repo.get("is_main_repo", False)
+        if _repo_name:
+            _repo_settings['url'] = _repo_name
+            _repo_settings['name'] = ctls_utils.get_short_repo_name(_repo_name)
+            _repo_settings['is_main_repo'] = repo.get("is_main_repo", False)
 
         return criteria_data_list_filtered, criteria_filtered, _repo_settings
 
