@@ -62,6 +62,12 @@ github_organization_name = my_org
 ##   where the credentials set in 'docker_credential_id' are able to push images.
 # docker_credential_org = my_docker_hub_org
 
+[git]
+## ------------------------------------------ ##
+## Optional parameters (incl. default values) ##
+## ------------------------------------------ ##
+## - Path to file containing the GitHub token to carry out requests to GitHub API
+# clone_folder = /tmp
 
 [github]
 ## -------------------- ##
