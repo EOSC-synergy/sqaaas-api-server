@@ -5,14 +5,13 @@
 # coding: utf-8
 
 from datetime import date, datetime
+from typing import Dict, List, Type
 
-from typing import List, Dict, Type
-
-from openapi_server.models.base_model_ import Model
+from openapi_server import util
 from openapi_server.models.assessment_deployment import AssessmentDeployment
 from openapi_server.models.assessment_fair import AssessmentFAIR
+from openapi_server.models.base_model_ import Model
 from openapi_server.models.repository import Repository
-from openapi_server import util
 
 
 class PipelineAssessment(Model):

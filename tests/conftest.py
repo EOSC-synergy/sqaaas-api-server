@@ -3,13 +3,12 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 import logging
-import pytest
 import os
 
 import connexion
+import pytest
 
 from openapi_server import config
-
 
 CONF = config.init("etc/sqaaas.ini.sample")
 

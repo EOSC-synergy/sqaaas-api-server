@@ -5,13 +5,13 @@
 # coding: utf-8
 
 from datetime import date, datetime
+from typing import Dict, List, Type
 
-from typing import List, Dict, Type
-
-from openapi_server.models.base_model_ import Model
-from openapi_server.models.assessment_output_tool_ci import AssessmentOutputToolCI
-from openapi_server.models.tool_docker import ToolDocker
 from openapi_server import util
+from openapi_server.models.assessment_output_tool_ci import \
+    AssessmentOutputToolCI
+from openapi_server.models.base_model_ import Model
+from openapi_server.models.tool_docker import ToolDocker
 
 
 class AssessmentOutputValidatorTool(Model):

@@ -5,10 +5,10 @@
 import functools
 import json
 import logging
-import requests
 import time
-
 from urllib.parse import urljoin
+
+import requests
 
 
 class BadgrUtils(object):

@@ -3,9 +3,10 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 import argparse
-import connexion
-import os
 import logging
+import os
+
+import connexion
 
 from openapi_server import config
 

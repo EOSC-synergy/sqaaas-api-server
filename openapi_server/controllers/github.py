@@ -4,11 +4,8 @@
 
 import logging
 
-from github import Github
-from github import GithubObject
-from github import InputGitTreeElement
-from github.GithubException import GithubException
-from github.GithubException import UnknownObjectException
+from github import Github, GithubObject, InputGitTreeElement
+from github.GithubException import GithubException, UnknownObjectException
 from jinja2 import Environment, PackageLoader
 
 from openapi_server.controllers import crypto as crypto_utils

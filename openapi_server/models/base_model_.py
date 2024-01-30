@@ -3,7 +3,6 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 import pprint
-
 import typing
 
 from openapi_server import util

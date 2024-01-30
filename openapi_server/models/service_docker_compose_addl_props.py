@@ -5,20 +5,16 @@
 # coding: utf-8
 
 from datetime import date, datetime
+from typing import Dict, List, Type
 
-from typing import List, Dict, Type
-
-from openapi_server.models.base_model_ import Model
-from openapi_server.models.service_docker_compose_addl_props_build import (
-    ServiceDockerComposeAddlPropsBuild,
-)
-from openapi_server.models.service_docker_compose_addl_props_image import (
-    ServiceDockerComposeAddlPropsImage,
-)
-from openapi_server.models.service_docker_compose_addl_props_volumes_inner import (
-    ServiceDockerComposeAddlPropsVolumesInner,
-)
 from openapi_server import util
+from openapi_server.models.base_model_ import Model
+from openapi_server.models.service_docker_compose_addl_props_build import \
+    ServiceDockerComposeAddlPropsBuild
+from openapi_server.models.service_docker_compose_addl_props_image import \
+    ServiceDockerComposeAddlPropsImage
+from openapi_server.models.service_docker_compose_addl_props_volumes_inner import \
+    ServiceDockerComposeAddlPropsVolumesInner
 
 
 class ServiceDockerComposeAddlProps(Model):

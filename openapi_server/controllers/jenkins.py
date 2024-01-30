@@ -3,18 +3,15 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 import logging
-import requests
 import time
+from urllib.parse import quote_plus, urljoin
 
-from urllib.parse import urljoin
-from urllib.parse import quote_plus
-
-from bs4 import BeautifulSoup
 import jenkins
+import requests
+from bs4 import BeautifulSoup
 from jinja2 import Environment, PackageLoader
 
 from openapi_server.exception import SQAaaSAPIException
-
 
 CREATE_CREDENTIAL_ORG = (
     "/job/%(folder_name)s/credentials/store/folder/"

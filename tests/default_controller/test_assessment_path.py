@@ -4,7 +4,6 @@
 
 import pytest
 
-
 expected_response = [
     (
         {

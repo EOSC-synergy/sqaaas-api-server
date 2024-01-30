@@ -6,7 +6,6 @@ import pytest
 
 from openapi_server.controllers import utils
 
-
 expected_git_url = [
     ("https://github.com/foo/bar", "https://:@github.com/foo/bar"),
     ("http://github.com/foo/bar", "http://:@github.com/foo/bar"),

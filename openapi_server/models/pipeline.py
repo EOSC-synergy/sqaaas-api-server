@@ -5,14 +5,13 @@
 # coding: utf-8
 
 from datetime import date, datetime
+from typing import Dict, List, Type
 
-from typing import List, Dict, Type
-
+from openapi_server import util
 from openapi_server.models.base_model_ import Model
 from openapi_server.models.je_pl_composer import JePLComposer
 from openapi_server.models.je_pl_config import JePLConfig
 from openapi_server.models.je_pl_jenkinsfile import JePLJenkinsfile
-from openapi_server import util
 
 
 class Pipeline(Model):

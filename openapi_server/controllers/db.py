@@ -6,12 +6,12 @@ import copy
 import json
 import logging
 import pathlib
+
 import yaml
 
 from openapi_server import config
 from openapi_server.controllers import utils as ctls_utils
 from openapi_server.controllers.jepl import JePLUtils
-
 
 DB_FILE = pathlib.Path(config.get("db_file", fallback="/sqaaas/sqaaas.json"))
 logger = logging.getLogger("sqaaas.api.controller.db")

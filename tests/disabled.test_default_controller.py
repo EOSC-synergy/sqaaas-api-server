@@ -4,24 +4,24 @@
 
 # coding: utf-8
 
-import pytest
 import json
+
+import pytest
 from aiohttp import web
 
 from openapi_server.models.assessment_output import AssessmentOutput
 from openapi_server.models.badge import Badge
 from openapi_server.models.criterion import Criterion
-from openapi_server.models.criterion_output_addl_props_inner import (
-    CriterionOutputAddlPropsInner,
-)
+from openapi_server.models.criterion_output_addl_props_inner import \
+    CriterionOutputAddlPropsInner
 from openapi_server.models.inline_object import InlineObject
 from openapi_server.models.inline_response200 import InlineResponse200
+from openapi_server.models.inline_response201 import InlineResponse201
 from openapi_server.models.inline_response2001 import InlineResponse2001
 from openapi_server.models.inline_response2002 import InlineResponse2002
 from openapi_server.models.inline_response2003 import InlineResponse2003
 from openapi_server.models.inline_response2004 import InlineResponse2004
 from openapi_server.models.inline_response2005 import InlineResponse2005
-from openapi_server.models.inline_response201 import InlineResponse201
 from openapi_server.models.je_pl_composer import JePLComposer
 from openapi_server.models.je_pl_config import JePLConfig
 from openapi_server.models.je_pl_jenkinsfile import JePLJenkinsfile

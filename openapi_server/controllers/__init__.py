@@ -10,7 +10,6 @@ from openapi_server.controllers.git import GitUtils
 from openapi_server.controllers.github import GitHubUtils
 from openapi_server.controllers.jenkins import JenkinsUtils
 
-
 SUPPORTED_PLATFORMS = {"github": "https://github.com"}
 REPOSITORY_BACKEND = config.get("repository_backend")
 TOKEN_GH_FILE = config.get_repo("token", fallback="/etc/sqaaas/.gh_token")

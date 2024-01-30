@@ -5,13 +5,12 @@
 # coding: utf-8
 
 from datetime import date, datetime
+from typing import Dict, List, Type
 
-from typing import List, Dict, Type
-
+from openapi_server import util
 from openapi_server.models.base_model_ import Model
 from openapi_server.models.tool import Tool
 from openapi_server.models.tox_simplified import ToxSimplified
-from openapi_server import util
 
 
 class CriterionBuildAddlPropsReposInner(Model):

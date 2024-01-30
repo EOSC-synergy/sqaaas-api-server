@@ -6,8 +6,8 @@ import logging
 import os
 
 from cryptography.fernet import Fernet
-from openapi_server import config
 
+from openapi_server import config
 
 KEY_ENCRYPTION_PATH = config.get("key_encryption_path", fallback=".fernet_key")
 

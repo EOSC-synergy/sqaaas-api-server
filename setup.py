@@ -5,7 +5,8 @@
 # coding: utf-8
 
 import sys
-from setuptools import setup, find_packages
+
+from setuptools import find_packages, setup
 
 NAME = "sqaaas_api_server"
 VERSION = "2.21.0"

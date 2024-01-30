@@ -4,14 +4,13 @@
 
 import copy
 import logging
-import namegenerator
 
+import namegenerator
 from jinja2 import Environment, PackageLoader, select_autoescape
 
 from openapi_server import config
 from openapi_server.controllers import utils as ctls_utils
 from openapi_server.exception import SQAaaSAPIException
-
 
 logger = logging.getLogger("sqaaas.api.jepl")
 

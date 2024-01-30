@@ -3,9 +3,9 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 import datetime
-
 import typing
 from typing import Union
+
 from openapi_server import typing_utils
 
 T = typing.TypeVar("T")

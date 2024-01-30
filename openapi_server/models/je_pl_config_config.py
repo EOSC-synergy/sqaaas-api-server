@@ -5,13 +5,12 @@
 # coding: utf-8
 
 from datetime import date, datetime
+from typing import Dict, List, Type
 
-from typing import List, Dict, Type
-
+from openapi_server import util
 from openapi_server.models.base_model_ import Model
 from openapi_server.models.creds_user_pass import CredsUserPass
 from openapi_server.models.repository import Repository
-from openapi_server import util
 
 
 class JePLConfigConfig(Model):

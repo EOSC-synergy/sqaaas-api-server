@@ -5,42 +5,40 @@
 import asyncio
 import base64
 import calendar
-from datetime import datetime
 import copy
-from importlib.metadata import version as impversion
-from importlib.resources import files as impfiles
 import io
 import itertools
-import logging
 import json
+import logging
 import os
-import pandas
 import re
 import urllib
 import uuid
-import yaml
+from datetime import datetime
+from importlib.metadata import version as impversion
+from importlib.resources import files as impfiles
 from zipfile import ZipFile, ZipInfo
 
-from aiohttp import web
-from jinja2 import Environment, PackageLoader
-from deepdiff import DeepDiff
 import namegenerator
+import pandas
+import yaml
+from aiohttp import web
+from deepdiff import DeepDiff
+from jinja2 import Environment, PackageLoader
+from report2sqaaas import utils as r2s_utils
 
 import openapi_server
-from openapi_server import config
-from openapi_server import controllers
+from openapi_server import config, controllers
 from openapi_server.controllers import crypto as crypto_utils
 from openapi_server.controllers import db
+from openapi_server.controllers import utils as ctls_utils
 from openapi_server.controllers.badgr import BadgrUtils
 from openapi_server.controllers.git import GitUtils
 from openapi_server.controllers.github import GitHubUtils
 from openapi_server.controllers.jenkins import JenkinsUtils
 from openapi_server.controllers.jepl import JePLUtils
-from openapi_server.controllers import utils as ctls_utils
 from openapi_server.exception import SQAaaSAPIException
 from openapi_server.models.inline_object import InlineObject
-
-from report2sqaaas import utils as r2s_utils
 
 LEVELS_FOR_ASSESSMENT = ["REQUIRED", "RECOMMENDED"]
 

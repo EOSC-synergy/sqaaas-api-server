@@ -9,16 +9,13 @@ import re
 import stat
 import tempfile
 
-from git import cmd
-from git import Repo
+from git import Repo, cmd
 from git.exc import GitCommandError
-from urllib3.util import parse_url
-from urllib3.util import Url
+from urllib3.util import Url, parse_url
 
 from openapi_server import config
 from openapi_server.controllers import crypto as crypto_utils
 from openapi_server.exception import SQAaaSAPIException
-
 
 logger = logging.getLogger("sqaaas.api.git")
 

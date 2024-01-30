@@ -6,30 +6,24 @@ import copy
 import functools
 import itertools
 import logging
-import namegenerator
-from pathlib import Path
-from pathlib import PurePath
 import os
 import re
 import uuid
-import yaml
+from pathlib import Path, PurePath
 
+import anybadge
+import namegenerator
+import yaml
 from aiohttp import web
-from urllib3.util import parse_url
-from urllib3.util import Url
+from github.GithubException import GithubException, UnknownObjectException
+from jenkins import JenkinsException
+from urllib3.util import Url, parse_url
 
 from openapi_server import config
 from openapi_server.controllers import db
 from openapi_server.controllers.git import GitUtils
 from openapi_server.controllers.jepl import JePLUtils
 from openapi_server.exception import SQAaaSAPIException
-
-from github.GithubException import GithubException
-from github.GithubException import UnknownObjectException
-from jenkins import JenkinsException
-
-import anybadge
-
 
 logger = logging.getLogger("sqaaas.api.controller")
 
@@ -1198,8 +1192,7 @@ def add_image_to_im(
                     )
 
             IM_RADL.description = description
-            from IM2.radl import parse_radl
-            from IM2.radl import dump_radl
+            from IM2.radl import dump_radl, parse_radl
             from IM2.radl.radl import system
 
             radl = parse_radl(data)
