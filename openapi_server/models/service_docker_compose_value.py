@@ -9,12 +9,15 @@ from typing import Dict, List, Type
 
 from openapi_server import util
 from openapi_server.models.base_model_ import Model
-from openapi_server.models.service_docker_compose_value_build import \
-    ServiceDockerComposeValueBuild
-from openapi_server.models.service_docker_compose_value_image import \
-    ServiceDockerComposeValueImage
-from openapi_server.models.service_docker_compose_value_volumes_inner import \
-    ServiceDockerComposeValueVolumesInner
+from openapi_server.models.service_docker_compose_value_build import (
+    ServiceDockerComposeValueBuild,
+)
+from openapi_server.models.service_docker_compose_value_image import (
+    ServiceDockerComposeValueImage,
+)
+from openapi_server.models.service_docker_compose_value_volumes_inner import (
+    ServiceDockerComposeValueVolumesInner,
+)
 
 
 class ServiceDockerComposeValue(Model):

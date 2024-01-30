@@ -9,10 +9,12 @@ from typing import Dict, List, Type
 
 from openapi_server import util
 from openapi_server.models.base_model_ import Model
-from openapi_server.models.je_pl_jenkinsfile_stages_inner_pipeline_config import \
-    JePLJenkinsfileStagesInnerPipelineConfig
-from openapi_server.models.je_pl_jenkinsfile_stages_inner_when import \
-    JePLJenkinsfileStagesInnerWhen
+from openapi_server.models.je_pl_jenkinsfile_stages_inner_pipeline_config import (
+    JePLJenkinsfileStagesInnerPipelineConfig,
+)
+from openapi_server.models.je_pl_jenkinsfile_stages_inner_when import (
+    JePLJenkinsfileStagesInnerWhen,
+)
 
 
 class JePLJenkinsfileStagesInner(Model):

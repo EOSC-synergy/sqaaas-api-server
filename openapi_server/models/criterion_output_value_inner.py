@@ -9,8 +9,9 @@ from typing import Dict, List, Type
 
 from openapi_server import util
 from openapi_server.models.base_model_ import Model
-from openapi_server.models.criterion_output_value_inner_validation import \
-    CriterionOutputValueInnerValidation
+from openapi_server.models.criterion_output_value_inner_validation import (
+    CriterionOutputValueInnerValidation,
+)
 
 
 class CriterionOutputValueInner(Model):

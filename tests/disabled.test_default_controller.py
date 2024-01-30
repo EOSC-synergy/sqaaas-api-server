@@ -12,8 +12,9 @@ from aiohttp import web
 from openapi_server.models.assessment_output import AssessmentOutput
 from openapi_server.models.badge import Badge
 from openapi_server.models.criterion import Criterion
-from openapi_server.models.criterion_output_addl_props_inner import \
-    CriterionOutputAddlPropsInner
+from openapi_server.models.criterion_output_addl_props_inner import (
+    CriterionOutputAddlPropsInner,
+)
 from openapi_server.models.inline_object import InlineObject
 from openapi_server.models.inline_response200 import InlineResponse200
 from openapi_server.models.inline_response201 import InlineResponse201

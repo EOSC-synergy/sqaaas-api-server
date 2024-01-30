@@ -603,7 +603,7 @@ async def add_pipeline_for_assessment(
     # 2 Load request payload (same as passed to POST /pipeline) from templates
     # Use the main repo as the reference
     main_repo = repositories[main_repo_key]
-    main_repo_name = ''
+    main_repo_name = ""
     main_repo_branch = None
     need_repo_settings = False
     if "fair" in list(repositories):

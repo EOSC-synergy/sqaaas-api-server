@@ -10,10 +10,12 @@ from typing import Dict, List, Type
 from openapi_server import util
 from openapi_server.models.assessment_output_badge import AssessmentOutputBadge
 from openapi_server.models.assessment_output_meta import AssessmentOutputMeta
-from openapi_server.models.assessment_output_report_value import \
-    AssessmentOutputReportValue
-from openapi_server.models.assessment_output_repository import \
-    AssessmentOutputRepository
+from openapi_server.models.assessment_output_report_value import (
+    AssessmentOutputReportValue,
+)
+from openapi_server.models.assessment_output_repository import (
+    AssessmentOutputRepository,
+)
 from openapi_server.models.base_model_ import Model
 
 

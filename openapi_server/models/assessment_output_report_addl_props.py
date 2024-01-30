@@ -8,10 +8,12 @@ from datetime import date, datetime
 from typing import Dict, List, Type
 
 from openapi_server import util
-from openapi_server.models.assessment_output_report_addl_props_coverage import \
-    AssessmentOutputReportAddlPropsCoverage
-from openapi_server.models.assessment_output_subcriteria import \
-    AssessmentOutputSubcriteria
+from openapi_server.models.assessment_output_report_addl_props_coverage import (
+    AssessmentOutputReportAddlPropsCoverage,
+)
+from openapi_server.models.assessment_output_subcriteria import (
+    AssessmentOutputSubcriteria,
+)
 from openapi_server.models.base_model_ import Model
 
 

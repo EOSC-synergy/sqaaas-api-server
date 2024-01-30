@@ -9,10 +9,12 @@ from typing import Dict, List, Type
 
 from openapi_server import util
 from openapi_server.models.base_model_ import Model
-from openapi_server.models.criterion_build_addl_props_repos_inner import \
-    CriterionBuildAddlPropsReposInner
-from openapi_server.models.criterion_build_addl_props_when import \
-    CriterionBuildAddlPropsWhen
+from openapi_server.models.criterion_build_addl_props_repos_inner import (
+    CriterionBuildAddlPropsReposInner,
+)
+from openapi_server.models.criterion_build_addl_props_when import (
+    CriterionBuildAddlPropsWhen,
+)
 
 
 class CriterionBuildAddlProps(Model):

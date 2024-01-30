@@ -9,8 +9,7 @@ from typing import Dict, List, Type
 
 from openapi_server import util
 from openapi_server.models.base_model_ import Model
-from openapi_server.models.repository_credentials_id import \
-    RepositoryCredentialsId
+from openapi_server.models.repository_credentials_id import RepositoryCredentialsId
 
 
 class Repository(Model):

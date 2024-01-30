@@ -9,10 +9,10 @@ from typing import Dict, List, Type
 
 from openapi_server import util
 from openapi_server.models.base_model_ import Model
-from openapi_server.models.criterion_build_value_repos_inner import \
-    CriterionBuildValueReposInner
-from openapi_server.models.criterion_build_value_when import \
-    CriterionBuildValueWhen
+from openapi_server.models.criterion_build_value_repos_inner import (
+    CriterionBuildValueReposInner,
+)
+from openapi_server.models.criterion_build_value_when import CriterionBuildValueWhen
 
 
 class CriterionBuildValue(Model):
