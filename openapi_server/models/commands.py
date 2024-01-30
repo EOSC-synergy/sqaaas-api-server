@@ -18,23 +18,19 @@ class Commands(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, commands: List[str]=[]):
+    def __init__(self, commands: List[str] = []):
         """Commands - a model defined in OpenAPI
 
         :param commands: The commands of this Commands.
         """
-        self.openapi_types = {
-            'commands': List[str]
-        }
+        self.openapi_types = {"commands": List[str]}
 
-        self.attribute_map = {
-            'commands': 'commands'
-        }
+        self.attribute_map = {"commands": "commands"}
 
         self._commands = commands
 
     @classmethod
-    def from_dict(cls, dikt: dict) -> 'Commands':
+    def from_dict(cls, dikt: dict) -> "Commands":
         """Returns the dict as a model
 
         :param dikt: A dict.

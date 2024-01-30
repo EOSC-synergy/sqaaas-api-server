@@ -18,23 +18,19 @@ class JePLJenkinsfileWhen(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, branches: List[str]=None):
+    def __init__(self, branches: List[str] = None):
         """JePLJenkinsfileWhen - a model defined in OpenAPI
 
         :param branches: The branches of this JePLJenkinsfileWhen.
         """
-        self.openapi_types = {
-            'branches': List[str]
-        }
+        self.openapi_types = {"branches": List[str]}
 
-        self.attribute_map = {
-            'branches': 'branches'
-        }
+        self.attribute_map = {"branches": "branches"}
 
         self._branches = branches
 
     @classmethod
-    def from_dict(cls, dikt: dict) -> 'JePLJenkinsfileWhen':
+    def from_dict(cls, dikt: dict) -> "JePLJenkinsfileWhen":
         """Returns the dict as a model
 
         :param dikt: A dict.

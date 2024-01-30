@@ -8,7 +8,7 @@ import pytest
 class MockGitHubRepo(object):
     @staticmethod
     def default_branch():
-        return 'main'
+        return "main"
 
 
 class MockGitHubUtils:
@@ -22,7 +22,7 @@ class MockGitHubUtils:
 
     @staticmethod
     def get_commit_url(*args, **kwargs):
-        return 'https://example.com/commit_url'
+        return "https://example.com/commit_url"
 
 
 @pytest.fixture

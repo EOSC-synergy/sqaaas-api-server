@@ -9,7 +9,9 @@ from datetime import date, datetime
 from typing import List, Dict, Type
 
 from openapi_server.models.base_model_ import Model
-from openapi_server.models.service_docker_compose_value_image_registry import ServiceDockerComposeValueImageRegistry
+from openapi_server.models.service_docker_compose_value_image_registry import (
+    ServiceDockerComposeValueImageRegistry,
+)
 from openapi_server import util
 
 
@@ -19,27 +21,26 @@ class ServiceDockerComposeValueImage(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, name: str=None, registry: ServiceDockerComposeValueImageRegistry=None):
+    def __init__(
+        self, name: str = None, registry: ServiceDockerComposeValueImageRegistry = None
+    ):
         """ServiceDockerComposeValueImage - a model defined in OpenAPI
 
         :param name: The name of this ServiceDockerComposeValueImage.
         :param registry: The registry of this ServiceDockerComposeValueImage.
         """
         self.openapi_types = {
-            'name': str,
-            'registry': ServiceDockerComposeValueImageRegistry
+            "name": str,
+            "registry": ServiceDockerComposeValueImageRegistry,
         }
 
-        self.attribute_map = {
-            'name': 'name',
-            'registry': 'registry'
-        }
+        self.attribute_map = {"name": "name", "registry": "registry"}
 
         self._name = name
         self._registry = registry
 
     @classmethod
-    def from_dict(cls, dikt: dict) -> 'ServiceDockerComposeValueImage':
+    def from_dict(cls, dikt: dict) -> "ServiceDockerComposeValueImage":
         """Returns the dict as a model
 
         :param dikt: A dict.

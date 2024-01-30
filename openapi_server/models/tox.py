@@ -19,23 +19,19 @@ class Tox(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, tox: ToxTox=None):
+    def __init__(self, tox: ToxTox = None):
         """Tox - a model defined in OpenAPI
 
         :param tox: The tox of this Tox.
         """
-        self.openapi_types = {
-            'tox': ToxTox
-        }
+        self.openapi_types = {"tox": ToxTox}
 
-        self.attribute_map = {
-            'tox': 'tox'
-        }
+        self.attribute_map = {"tox": "tox"}
 
         self._tox = tox
 
     @classmethod
-    def from_dict(cls, dikt: dict) -> 'Tox':
+    def from_dict(cls, dikt: dict) -> "Tox":
         """Returns the dict as a model
 
         :param dikt: A dict.

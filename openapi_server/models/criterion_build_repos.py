@@ -19,23 +19,21 @@ class CriterionBuildRepos(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, repo_id: str=None, container: str=None, build_tool: Commands=None):
+    def __init__(
+        self, repo_id: str = None, container: str = None, build_tool: Commands = None
+    ):
         """CriterionBuildRepos - a model defined in OpenAPI
 
         :param repo_id: The repo_id of this CriterionBuildRepos.
         :param container: The container of this CriterionBuildRepos.
         :param build_tool: The build_tool of this CriterionBuildRepos.
         """
-        self.openapi_types = {
-            'repo_id': str,
-            'container': str,
-            'build_tool': Commands
-        }
+        self.openapi_types = {"repo_id": str, "container": str, "build_tool": Commands}
 
         self.attribute_map = {
-            'repo_id': 'repo_id',
-            'container': 'container',
-            'build_tool': 'build_tool'
+            "repo_id": "repo_id",
+            "container": "container",
+            "build_tool": "build_tool",
         }
 
         self._repo_id = repo_id
@@ -43,7 +41,7 @@ class CriterionBuildRepos(Model):
         self._build_tool = build_tool
 
     @classmethod
-    def from_dict(cls, dikt: dict) -> 'CriterionBuildRepos':
+    def from_dict(cls, dikt: dict) -> "CriterionBuildRepos":
         """Returns the dict as a model
 
         :param dikt: A dict.

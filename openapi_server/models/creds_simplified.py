@@ -18,7 +18,18 @@ class CredsSimplified(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, id: str=None, type: str=None, keystore_var: str=None, alias_var: str=None, password_var: str=None, variable: str=None, keyfile_var: str=None, passphrase_var: str=None, username_var: str=None):
+    def __init__(
+        self,
+        id: str = None,
+        type: str = None,
+        keystore_var: str = None,
+        alias_var: str = None,
+        password_var: str = None,
+        variable: str = None,
+        keyfile_var: str = None,
+        passphrase_var: str = None,
+        username_var: str = None,
+    ):
         """CredsSimplified - a model defined in OpenAPI
 
         :param id: The id of this CredsSimplified.
@@ -32,27 +43,27 @@ class CredsSimplified(Model):
         :param username_var: The username_var of this CredsSimplified.
         """
         self.openapi_types = {
-            'id': str,
-            'type': str,
-            'keystore_var': str,
-            'alias_var': str,
-            'password_var': str,
-            'variable': str,
-            'keyfile_var': str,
-            'passphrase_var': str,
-            'username_var': str
+            "id": str,
+            "type": str,
+            "keystore_var": str,
+            "alias_var": str,
+            "password_var": str,
+            "variable": str,
+            "keyfile_var": str,
+            "passphrase_var": str,
+            "username_var": str,
         }
 
         self.attribute_map = {
-            'id': 'id',
-            'type': 'type',
-            'keystore_var': 'keystore_var',
-            'alias_var': 'alias_var',
-            'password_var': 'password_var',
-            'variable': 'variable',
-            'keyfile_var': 'keyfile_var',
-            'passphrase_var': 'passphrase_var',
-            'username_var': 'username_var'
+            "id": "id",
+            "type": "type",
+            "keystore_var": "keystore_var",
+            "alias_var": "alias_var",
+            "password_var": "password_var",
+            "variable": "variable",
+            "keyfile_var": "keyfile_var",
+            "passphrase_var": "passphrase_var",
+            "username_var": "username_var",
         }
 
         self._id = id
@@ -66,7 +77,7 @@ class CredsSimplified(Model):
         self._username_var = username_var
 
     @classmethod
-    def from_dict(cls, dikt: dict) -> 'CredsSimplified':
+    def from_dict(cls, dikt: dict) -> "CredsSimplified":
         """Returns the dict as a model
 
         :param dikt: A dict.
@@ -115,11 +126,17 @@ class CredsSimplified(Model):
         :param type: The type of this CredsSimplified.
         :type type: str
         """
-        allowed_values = ["file", "zip", "username_password", "ssh_user_private_key"]  # noqa: E501
+        allowed_values = [
+            "file",
+            "zip",
+            "username_password",
+            "ssh_user_private_key",
+        ]  # noqa: E501
         if type not in allowed_values:
             raise ValueError(
-                "Invalid value for `type` ({0}), must be one of {1}"
-                .format(type, allowed_values)
+                "Invalid value for `type` ({0}), must be one of {1}".format(
+                    type, allowed_values
+                )
             )
 
         self._type = type

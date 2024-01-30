@@ -18,7 +18,12 @@ class BadgeCriteriaStats(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, to_fulfill: List[str]=[], missing: List[str]=[], fulfilled: List[str]=[]):
+    def __init__(
+        self,
+        to_fulfill: List[str] = [],
+        missing: List[str] = [],
+        fulfilled: List[str] = [],
+    ):
         """BadgeCriteriaStats - a model defined in OpenAPI
 
         :param to_fulfill: The to_fulfill of this BadgeCriteriaStats.
@@ -26,15 +31,15 @@ class BadgeCriteriaStats(Model):
         :param fulfilled: The fulfilled of this BadgeCriteriaStats.
         """
         self.openapi_types = {
-            'to_fulfill': List[str],
-            'missing': List[str],
-            'fulfilled': List[str]
+            "to_fulfill": List[str],
+            "missing": List[str],
+            "fulfilled": List[str],
         }
 
         self.attribute_map = {
-            'to_fulfill': 'to_fulfill',
-            'missing': 'missing',
-            'fulfilled': 'fulfilled'
+            "to_fulfill": "to_fulfill",
+            "missing": "missing",
+            "fulfilled": "fulfilled",
         }
 
         self._to_fulfill = to_fulfill
@@ -42,7 +47,7 @@ class BadgeCriteriaStats(Model):
         self._fulfilled = fulfilled
 
     @classmethod
-    def from_dict(cls, dikt: dict) -> 'BadgeCriteriaStats':
+    def from_dict(cls, dikt: dict) -> "BadgeCriteriaStats":
         """Returns the dict as a model
 
         :param dikt: A dict.

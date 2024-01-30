@@ -19,7 +19,14 @@ class AssessmentOutputSubcriteria(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, description: str=None, valid: bool=None, evidence: List[AssessmentOutputValidator]=None, hint: str=None, required_for_next_level_badge: bool=None):
+    def __init__(
+        self,
+        description: str = None,
+        valid: bool = None,
+        evidence: List[AssessmentOutputValidator] = None,
+        hint: str = None,
+        required_for_next_level_badge: bool = None,
+    ):
         """AssessmentOutputSubcriteria - a model defined in OpenAPI
 
         :param description: The description of this AssessmentOutputSubcriteria.
@@ -29,19 +36,19 @@ class AssessmentOutputSubcriteria(Model):
         :param required_for_next_level_badge: The required_for_next_level_badge of this AssessmentOutputSubcriteria.
         """
         self.openapi_types = {
-            'description': str,
-            'valid': bool,
-            'evidence': List[AssessmentOutputValidator],
-            'hint': str,
-            'required_for_next_level_badge': bool
+            "description": str,
+            "valid": bool,
+            "evidence": List[AssessmentOutputValidator],
+            "hint": str,
+            "required_for_next_level_badge": bool,
         }
 
         self.attribute_map = {
-            'description': 'description',
-            'valid': 'valid',
-            'evidence': 'evidence',
-            'hint': 'hint',
-            'required_for_next_level_badge': 'required_for_next_level_badge'
+            "description": "description",
+            "valid": "valid",
+            "evidence": "evidence",
+            "hint": "hint",
+            "required_for_next_level_badge": "required_for_next_level_badge",
         }
 
         self._description = description
@@ -51,7 +58,7 @@ class AssessmentOutputSubcriteria(Model):
         self._required_for_next_level_badge = required_for_next_level_badge
 
     @classmethod
-    def from_dict(cls, dikt: dict) -> 'AssessmentOutputSubcriteria':
+    def from_dict(cls, dikt: dict) -> "AssessmentOutputSubcriteria":
         """Returns the dict as a model
 
         :param dikt: A dict.

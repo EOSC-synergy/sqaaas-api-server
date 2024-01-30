@@ -15,27 +15,21 @@ class CriterionWorkflow(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, id: str=None, tools: List[Tool]=None):
+    def __init__(self, id: str = None, tools: List[Tool] = None):
         """CriterionWorkflow - a model defined in OpenAPI
 
         :param id: The id of this CriterionWorkflow.
         :param tools: The tools of this CriterionWorkflow.
         """
-        self.openapi_types = {
-            'id': str,
-            'tools': List[Tool]
-        }
+        self.openapi_types = {"id": str, "tools": List[Tool]}
 
-        self.attribute_map = {
-            'id': 'id',
-            'tools': 'tools'
-        }
+        self.attribute_map = {"id": "id", "tools": "tools"}
 
         self._id = id
         self._tools = tools
 
     @classmethod
-    def from_dict(cls, dikt: dict) -> 'CriterionWorkflow':
+    def from_dict(cls, dikt: dict) -> "CriterionWorkflow":
         """Returns the dict as a model
 
         :param dikt: A dict.

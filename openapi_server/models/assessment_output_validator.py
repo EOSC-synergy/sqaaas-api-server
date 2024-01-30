@@ -9,9 +9,15 @@ from datetime import date, datetime
 from typing import List, Dict, Type
 
 from openapi_server.models.base_model_ import Model
-from openapi_server.models.assessment_output_validator_plugin import AssessmentOutputValidatorPlugin
-from openapi_server.models.assessment_output_validator_standard import AssessmentOutputValidatorStandard
-from openapi_server.models.assessment_output_validator_tool import AssessmentOutputValidatorTool
+from openapi_server.models.assessment_output_validator_plugin import (
+    AssessmentOutputValidatorPlugin,
+)
+from openapi_server.models.assessment_output_validator_standard import (
+    AssessmentOutputValidatorStandard,
+)
+from openapi_server.models.assessment_output_validator_tool import (
+    AssessmentOutputValidatorTool,
+)
 from openapi_server import util
 
 
@@ -21,7 +27,15 @@ class AssessmentOutputValidator(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, valid: bool=None, message: str=None, plugin: AssessmentOutputValidatorPlugin=None, tool: AssessmentOutputValidatorTool=None, standard: AssessmentOutputValidatorStandard=None, data_unstructured: object=None):
+    def __init__(
+        self,
+        valid: bool = None,
+        message: str = None,
+        plugin: AssessmentOutputValidatorPlugin = None,
+        tool: AssessmentOutputValidatorTool = None,
+        standard: AssessmentOutputValidatorStandard = None,
+        data_unstructured: object = None,
+    ):
         """AssessmentOutputValidator - a model defined in OpenAPI
 
         :param valid: The valid of this AssessmentOutputValidator.
@@ -32,21 +46,21 @@ class AssessmentOutputValidator(Model):
         :param data_unstructured: The data_unstructured of this AssessmentOutputValidator.
         """
         self.openapi_types = {
-            'valid': bool,
-            'message': str,
-            'plugin': AssessmentOutputValidatorPlugin,
-            'tool': AssessmentOutputValidatorTool,
-            'standard': AssessmentOutputValidatorStandard,
-            'data_unstructured': object
+            "valid": bool,
+            "message": str,
+            "plugin": AssessmentOutputValidatorPlugin,
+            "tool": AssessmentOutputValidatorTool,
+            "standard": AssessmentOutputValidatorStandard,
+            "data_unstructured": object,
         }
 
         self.attribute_map = {
-            'valid': 'valid',
-            'message': 'message',
-            'plugin': 'plugin',
-            'tool': 'tool',
-            'standard': 'standard',
-            'data_unstructured': 'data_unstructured'
+            "valid": "valid",
+            "message": "message",
+            "plugin": "plugin",
+            "tool": "tool",
+            "standard": "standard",
+            "data_unstructured": "data_unstructured",
         }
 
         self._valid = valid
@@ -57,7 +71,7 @@ class AssessmentOutputValidator(Model):
         self._data_unstructured = data_unstructured
 
     @classmethod
-    def from_dict(cls, dikt: dict) -> 'AssessmentOutputValidator':
+    def from_dict(cls, dikt: dict) -> "AssessmentOutputValidator":
         """Returns the dict as a model
 
         :param dikt: A dict.

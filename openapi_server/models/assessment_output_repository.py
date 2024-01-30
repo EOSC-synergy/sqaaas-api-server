@@ -18,7 +18,20 @@ class AssessmentOutputRepository(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, name: str=None, url: str=None, avatar_url: str=None, description: str=None, languages: List[str]=None, tag: str=None, topics: List[str]=None, stargazers_count: float=None, watchers_count: float=None, contributors_count: float=None, forks_count: float=None):
+    def __init__(
+        self,
+        name: str = None,
+        url: str = None,
+        avatar_url: str = None,
+        description: str = None,
+        languages: List[str] = None,
+        tag: str = None,
+        topics: List[str] = None,
+        stargazers_count: float = None,
+        watchers_count: float = None,
+        contributors_count: float = None,
+        forks_count: float = None,
+    ):
         """AssessmentOutputRepository - a model defined in OpenAPI
 
         :param name: The name of this AssessmentOutputRepository.
@@ -34,31 +47,31 @@ class AssessmentOutputRepository(Model):
         :param forks_count: The forks_count of this AssessmentOutputRepository.
         """
         self.openapi_types = {
-            'name': str,
-            'url': str,
-            'avatar_url': str,
-            'description': str,
-            'languages': List[str],
-            'tag': str,
-            'topics': List[str],
-            'stargazers_count': float,
-            'watchers_count': float,
-            'contributors_count': float,
-            'forks_count': float
+            "name": str,
+            "url": str,
+            "avatar_url": str,
+            "description": str,
+            "languages": List[str],
+            "tag": str,
+            "topics": List[str],
+            "stargazers_count": float,
+            "watchers_count": float,
+            "contributors_count": float,
+            "forks_count": float,
         }
 
         self.attribute_map = {
-            'name': 'name',
-            'url': 'url',
-            'avatar_url': 'avatar_url',
-            'description': 'description',
-            'languages': 'languages',
-            'tag': 'tag',
-            'topics': 'topics',
-            'stargazers_count': 'stargazers_count',
-            'watchers_count': 'watchers_count',
-            'contributors_count': 'contributors_count',
-            'forks_count': 'forks_count'
+            "name": "name",
+            "url": "url",
+            "avatar_url": "avatar_url",
+            "description": "description",
+            "languages": "languages",
+            "tag": "tag",
+            "topics": "topics",
+            "stargazers_count": "stargazers_count",
+            "watchers_count": "watchers_count",
+            "contributors_count": "contributors_count",
+            "forks_count": "forks_count",
         }
 
         self._name = name
@@ -74,7 +87,7 @@ class AssessmentOutputRepository(Model):
         self._forks_count = forks_count
 
     @classmethod
-    def from_dict(cls, dikt: dict) -> 'AssessmentOutputRepository':
+    def from_dict(cls, dikt: dict) -> "AssessmentOutputRepository":
         """Returns the dict as a model
 
         :param dikt: A dict.

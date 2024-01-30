@@ -18,27 +18,24 @@ class UpstreamError(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, upstream_status: int=None, upstream_reason: str=None):
+    def __init__(self, upstream_status: int = None, upstream_reason: str = None):
         """UpstreamError - a model defined in OpenAPI
 
         :param upstream_status: The upstream_status of this UpstreamError.
         :param upstream_reason: The upstream_reason of this UpstreamError.
         """
-        self.openapi_types = {
-            'upstream_status': int,
-            'upstream_reason': str
-        }
+        self.openapi_types = {"upstream_status": int, "upstream_reason": str}
 
         self.attribute_map = {
-            'upstream_status': 'upstream_status',
-            'upstream_reason': 'upstream_reason'
+            "upstream_status": "upstream_status",
+            "upstream_reason": "upstream_reason",
         }
 
         self._upstream_status = upstream_status
         self._upstream_reason = upstream_reason
 
     @classmethod
-    def from_dict(cls, dikt: dict) -> 'UpstreamError':
+    def from_dict(cls, dikt: dict) -> "UpstreamError":
         """Returns the dict as a model
 
         :param dikt: A dict.

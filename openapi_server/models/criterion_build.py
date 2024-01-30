@@ -19,27 +19,21 @@ class CriterionBuild(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, criterion: str=None, repos: List[CriterionBuildRepos]=None):
+    def __init__(self, criterion: str = None, repos: List[CriterionBuildRepos] = None):
         """CriterionBuild - a model defined in OpenAPI
 
         :param criterion: The criterion of this CriterionBuild.
         :param repos: The repos of this CriterionBuild.
         """
-        self.openapi_types = {
-            'criterion': str,
-            'repos': List[CriterionBuildRepos]
-        }
+        self.openapi_types = {"criterion": str, "repos": List[CriterionBuildRepos]}
 
-        self.attribute_map = {
-            'criterion': 'criterion',
-            'repos': 'repos'
-        }
+        self.attribute_map = {"criterion": "criterion", "repos": "repos"}
 
         self._criterion = criterion
         self._repos = repos
 
     @classmethod
-    def from_dict(cls, dikt: dict) -> 'CriterionBuild':
+    def from_dict(cls, dikt: dict) -> "CriterionBuild":
         """Returns the dict as a model
 
         :param dikt: A dict.
@@ -65,11 +59,18 @@ class CriterionBuild(Model):
         :param criterion: The criterion of this CriterionBuild.
         :type criterion: str
         """
-        allowed_values = ["qc_style", "qc_unit", "qc_functional", "qc_security", "qc_doc"]  # noqa: E501
+        allowed_values = [
+            "qc_style",
+            "qc_unit",
+            "qc_functional",
+            "qc_security",
+            "qc_doc",
+        ]  # noqa: E501
         if criterion not in allowed_values:
             raise ValueError(
-                "Invalid value for `criterion` ({0}), must be one of {1}"
-                .format(criterion, allowed_values)
+                "Invalid value for `criterion` ({0}), must be one of {1}".format(
+                    criterion, allowed_values
+                )
             )
 
         self._criterion = criterion

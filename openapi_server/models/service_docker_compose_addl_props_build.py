@@ -18,23 +18,21 @@ class ServiceDockerComposeAddlPropsBuild(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, context: str=None, dockerfile: str=None, args: Dict[str, str]=None):
+    def __init__(
+        self, context: str = None, dockerfile: str = None, args: Dict[str, str] = None
+    ):
         """ServiceDockerComposeAddlPropsBuild - a model defined in OpenAPI
 
         :param context: The context of this ServiceDockerComposeAddlPropsBuild.
         :param dockerfile: The dockerfile of this ServiceDockerComposeAddlPropsBuild.
         :param args: The args of this ServiceDockerComposeAddlPropsBuild.
         """
-        self.openapi_types = {
-            'context': str,
-            'dockerfile': str,
-            'args': Dict[str, str]
-        }
+        self.openapi_types = {"context": str, "dockerfile": str, "args": Dict[str, str]}
 
         self.attribute_map = {
-            'context': 'context',
-            'dockerfile': 'dockerfile',
-            'args': 'args'
+            "context": "context",
+            "dockerfile": "dockerfile",
+            "args": "args",
         }
 
         self._context = context
@@ -42,7 +40,7 @@ class ServiceDockerComposeAddlPropsBuild(Model):
         self._args = args
 
     @classmethod
-    def from_dict(cls, dikt: dict) -> 'ServiceDockerComposeAddlPropsBuild':
+    def from_dict(cls, dikt: dict) -> "ServiceDockerComposeAddlPropsBuild":
         """Returns the dict as a model
 
         :param dikt: A dict.

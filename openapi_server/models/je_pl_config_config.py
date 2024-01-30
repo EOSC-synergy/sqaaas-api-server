@@ -20,27 +20,31 @@ class JePLConfigConfig(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, project_repos: List[Repository]=None, credentials: List[CredsUserPass]=None):
+    def __init__(
+        self,
+        project_repos: List[Repository] = None,
+        credentials: List[CredsUserPass] = None,
+    ):
         """JePLConfigConfig - a model defined in OpenAPI
 
         :param project_repos: The project_repos of this JePLConfigConfig.
         :param credentials: The credentials of this JePLConfigConfig.
         """
         self.openapi_types = {
-            'project_repos': List[Repository],
-            'credentials': List[CredsUserPass]
+            "project_repos": List[Repository],
+            "credentials": List[CredsUserPass],
         }
 
         self.attribute_map = {
-            'project_repos': 'project_repos',
-            'credentials': 'credentials'
+            "project_repos": "project_repos",
+            "credentials": "credentials",
         }
 
         self._project_repos = project_repos
         self._credentials = credentials
 
     @classmethod
-    def from_dict(cls, dikt: dict) -> 'JePLConfigConfig':
+    def from_dict(cls, dikt: dict) -> "JePLConfigConfig":
         """Returns the dict as a model
 
         :param dikt: A dict.

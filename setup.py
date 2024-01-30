@@ -23,7 +23,7 @@ REQUIRES = [
     "PyGithub>=1.53",
     "python-jenkins>=1.7.0",
     "deepdiff>=5.2.3",
-    "GitPython>=3.1.17"
+    "GitPython>=3.1.17",
 ]
 
 setup(
@@ -35,22 +35,25 @@ setup(
     keywords=["OpenAPI", "SQAaaS API"],
     install_requires=REQUIRES,
     packages=find_packages(),
-    package_data={'openapi_server': [
-        'LICENSE',
-        'openapi/openapi.yaml',
-        'templates/Jenkinsfile',
-        'templates/embed_badge.html',
-        'templates/commands_script.sh',
-        'templates/commands_script_im.sh',
-        'templates/pipeline_assessment.json',
-        'templates/README',
-        'templates/jenkins/credentials.xml',
-        '../etc/sqaaas.ini.sample']},
+    package_data={
+        "openapi_server": [
+            "LICENSE",
+            "openapi/openapi.yaml",
+            "templates/Jenkinsfile",
+            "templates/embed_badge.html",
+            "templates/commands_script.sh",
+            "templates/commands_script_im.sh",
+            "templates/pipeline_assessment.json",
+            "templates/README",
+            "templates/jenkins/credentials.xml",
+            "../etc/sqaaas.ini.sample",
+        ]
+    },
     include_package_data=False,
     entry_points={
-        'console_scripts': ['sqaaas_api_server=openapi_server.__main__:main']},
+        "console_scripts": ["sqaaas_api_server=openapi_server.__main__:main"]
+    },
     long_description="""\
     API for the Software and Service Quality Assurance as a Service (SQAaaS) component.
-    """
+    """,
 )
-

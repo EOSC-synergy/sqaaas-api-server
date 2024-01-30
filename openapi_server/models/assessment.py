@@ -18,7 +18,14 @@ class Assessment(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, repo_code: Repository=None, repo_docs: Repository=None, deployment: AssessmentDeployment=None, fair: AssessmentFAIR=None, criteria_workflow: List[CriterionWorkflow]=None):
+    def __init__(
+        self,
+        repo_code: Repository = None,
+        repo_docs: Repository = None,
+        deployment: AssessmentDeployment = None,
+        fair: AssessmentFAIR = None,
+        criteria_workflow: List[CriterionWorkflow] = None,
+    ):
         """Assessment - a model defined in OpenAPI
 
         :param repo_code: The repo_code of this Assessment.
@@ -28,19 +35,19 @@ class Assessment(Model):
         :param criteria_workflow: The criteria_workflow of this Assessment.
         """
         self.openapi_types = {
-            'repo_code': Repository,
-            'repo_docs': Repository,
-            'deployment': AssessmentDeployment,
-            'fair': AssessmentFAIR,
-            'criteria_workflow': List[CriterionWorkflow]
+            "repo_code": Repository,
+            "repo_docs": Repository,
+            "deployment": AssessmentDeployment,
+            "fair": AssessmentFAIR,
+            "criteria_workflow": List[CriterionWorkflow],
         }
 
         self.attribute_map = {
-            'repo_code': 'repo_code',
-            'repo_docs': 'repo_docs',
-            'deployment': 'deployment',
-            'fair': 'fair',
-            'criteria_workflow': 'criteria_workflow'
+            "repo_code": "repo_code",
+            "repo_docs": "repo_docs",
+            "deployment": "deployment",
+            "fair": "fair",
+            "criteria_workflow": "criteria_workflow",
         }
 
         self._repo_code = repo_code
@@ -50,7 +57,7 @@ class Assessment(Model):
         self._criteria_workflow = criteria_workflow
 
     @classmethod
-    def from_dict(cls, dikt: dict) -> 'Assessment':
+    def from_dict(cls, dikt: dict) -> "Assessment":
         """Returns the dict as a model
 
         :param dikt: A dict.

@@ -8,7 +8,7 @@ import pytest
 class MockJePLUtils:
     @staticmethod
     def push_files(*args, **kwargs):
-        return 'commit_id'
+        return "commit_id"
 
 
 @pytest.fixture

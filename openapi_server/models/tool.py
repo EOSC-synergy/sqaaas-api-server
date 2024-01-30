@@ -20,7 +20,17 @@ class Tool(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, name: str=None, lang: str=None, version: str=None, jepl_support: bool=None, docs: str=None, docker: ToolDocker=None, executable: str=None, args: List[ToolArg]=None):
+    def __init__(
+        self,
+        name: str = None,
+        lang: str = None,
+        version: str = None,
+        jepl_support: bool = None,
+        docs: str = None,
+        docker: ToolDocker = None,
+        executable: str = None,
+        args: List[ToolArg] = None,
+    ):
         """Tool - a model defined in OpenAPI
 
         :param name: The name of this Tool.
@@ -33,25 +43,25 @@ class Tool(Model):
         :param args: The args of this Tool.
         """
         self.openapi_types = {
-            'name': str,
-            'lang': str,
-            'version': str,
-            'jepl_support': bool,
-            'docs': str,
-            'docker': ToolDocker,
-            'executable': str,
-            'args': List[ToolArg]
+            "name": str,
+            "lang": str,
+            "version": str,
+            "jepl_support": bool,
+            "docs": str,
+            "docker": ToolDocker,
+            "executable": str,
+            "args": List[ToolArg],
         }
 
         self.attribute_map = {
-            'name': 'name',
-            'lang': 'lang',
-            'version': 'version',
-            'jepl_support': 'jepl_support',
-            'docs': 'docs',
-            'docker': 'docker',
-            'executable': 'executable',
-            'args': 'args'
+            "name": "name",
+            "lang": "lang",
+            "version": "version",
+            "jepl_support": "jepl_support",
+            "docs": "docs",
+            "docker": "docker",
+            "executable": "executable",
+            "args": "args",
         }
 
         self._name = name
@@ -64,7 +74,7 @@ class Tool(Model):
         self._args = args
 
     @classmethod
-    def from_dict(cls, dikt: dict) -> 'Tool':
+    def from_dict(cls, dikt: dict) -> "Tool":
         """Returns the dict as a model
 
         :param dikt: A dict.

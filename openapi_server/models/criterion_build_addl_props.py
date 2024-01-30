@@ -9,8 +9,12 @@ from datetime import date, datetime
 from typing import List, Dict, Type
 
 from openapi_server.models.base_model_ import Model
-from openapi_server.models.criterion_build_addl_props_repos_inner import CriterionBuildAddlPropsReposInner
-from openapi_server.models.criterion_build_addl_props_when import CriterionBuildAddlPropsWhen
+from openapi_server.models.criterion_build_addl_props_repos_inner import (
+    CriterionBuildAddlPropsReposInner,
+)
+from openapi_server.models.criterion_build_addl_props_when import (
+    CriterionBuildAddlPropsWhen,
+)
 from openapi_server import util
 
 
@@ -20,27 +24,28 @@ class CriterionBuildAddlProps(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, repos: List[CriterionBuildAddlPropsReposInner]=None, when: CriterionBuildAddlPropsWhen=None):
+    def __init__(
+        self,
+        repos: List[CriterionBuildAddlPropsReposInner] = None,
+        when: CriterionBuildAddlPropsWhen = None,
+    ):
         """CriterionBuildAddlProps - a model defined in OpenAPI
 
         :param repos: The repos of this CriterionBuildAddlProps.
         :param when: The when of this CriterionBuildAddlProps.
         """
         self.openapi_types = {
-            'repos': List[CriterionBuildAddlPropsReposInner],
-            'when': CriterionBuildAddlPropsWhen
+            "repos": List[CriterionBuildAddlPropsReposInner],
+            "when": CriterionBuildAddlPropsWhen,
         }
 
-        self.attribute_map = {
-            'repos': 'repos',
-            'when': 'when'
-        }
+        self.attribute_map = {"repos": "repos", "when": "when"}
 
         self._repos = repos
         self._when = when
 
     @classmethod
-    def from_dict(cls, dikt: dict) -> 'CriterionBuildAddlProps':
+    def from_dict(cls, dikt: dict) -> "CriterionBuildAddlProps":
         """Returns the dict as a model
 
         :param dikt: A dict.

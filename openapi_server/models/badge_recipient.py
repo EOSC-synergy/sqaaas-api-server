@@ -18,7 +18,13 @@ class BadgeRecipient(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, identity: str=None, hashed: bool=None, type: str=None, plaintext_identity: str=None):
+    def __init__(
+        self,
+        identity: str = None,
+        hashed: bool = None,
+        type: str = None,
+        plaintext_identity: str = None,
+    ):
         """BadgeRecipient - a model defined in OpenAPI
 
         :param identity: The identity of this BadgeRecipient.
@@ -27,17 +33,17 @@ class BadgeRecipient(Model):
         :param plaintext_identity: The plaintext_identity of this BadgeRecipient.
         """
         self.openapi_types = {
-            'identity': str,
-            'hashed': bool,
-            'type': str,
-            'plaintext_identity': str
+            "identity": str,
+            "hashed": bool,
+            "type": str,
+            "plaintext_identity": str,
         }
 
         self.attribute_map = {
-            'identity': 'identity',
-            'hashed': 'hashed',
-            'type': 'type',
-            'plaintext_identity': 'plaintextIdentity'
+            "identity": "identity",
+            "hashed": "hashed",
+            "type": "type",
+            "plaintext_identity": "plaintextIdentity",
         }
 
         self._identity = identity
@@ -46,7 +52,7 @@ class BadgeRecipient(Model):
         self._plaintext_identity = plaintext_identity
 
     @classmethod
-    def from_dict(cls, dikt: dict) -> 'BadgeRecipient':
+    def from_dict(cls, dikt: dict) -> "BadgeRecipient":
         """Returns the dict as a model
 
         :param dikt: A dict.
@@ -117,8 +123,9 @@ class BadgeRecipient(Model):
         allowed_values = ["email", "openBadgeId", "telephone", "url"]  # noqa: E501
         if type not in allowed_values:
             raise ValueError(
-                "Invalid value for `type` ({0}), must be one of {1}"
-                .format(type, allowed_values)
+                "Invalid value for `type` ({0}), must be one of {1}".format(
+                    type, allowed_values
+                )
             )
 
         self._type = type

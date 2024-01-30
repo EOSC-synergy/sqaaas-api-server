@@ -19,7 +19,12 @@ class Repository(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, repo: str=None, branch: str=None, credentials_id: RepositoryCredentialsId=None):
+    def __init__(
+        self,
+        repo: str = None,
+        branch: str = None,
+        credentials_id: RepositoryCredentialsId = None,
+    ):
         """Repository - a model defined in OpenAPI
 
         :param repo: The repo of this Repository.
@@ -27,15 +32,15 @@ class Repository(Model):
         :param credentials_id: The credentials_id of this Repository.
         """
         self.openapi_types = {
-            'repo': str,
-            'branch': str,
-            'credentials_id': RepositoryCredentialsId
+            "repo": str,
+            "branch": str,
+            "credentials_id": RepositoryCredentialsId,
         }
 
         self.attribute_map = {
-            'repo': 'repo',
-            'branch': 'branch',
-            'credentials_id': 'credentials_id'
+            "repo": "repo",
+            "branch": "branch",
+            "credentials_id": "credentials_id",
         }
 
         self._repo = repo
@@ -43,7 +48,7 @@ class Repository(Model):
         self._credentials_id = credentials_id
 
     @classmethod
-    def from_dict(cls, dikt: dict) -> 'Repository':
+    def from_dict(cls, dikt: dict) -> "Repository":
         """Returns the dict as a model
 
         :param dikt: A dict.

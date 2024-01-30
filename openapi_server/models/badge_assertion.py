@@ -19,7 +19,17 @@ class BadgeAssertion(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, open_badge_id: str=None, created_at: datetime=None, created_by: str=None, badge_class: str=None, issuer: str=None, image: str=None, recipient: BadgeAssertionRecipient=None, issued_on: datetime=None):
+    def __init__(
+        self,
+        open_badge_id: str = None,
+        created_at: datetime = None,
+        created_by: str = None,
+        badge_class: str = None,
+        issuer: str = None,
+        image: str = None,
+        recipient: BadgeAssertionRecipient = None,
+        issued_on: datetime = None,
+    ):
         """BadgeAssertion - a model defined in OpenAPI
 
         :param open_badge_id: The open_badge_id of this BadgeAssertion.
@@ -32,25 +42,25 @@ class BadgeAssertion(Model):
         :param issued_on: The issued_on of this BadgeAssertion.
         """
         self.openapi_types = {
-            'open_badge_id': str,
-            'created_at': datetime,
-            'created_by': str,
-            'badge_class': str,
-            'issuer': str,
-            'image': str,
-            'recipient': BadgeAssertionRecipient,
-            'issued_on': datetime
+            "open_badge_id": str,
+            "created_at": datetime,
+            "created_by": str,
+            "badge_class": str,
+            "issuer": str,
+            "image": str,
+            "recipient": BadgeAssertionRecipient,
+            "issued_on": datetime,
         }
 
         self.attribute_map = {
-            'open_badge_id': 'openBadgeID',
-            'created_at': 'createdAt',
-            'created_by': 'createdBy',
-            'badge_class': 'badgeClass',
-            'issuer': 'issuer',
-            'image': 'image',
-            'recipient': 'recipient',
-            'issued_on': 'issuedOn'
+            "open_badge_id": "openBadgeID",
+            "created_at": "createdAt",
+            "created_by": "createdBy",
+            "badge_class": "badgeClass",
+            "issuer": "issuer",
+            "image": "image",
+            "recipient": "recipient",
+            "issued_on": "issuedOn",
         }
 
         self._open_badge_id = open_badge_id
@@ -63,7 +73,7 @@ class BadgeAssertion(Model):
         self._issued_on = issued_on
 
     @classmethod
-    def from_dict(cls, dikt: dict) -> 'BadgeAssertion':
+    def from_dict(cls, dikt: dict) -> "BadgeAssertion":
         """Returns the dict as a model
 
         :param dikt: A dict.

@@ -20,7 +20,14 @@ class CriterionBuildAddlPropsReposInner(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, repo_url: str=None, container: str=None, commands: List[str]=None, tox: ToxSimplified=None, tool: Tool=None):
+    def __init__(
+        self,
+        repo_url: str = None,
+        container: str = None,
+        commands: List[str] = None,
+        tox: ToxSimplified = None,
+        tool: Tool = None,
+    ):
         """CriterionBuildAddlPropsReposInner - a model defined in OpenAPI
 
         :param repo_url: The repo_url of this CriterionBuildAddlPropsReposInner.
@@ -30,19 +37,19 @@ class CriterionBuildAddlPropsReposInner(Model):
         :param tool: The tool of this CriterionBuildAddlPropsReposInner.
         """
         self.openapi_types = {
-            'repo_url': str,
-            'container': str,
-            'commands': List[str],
-            'tox': ToxSimplified,
-            'tool': Tool
+            "repo_url": str,
+            "container": str,
+            "commands": List[str],
+            "tox": ToxSimplified,
+            "tool": Tool,
         }
 
         self.attribute_map = {
-            'repo_url': 'repo_url',
-            'container': 'container',
-            'commands': 'commands',
-            'tox': 'tox',
-            'tool': 'tool'
+            "repo_url": "repo_url",
+            "container": "container",
+            "commands": "commands",
+            "tox": "tox",
+            "tool": "tool",
         }
 
         self._repo_url = repo_url
@@ -52,7 +59,7 @@ class CriterionBuildAddlPropsReposInner(Model):
         self._tool = tool
 
     @classmethod
-    def from_dict(cls, dikt: dict) -> 'CriterionBuildAddlPropsReposInner':
+    def from_dict(cls, dikt: dict) -> "CriterionBuildAddlPropsReposInner":
         """Returns the dict as a model
 
         :param dikt: A dict.

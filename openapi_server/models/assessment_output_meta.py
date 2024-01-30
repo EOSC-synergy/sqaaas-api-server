@@ -14,27 +14,24 @@ class AssessmentOutputMeta(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, version: str=None, report_json_url: str=None):
+    def __init__(self, version: str = None, report_json_url: str = None):
         """AssessmentOutputMeta - a model defined in OpenAPI
 
         :param version: The version of this AssessmentOutputMeta.
         :param report_json_url: The report_json_url of this AssessmentOutputMeta.
         """
-        self.openapi_types = {
-            'version': str,
-            'report_json_url': str
-        }
+        self.openapi_types = {"version": str, "report_json_url": str}
 
         self.attribute_map = {
-            'version': 'version',
-            'report_json_url': 'report_json_url'
+            "version": "version",
+            "report_json_url": "report_json_url",
         }
 
         self._version = version
         self._report_json_url = report_json_url
 
     @classmethod
-    def from_dict(cls, dikt: dict) -> 'AssessmentOutputMeta':
+    def from_dict(cls, dikt: dict) -> "AssessmentOutputMeta":
         """Returns the dict as a model
 
         :param dikt: A dict.

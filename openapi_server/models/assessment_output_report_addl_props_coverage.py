@@ -18,7 +18,12 @@ class AssessmentOutputReportAddlPropsCoverage(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, percentage: float=None, total_subcriteria: int=None, success_subcriteria: int=None):
+    def __init__(
+        self,
+        percentage: float = None,
+        total_subcriteria: int = None,
+        success_subcriteria: int = None,
+    ):
         """AssessmentOutputReportAddlPropsCoverage - a model defined in OpenAPI
 
         :param percentage: The percentage of this AssessmentOutputReportAddlPropsCoverage.
@@ -26,15 +31,15 @@ class AssessmentOutputReportAddlPropsCoverage(Model):
         :param success_subcriteria: The success_subcriteria of this AssessmentOutputReportAddlPropsCoverage.
         """
         self.openapi_types = {
-            'percentage': float,
-            'total_subcriteria': int,
-            'success_subcriteria': int
+            "percentage": float,
+            "total_subcriteria": int,
+            "success_subcriteria": int,
         }
 
         self.attribute_map = {
-            'percentage': 'percentage',
-            'total_subcriteria': 'total_subcriteria',
-            'success_subcriteria': 'success_subcriteria'
+            "percentage": "percentage",
+            "total_subcriteria": "total_subcriteria",
+            "success_subcriteria": "success_subcriteria",
         }
 
         self._percentage = percentage
@@ -42,7 +47,7 @@ class AssessmentOutputReportAddlPropsCoverage(Model):
         self._success_subcriteria = success_subcriteria
 
     @classmethod
-    def from_dict(cls, dikt: dict) -> 'AssessmentOutputReportAddlPropsCoverage':
+    def from_dict(cls, dikt: dict) -> "AssessmentOutputReportAddlPropsCoverage":
         """Returns the dict as a model
 
         :param dikt: A dict.

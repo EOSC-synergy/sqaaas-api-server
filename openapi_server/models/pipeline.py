@@ -21,7 +21,14 @@ class Pipeline(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, id: str=None, name: str=None, config_data: List[JePLConfig]=None, composer_data: JePLComposer=None, jenkinsfile_data: JePLJenkinsfile=None):
+    def __init__(
+        self,
+        id: str = None,
+        name: str = None,
+        config_data: List[JePLConfig] = None,
+        composer_data: JePLComposer = None,
+        jenkinsfile_data: JePLJenkinsfile = None,
+    ):
         """Pipeline - a model defined in OpenAPI
 
         :param id: The id of this Pipeline.
@@ -31,19 +38,19 @@ class Pipeline(Model):
         :param jenkinsfile_data: The jenkinsfile_data of this Pipeline.
         """
         self.openapi_types = {
-            'id': str,
-            'name': str,
-            'config_data': List[JePLConfig],
-            'composer_data': JePLComposer,
-            'jenkinsfile_data': JePLJenkinsfile
+            "id": str,
+            "name": str,
+            "config_data": List[JePLConfig],
+            "composer_data": JePLComposer,
+            "jenkinsfile_data": JePLJenkinsfile,
         }
 
         self.attribute_map = {
-            'id': 'id',
-            'name': 'name',
-            'config_data': 'config_data',
-            'composer_data': 'composer_data',
-            'jenkinsfile_data': 'jenkinsfile_data'
+            "id": "id",
+            "name": "name",
+            "config_data": "config_data",
+            "composer_data": "composer_data",
+            "jenkinsfile_data": "jenkinsfile_data",
         }
 
         self._id = id
@@ -53,7 +60,7 @@ class Pipeline(Model):
         self._jenkinsfile_data = jenkinsfile_data
 
     @classmethod
-    def from_dict(cls, dikt: dict) -> 'Pipeline':
+    def from_dict(cls, dikt: dict) -> "Pipeline":
         """Returns the dict as a model
 
         :param dikt: A dict.

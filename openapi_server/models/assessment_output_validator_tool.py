@@ -20,7 +20,15 @@ class AssessmentOutputValidatorTool(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, name: str=None, lang: str=None, version: str=None, docker: ToolDocker=None, ci: AssessmentOutputToolCI=None, level: str=None):
+    def __init__(
+        self,
+        name: str = None,
+        lang: str = None,
+        version: str = None,
+        docker: ToolDocker = None,
+        ci: AssessmentOutputToolCI = None,
+        level: str = None,
+    ):
         """AssessmentOutputValidatorTool - a model defined in OpenAPI
 
         :param name: The name of this AssessmentOutputValidatorTool.
@@ -31,21 +39,21 @@ class AssessmentOutputValidatorTool(Model):
         :param level: The level of this AssessmentOutputValidatorTool.
         """
         self.openapi_types = {
-            'name': str,
-            'lang': str,
-            'version': str,
-            'docker': ToolDocker,
-            'ci': AssessmentOutputToolCI,
-            'level': str
+            "name": str,
+            "lang": str,
+            "version": str,
+            "docker": ToolDocker,
+            "ci": AssessmentOutputToolCI,
+            "level": str,
         }
 
         self.attribute_map = {
-            'name': 'name',
-            'lang': 'lang',
-            'version': 'version',
-            'docker': 'docker',
-            'ci': 'ci',
-            'level': 'level'
+            "name": "name",
+            "lang": "lang",
+            "version": "version",
+            "docker": "docker",
+            "ci": "ci",
+            "level": "level",
         }
 
         self._name = name
@@ -56,7 +64,7 @@ class AssessmentOutputValidatorTool(Model):
         self._level = level
 
     @classmethod
-    def from_dict(cls, dikt: dict) -> 'AssessmentOutputValidatorTool':
+    def from_dict(cls, dikt: dict) -> "AssessmentOutputValidatorTool":
         """Returns the dict as a model
 
         :param dikt: A dict.
@@ -198,8 +206,9 @@ class AssessmentOutputValidatorTool(Model):
         allowed_values = ["REQUIRED", "RECOMMENDED", "OPTIONAL"]  # noqa: E501
         if level not in allowed_values:
             raise ValueError(
-                "Invalid value for `level` ({0}), must be one of {1}"
-                .format(level, allowed_values)
+                "Invalid value for `level` ({0}), must be one of {1}".format(
+                    level, allowed_values
+                )
             )
 
         self._level = level

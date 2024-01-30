@@ -9,7 +9,9 @@ from datetime import date, datetime
 from typing import List, Dict, Type
 
 from openapi_server.models.base_model_ import Model
-from openapi_server.models.je_pl_jenkinsfile_pipeline_config import JePLJenkinsfilePipelineConfig
+from openapi_server.models.je_pl_jenkinsfile_pipeline_config import (
+    JePLJenkinsfilePipelineConfig,
+)
 from openapi_server.models.je_pl_jenkinsfile_when import JePLJenkinsfileWhen
 from openapi_server import util
 
@@ -20,27 +22,28 @@ class JePLJenkinsfileStages(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, when: JePLJenkinsfileWhen=None, pipeline_config: JePLJenkinsfilePipelineConfig=None):
+    def __init__(
+        self,
+        when: JePLJenkinsfileWhen = None,
+        pipeline_config: JePLJenkinsfilePipelineConfig = None,
+    ):
         """JePLJenkinsfileStages - a model defined in OpenAPI
 
         :param when: The when of this JePLJenkinsfileStages.
         :param pipeline_config: The pipeline_config of this JePLJenkinsfileStages.
         """
         self.openapi_types = {
-            'when': JePLJenkinsfileWhen,
-            'pipeline_config': JePLJenkinsfilePipelineConfig
+            "when": JePLJenkinsfileWhen,
+            "pipeline_config": JePLJenkinsfilePipelineConfig,
         }
 
-        self.attribute_map = {
-            'when': 'when',
-            'pipeline_config': 'pipeline_config'
-        }
+        self.attribute_map = {"when": "when", "pipeline_config": "pipeline_config"}
 
         self._when = when
         self._pipeline_config = pipeline_config
 
     @classmethod
-    def from_dict(cls, dikt: dict) -> 'JePLJenkinsfileStages':
+    def from_dict(cls, dikt: dict) -> "JePLJenkinsfileStages":
         """Returns the dict as a model
 
         :param dikt: A dict.

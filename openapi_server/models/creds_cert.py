@@ -18,7 +18,14 @@ class CredsCert(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, id: str=None, type: str=None, keystore_var: str=None, alias_var: str=None, password_var: str=None):
+    def __init__(
+        self,
+        id: str = None,
+        type: str = None,
+        keystore_var: str = None,
+        alias_var: str = None,
+        password_var: str = None,
+    ):
         """CredsCert - a model defined in OpenAPI
 
         :param id: The id of this CredsCert.
@@ -28,19 +35,19 @@ class CredsCert(Model):
         :param password_var: The password_var of this CredsCert.
         """
         self.openapi_types = {
-            'id': str,
-            'type': str,
-            'keystore_var': str,
-            'alias_var': str,
-            'password_var': str
+            "id": str,
+            "type": str,
+            "keystore_var": str,
+            "alias_var": str,
+            "password_var": str,
         }
 
         self.attribute_map = {
-            'id': 'id',
-            'type': 'type',
-            'keystore_var': 'keystore_var',
-            'alias_var': 'alias_var',
-            'password_var': 'password_var'
+            "id": "id",
+            "type": "type",
+            "keystore_var": "keystore_var",
+            "alias_var": "alias_var",
+            "password_var": "password_var",
         }
 
         self._id = id
@@ -50,7 +57,7 @@ class CredsCert(Model):
         self._password_var = password_var
 
     @classmethod
-    def from_dict(cls, dikt: dict) -> 'CredsCert':
+    def from_dict(cls, dikt: dict) -> "CredsCert":
         """Returns the dict as a model
 
         :param dikt: A dict.
@@ -102,8 +109,9 @@ class CredsCert(Model):
         allowed_values = ["file", "zip"]  # noqa: E501
         if type not in allowed_values:
             raise ValueError(
-                "Invalid value for `type` ({0}), must be one of {1}"
-                .format(type, allowed_values)
+                "Invalid value for `type` ({0}), must be one of {1}".format(
+                    type, allowed_values
+                )
             )
 
         self._type = type

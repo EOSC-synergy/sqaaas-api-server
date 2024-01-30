@@ -20,7 +20,13 @@ class JePLConfig(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, config: JePLConfigConfig=None, sqa_criteria: Dict[str, CriterionBuildValue]=None, environment: Dict[str, str]=None, timeout: int=None):
+    def __init__(
+        self,
+        config: JePLConfigConfig = None,
+        sqa_criteria: Dict[str, CriterionBuildValue] = None,
+        environment: Dict[str, str] = None,
+        timeout: int = None,
+    ):
         """JePLConfig - a model defined in OpenAPI
 
         :param config: The config of this JePLConfig.
@@ -29,17 +35,17 @@ class JePLConfig(Model):
         :param timeout: The timeout of this JePLConfig.
         """
         self.openapi_types = {
-            'config': JePLConfigConfig,
-            'sqa_criteria': Dict[str, CriterionBuildValue],
-            'environment': Dict[str, str],
-            'timeout': int
+            "config": JePLConfigConfig,
+            "sqa_criteria": Dict[str, CriterionBuildValue],
+            "environment": Dict[str, str],
+            "timeout": int,
         }
 
         self.attribute_map = {
-            'config': 'config',
-            'sqa_criteria': 'sqa_criteria',
-            'environment': 'environment',
-            'timeout': 'timeout'
+            "config": "config",
+            "sqa_criteria": "sqa_criteria",
+            "environment": "environment",
+            "timeout": "timeout",
         }
 
         self._config = config
@@ -48,7 +54,7 @@ class JePLConfig(Model):
         self._timeout = timeout
 
     @classmethod
-    def from_dict(cls, dikt: dict) -> 'JePLConfig':
+    def from_dict(cls, dikt: dict) -> "JePLConfig":
         """Returns the dict as a model
 
         :param dikt: A dict.
@@ -144,6 +150,8 @@ class JePLConfig(Model):
         :type timeout: int
         """
         if timeout is not None and timeout < 1:
-            raise ValueError("Invalid value for `timeout`, must be a value greater than or equal to `1`")
+            raise ValueError(
+                "Invalid value for `timeout`, must be a value greater than or equal to `1`"
+            )
 
         self._timeout = timeout

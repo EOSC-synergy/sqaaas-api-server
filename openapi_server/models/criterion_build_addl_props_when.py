@@ -19,27 +19,21 @@ class CriterionBuildAddlPropsWhen(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, branch: WhenBranch=None, building_tag: bool=None):
+    def __init__(self, branch: WhenBranch = None, building_tag: bool = None):
         """CriterionBuildAddlPropsWhen - a model defined in OpenAPI
 
         :param branch: The branch of this CriterionBuildAddlPropsWhen.
         :param building_tag: The building_tag of this CriterionBuildAddlPropsWhen.
         """
-        self.openapi_types = {
-            'branch': WhenBranch,
-            'building_tag': bool
-        }
+        self.openapi_types = {"branch": WhenBranch, "building_tag": bool}
 
-        self.attribute_map = {
-            'branch': 'branch',
-            'building_tag': 'building_tag'
-        }
+        self.attribute_map = {"branch": "branch", "building_tag": "building_tag"}
 
         self._branch = branch
         self._building_tag = building_tag
 
     @classmethod
-    def from_dict(cls, dikt: dict) -> 'CriterionBuildAddlPropsWhen':
+    def from_dict(cls, dikt: dict) -> "CriterionBuildAddlPropsWhen":
         """Returns the dict as a model
 
         :param dikt: A dict.

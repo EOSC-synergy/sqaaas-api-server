@@ -11,8 +11,12 @@ from typing import List, Dict, Type
 from openapi_server.models.base_model_ import Model
 from openapi_server.models.assessment_output_badge import AssessmentOutputBadge
 from openapi_server.models.assessment_output_meta import AssessmentOutputMeta
-from openapi_server.models.assessment_output_report_value import AssessmentOutputReportValue
-from openapi_server.models.assessment_output_repository import AssessmentOutputRepository
+from openapi_server.models.assessment_output_report_value import (
+    AssessmentOutputReportValue,
+)
+from openapi_server.models.assessment_output_repository import (
+    AssessmentOutputRepository,
+)
 from openapi_server import util
 
 
@@ -22,7 +26,13 @@ class AssessmentOutput(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, meta: AssessmentOutputMeta=None, repository: List[AssessmentOutputRepository]=None, report: Dict[str, AssessmentOutputReportValue]=None, badge: AssessmentOutputBadge=None):
+    def __init__(
+        self,
+        meta: AssessmentOutputMeta = None,
+        repository: List[AssessmentOutputRepository] = None,
+        report: Dict[str, AssessmentOutputReportValue] = None,
+        badge: AssessmentOutputBadge = None,
+    ):
         """AssessmentOutput - a model defined in OpenAPI
 
         :param meta: The meta of this AssessmentOutput.
@@ -31,17 +41,17 @@ class AssessmentOutput(Model):
         :param badge: The badge of this AssessmentOutput.
         """
         self.openapi_types = {
-            'meta': AssessmentOutputMeta,
-            'repository': List[AssessmentOutputRepository],
-            'report': Dict[str, AssessmentOutputReportValue],
-            'badge': AssessmentOutputBadge
+            "meta": AssessmentOutputMeta,
+            "repository": List[AssessmentOutputRepository],
+            "report": Dict[str, AssessmentOutputReportValue],
+            "badge": AssessmentOutputBadge,
         }
 
         self.attribute_map = {
-            'meta': 'meta',
-            'repository': 'repository',
-            'report': 'report',
-            'badge': 'badge'
+            "meta": "meta",
+            "repository": "repository",
+            "report": "report",
+            "badge": "badge",
         }
 
         self._meta = meta
@@ -50,7 +60,7 @@ class AssessmentOutput(Model):
         self._badge = badge
 
     @classmethod
-    def from_dict(cls, dikt: dict) -> 'AssessmentOutput':
+    def from_dict(cls, dikt: dict) -> "AssessmentOutput":
         """Returns the dict as a model
 
         :param dikt: A dict.

@@ -18,7 +18,9 @@ class GetPipelineStatus200Response(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, build_url: str=None, build_status: str=None, openbadge_id: str=None):
+    def __init__(
+        self, build_url: str = None, build_status: str = None, openbadge_id: str = None
+    ):
         """GetPipelineStatus200Response - a model defined in OpenAPI
 
         :param build_url: The build_url of this GetPipelineStatus200Response.
@@ -26,15 +28,15 @@ class GetPipelineStatus200Response(Model):
         :param openbadge_id: The openbadge_id of this GetPipelineStatus200Response.
         """
         self.openapi_types = {
-            'build_url': str,
-            'build_status': str,
-            'openbadge_id': str
+            "build_url": str,
+            "build_status": str,
+            "openbadge_id": str,
         }
 
         self.attribute_map = {
-            'build_url': 'build_url',
-            'build_status': 'build_status',
-            'openbadge_id': 'openbadge_id'
+            "build_url": "build_url",
+            "build_status": "build_status",
+            "openbadge_id": "openbadge_id",
         }
 
         self._build_url = build_url
@@ -42,7 +44,7 @@ class GetPipelineStatus200Response(Model):
         self._openbadge_id = openbadge_id
 
     @classmethod
-    def from_dict(cls, dikt: dict) -> 'GetPipelineStatus200Response':
+    def from_dict(cls, dikt: dict) -> "GetPipelineStatus200Response":
         """Returns the dict as a model
 
         :param dikt: A dict.
@@ -89,11 +91,19 @@ class GetPipelineStatus200Response(Model):
         :param build_status: The build_status of this GetPipelineStatus200Response.
         :type build_status: str
         """
-        allowed_values = ["success", "failure", "aborted", "not_built", "unstable", "waiting_scan_org"]  # noqa: E501
+        allowed_values = [
+            "success",
+            "failure",
+            "aborted",
+            "not_built",
+            "unstable",
+            "waiting_scan_org",
+        ]  # noqa: E501
         if build_status not in allowed_values:
             raise ValueError(
-                "Invalid value for `build_status` ({0}), must be one of {1}"
-                .format(build_status, allowed_values)
+                "Invalid value for `build_status` ({0}), must be one of {1}".format(
+                    build_status, allowed_values
+                )
             )
 
         self._build_status = build_status

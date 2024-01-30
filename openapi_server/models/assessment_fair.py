@@ -18,7 +18,15 @@ class AssessmentFAIR(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, persistent_identifier: str=None, metadata_protocol: str=None, metadata_endpoint: str=None, evaluator_tool: str=None, evaluator_endpoint: str=None, badge_policy_url: str=None):
+    def __init__(
+        self,
+        persistent_identifier: str = None,
+        metadata_protocol: str = None,
+        metadata_endpoint: str = None,
+        evaluator_tool: str = None,
+        evaluator_endpoint: str = None,
+        badge_policy_url: str = None,
+    ):
         """AssessmentFAIR - a model defined in OpenAPI
 
         :param persistent_identifier: The persistent_identifier of this AssessmentFAIR.
@@ -29,21 +37,21 @@ class AssessmentFAIR(Model):
         :param badge_policy_url: The badge_policy_url of this AssessmentFAIR.
         """
         self.openapi_types = {
-            'persistent_identifier': str,
-            'metadata_protocol': str,
-            'metadata_endpoint': str,
-            'evaluator_tool': str,
-            'evaluator_endpoint': str,
-            'badge_policy_url': str
+            "persistent_identifier": str,
+            "metadata_protocol": str,
+            "metadata_endpoint": str,
+            "evaluator_tool": str,
+            "evaluator_endpoint": str,
+            "badge_policy_url": str,
         }
 
         self.attribute_map = {
-            'persistent_identifier': 'persistent_identifier',
-            'metadata_protocol': 'metadata_protocol',
-            'metadata_endpoint': 'metadata_endpoint',
-            'evaluator_tool': 'evaluator_tool',
-            'evaluator_endpoint': 'evaluator_endpoint',
-            'badge_policy_url': 'badge_policy_url'
+            "persistent_identifier": "persistent_identifier",
+            "metadata_protocol": "metadata_protocol",
+            "metadata_endpoint": "metadata_endpoint",
+            "evaluator_tool": "evaluator_tool",
+            "evaluator_endpoint": "evaluator_endpoint",
+            "badge_policy_url": "badge_policy_url",
         }
 
         self._persistent_identifier = persistent_identifier
@@ -54,7 +62,7 @@ class AssessmentFAIR(Model):
         self._badge_policy_url = badge_policy_url
 
     @classmethod
-    def from_dict(cls, dikt: dict) -> 'AssessmentFAIR':
+    def from_dict(cls, dikt: dict) -> "AssessmentFAIR":
         """Returns the dict as a model
 
         :param dikt: A dict.

@@ -18,27 +18,21 @@ class InlineResponse2003(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, file_name: str=None, content: str=None):
+    def __init__(self, file_name: str = None, content: str = None):
         """InlineResponse2003 - a model defined in OpenAPI
 
         :param file_name: The file_name of this InlineResponse2003.
         :param content: The content of this InlineResponse2003.
         """
-        self.openapi_types = {
-            'file_name': str,
-            'content': str
-        }
+        self.openapi_types = {"file_name": str, "content": str}
 
-        self.attribute_map = {
-            'file_name': 'file_name',
-            'content': 'content'
-        }
+        self.attribute_map = {"file_name": "file_name", "content": "content"}
 
         self._file_name = file_name
         self._content = content
 
     @classmethod
-    def from_dict(cls, dikt: dict) -> 'InlineResponse2003':
+    def from_dict(cls, dikt: dict) -> "InlineResponse2003":
         """Returns the dict as a model
 
         :param dikt: A dict.

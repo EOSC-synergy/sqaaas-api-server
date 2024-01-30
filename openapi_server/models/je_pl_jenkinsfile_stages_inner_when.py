@@ -18,23 +18,19 @@ class JePLJenkinsfileStagesInnerWhen(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, branches: List[str]=None):
+    def __init__(self, branches: List[str] = None):
         """JePLJenkinsfileStagesInnerWhen - a model defined in OpenAPI
 
         :param branches: The branches of this JePLJenkinsfileStagesInnerWhen.
         """
-        self.openapi_types = {
-            'branches': List[str]
-        }
+        self.openapi_types = {"branches": List[str]}
 
-        self.attribute_map = {
-            'branches': 'branches'
-        }
+        self.attribute_map = {"branches": "branches"}
 
         self._branches = branches
 
     @classmethod
-    def from_dict(cls, dikt: dict) -> 'JePLJenkinsfileStagesInnerWhen':
+    def from_dict(cls, dikt: dict) -> "JePLJenkinsfileStagesInnerWhen":
         """Returns the dict as a model
 
         :param dikt: A dict.

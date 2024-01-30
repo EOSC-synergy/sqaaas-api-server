@@ -19,27 +19,26 @@ class InlineResponse200(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, file_name: str=None, content: Dict[str, CriterionBuildAddlProps]=None):
+    def __init__(
+        self, file_name: str = None, content: Dict[str, CriterionBuildAddlProps] = None
+    ):
         """InlineResponse200 - a model defined in OpenAPI
 
         :param file_name: The file_name of this InlineResponse200.
         :param content: The content of this InlineResponse200.
         """
         self.openapi_types = {
-            'file_name': str,
-            'content': Dict[str, CriterionBuildAddlProps]
+            "file_name": str,
+            "content": Dict[str, CriterionBuildAddlProps],
         }
 
-        self.attribute_map = {
-            'file_name': 'file_name',
-            'content': 'content'
-        }
+        self.attribute_map = {"file_name": "file_name", "content": "content"}
 
         self._file_name = file_name
         self._content = content
 
     @classmethod
-    def from_dict(cls, dikt: dict) -> 'InlineResponse200':
+    def from_dict(cls, dikt: dict) -> "InlineResponse200":
         """Returns the dict as a model
 
         :param dikt: A dict.

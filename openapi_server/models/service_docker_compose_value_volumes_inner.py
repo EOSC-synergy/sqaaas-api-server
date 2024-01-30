@@ -18,31 +18,23 @@ class ServiceDockerComposeValueVolumesInner(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, type: str=None, source: str=None, target: str=None):
+    def __init__(self, type: str = None, source: str = None, target: str = None):
         """ServiceDockerComposeValueVolumesInner - a model defined in OpenAPI
 
         :param type: The type of this ServiceDockerComposeValueVolumesInner.
         :param source: The source of this ServiceDockerComposeValueVolumesInner.
         :param target: The target of this ServiceDockerComposeValueVolumesInner.
         """
-        self.openapi_types = {
-            'type': str,
-            'source': str,
-            'target': str
-        }
+        self.openapi_types = {"type": str, "source": str, "target": str}
 
-        self.attribute_map = {
-            'type': 'type',
-            'source': 'source',
-            'target': 'target'
-        }
+        self.attribute_map = {"type": "type", "source": "source", "target": "target"}
 
         self._type = type
         self._source = source
         self._target = target
 
     @classmethod
-    def from_dict(cls, dikt: dict) -> 'ServiceDockerComposeValueVolumesInner':
+    def from_dict(cls, dikt: dict) -> "ServiceDockerComposeValueVolumesInner":
         """Returns the dict as a model
 
         :param dikt: A dict.
@@ -71,8 +63,9 @@ class ServiceDockerComposeValueVolumesInner(Model):
         allowed_values = ["bind"]  # noqa: E501
         if type not in allowed_values:
             raise ValueError(
-                "Invalid value for `type` ({0}), must be one of {1}"
-                .format(type, allowed_values)
+                "Invalid value for `type` ({0}), must be one of {1}".format(
+                    type, allowed_values
+                )
             )
 
         self._type = type

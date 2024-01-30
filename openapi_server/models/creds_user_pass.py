@@ -18,7 +18,13 @@ class CredsUserPass(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, id: str=None, type: str=None, username_var: str=None, password_var: str=None):
+    def __init__(
+        self,
+        id: str = None,
+        type: str = None,
+        username_var: str = None,
+        password_var: str = None,
+    ):
         """CredsUserPass - a model defined in OpenAPI
 
         :param id: The id of this CredsUserPass.
@@ -27,17 +33,17 @@ class CredsUserPass(Model):
         :param password_var: The password_var of this CredsUserPass.
         """
         self.openapi_types = {
-            'id': str,
-            'type': str,
-            'username_var': str,
-            'password_var': str
+            "id": str,
+            "type": str,
+            "username_var": str,
+            "password_var": str,
         }
 
         self.attribute_map = {
-            'id': 'id',
-            'type': 'type',
-            'username_var': 'username_var',
-            'password_var': 'password_var'
+            "id": "id",
+            "type": "type",
+            "username_var": "username_var",
+            "password_var": "password_var",
         }
 
         self._id = id
@@ -46,7 +52,7 @@ class CredsUserPass(Model):
         self._password_var = password_var
 
     @classmethod
-    def from_dict(cls, dikt: dict) -> 'CredsUserPass':
+    def from_dict(cls, dikt: dict) -> "CredsUserPass":
         """Returns the dict as a model
 
         :param dikt: A dict.
@@ -102,8 +108,9 @@ class CredsUserPass(Model):
         allowed_values = ["username_password"]  # noqa: E501
         if type not in allowed_values:
             raise ValueError(
-                "Invalid value for `type` ({0}), must be one of {1}"
-                .format(type, allowed_values)
+                "Invalid value for `type` ({0}), must be one of {1}".format(
+                    type, allowed_values
+                )
             )
 
         self._type = type

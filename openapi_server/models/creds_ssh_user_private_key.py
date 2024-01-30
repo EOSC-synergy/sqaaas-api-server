@@ -18,7 +18,14 @@ class CredsSshUserPrivateKey(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, id: str=None, type: str=None, keyfile_var: str=None, passphrase_var: str=None, username_var: str=None):
+    def __init__(
+        self,
+        id: str = None,
+        type: str = None,
+        keyfile_var: str = None,
+        passphrase_var: str = None,
+        username_var: str = None,
+    ):
         """CredsSshUserPrivateKey - a model defined in OpenAPI
 
         :param id: The id of this CredsSshUserPrivateKey.
@@ -28,19 +35,19 @@ class CredsSshUserPrivateKey(Model):
         :param username_var: The username_var of this CredsSshUserPrivateKey.
         """
         self.openapi_types = {
-            'id': str,
-            'type': str,
-            'keyfile_var': str,
-            'passphrase_var': str,
-            'username_var': str
+            "id": str,
+            "type": str,
+            "keyfile_var": str,
+            "passphrase_var": str,
+            "username_var": str,
         }
 
         self.attribute_map = {
-            'id': 'id',
-            'type': 'type',
-            'keyfile_var': 'keyfile_var',
-            'passphrase_var': 'passphrase_var',
-            'username_var': 'username_var'
+            "id": "id",
+            "type": "type",
+            "keyfile_var": "keyfile_var",
+            "passphrase_var": "passphrase_var",
+            "username_var": "username_var",
         }
 
         self._id = id
@@ -50,7 +57,7 @@ class CredsSshUserPrivateKey(Model):
         self._username_var = username_var
 
     @classmethod
-    def from_dict(cls, dikt: dict) -> 'CredsSshUserPrivateKey':
+    def from_dict(cls, dikt: dict) -> "CredsSshUserPrivateKey":
         """Returns the dict as a model
 
         :param dikt: A dict.
@@ -102,8 +109,9 @@ class CredsSshUserPrivateKey(Model):
         allowed_values = ["ssh_user_private_key"]  # noqa: E501
         if type not in allowed_values:
             raise ValueError(
-                "Invalid value for `type` ({0}), must be one of {1}"
-                .format(type, allowed_values)
+                "Invalid value for `type` ({0}), must be one of {1}".format(
+                    type, allowed_values
+                )
             )
 
         self._type = type

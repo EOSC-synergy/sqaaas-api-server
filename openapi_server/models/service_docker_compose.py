@@ -9,7 +9,9 @@ from datetime import date, datetime
 from typing import List, Dict, Type
 
 from openapi_server.models.base_model_ import Model
-from openapi_server.models.service_docker_compose_volumes import ServiceDockerComposeVolumes
+from openapi_server.models.service_docker_compose_volumes import (
+    ServiceDockerComposeVolumes,
+)
 from openapi_server import util
 
 
@@ -19,7 +21,14 @@ class ServiceDockerCompose(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, service_id: str=None, image: str=None, hostname: str=None, volumes: List[ServiceDockerComposeVolumes]=None, command: str=None):
+    def __init__(
+        self,
+        service_id: str = None,
+        image: str = None,
+        hostname: str = None,
+        volumes: List[ServiceDockerComposeVolumes] = None,
+        command: str = None,
+    ):
         """ServiceDockerCompose - a model defined in OpenAPI
 
         :param service_id: The service_id of this ServiceDockerCompose.
@@ -29,19 +38,19 @@ class ServiceDockerCompose(Model):
         :param command: The command of this ServiceDockerCompose.
         """
         self.openapi_types = {
-            'service_id': str,
-            'image': str,
-            'hostname': str,
-            'volumes': List[ServiceDockerComposeVolumes],
-            'command': str
+            "service_id": str,
+            "image": str,
+            "hostname": str,
+            "volumes": List[ServiceDockerComposeVolumes],
+            "command": str,
         }
 
         self.attribute_map = {
-            'service_id': 'service_id',
-            'image': 'image',
-            'hostname': 'hostname',
-            'volumes': 'volumes',
-            'command': 'command'
+            "service_id": "service_id",
+            "image": "image",
+            "hostname": "hostname",
+            "volumes": "volumes",
+            "command": "command",
         }
 
         self._service_id = service_id
@@ -51,7 +60,7 @@ class ServiceDockerCompose(Model):
         self._command = command
 
     @classmethod
-    def from_dict(cls, dikt: dict) -> 'ServiceDockerCompose':
+    def from_dict(cls, dikt: dict) -> "ServiceDockerCompose":
         """Returns the dict as a model
 
         :param dikt: A dict.
