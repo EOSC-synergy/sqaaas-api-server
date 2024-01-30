@@ -6,20 +6,6 @@ import pytest
 
 from openapi_server.controllers import utils
 
-expected_git_url = [
-    ("https://github.com/foo/bar", "https://:@github.com/foo/bar"),
-    ("http://github.com/foo/bar", "http://:@github.com/foo/bar"),
-    ("https://github.com/foo/bar.git", "https://:@github.com/foo/bar.git"),
-    ("http://github.com/foo/bar.git", "http://:@github.com/foo/bar.git"),
-]
-
-
-@pytest.mark.parametrize("repo_url,expected", expected_git_url)
-def test_format_git_url(repo_url, expected):
-    repo_url = utils.format_git_url(repo_url)
-    assert repo_url == expected
-
-
 supported_git_platform = {"github": "https://github.com"}
 expected_git_platform = [
     ("https://github.com/foo/bar", "github"),
