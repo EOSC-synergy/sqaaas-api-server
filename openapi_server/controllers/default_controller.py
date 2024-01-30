@@ -12,11 +12,12 @@ import json
 import logging
 import os
 import re
-import urllib
 import uuid
 from datetime import datetime
 from importlib.metadata import version as impversion
 from importlib.resources import files as impfiles
+from typing import List, Dict
+from urllib import parse as urllib_parse
 from zipfile import ZipFile, ZipInfo
 
 import namegenerator
@@ -602,7 +603,7 @@ async def add_pipeline_for_assessment(
     # 2 Load request payload (same as passed to POST /pipeline) from templates
     # Use the main repo as the reference
     main_repo = repositories[main_repo_key]
-    main_repo_name = None
+    main_repo_name = ''
     main_repo_branch = None
     need_repo_settings = False
     if "fair" in list(repositories):
@@ -1211,7 +1212,7 @@ async def run_pipeline(
 
     # 1) Check if job already exists on Jenkins
     job_exists = False
-    last_build_no = None
+    last_build_no = -1
     if jk_utils.exist_job(jk_job_name):
         job_exists = True
         logger.warning("Jenkins job <%s> already exists!" % jk_job_name)
@@ -1254,6 +1255,10 @@ async def run_pipeline(
     # 4) Automated-run check: previous commit should trigger the build
     build_job_task = None
     if job_exists:
+        if last_build_no == -1:
+            _reason = "Job exists but cannot find last build number!"
+            logger.error(_reason)
+            raise SQAaaSAPIException(422, _reason)
         _build_to_check = last_build_no + 1
         # Fire & forget _handle_job_building()
         build_job_task = asyncio.create_task(
@@ -2125,8 +2130,8 @@ async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Re
                 badge_data[badge_type]["share"] = share_data
                 # Generate verification URL
                 openbadgeid = badge_obj["openBadgeId"]
-                openbadgeid_urlencode = urllib.parse.quote_plus(openbadgeid)
-                commit_urlencode = urllib.parse.quote_plus(commit_url)
+                openbadgeid_urlencode = urllib_parse.quote_plus(openbadgeid)
+                commit_urlencode = urllib_parse.quote_plus(commit_url)
                 embed_url = (
                     f"{openbadgeid_urlencode}?identity__url="
                     f"{commit_urlencode}&amp;identity__url="
@@ -2158,10 +2163,12 @@ async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Re
                     _valid = subcriterion_data["valid"]
                     if not _valid:
                         try:
-                            _criterion = re.search(
+                            _criterion_match = re.search(
                                 rf"(^({SW_PREFIX}|{SRV_PREFIX})\.[A-Za-z]+)|(^({FAIR_RDA_PREFIX})_[A-Z][0-9]+)",
                                 subcriterion,
-                            ).group(0)
+                            )
+                            if _criterion_match:
+                                _criterion = _criterion_match.group(0)
                         except AttributeError:
                             logger.error(
                                 (
@@ -2317,8 +2324,9 @@ async def create_pull_request(request: web.Request, pipeline_id, body) -> web.Re
         branch=source_branch_name,
     )
     # step 3: create PR if it does not exist
+    target_pr_data: List[Dict] = []
     target_pr_data = [
-        dict([["html_url", pr.html_url], ["data", (pr.head.repo.name, pr.head.ref)]])
+        {"html_url": pr.html_url, "data": (pr.head.repo.name, pr.head.ref)}
         for pr in target_repo.get_pulls()
         if pr.state in ["open"]
     ]
