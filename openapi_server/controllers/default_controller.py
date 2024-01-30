@@ -326,9 +326,10 @@ async def _get_tooling_for_assessment(
                 criteria_data_list_filtered.append(criterion_data_copy)
 
         _repo_settings = copy.deepcopy(kwargs)
-        _repo_settings['url'] = _repo_name
-        _repo_settings['name'] = ctls_utils.get_short_repo_name(_repo_name)
-        _repo_settings['is_main_repo'] = repo.get("is_main_repo", False)
+        if _repo_name:
+            _repo_settings['url'] = _repo_name
+            _repo_settings['name'] = ctls_utils.get_short_repo_name(_repo_name)
+            _repo_settings['is_main_repo'] = repo.get("is_main_repo", False)
 
         return criteria_data_list_filtered, criteria_filtered, _repo_settings
 
@@ -607,8 +608,9 @@ async def add_pipeline_for_assessment(request: web.Request, body, user_requested
     #2 Load request payload (same as passed to POST /pipeline) from templates
     # Use the main repo as the reference
     main_repo = repositories[main_repo_key]
-    main_repo_name = main_repo['url']
-    main_repo_branch = main_repo['tag']
+    main_repo_name = None
+    main_repo_branch = None
+    need_repo_settings = False
     if 'fair' in list(repositories):
         # FIXME Temporary hack until the web provides all required input fields
         _fair_tool = repositories['fair']['fair_tool']
@@ -616,6 +618,10 @@ async def add_pipeline_for_assessment(request: web.Request, body, user_requested
             if arg.get('id', '') in ['persistent_identifier']:
                 main_repo_name = arg['value']
                 break
+    else:
+        main_repo_name = main_repo['url']
+        main_repo_branch = main_repo['tag']
+        need_repo_settings = True
     pipeline_name = '.'.join([
         os.path.basename(main_repo_name),
         'assess'
@@ -661,42 +667,43 @@ async def add_pipeline_for_assessment(request: web.Request, body, user_requested
 
     #5 Store repo settings
     repo_settings = []
-    for _repo_key, _repo_data in repositories.items():
-        # Get required keys from <repositories>
-        _repo_settings = {_key: _repo_data.get(_key, None)
-            for _key in ['url', 'name', 'tag', 'commit_id', 'is_main_repo']
-        }
-        platform = ctls_utils.supported_git_platform(
-            _repo_data['url'], platforms=SUPPORTED_PLATFORMS
-        )
-        _main_repo_creds = _repo_data.get(
-            'credential_data', {}
-        )
-        if platform in ['github']:
-            gh_repo_name = _repo_data['name']
-            try:
-                gh_repo = gh_utils.get_repository(
-                    gh_repo_name, _main_repo_creds, raise_exception=True
-                )
-                _repo_settings.update({
-                    'avatar_url': gh_utils.get_avatar(
-                        gh_repo_name, _main_repo_creds
-                    ),
-                    'description': gh_utils.get_description(repo=gh_repo),
-                    'languages': gh_utils.get_languages(repo=gh_repo),
-                    'topics': gh_utils.get_topics(repo=gh_repo),
-                    'stargazers_count': gh_utils.get_stargazers(repo=gh_repo),
-                    'watchers_count': gh_utils.get_watchers(repo=gh_repo),
-                    'contributors_count': gh_utils.get_contributors(repo=gh_repo),
-                    'forks_count': gh_utils.get_forks(repo=gh_repo),
-                })
-            except SQAaaSAPIException as e:
-                _reason = e.message
-                return web.Response(
-                    status=e.http_code, reason=_reason, text=_reason
-                )
-        repo_settings.append(_repo_settings)
-        logger.debug("Repository settings generated for repo <%s>: %s" % (_repo_data['url'], _repo_settings))
+    if need_repo_settings:
+        for _repo_key, _repo_data in repositories.items():
+            # Get required keys from <repositories>
+            _repo_settings = {_key: _repo_data.get(_key, None)
+                for _key in ['url', 'name', 'tag', 'commit_id', 'is_main_repo']
+            }
+            platform = ctls_utils.supported_git_platform(
+                _repo_data['url'], platforms=SUPPORTED_PLATFORMS
+            )
+            _main_repo_creds = _repo_data.get(
+                'credential_data', {}
+            )
+            if platform in ['github']:
+                gh_repo_name = _repo_data['name']
+                try:
+                    gh_repo = gh_utils.get_repository(
+                        gh_repo_name, _main_repo_creds, raise_exception=True
+                    )
+                    _repo_settings.update({
+                        'avatar_url': gh_utils.get_avatar(
+                            gh_repo_name, _main_repo_creds
+                        ),
+                        'description': gh_utils.get_description(repo=gh_repo),
+                        'languages': gh_utils.get_languages(repo=gh_repo),
+                        'topics': gh_utils.get_topics(repo=gh_repo),
+                        'stargazers_count': gh_utils.get_stargazers(repo=gh_repo),
+                        'watchers_count': gh_utils.get_watchers(repo=gh_repo),
+                        'contributors_count': gh_utils.get_contributors(repo=gh_repo),
+                        'forks_count': gh_utils.get_forks(repo=gh_repo),
+                    })
+                except SQAaaSAPIException as e:
+                    _reason = e.message
+                    return web.Response(
+                        status=e.http_code, reason=_reason, text=_reason
+                    )
+            repo_settings.append(_repo_settings)
+            logger.debug("Repository settings generated for repo <%s>: %s" % (_repo_data['url'], _repo_settings))
 
     # Update 'repo_settings' on DB
     db.add_repo_settings(

@@ -225,44 +225,43 @@ class GitUtils(object):
             repo = kwargs.get('repo', None)
             repo_url = repo.get('repo', None)
             if not repo_url:
-                _msg = 'Stopping: repository URL not provided'
-                logger.error(_msg)
-                raise SQAaaSAPIException(422, _msg)
-
-            repo_creds = repo.get('credential_data', {})
-            source_repo = GitUtils._format_git_url(
-                repo_url, repo_creds=repo_creds
-            )
-            source_repo_no_creds = repo_url # for logging purposes
-            source_repo_branch = repo.get('branch', None)
-            if not source_repo_branch:
-                source_repo_branch = GitUtils.get_default_branch_from_remote(
-                    repo_url, repo_creds
+                _msg = 'Repository URL not provided: will not trigger git repository action'
+                logger.warning(_msg)
+            else:
+                repo_creds = repo.get('credential_data', {})
+                source_repo = GitUtils._format_git_url(
+                    repo_url, repo_creds=repo_creds
                 )
-            with tempfile.TemporaryDirectory(dir=CLONE_FOLDER) as dirpath:
-                try:
-                    repo = Repo.clone_from(
-                        source_repo,
-                        dirpath,
-                        single_branch=True,
-                        b=source_repo_branch
+                source_repo_no_creds = repo_url # for logging purposes
+                source_repo_branch = repo.get('branch', None)
+                if not source_repo_branch:
+                    source_repo_branch = GitUtils.get_default_branch_from_remote(
+                        repo_url, repo_creds
                     )
-                    msg = 'Repository <%s> was cloned (branch: %s)' % (
-                        source_repo_no_creds, source_repo_branch
-                    )
-                    logger.debug(msg)
-                except GitCommandError as e:
-                    _msg = GitUtils._custom_exception_messages(
-                        e, repo=repo_url, branch=source_repo_branch
-                    )
-                    logger.error(_msg)
-                    raise SQAaaSAPIException(422, _msg)
-                else:
-                    # Set path to the temporary directory
-                    kwargs['path'] = dirpath
-                    # repo settings
-                    kwargs['tag'] = source_repo_branch
-                    kwargs['commit_id'] = repo.commit(source_repo_branch).hexsha
-                ret = f(*args, **kwargs)
+                with tempfile.TemporaryDirectory(dir=CLONE_FOLDER) as dirpath:
+                    try:
+                        repo = Repo.clone_from(
+                            source_repo,
+                            dirpath,
+                            single_branch=True,
+                            b=source_repo_branch
+                        )
+                        msg = 'Repository <%s> was cloned (branch: %s)' % (
+                            source_repo_no_creds, source_repo_branch
+                        )
+                        logger.debug(msg)
+                    except GitCommandError as e:
+                        _msg = GitUtils._custom_exception_messages(
+                            e, repo=repo_url, branch=source_repo_branch
+                        )
+                        logger.error(_msg)
+                        raise SQAaaSAPIException(422, _msg)
+                    else:
+                        # Set path to the temporary directory
+                        kwargs['path'] = dirpath
+                        # repo settings
+                        kwargs['tag'] = source_repo_branch
+                        kwargs['commit_id'] = repo.commit(source_repo_branch).hexsha
+            ret = f(*args, **kwargs)
             return ret
         return decorated_function
