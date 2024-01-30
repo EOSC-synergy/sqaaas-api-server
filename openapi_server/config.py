@@ -16,6 +16,7 @@ logger = logging.getLogger('sqaaas.api.config')
 
 BADGE_SECTION = 'badgr'
 CI_SECTION = 'jenkins'
+VCS_SECTION = 'git'
 
 
 def init(config_file):
@@ -75,6 +76,10 @@ def get_repo(key, fallback=None):
 
 def get_ci(key, fallback=None):
     return CONF.get(CI_SECTION, key, fallback=fallback)
+
+
+def get_vcs(key, fallback=None):
+    return CONF.get(VCS_SECTION, key, fallback=fallback)
 
 
 def get_badge(key, subsection_list=None, fallback=None):

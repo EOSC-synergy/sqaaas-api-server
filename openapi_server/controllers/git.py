@@ -15,6 +15,7 @@ from git.exc import GitCommandError
 from urllib3.util import parse_url
 from urllib3.util import Url
 
+from openapi_server import config
 from openapi_server.controllers import crypto as crypto_utils
 from openapi_server.exception import SQAaaSAPIException
 
@@ -22,6 +23,12 @@ from openapi_server.exception import SQAaaSAPIException
 logger = logging.getLogger('sqaaas.api.git')
 
 REMOTE_NAME = 'sqaaas'
+
+CLONE_FOLDER = config.get_vcs(
+    'clone_folder',
+    fallback='/tmp'
+)
+
 
 class GitUtils(object):
     """Class for handling Git commands.
@@ -180,7 +187,7 @@ class GitUtils(object):
                 source_repo
             )
         source_repo = GitUtils._format_git_url(source_repo)
-        with tempfile.TemporaryDirectory() as dirpath:
+        with tempfile.TemporaryDirectory(dir=CLONE_FOLDER) as dirpath:
             repo = None
             try:
                 repo = Repo.clone_from(
@@ -232,7 +239,7 @@ class GitUtils(object):
                 source_repo_branch = GitUtils.get_default_branch_from_remote(
                     repo_url, repo_creds
                 )
-            with tempfile.TemporaryDirectory() as dirpath:
+            with tempfile.TemporaryDirectory(dir=CLONE_FOLDER) as dirpath:
                 try:
                     repo = Repo.clone_from(
                         source_repo,

@@ -18,8 +18,8 @@ VERSION = "2.21.0"
 # http://pypi.python.org/pypi/setuptools
 
 REQUIRES = [
-    "connexion==2.6.0",
-    "swagger-ui-bundle==0.0.6",
+    "connexion==2.14.2",
+    "swagger-ui-bundle==0.0.9",
     "PyGithub>=1.53",
     "python-jenkins>=1.7.0",
     "deepdiff>=5.2.3",
