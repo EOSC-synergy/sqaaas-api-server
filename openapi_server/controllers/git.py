@@ -148,7 +148,9 @@ class GitUtils(object):
         """
         helper_path = os.path.join(dirpath, "git-askpass-helper.sh")
         with open(helper_path, "w") as f:
-            f.writelines("%s\n" % l for l in ["#!/bin/sh", 'exec echo "$GIT_PASSWORD"'])
+            f.writelines(
+                "%s\n" % line for line in ["#!/bin/sh", 'exec echo "$GIT_PASSWORD"']
+            )
         os.chmod(helper_path, stat.S_IEXEC)
         os.environ["GIT_ASKPASS"] = helper_path
         os.environ["GIT_PASSWORD"] = self.access_token

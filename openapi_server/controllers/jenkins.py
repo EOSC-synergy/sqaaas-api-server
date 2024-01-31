@@ -3,7 +3,6 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 import logging
-import time
 from urllib.parse import quote_plus, urljoin
 
 import jenkins
@@ -281,6 +280,7 @@ class JenkinsUtils(object):
         try:
             stage_list = self.server.get_build_stages(full_job_name, build_no)["stages"]
         except Exception as e:
+            self.logger.error(e)
             self.logger.warning(
                 "Could not check if cleanup stage failed for build #%s "
                 "(job: <%s>)" % (build_no, full_job_name)
@@ -313,6 +313,7 @@ class JenkinsUtils(object):
             self.server.delete_credential(credential_id, folder_name=folder_name)
             self.logger.debug("Credential <%s> removed" % credential_id)
         except jenkins.NotFoundException as e:
+            self.logger.error(e)
             self.logger.debug(
                 "Could not remove credential <%s>: not found" % credential_id
             )

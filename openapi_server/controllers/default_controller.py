@@ -7,13 +7,11 @@ import base64
 import calendar
 import copy
 import io
-import itertools
 import json
 import logging
 import os
 import re
 import uuid
-from datetime import datetime
 from importlib.metadata import version as impversion
 from importlib.resources import files as impfiles
 from typing import Dict, List
@@ -33,10 +31,7 @@ from openapi_server import config, controllers
 from openapi_server.controllers import crypto as crypto_utils
 from openapi_server.controllers import db
 from openapi_server.controllers import utils as ctls_utils
-from openapi_server.controllers.badgr import BadgrUtils
 from openapi_server.controllers.git import GitUtils
-from openapi_server.controllers.github import GitHubUtils
-from openapi_server.controllers.jenkins import JenkinsUtils
 from openapi_server.controllers.jepl import JePLUtils
 from openapi_server.exception import SQAaaSAPIException
 from openapi_server.models.inline_object import InlineObject
@@ -233,7 +228,6 @@ async def _get_tooling_for_assessment(
                         )
                     else:
                         files_found = []
-                        field = None
                         value = None
                         for field_name in ["extensions", "filenames"]:
                             value = lang_entry.get(field_name, None)
@@ -797,10 +791,8 @@ async def delete_pipeline_by_id(request: web.Request, pipeline_id) -> web.Respon
         logger.info(_message)
     else:
         pipeline_data = db.get_entry(pipeline_id)
-        pipeline_repo = pipeline_data["pipeline_repo"]
         jenkins_info = pipeline_data["jenkins"]
         build_info = jenkins_info["build_info"]
-
         jk_job_name = jenkins_info["job_name"]
         build_no = build_info["number"]
         if build_status in JENKINS_COMPLETED_STATUS:
@@ -1349,10 +1341,7 @@ async def _handle_job_building(jk_job_name, build_to_check):
         build_item_no = jk_utils.build_job(jk_job_name)
         if build_item_no:
             build_status = "QUEUED"
-            logger.info(
-                "Build status for pipeline <%s>: %s" % (pipeline_repo, build_status)
-            )
-            reason = "Triggered the existing Jenkins job"
+            logger.info("Build status for job <%s>: %s" % (jk_job_name, build_status))
         else:
             _reason = "Could not trigger build job"
             logger.error(_reason)
@@ -1377,7 +1366,7 @@ async def _update_status(pipeline_id, triggered_by_run=False, build_task=None):
 
     if build_task:
         if build_task.done():
-            build_no, build_status, build_item_no = build_job_task.result()
+            build_no, build_status, build_item_no = build_task.result()
         else:
             _pipeline_executed = False
 
@@ -1637,7 +1626,7 @@ async def _get_commands_from_script(stdout_command, commands_script_list):
     :param commands_script_list: List of command scripts used in the pipeline.
     :type commands_script_list: list
     """
-    bash_script_pattern = ".+(script\..+\.sh).*"
+    bash_script_pattern = r".+(script\..+\.sh).*"
     try:
         script_name = re.search(bash_script_pattern, stdout_command).group(1)
     except AttributeError:
@@ -2252,7 +2241,6 @@ async def create_pull_request(request: web.Request, pipeline_id, body) -> web.Re
 
     """
     pipeline_data = db.get_entry(pipeline_id)
-    pipeline_repo = pipeline_data["pipeline_repo"]
     config_data_list = pipeline_data["data"]["config"]
     composer_data = pipeline_data["data"]["composer"]
     jenkinsfile = pipeline_data["data"]["jenkinsfile"]
@@ -2638,10 +2626,11 @@ async def _get_criterion_tooling(
         criterion_data = tooling_metadata_json["criteria"][criterion_id][tool_key]
     except Exception as e:
         _reason = (
-            "Cannot find tooling information for criterion <%s> in metadata: %s"
-            % (criterion_id, tooling_metadata_json)
+            "Cannot find tooling information for criterion <%s> in tooling metadata: %s"
+            % (criterion_id, e)
         )
         logger.error(_reason)
+        logger.debug("Metadata found: %s" % tooling_metadata_json)
         raise SQAaaSAPIException(502, _reason)
 
     # Add default tools

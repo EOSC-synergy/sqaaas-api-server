@@ -4,7 +4,6 @@
 
 import copy
 import functools
-import itertools
 import logging
 import os
 import re
@@ -17,7 +16,7 @@ import yaml
 from aiohttp import web
 from github.GithubException import GithubException, UnknownObjectException
 from jenkins import JenkinsException
-from urllib3.util import Url, parse_url
+from urllib3.util import parse_url
 
 from openapi_server import config
 from openapi_server.controllers import db
@@ -70,6 +69,7 @@ def extended_data_validation(f):
             try:
                 registry_data = srv_data["image"]["registry"]
             except KeyError as e:
+                logger.error(e)
                 logger.debug("No registry data found for service <%s>" % srv_name)
             else:
                 if registry_data["push"]:
@@ -173,7 +173,7 @@ def validate_request(f):
             logger.error("(Jenkins) %s" % msg_first_line)
             _reason = msg_first_line
             _status = 404
-            _status_regexp = re.search(".+\[(40\d{1})\].+", _reason)
+            _status_regexp = re.search(r".+\[(40\d{1})\].+", _reason)
             if _status_regexp:
                 _status = int(_status_regexp.groups()[0])
             r = {"upstream_status": _status, "upstream_reason": _reason}
@@ -223,8 +223,8 @@ class ProcessExtraData(object):
             logger.debug(
                 "Setting volume data to default values: %s" % service_data["volumes"]
             )
-        ## Set 'working_dir' property (for simple use cases)
-        ### NOTE!! Setting working_dir only makes sense when only one volume is expected!
+        # Set 'working_dir' property (for simple use cases)
+        # NOTE!! Setting working_dir only makes sense when only one volume is expected!
         service_data["working_dir"] = service_data["volumes"][0]["target"]
         logger.debug(
             "Setting <working_dir> property to <%s>" % service_data["working_dir"]
@@ -273,7 +273,7 @@ class ProcessExtraData(object):
         repo_key = repo_checkout_dir
         if repo_checkout_dir in ["."]:
             repo_key = "this_repo"
-        if not "tox" in repos_data[repo_key].keys():
+        if "tox" not in repos_data[repo_key].keys():
             logger.debug("Tox enviroment not found. Skipping environment setup.")
         else:
             # tox_file
@@ -449,7 +449,7 @@ class ProcessExtraData(object):
             for arg in args:
                 flag = False
                 if arg["type"] in ["optional"]:
-                    if not "value" in list(arg):
+                    if "value" not in list(arg):
                         flag = True
                     else:
                         if arg.get("selectable", False) and not arg["value"]:
@@ -691,7 +691,7 @@ def process_extra_data(config_json, composer_json, report_to_stdout=False):
                     # Store the criterion anyway
                     tool_criteria_map[criterion_name] = {tool["name"]: {"commands": []}}
 
-                tox_checkout_dir = "."
+                # tox_checkout_dir = "."
                 try:
                     repo_url = repo.pop("repo_url")
                     if not repo_url:
@@ -794,7 +794,6 @@ def process_extra_data(config_json, composer_json, report_to_stdout=False):
                                 )
                             im_image_id = template_kwargs["im_image_id"]
                             openstack_url = template_kwargs["openstack_url"]
-                            repo, branch = (None, None)
                             if repo_url:
                                 # repo object expects 'repo' key as current
                                 # project_repos_mapping's 'name' key
@@ -851,7 +850,7 @@ def process_extra_data(config_json, composer_json, report_to_stdout=False):
                             template_kwargs=template_kwargs,
                         )
                     # tox
-                    tox_checkout_dir = stage_name
+                    # tox_checkout_dir = stage_name
 
                 # add creds to config
                 if tool_creds:
@@ -871,7 +870,7 @@ def process_extra_data(config_json, composer_json, report_to_stdout=False):
     # Default CONFIG:ENVIRONMENT
     for jpl_envvar in ["JPL_DOCKERFORCEBUILD"]:
         logger.debug("Enabling <%s> flag (default behaviour)" % jpl_envvar)
-        if not "environment" in config_json.keys():
+        if "environment" not in config_json.keys():
             config_json["environment"] = {}
         config_json["environment"][jpl_envvar] = "enabled"
 
@@ -890,7 +889,7 @@ def process_extra_data(config_json, composer_json, report_to_stdout=False):
         logger.debug("Processing composer data for service <%s>" % srv_name)
         if "image" in list(srv_data):
             use_default_dockerhub_org = False
-            ## Set JPL_DOCKER* envvars
+            # Set JPL_DOCKER* envvars
             if "registry" in srv_data["image"].keys():
                 logger.debug("Registry data found for image <%s>" % srv_data["image"])
                 registry_data = srv_data["image"].pop("registry")
@@ -936,7 +935,7 @@ def process_extra_data(config_json, composer_json, report_to_stdout=False):
                         "Setting JPL_DOCKERSERVER environment value to <%s>"
                         % registry_url
                     )
-            ## Set 'image' property as string (required by Docker Compose)
+            # Set 'image' property as string (required by Docker Compose)
             srv_data["image"] = srv_data["image"]["name"]
             if use_default_dockerhub_org:
                 org = docker_credential_org
@@ -944,13 +943,13 @@ def process_extra_data(config_json, composer_json, report_to_stdout=False):
                 img_name = srv_data["image"].split("/")[-1]
                 srv_data["image"] = "/".join([org, img_name])
                 logger.debug("Resultant Docker image name: %s" % srv_data["image"])
-        ## Check for empty values
+        # Check for empty values
         srv_data = del_empty_keys(srv_data)
-        ## Set 'volumes' property (incl. default values)
+        # Set 'volumes' property (incl. default values)
         ProcessExtraData.set_service_volume(srv_data)
-        ## Handle 'oneshot' services
+        # Handle 'oneshot' services
         ProcessExtraData.set_service_oneshot(srv_data)
-        ## Handle 'entrypoint' property
+        # Handle 'entrypoint' property
         ProcessExtraData.set_service_entrypoint(srv_data)
 
     composer_data = {"data_json": composer_json}
@@ -993,7 +992,7 @@ def supported_git_platform(repo_url, platforms):
     """
     url_parsed = parse_url(repo_url)
     host_without_extension = url_parsed.host.split(".")[0]
-    if not host_without_extension in list(platforms):
+    if host_without_extension not in list(platforms):
         host_without_extension = None
     return host_without_extension
 

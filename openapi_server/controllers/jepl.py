@@ -6,9 +6,8 @@ import copy
 import logging
 
 import namegenerator
-from jinja2 import Environment, PackageLoader, select_autoescape
+from jinja2 import Environment, PackageLoader
 
-from openapi_server import config
 from openapi_server.controllers import utils as ctls_utils
 from openapi_server.exception import SQAaaSAPIException
 
@@ -217,7 +216,7 @@ class JePLUtils(object):
         :param additional_files_to_commit: List of additional files that are needed.
         :param branch: Name of the branch in the remote repository.
         """
-        ## config
+        # config
         config_files_to_push = [
             {
                 "file_name": config_data["file_name"],
@@ -240,7 +239,7 @@ class JePLUtils(object):
             {"file_name": config_file, "delete": True}
             for config_file in config_files_to_remove_set
         ]
-        ## composer
+        # composer
         composer_files_to_push = [
             {
                 "file_name": composer_data["file_name"],
@@ -248,11 +247,11 @@ class JePLUtils(object):
                 "delete": False,
             }
         ]
-        ## jenkinsfile
+        # jenkinsfile
         jenkinsfile_to_push = [
             {"file_name": "Jenkinsfile", "file_data": jenkinsfile, "delete": False}
         ]
-        ## commands' builder scripts
+        # commands' builder scripts
         commands_scripts_to_push = [
             {
                 "file_name": commands_script["file_name"],
@@ -275,7 +274,7 @@ class JePLUtils(object):
             {"file_name": script, "delete": True}
             for script in commands_scripts_to_remove_set
         ]
-        ## Additional files to commit
+        # Additional files to commit
         additional_files_to_push = [
             {
                 "file_name": additional_file["file_name"],
@@ -285,7 +284,7 @@ class JePLUtils(object):
             for additional_file in additional_files_to_commit
             if additional_file["file_data"]  # ensure that has some content
         ]
-        ## Merge & Push the definitive list of files
+        # Merge & Push the definitive list of files
         files_to_push = (
             config_files_to_push
             + config_files_to_remove

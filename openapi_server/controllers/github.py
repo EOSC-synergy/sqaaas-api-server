@@ -60,7 +60,7 @@ class GitHubUtils(object):
             branch = repo.default_branch
         try:
             contents = repo.get_dir_contents(path, ref=branch)
-        except (UnknownObjectException, GithubException) as e:
+        except (UnknownObjectException, GithubException):
             contents = []
 
         return contents
@@ -168,6 +168,7 @@ class GitHubUtils(object):
                 "Branch already exists in repo <%s>: %s" % (repo_name, branch)
             )
         except GithubException as e:
+            self.logger.error(e)
             self.logger.debug(
                 "Branch does not exist in repo <%s>: %s" % (repo_name, branch)
             )
@@ -217,7 +218,6 @@ class GitHubUtils(object):
         :param head_branch_name: Name of the branch to do the checkout from
         """
         repo = self.get_repository(repo_name)
-        git_refs = repo.get_git_refs()
         head_branch = repo.get_branch(head_branch_name)
         repo.create_git_ref(ref="refs/heads/" + branch_name, sha=head_branch.commit.sha)
         return repo
@@ -310,6 +310,7 @@ class GitHubUtils(object):
         try:
             branch = repo.get_branch(branch_name)
         except GithubException as e:
+            self.logger.error(e)
             self.logger.debug(
                 "Branch not found in repository <%s>: %s" % (repo_name, branch_name)
             )
