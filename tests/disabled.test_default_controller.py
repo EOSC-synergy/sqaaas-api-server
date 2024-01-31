@@ -4,31 +4,7 @@
 
 # coding: utf-8
 
-import json
-
-import pytest
-from aiohttp import web
-
-from openapi_server.models.assessment_output import AssessmentOutput
-from openapi_server.models.badge import Badge
-from openapi_server.models.criterion import Criterion
-from openapi_server.models.criterion_output_addl_props_inner import (
-    CriterionOutputAddlPropsInner,
-)
-from openapi_server.models.inline_object import InlineObject
-from openapi_server.models.inline_response200 import InlineResponse200
-from openapi_server.models.inline_response201 import InlineResponse201
-from openapi_server.models.inline_response2001 import InlineResponse2001
-from openapi_server.models.inline_response2002 import InlineResponse2002
-from openapi_server.models.inline_response2003 import InlineResponse2003
-from openapi_server.models.inline_response2004 import InlineResponse2004
-from openapi_server.models.inline_response2005 import InlineResponse2005
-from openapi_server.models.je_pl_composer import JePLComposer
-from openapi_server.models.je_pl_config import JePLConfig
-from openapi_server.models.je_pl_jenkinsfile import JePLJenkinsfile
-from openapi_server.models.pipeline import Pipeline
-from openapi_server.models.pipeline_assessment import PipelineAssessment
-from openapi_server.models.upstream_error import UpstreamError
+from openapi_server.models import InlineObject
 
 
 async def test_add_pipeline(client):
@@ -55,9 +31,9 @@ async def test_add_pipeline(client):
                                     "args": [
                                         {
                                             "summary": "summary",
-                                            "args": [null, null],
-                                            "repeatable": false,
-                                            "selectable": true,
+                                            "args": [None, None],
+                                            "repeatable": False,
+                                            "selectable": True,
                                             "format": "string",
                                             "description": "Detect the license of the given project",
                                             "type": "subcommand",
@@ -66,9 +42,9 @@ async def test_add_pipeline(client):
                                         },
                                         {
                                             "summary": "summary",
-                                            "args": [null, null],
-                                            "repeatable": false,
-                                            "selectable": true,
+                                            "args": [None, None],
+                                            "repeatable": False,
+                                            "selectable": True,
                                             "format": "string",
                                             "description": "Detect the license of the given project",
                                             "type": "subcommand",
@@ -79,13 +55,13 @@ async def test_add_pipeline(client):
                                     "docs": "https://openapi-generator.tech",
                                     "name": "name",
                                     "lang": "lang",
-                                    "jepl_support": true,
+                                    "jepl_support": True,
                                     "executable": "executable",
                                     "docker": {
                                         "image": "image",
                                         "dockerfile": "dockerfile",
                                         "reviewed": "2000-01-23",
-                                        "oneshot": true,
+                                        "oneshot": True,
                                     },
                                 },
                             },
@@ -98,9 +74,9 @@ async def test_add_pipeline(client):
                                     "args": [
                                         {
                                             "summary": "summary",
-                                            "args": [null, null],
-                                            "repeatable": false,
-                                            "selectable": true,
+                                            "args": [None, None],
+                                            "repeatable": False,
+                                            "selectable": True,
                                             "format": "string",
                                             "description": "Detect the license of the given project",
                                             "type": "subcommand",
@@ -109,9 +85,9 @@ async def test_add_pipeline(client):
                                         },
                                         {
                                             "summary": "summary",
-                                            "args": [null, null],
-                                            "repeatable": false,
-                                            "selectable": true,
+                                            "args": [None, None],
+                                            "repeatable": False,
+                                            "selectable": True,
                                             "format": "string",
                                             "description": "Detect the license of the given project",
                                             "type": "subcommand",
@@ -122,19 +98,19 @@ async def test_add_pipeline(client):
                                     "docs": "https://openapi-generator.tech",
                                     "name": "name",
                                     "lang": "lang",
-                                    "jepl_support": true,
+                                    "jepl_support": True,
                                     "executable": "executable",
                                     "docker": {
                                         "image": "image",
                                         "dockerfile": "dockerfile",
                                         "reviewed": "2000-01-23",
-                                        "oneshot": true,
+                                        "oneshot": True,
                                     },
                                 },
                             },
                         ],
                         "when": {
-                            "building_tag": true,
+                            "building_tag": True,
                             "branch": {
                                 "comparator": "GLOB",
                                 "pattern": "release-\\\\d+",
@@ -187,9 +163,9 @@ async def test_add_pipeline(client):
                                     "args": [
                                         {
                                             "summary": "summary",
-                                            "args": [null, null],
-                                            "repeatable": false,
-                                            "selectable": true,
+                                            "args": [None, None],
+                                            "repeatable": False,
+                                            "selectable": True,
                                             "format": "string",
                                             "description": "Detect the license of the given project",
                                             "type": "subcommand",
@@ -198,9 +174,9 @@ async def test_add_pipeline(client):
                                         },
                                         {
                                             "summary": "summary",
-                                            "args": [null, null],
-                                            "repeatable": false,
-                                            "selectable": true,
+                                            "args": [None, None],
+                                            "repeatable": False,
+                                            "selectable": True,
                                             "format": "string",
                                             "description": "Detect the license of the given project",
                                             "type": "subcommand",
@@ -211,13 +187,13 @@ async def test_add_pipeline(client):
                                     "docs": "https://openapi-generator.tech",
                                     "name": "name",
                                     "lang": "lang",
-                                    "jepl_support": true,
+                                    "jepl_support": True,
                                     "executable": "executable",
                                     "docker": {
                                         "image": "image",
                                         "dockerfile": "dockerfile",
                                         "reviewed": "2000-01-23",
-                                        "oneshot": true,
+                                        "oneshot": True,
                                     },
                                 },
                             },
@@ -230,9 +206,9 @@ async def test_add_pipeline(client):
                                     "args": [
                                         {
                                             "summary": "summary",
-                                            "args": [null, null],
-                                            "repeatable": false,
-                                            "selectable": true,
+                                            "args": [None, None],
+                                            "repeatable": False,
+                                            "selectable": True,
                                             "format": "string",
                                             "description": "Detect the license of the given project",
                                             "type": "subcommand",
@@ -241,9 +217,9 @@ async def test_add_pipeline(client):
                                         },
                                         {
                                             "summary": "summary",
-                                            "args": [null, null],
-                                            "repeatable": false,
-                                            "selectable": true,
+                                            "args": [None, None],
+                                            "repeatable": False,
+                                            "selectable": True,
                                             "format": "string",
                                             "description": "Detect the license of the given project",
                                             "type": "subcommand",
@@ -254,19 +230,19 @@ async def test_add_pipeline(client):
                                     "docs": "https://openapi-generator.tech",
                                     "name": "name",
                                     "lang": "lang",
-                                    "jepl_support": true,
+                                    "jepl_support": True,
                                     "executable": "executable",
                                     "docker": {
                                         "image": "image",
                                         "dockerfile": "dockerfile",
                                         "reviewed": "2000-01-23",
-                                        "oneshot": true,
+                                        "oneshot": True,
                                     },
                                 },
                             },
                         ],
                         "when": {
-                            "building_tag": true,
+                            "building_tag": True,
                             "branch": {
                                 "comparator": "GLOB",
                                 "pattern": "release-\\\\d+",
@@ -308,7 +284,7 @@ async def test_add_pipeline(client):
                 "key": {
                     "image": {
                         "registry": {
-                            "push": true,
+                            "push": True,
                             "credential_id": "my-dockerhub-cred",
                         },
                         "name": "eoscsynergy/sqaaas-api-spec:1.0.0",
@@ -327,7 +303,7 @@ async def test_add_pipeline(client):
                         {"source": "./", "type": "bind", "target": "./sqaaas-build"},
                         {"source": "./", "type": "bind", "target": "./sqaaas-build"},
                     ],
-                    "oneshot": true,
+                    "oneshot": True,
                     "command": "sleep 600000",
                 }
             },
@@ -382,7 +358,7 @@ async def test_create_pull_request(client):
 
     Creates pull request with JePL files.
     """
-    body = openapi_server.InlineObject()
+    body = InlineObject()
     headers = {
         "Accept": "application/json",
         "Content-Type": "application/json",
@@ -720,9 +696,9 @@ async def test_update_pipeline_by_id(client):
                                     "args": [
                                         {
                                             "summary": "summary",
-                                            "args": [null, null],
-                                            "repeatable": false,
-                                            "selectable": true,
+                                            "args": [None, None],
+                                            "repeatable": False,
+                                            "selectable": True,
                                             "format": "string",
                                             "description": "Detect the license of the given project",
                                             "type": "subcommand",
@@ -731,9 +707,9 @@ async def test_update_pipeline_by_id(client):
                                         },
                                         {
                                             "summary": "summary",
-                                            "args": [null, null],
-                                            "repeatable": false,
-                                            "selectable": true,
+                                            "args": [None, None],
+                                            "repeatable": False,
+                                            "selectable": True,
                                             "format": "string",
                                             "description": "Detect the license of the given project",
                                             "type": "subcommand",
@@ -744,13 +720,13 @@ async def test_update_pipeline_by_id(client):
                                     "docs": "https://openapi-generator.tech",
                                     "name": "name",
                                     "lang": "lang",
-                                    "jepl_support": true,
+                                    "jepl_support": True,
                                     "executable": "executable",
                                     "docker": {
                                         "image": "image",
                                         "dockerfile": "dockerfile",
                                         "reviewed": "2000-01-23",
-                                        "oneshot": true,
+                                        "oneshot": True,
                                     },
                                 },
                             },
@@ -763,9 +739,9 @@ async def test_update_pipeline_by_id(client):
                                     "args": [
                                         {
                                             "summary": "summary",
-                                            "args": [null, null],
-                                            "repeatable": false,
-                                            "selectable": true,
+                                            "args": [None, None],
+                                            "repeatable": False,
+                                            "selectable": True,
                                             "format": "string",
                                             "description": "Detect the license of the given project",
                                             "type": "subcommand",
@@ -774,9 +750,9 @@ async def test_update_pipeline_by_id(client):
                                         },
                                         {
                                             "summary": "summary",
-                                            "args": [null, null],
-                                            "repeatable": false,
-                                            "selectable": true,
+                                            "args": [None, None],
+                                            "repeatable": False,
+                                            "selectable": True,
                                             "format": "string",
                                             "description": "Detect the license of the given project",
                                             "type": "subcommand",
@@ -787,19 +763,19 @@ async def test_update_pipeline_by_id(client):
                                     "docs": "https://openapi-generator.tech",
                                     "name": "name",
                                     "lang": "lang",
-                                    "jepl_support": true,
+                                    "jepl_support": True,
                                     "executable": "executable",
                                     "docker": {
                                         "image": "image",
                                         "dockerfile": "dockerfile",
                                         "reviewed": "2000-01-23",
-                                        "oneshot": true,
+                                        "oneshot": True,
                                     },
                                 },
                             },
                         ],
                         "when": {
-                            "building_tag": true,
+                            "building_tag": True,
                             "branch": {
                                 "comparator": "GLOB",
                                 "pattern": "release-\\\\d+",
@@ -852,9 +828,9 @@ async def test_update_pipeline_by_id(client):
                                     "args": [
                                         {
                                             "summary": "summary",
-                                            "args": [null, null],
-                                            "repeatable": false,
-                                            "selectable": true,
+                                            "args": [None, None],
+                                            "repeatable": False,
+                                            "selectable": True,
                                             "format": "string",
                                             "description": "Detect the license of the given project",
                                             "type": "subcommand",
@@ -863,9 +839,9 @@ async def test_update_pipeline_by_id(client):
                                         },
                                         {
                                             "summary": "summary",
-                                            "args": [null, null],
-                                            "repeatable": false,
-                                            "selectable": true,
+                                            "args": [None, None],
+                                            "repeatable": False,
+                                            "selectable": True,
                                             "format": "string",
                                             "description": "Detect the license of the given project",
                                             "type": "subcommand",
@@ -876,13 +852,13 @@ async def test_update_pipeline_by_id(client):
                                     "docs": "https://openapi-generator.tech",
                                     "name": "name",
                                     "lang": "lang",
-                                    "jepl_support": true,
+                                    "jepl_support": True,
                                     "executable": "executable",
                                     "docker": {
                                         "image": "image",
                                         "dockerfile": "dockerfile",
                                         "reviewed": "2000-01-23",
-                                        "oneshot": true,
+                                        "oneshot": True,
                                     },
                                 },
                             },
@@ -895,9 +871,9 @@ async def test_update_pipeline_by_id(client):
                                     "args": [
                                         {
                                             "summary": "summary",
-                                            "args": [null, null],
-                                            "repeatable": false,
-                                            "selectable": true,
+                                            "args": [None, None],
+                                            "repeatable": False,
+                                            "selectable": True,
                                             "format": "string",
                                             "description": "Detect the license of the given project",
                                             "type": "subcommand",
@@ -906,9 +882,9 @@ async def test_update_pipeline_by_id(client):
                                         },
                                         {
                                             "summary": "summary",
-                                            "args": [null, null],
-                                            "repeatable": false,
-                                            "selectable": true,
+                                            "args": [None, None],
+                                            "repeatable": False,
+                                            "selectable": True,
                                             "format": "string",
                                             "description": "Detect the license of the given project",
                                             "type": "subcommand",
@@ -919,19 +895,19 @@ async def test_update_pipeline_by_id(client):
                                     "docs": "https://openapi-generator.tech",
                                     "name": "name",
                                     "lang": "lang",
-                                    "jepl_support": true,
+                                    "jepl_support": True,
                                     "executable": "executable",
                                     "docker": {
                                         "image": "image",
                                         "dockerfile": "dockerfile",
                                         "reviewed": "2000-01-23",
-                                        "oneshot": true,
+                                        "oneshot": True,
                                     },
                                 },
                             },
                         ],
                         "when": {
-                            "building_tag": true,
+                            "building_tag": True,
                             "branch": {
                                 "comparator": "GLOB",
                                 "pattern": "release-\\\\d+",
@@ -973,7 +949,7 @@ async def test_update_pipeline_by_id(client):
                 "key": {
                     "image": {
                         "registry": {
-                            "push": true,
+                            "push": True,
                             "credential_id": "my-dockerhub-cred",
                         },
                         "name": "eoscsynergy/sqaaas-api-spec:1.0.0",
@@ -992,7 +968,7 @@ async def test_update_pipeline_by_id(client):
                         {"source": "./", "type": "bind", "target": "./sqaaas-build"},
                         {"source": "./", "type": "bind", "target": "./sqaaas-build"},
                     ],
-                    "oneshot": true,
+                    "oneshot": True,
                     "command": "sleep 600000",
                 }
             },
