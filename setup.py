@@ -29,6 +29,7 @@ setup(
     name=NAME,
     version=VERSION,
     description="SQAaaS API",
+    author="Pablo Orviz",
     author_email="orviz@ifca.unican.es",
     url="https://github.com/eosc-synergy/sqaaas-api-server",
     keywords=["OpenAPI", "SQAaaS API"],
