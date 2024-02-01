@@ -159,7 +159,8 @@ class JenkinsUtils(object):
     def get_stage_data(self, job_name, build_no):
         """Get the info from the pipeline stages.
 
-        Via Pipeline Stage View API at https://github.com/jenkinsci/pipeline-stage-view-plugin
+        Via Pipeline Stage View API at
+        https://github.com/jenkinsci/pipeline-stage-view-plugin
 
         :param job_name: job name including folder/s, name & branch
         :param build_no: build number.

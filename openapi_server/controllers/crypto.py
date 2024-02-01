@@ -18,8 +18,8 @@ def encrypt_str(string, to_json=True):
     """Returns the encrypted string.
 
     :param string: The string to encrypt.
-    :param to_json: Whether the string will be stored in a JSON file (it
-    needs to be decoded).
+    :param to_json: Whether the string will be stored in a JSON file (it needs to be
+        decoded).
     """
     f = _get_fernet_key()
     string_byte = string.encode("utf-8")
@@ -34,8 +34,8 @@ def decrypt_str(string, from_json=True):
     """Returns the text representation of the encrypted string.
 
     :param string: The string to decrypt.
-    :param from_json: Whether the string comes from a JSON file (it
-    needs to be encoded).
+    :param from_json: Whether the string comes from a JSON file (it needs to be
+        encoded).
     """
     f = _get_fernet_key()
     if from_json:

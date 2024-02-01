@@ -18,10 +18,11 @@ class JePLUtils(object):
     """Class that generates JePL configuration files."""
 
     def generate_file_name(file_type, random=False):
-        """Generates a file name for any of the JePL-related types of file
+        """Generates a file name for any of the JePL-related types of file.
 
         :param file_type: Type of JePL file, one of [config, composer, jenkinsfile].
-        :param random: Boolean that marks whether a random string should be inserted in the file name.
+        :param random: Boolean that marks whether a random string should be inserted in
+            the file name.
         """
         file_type_chunks = {
             "config": [".sqa/config", "yml"],
@@ -38,13 +39,15 @@ class JePLUtils(object):
 
     @classmethod
     def append_file_name(cls, file_type, file_data_list, force_random_name=False):
-        """Appends a 'file_name' property, according to its type (file_type),
-        to each Dict element of the given List (file_data_list)
+        """Appends a 'file_name' property, according to its type (file_type), to
+        each Dict element of the given List (file_data_list)
 
         :param cls: Current class (from classmethod)
         :param file_type: Type of JePL file, one of [config, composer, jenkinsfile].
-        :param file_data_list: List of JSON payload data to be associated with the generated file name.
-        :param force_random_name: If set the method will always return a random name for the file.
+        :param file_data_list: List of JSON payload data to be associated with the
+            generated file name.
+        :param force_random_name: If set the method will always return a random name for
+            the file.
         """
         new_file_data_list = []
         count = 0
@@ -114,8 +117,8 @@ class JePLUtils(object):
         )
 
     def get_jenkinsfile(config_data_list):
-        """Returns a String with the Jenkinsfile rendered from the given
-        JSON payload.
+        """Returns a String with the Jenkinsfile rendered from the given JSON
+        payload.
 
         :param config_data_list: List of config data Dicts
         """
@@ -126,13 +129,16 @@ class JePLUtils(object):
 
     @classmethod
     def compose_files(cls, config_json, composer_json, report_to_stdout=False):
-        """Composes the JePL file structure from the raw JSONs obtained
-        through the HTTP request.
+        """Composes the JePL file structure from the raw JSONs obtained through
+        the HTTP request.
 
         :param cls: Current class (from classmethod)
-        :param config_json: JePL's config as received through the API request (JSON payload)
-        :param composer_json: Composer content as received throught the API request (JSON payload).
-        :param report_to_stdout: Flag to indicate whether the pipeline shall print via via stdout the reports produced by the tools (required by QAA module)
+        :param config_json: JePL's config as received through the API request (JSON
+            payload)
+        :param composer_json: Composer content as received throught the API request
+            (JSON payload).
+        :param report_to_stdout: Flag to indicate whether the pipeline shall print via
+            via stdout the reports produced by the tools (required by QAA module)
         """
         # Extract & process those data that are not directly translated into
         # the composer and JePL config
@@ -211,8 +217,7 @@ class JePLUtils(object):
         :param config_data_list: List of pipeline's JePL config data.
         :param composer_data: Dict containing pipeline's JePL composer data.
         :param jenkinsfile: String containing the Jenkins configuration.
-        :param commands_script_list: List of generated scripts for the commands
-               builder.
+        :param commands_script_list: List of generated scripts for the commands builder.
         :param additional_files_to_commit: List of additional files that are needed.
         :param branch: Name of the branch in the remote repository.
         """
@@ -356,8 +361,8 @@ class JePLUtils(object):
         return srv_data
 
     def generate_stage_name(repo_name):
-        """Generate the stage name in the event where the same repo will be
-        used within the same criterion. It uses a counter-based suffix.
+        """Generate the stage name in the event where the same repo will be used
+        within the same criterion. It uses a counter-based suffix.
 
         Generated stage name will be in the form of <repo_name>(__[1-9][0-9]{0,})
 

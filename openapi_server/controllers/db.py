@@ -51,42 +51,35 @@ def add_entry(
 ):
     """Adds a standard entry in the DB.
 
-    Each entry has both the raw data from the request and the
-    processed data, as treated internally by the API. An entry
-    is indexed by the pipeline ID
+    Each entry has both the raw data from the request and the processed data, as treated
+    internally by the API. An entry is indexed by the pipeline ID
 
-    |-- <pipeline_id>: ID of the pipeline
-        |-- 'pipeline_repo': [String] Name of the build/assessment repository in the remote platform.
-        |-- 'pipeline_repo_url': [String] Absolute URL of the build/assessment repository in the remote platform.
-        |-- 'pipeline_repo_branch': [String] Name of the branch in the build/assessment repository.
-        |-- 'data': [Dict] Internal representation of the data.
-            |-- 'config': [List] Each independent JePL-compliant config data.
-                |-- 'data_json'
-                |-- 'data_yml'
-                |-- 'data_when'
-                |-- 'file_name'
-            |-- 'composer': [Dict] JePL-compliant composer data.
-                |-- 'data_json'
-                |-- 'data_yml'
-                |-- 'file_name'
-            |-- 'jenkinsfile': [String] Jenkins-compliant pipeline.
-            |-- 'commands_scripts': [List] Scripts generated for the commands builder.
-            |-- 'files_to_commit': [List] Additional files to commit to the pipeline repo.
-        |-- 'raw_request': [Dict] API spec representation (from JSON request).
-        |-- 'jenkins': [Dict] Jenkins-related data about the pipeline execution.
-            |-- 'job_name'
-        |-- 'tools': [Dict] Tool-related data (per-criterion mapping)
-            |-- 'criterion_id': tools
-        |-- 'badge': [Dict] Badge data for each badge type in [software, services, fair]
-        |-- 'repo_settings': [Dict] Information (metadata) about the code repository
-        |-- 'qaa': [Dict] Assessment results
-            |-- 'digital_object_type': [String] type of assessment (e.g. 'source code', 'service', 'fair')
-            |-- 'criteria_filtered': [Dict] criteria being filtered out
+    |-- <pipeline_id>: ID of the pipeline     |-- 'pipeline_repo': [String] Name of the
+    build/assessment repository in the remote platform.     |-- 'pipeline_repo_url':
+    [String] Absolute URL of the build/assessment repository in the remote platform. |--
+    'pipeline_repo_branch': [String] Name of the branch in the build/assessment
+    repository.     |-- 'data': [Dict] Internal representation of the data.         |--
+    'config': [List] Each independent JePL-compliant config data.             |--
+    'data_json'             |-- 'data_yml'             |-- 'data_when'             |--
+    'file_name'         |-- 'composer': [Dict] JePL-compliant composer data. |--
+    'data_json'             |-- 'data_yml'             |-- 'file_name'         |--
+    'jenkinsfile': [String] Jenkins-compliant pipeline.         |-- 'commands_scripts':
+    [List] Scripts generated for the commands builder.         |-- 'files_to_commit':
+    [List] Additional files to commit to the pipeline repo.     |-- 'raw_request':
+    [Dict] API spec representation (from JSON request).     |-- 'jenkins': [Dict]
+    Jenkins-related data about the pipeline execution.         |-- 'job_name'     |--
+    'tools': [Dict] Tool-related data (per-criterion mapping)         |--
+    'criterion_id': tools     |-- 'badge': [Dict] Badge data for each badge type in
+    [software, services, fair]     |-- 'repo_settings': [Dict] Information (metadata)
+    about the code repository     |-- 'qaa': [Dict] Assessment results         |--
+    'digital_object_type': [String] type of assessment (e.g. 'source code', 'service',
+    'fair')         |-- 'criteria_filtered': [Dict] criteria being filtered out
 
     :param pipeline_id: UUID-format identifier for the pipeline.
     :param pipeline_repo: URL of the remote repository for the Jenkins integration.
     :param body: Raw JSON coming from the HTTP request.
-    :param report_to_stdout: Flag to indicate whether the pipeline shall print via via stdout the reports produced by the tools (required by QAA module)
+    :param report_to_stdout: Flag to indicate whether the pipeline shall print via via
+        stdout the reports produced by the tools (required by QAA module)
     """
     raw_request = copy.deepcopy(body)
     config_json, composer_json, jenkinsfile_data = ctls_utils.get_pipeline_data(body)
@@ -120,9 +113,9 @@ def add_entry(
 
 
 def get_entry(pipeline_id=None):
-    """If pipeline_id is given returns a Dict with the data from the
-    given ID, otherwise it returns a Dict with all the existing
-    entries from the DB indexed by the ID.
+    """If pipeline_id is given returns a Dict with the data from the given ID,
+    otherwise it returns a Dict with all the existing entries from the DB indexed
+    by the ID.
 
     :param pipeline_id: UUID-format identifier for the pipeline.
     """
@@ -187,13 +180,16 @@ def update_jenkins(
     :param jk_job_name: Name of the pipeline job in Jenkins.
     :param commit_id: Commit ID assigned by git as a result of pushing the JePL files.
     :param commit_url: Commit URL of the git repository platform.
-    :param build_item_no: Jenkins' job build item number, i.e. previous to the actual build number.
+    :param build_item_no: Jenkins' job build item number, i.e. previous to the actual
+        build number.
     :param build_no: Jenkins' job build number.
     :param build_url: Jenkins' job build URL.
-    :param scan_org_wait: Boolean that represents whether the Jenkins' scan organisation has been triggered.
+    :param scan_org_wait: Boolean that represents whether the Jenkins' scan organisation
+        has been triggered.
     :param build_status: String representing the build status.
     :param creds_tmp: List of temporary credentials associated with the job.
-    :param issue_badge: Flag to indicate whether to issue a badge when the pipeline succeeds.
+    :param issue_badge: Flag to indicate whether to issue a badge when the pipeline
+        succeeds.
     """
     db = load_content()
     db[pipeline_id]["jenkins"] = {
@@ -281,7 +277,8 @@ def add_repo_settings(pipeline_id, repo_settings):
 
 
 def update_environment(pipeline_id, envvar_data):
-    """Updates the config.yml's environment data in the DB for the given pipeline ID.
+    """Updates the config.yml's environment data in the DB for the given pipeline
+    ID.
 
     :param pipeline_id: UUID-format identifier for the pipeline.
     :param envvar_data: Dictionary containing new environment variables to set.

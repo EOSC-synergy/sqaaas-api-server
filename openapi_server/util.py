@@ -19,7 +19,6 @@ def _deserialize(
 
     :param data: dict, list or str.
     :param klass: class literal, or string of class name.
-
     :return: object.
     """
     if data is None:
@@ -47,7 +46,6 @@ def _deserialize_primitive(data, klass: Class) -> Union[Class, int, float, str, 
 
     :param data: data to deserialize.
     :param klass: class literal.
-
     :return: int, float, str, bool.
     """
     try:
@@ -122,7 +120,6 @@ def _deserialize_list(data: list, boxed_type) -> list:
 
     :param data: list to deserialize.
     :param boxed_type: class literal.
-
     :return: deserialized list.
     """
     return [_deserialize(sub_data, boxed_type) for sub_data in data]
@@ -133,7 +130,6 @@ def _deserialize_dict(data: dict, boxed_type) -> dict:
 
     :param data: dict to deserialize.
     :param boxed_type: class literal.
-
     :return: deserialized dict.
     """
     return {k: _deserialize(v, boxed_type) for k, v in data.items()}

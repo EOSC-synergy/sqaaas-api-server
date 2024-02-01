@@ -74,7 +74,8 @@ async def _add_pipeline_to_db(body, branch_upstream=None, report_to_stdout=False
     :type body: dict | bytes
     :param branch_upstream: Name of the upstream branch
     :type branch_upstream: str
-    :param report_to_stdout: Flag to indicate whether the pipeline shall print via via stdout the reports produced by the tools (required by QAA module)
+    :param report_to_stdout: Flag to indicate whether the pipeline shall print via via
+        stdout the reports produced by the tools (required by QAA module)
     :type report_to_stdout: bool
     """
     pipeline_id = str(uuid.uuid4())
@@ -107,13 +108,14 @@ async def add_pipeline(
 ) -> web.Response:
     """Creates a pipeline.
 
-    Provides a ready-to-use Jenkins pipeline based on the v2 series of jenkins-pipeline-library.
+    Provides a ready-to-use Jenkins pipeline based on the v2 series of jenkins-pipeline-
+    library.
 
     :param body: JSON request payload
     :type body: dict | bytes
-    :param report_to_stdout: Flag to indicate whether the pipeline shall print via via stdout the reports produced by the tools (required by QAA module)
+    :param report_to_stdout: Flag to indicate whether the pipeline shall print via via
+        stdout the reports produced by the tools (required by QAA module)
     :type report_to_stdout: bool
-
     """
     pipeline_id = await _add_pipeline_to_db(body, report_to_stdout=report_to_stdout)
 
@@ -327,9 +329,10 @@ async def _get_tooling_for_assessment(
         return criteria_data_list_filtered, criteria_filtered, _repo_settings
 
     # Get the relevant criteria for the type of assessment/digital object
-    (relevant_criteria_data, digital_object_type) = (
-        await _get_criteria_for_digital_object(repositories)
-    )
+    (
+        relevant_criteria_data,
+        digital_object_type,
+    ) = await _get_criteria_for_digital_object(repositories)
 
     # Get the tools that are relevant based on the repo content (add them to
     # <criteria_data_list_filtered>) and also the ones that are not (add them
@@ -338,9 +341,11 @@ async def _get_tooling_for_assessment(
     criteria_filtered = {}
     for repo_criteria_mapping in relevant_criteria_data:
         try:
-            (_criteria_data_list_filtered, _criteria_filtered, _repo_settings) = (
-                _filter_tools(**repo_criteria_mapping)
-            )
+            (
+                _criteria_data_list_filtered,
+                _criteria_filtered,
+                _repo_settings,
+            ) = _filter_tools(**repo_criteria_mapping)
         except SQAaaSAPIException as e:
             raise e
         else:
@@ -520,7 +525,6 @@ async def add_pipeline_for_assessment(
     :type body: dict | bytes
     :param user_requested_tools: Optional tools that shall be accounted
     :type user_requested_tools: list
-
     """
     # FIXME If it is applicable to every HTTP request, it shall be added as
     # part of the validate_request() decorator
@@ -559,12 +563,15 @@ async def add_pipeline_for_assessment(
 
     # 1 Filter per-criterion tools that will take part in the assessment
     try:
-        (criteria_data_list, criteria_filtered, repositories, digital_object_type) = (
-            await _get_tooling_for_assessment(
-                repositories=repositories,
-                main_repo_key=main_repo_key,
-                user_requested_tools=user_requested_tools,
-            )
+        (
+            criteria_data_list,
+            criteria_filtered,
+            repositories,
+            digital_object_type,
+        ) = await _get_tooling_for_assessment(
+            repositories=repositories,
+            main_repo_key=main_repo_key,
+            user_requested_tools=user_requested_tools,
         )
         logger.debug(
             ("Gathered tooling data enabled for assessment" ": %s" % criteria_data_list)
@@ -722,15 +729,15 @@ async def add_pipeline_for_assessment(
 async def update_pipeline_by_id(
     request: web.Request, pipeline_id, body, report_to_stdout=None
 ) -> web.Response:
-    """Update pipeline by ID
+    """Update pipeline by ID.
 
     :param pipeline_id: ID of the pipeline to get
     :type pipeline_id: str
     :param body:
     :type body: dict | bytes
-    :param report_to_stdout: Flag to indicate whether the pipeline shall print via via stdout the reports produced by the tools (required by QAA module)
+    :param report_to_stdout: Flag to indicate whether the pipeline shall print via via
+        stdout the reports produced by the tools (required by QAA module)
     :type report_to_stdout: bool
-
     """
     pipeline_data = db.get_entry(pipeline_id)
     pipeline_data_raw = pipeline_data["raw_request"]
@@ -738,9 +745,11 @@ async def update_pipeline_by_id(
     pipeline_repo_url = pipeline_data["pipeline_repo_url"]
 
     config_json, composer_json, jenkinsfile_data = ctls_utils.get_pipeline_data(body)
-    config_json_last, composer_json_last, jenkinsfile_data_last = (
-        ctls_utils.get_pipeline_data(pipeline_data_raw)
-    )
+    (
+        config_json_last,
+        composer_json_last,
+        jenkinsfile_data_last,
+    ) = ctls_utils.get_pipeline_data(pipeline_data_raw)
 
     diff_exists = False
     for elem in [
@@ -771,11 +780,10 @@ async def update_pipeline_by_id(
 @ctls_utils.debug_request
 @ctls_utils.validate_request
 async def delete_pipeline_by_id(request: web.Request, pipeline_id) -> web.Response:
-    """Delete pipeline by ID
+    """Delete pipeline by ID.
 
     :param pipeline_id: ID of the pipeline to get
     :type pipeline_id: str
-
     """
     try:
         build_url, build_status = await _update_status(pipeline_id)
@@ -829,7 +837,6 @@ async def get_pipelines(request: web.Request) -> web.Response:
     """Gets pipeline IDs.
 
     Returns the list of IDs for the defined pipelines.
-
     """
     pipeline_list = []
     for pipeline_id, pipeline_data in db.get_entry().items():
@@ -843,11 +850,10 @@ async def get_pipelines(request: web.Request) -> web.Response:
 @ctls_utils.debug_request
 @ctls_utils.validate_request
 async def get_pipeline_by_id(request: web.Request, pipeline_id) -> web.Response:
-    """Find pipeline by ID
+    """Find pipeline by ID.
 
     :param pipeline_id: ID of the pipeline to get
     :type pipeline_id: str
-
     """
     pipeline_data = db.get_entry(pipeline_id)
     pipeline_data_raw = pipeline_data["raw_request"]
@@ -866,7 +872,6 @@ async def get_pipeline_composer(request: web.Request, pipeline_id) -> web.Respon
 
     :param pipeline_id: ID of the pipeline to get
     :type pipeline_id: str
-
     """
     pipeline_data = db.get_entry(pipeline_id)
     pipeline_data_raw = pipeline_data["raw_request"]
@@ -884,7 +889,6 @@ async def get_pipeline_composer_jepl(request: web.Request, pipeline_id) -> web.R
 
     :param pipeline_id: ID of the pipeline to get
     :type pipeline_id: str
-
     """
     pipeline_data = db.get_entry(pipeline_id)
 
@@ -903,7 +907,6 @@ async def get_pipeline_config(request: web.Request, pipeline_id) -> web.Response
 
     :param pipeline_id: ID of the pipeline to get
     :type pipeline_id: str
-
     """
     pipeline_data = db.get_entry(pipeline_id)
     pipeline_data_raw = pipeline_data["raw_request"]
@@ -921,7 +924,6 @@ async def get_pipeline_config_jepl(request: web.Request, pipeline_id) -> web.Res
 
     :param pipeline_id: ID of the pipeline to get
     :type pipeline_id: str
-
     """
     pipeline_data = db.get_entry(pipeline_id)
 
@@ -939,13 +941,12 @@ async def get_pipeline_config_jepl(request: web.Request, pipeline_id) -> web.Res
 async def get_pipeline_commands_scripts(
     request: web.Request, pipeline_id
 ) -> web.Response:
-    """Gets the commands builder scripts
+    """Gets the commands builder scripts.
 
     Returns the content of the list of scripts generated for the commands builder.
 
     :param pipeline_id: ID of the pipeline to get
     :type pipeline_id: str
-
     """
     pipeline_data = db.get_entry(pipeline_id)
     commands_scripts = pipeline_data["data"]["commands_scripts"]
@@ -968,7 +969,6 @@ async def get_pipeline_jenkinsfile(request: web.Request, pipeline_id) -> web.Res
 
     :param pipeline_id: ID of the pipeline to get
     :type pipeline_id: str
-
     """
     pipeline_data = db.get_entry(pipeline_id)
     pipeline_data_raw = pipeline_data["raw_request"]
@@ -988,7 +988,6 @@ async def get_pipeline_jenkinsfile_jepl(
 
     :param pipeline_id: ID of the pipeline to get
     :type pipeline_id: str
-
     """
     pipeline_data = db.get_entry(pipeline_id)
     jenkinsfile = pipeline_data["data"]["jenkinsfile"]
@@ -999,18 +998,16 @@ async def get_pipeline_jenkinsfile_jepl(
 
 
 def _set_im_config_files_content(additional_files_to_commit, repo_url, repo_branch):
-    """Iterates over the the list of additional files to commit (IM config
-    files) present in the DB and calls add_im_image_id() to fetch and modify
-    each one.
+    """Iterates over the the list of additional files to commit (IM config files)
+    present in the DB and calls add_im_image_id() to fetch and modify each one.
 
-    This method shall only be required when the content of the IM config files
-    is not available at pipeline-creation time, e.g. when the deployment files
-    are not present in the defined external repositories. Thus, the URL of the
-    repo is ONLY known when calling /run?repo_url, /pull_request or
-    /compressed_files paths.
+    This method shall only be required when the content of the IM config files is not
+    available at pipeline-creation time, e.g. when the deployment files are not present
+    in the defined external repositories. Thus, the URL of the repo is ONLY known when
+    calling /run?repo_url, /pull_request or /compressed_files paths.
 
-    :param additional_files_to_commit: List of
-        {'file_name': <file_name>, 'file_data': <file_data>} objects
+    :param additional_files_to_commit: List of {'file_name': <file_name>, 'file_data':
+        <file_data>} objects
     :type additional_files_to_commit: list
     :param repo_url: URL of the remote repository
     :type repo_url: str
@@ -1059,7 +1056,8 @@ async def run_pipeline(
 
     :param pipeline_id: ID of the pipeline to get
     :type pipeline_id: str
-    :param issue_badge: Flag to indicate whether a badge shall be issued if the pipeline succeeds
+    :param issue_badge: Flag to indicate whether a badge shall be issued if the pipeline
+        succeeds
     :type issue_badge: bool
     :param repo_url: URL of the upstream repository to fetch the code from
     :type repo_url: str
@@ -1067,7 +1065,6 @@ async def run_pipeline(
     :type repo_branch: str
     :param keepgoing: Flag to indicate that the pipeline will run until the end
     :type keepgoing: bool
-
     """
     if keepgoing:
         db.update_environment(pipeline_id, {"JPL_KEEPGOING": "enabled"})
@@ -1501,7 +1498,6 @@ async def get_pipeline_status(request: web.Request, pipeline_id) -> web.Response
 
     :param pipeline_id: ID of the pipeline to get
     :type pipeline_id: str
-
     """
     try:
         build_url, build_status = await _update_status(pipeline_id)
@@ -1541,7 +1537,6 @@ async def _run_validation(criterion_name, **kwargs):
     :type criterion_name: str
     :param kwargs: Additional data to provide to the validator
     :type kwargs: dict
-
     """
     tool = kwargs.get("tool", None)
     tooling_metadata_json = await _get_tooling_metadata()
@@ -1619,7 +1614,7 @@ async def _run_validation(criterion_name, **kwargs):
 
 
 async def _get_commands_from_script(stdout_command, commands_script_list):
-    """Returns the commands hosted in the bash commands script
+    """Returns the commands hosted in the bash commands script.
 
     :param stdout_command: Tool command run by the pipeline.
     :type stdout_command: str
@@ -1643,7 +1638,6 @@ async def _get_tool_from_command(tool_criterion_map, stdout_command):
     :type tool_criterion_map: dict
     :param stdout_command: Tool command run by the pipeline.
     :type stdout_command: str
-
     """
     matched_tool = None
     for tool_name, tool_data in tool_criterion_map.items():
@@ -1670,7 +1664,8 @@ async def _get_tool_from_command(tool_criterion_map, stdout_command):
 async def _validate_output(stage_data_list, pipeline_data):
     """Validates the output obtained from the pipeline execution.
 
-    Returns the data following according to GET /pipeline/<id>/output path specification.
+    Returns the data following according to GET /pipeline/<id>/output path
+    specification.
 
     :param stage_data_list: Per-stage data gathered from Jenkins pipeline execution.
     :type stage_data_list: list
@@ -1738,13 +1733,14 @@ async def _validate_output(stage_data_list, pipeline_data):
 
 
 async def _get_output(pipeline_id, validate=False):
-    """Handles the output gathering from pipeline execution
+    """Handles the output gathering from pipeline execution.
 
     Returns the output data.
 
     :param pipeline_id: ID of the pipeline to get
     :type pipeline_id: str
-    :param validate: Flag to indicate whether the returned output shall be validate using sqaaas-reporting tool
+    :param validate: Flag to indicate whether the returned output shall be validate
+        using sqaaas-reporting tool
     :type validate: bool
     """
     build_url, build_status = await _update_status(pipeline_id)
@@ -1780,15 +1776,15 @@ async def _get_output(pipeline_id, validate=False):
 async def get_pipeline_output(
     request: web.Request, pipeline_id, validate=False
 ) -> web.Response:
-    """Get output from pipeline execution
+    """Get output from pipeline execution.
 
     Returns the console output from the pipeline execution.
 
     :param pipeline_id: ID of the pipeline to get
     :type pipeline_id: str
-    :param validate: Flag to indicate whether the returned output shall be validate using sqaaas-reporting tool
+    :param validate: Flag to indicate whether the returned output shall be validate
+        using sqaaas-reporting tool
     :type validate: bool
-
     """
     try:
         output_data = await _get_output(pipeline_id, validate=validate)
@@ -1801,13 +1797,13 @@ async def get_pipeline_output(
 @ctls_utils.debug_request
 @ctls_utils.validate_request
 async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Response:
-    """Get the assessment output
+    """Get the assessment output.
 
-    Returns the reporting and badging data from the execution of the assessment pipeline.
+    Returns the reporting and badging data from the execution of the assessment
+    pipeline.
 
     :param pipeline_id: ID of the pipeline to get
     :type pipeline_id: str
-
     """
     try:
         output_data = await _get_output(pipeline_id, validate=True)
@@ -1904,9 +1900,11 @@ async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Re
                     )
                     subcriteria[subcriterion_id]["valid"] = valid
                 # Coverage
-                (total_subcriteria, success_subcriteria, percentage_criterion) = (
-                    _get_coverage(subcriteria)
-                )
+                (
+                    total_subcriteria,
+                    success_subcriteria,
+                    percentage_criterion,
+                ) = _get_coverage(subcriteria)
 
             report_data[criterion_name] = {
                 "valid": all(criterion_valid_list),
@@ -1950,9 +1948,11 @@ async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Re
                     ],
                 }
             # Coverage
-            (total_subcriteria, success_subcriteria, percentage_criterion) = (
-                _get_coverage(_criteria_filtered[_criterion]["subcriteria"])
-            )
+            (
+                total_subcriteria,
+                success_subcriteria,
+                percentage_criterion,
+            ) = _get_coverage(_criteria_filtered[_criterion]["subcriteria"])
 
             _criteria_filtered[_criterion]["coverage"] = {
                 "percentage": percentage_criterion,
@@ -2007,8 +2007,8 @@ async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Re
     def _get_spec_version():
         """Returns the version of the SQAaaS API specification.
 
-        This method reads the specification version from the file stored
-        locally at 'openapi_server/openapi/openapi.yaml'.
+        This method reads the specification version from the file stored locally at
+        'openapi_server/openapi/openapi.yaml'.
         """
         input_file = impfiles(openapi_server) / "openapi/openapi.yaml"
         with open(input_file, "r") as fspec:
@@ -2084,10 +2084,12 @@ async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Re
         missing_criteria_all = []  # required_for_next_level flag
         # NOTE: 1-to-1 relationship between badge_type and assessment
         badge_type, criteria_fulfilled_list = list(criteria_fulfilled_map.items())[0]
-        (badgeclass_name, badge_category, criteria_summary) = (
-            await _badgeclass_matchmaking(
-                pipeline_id, badge_type, criteria_fulfilled_list
-            )
+        (
+            badgeclass_name,
+            badge_category,
+            criteria_summary,
+        ) = await _badgeclass_matchmaking(
+            pipeline_id, badge_type, criteria_fulfilled_list
         )
         # Generate criteria summary
         criteria_summary_copy = copy.deepcopy(criteria_summary)
@@ -2238,7 +2240,6 @@ async def create_pull_request(request: web.Request, pipeline_id, body) -> web.Re
     :type pipeline_id: str
     :param body:
     :type body: dict | bytes
-
     """
     pipeline_data = db.get_entry(pipeline_id)
     config_data_list = pipeline_data["data"]["config"]
@@ -2347,7 +2348,6 @@ async def get_compressed_files(request: web.Request, pipeline_id) -> web.Respons
 
     :param pipeline_id: ID of the pipeline to get
     :type pipeline_id: str
-
     """
     pipeline_data = db.get_entry(pipeline_id)
 
@@ -2462,7 +2462,8 @@ async def _issue_badge(pipeline_id, badge_type, badgeclass_name):
     :type pipeline_id: str
     :param badge_type: String that identifies the type of badge
     :type badge_type: str
-    :param badgeclass_name: String that corresponds to the BadgeClass name (as it appears in Badgr web)
+    :param badgeclass_name: String that corresponds to the BadgeClass name (as it
+        appears in Badgr web)
     :type badgeclass_name: str
     """
     logger.info("Issuing badge for pipeline <%s>" % pipeline_id)
@@ -2538,7 +2539,7 @@ async def _get_badge_share(badge_data, commit_url):
 @ctls_utils.debug_request
 @ctls_utils.validate_request
 async def get_badge(request: web.Request, pipeline_id) -> web.Response:
-    """Gets badge data associated with the given pipeline
+    """Gets badge data associated with the given pipeline.
 
     Returns the badge data associated with the pipeline.
 
@@ -2562,7 +2563,8 @@ async def get_badge(request: web.Request, pipeline_id) -> web.Response:
 
 
 async def _get_tooling_metadata():
-    """Returns the tooling metadata available in the given remote code repository."""
+    """Returns the tooling metadata available in the given remote code
+    repository."""
     tooling_repo_url = config.get(
         "tooling_repo_url", fallback="https://github.com/EOSC-synergy/sqaaas-tooling"
     )
@@ -2606,8 +2608,8 @@ async def _get_tooling_metadata():
 async def _get_criterion_tooling(
     criterion_id, tooling_metadata_json, tools_qaa_specific=False
 ):
-    """Gets the criterion information as it is returned within the
-    /criteria response.
+    """Gets the criterion information as it is returned within the /criteria
+    response.
 
     :param criterion_id: ID of the criterion
     :type criterion_id: str
@@ -2702,11 +2704,12 @@ async def _get_criteria(
 
     :param criterion_id_list: Specific list of criteria to check
     :type criterion_id_list: list
-    :param assessment: Flag to indicate whether the criteria shall consider only assessment-related tools
+    :param assessment: Flag to indicate whether the criteria shall consider only
+        assessment-related tools
     :type assessment: bool
-    :param digital_object_type: one of ['software', 'service', 'fair']. This matches "type" in tooling
+    :param digital_object_type: one of ['software', 'service', 'fair']. This matches
+        "type" in tooling
     :type digital_object_type: str
-
     """
     try:
         tooling_metadata_json = await _get_tooling_metadata()
@@ -2744,9 +2747,9 @@ async def get_criteria(
 
     :param criterion_id: Get data from a specific criterion
     :type criterion_id: str
-    :param assessment: Flag to indicate whether the criteria shall consider only assessment-related tools
+    :param assessment: Flag to indicate whether the criteria shall consider only
+        assessment-related tools
     :type assessment: bool
-
     """
     criteria_id_list = []
     if criterion_id:

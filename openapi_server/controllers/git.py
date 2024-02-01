@@ -67,11 +67,10 @@ class GitUtils(object):
 
     @staticmethod
     def _format_git_creds(repo_creds):
-        """Formats git URL to avoid asking for password when repos do not
-        exist.
+        """Formats git URL to avoid asking for password when repos do not exist.
 
         :param repo_creds: dict with credential definition (Vault secret, Git
-        user/token)
+            user/token)
         """
         _creds_prefix_template = "%s:%s@"
         _user_id = ""
@@ -91,7 +90,7 @@ class GitUtils(object):
 
         :param repo_url: URL of the git repository
         :param repo_creds: dict with credential definition (Vault secret, Git
-        user/token)
+            user/token)
         """
         logger.debug(
             (
@@ -119,7 +118,7 @@ class GitUtils(object):
 
         :param repo_url: URL of the remote git repository
         :param repo_creds: dict with credential definition (Vault secret, Git
-        user/token)
+            user/token)
         """
         repo_url_no_creds = repo_url  # for logging purposes
         if repo_creds:
@@ -161,9 +160,40 @@ class GitUtils(object):
 
         Returns the target's branch name.
 
-        :param source_repo: Absolute URL of the source repository (e.g. https://example.org)
-        :param target_repo: Absolute URL of the target repository (e.g. https://github.com/org/example)
-        :param source_repo_branch: Specific branch name to use from the source repository
+        :param source_repo: Absolute URL of the source repository (e.g.
+        https://example.org)
+         :param target_repo: Absolute URL of the target repository (e.g.
+        https://github.com/org/example)
+         :param source_repo: Absolute URL of the source repository (e.g.
+        https://example.org)
+         :param target_repo: Absolute URL of the target repository (e.g.
+        https://github.com/org/example)
+         :param source_repo: Absolute URL of the source repository (e.g.
+        https://example.org)
+         :param target_repo: Absolute URL of the target repository (e.g.
+        https://github.com/org/example)
+         :param source_repo: Absolute URL of the source repository (e.g.
+        https://example.org)
+         :param target_repo: Absolute URL of the target repository (e.g.
+        https://github.com/org/example)
+        :param source_repo: Absolute URL of the source repository (e.g.
+            https://example.org)
+        :param target_repo: Absolute URL of the target repository (e.g.
+            https://github.com/org/example)
+        :param source_repo: Absolute URL of the source repository (e.g.
+            https://example.org)
+        :param target_repo: Absolute URL of the target repository (e.g.
+            https://github.com/org/example)
+        :param source_repo: Absolute URL of the source repository (e.g.
+            https://example.org)
+        :param target_repo: Absolute URL of the target repository (e.g.
+            https://github.com/org/example)
+        :param source_repo: Absolute URL of the source repository (e.g.
+            https://example.org)
+        :param target_repo: Absolute URL of the target repository (e.g.
+            https://github.com/org/example)
+        :param source_repo_branch: Specific branch name to use from the source
+            repository
         """
         if not source_repo_branch:
             source_repo_branch = GitUtils.get_default_branch_from_remote(source_repo)

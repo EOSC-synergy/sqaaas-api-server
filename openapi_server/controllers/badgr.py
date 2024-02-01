@@ -20,8 +20,8 @@ class BadgrUtils(object):
         :param endpoint: Badgr endpoint URL
         :param access_user: Badgr's access user id
         :param access_pass: Badgr's user password
-        :param issuer_name: String that corresponds to the Issuer name (as it
-                            appears in Badgr web)
+        :param issuer_name: String that corresponds to the Issuer name (as it appears in
+            Badgr web)
         """
         self.logger = logging.getLogger("sqaaas.api.badgr")
         self.endpoint = endpoint
@@ -76,7 +76,7 @@ class BadgrUtils(object):
             return None
 
     def refresh_token(f):
-        """Decorator to handle the expiration of the Badgr API token"""
+        """Decorator to handle the expiration of the Badgr API token."""
 
         @functools.wraps(f)
         def decorated_function(cls, *args, **kwargs):
@@ -126,8 +126,8 @@ class BadgrUtils(object):
     def _get_matching_entity_id(self, entity_name, entity_type, **kwargs):
         """Get the ID of the specified entity type that matches the given name.
 
-        :param entity_name: String that designates the entity (as it appears
-            in Badgr web)
+        :param entity_name: String that designates the entity (as it appears in Badgr
+            web)
         :param entity_type: valid types are ('issuer', 'badgeclass')
         """
         if entity_type == "issuer":
@@ -164,11 +164,11 @@ class BadgrUtils(object):
         return entity_name_dict[entity_name]
 
     def get_badgeclass_entity(self, badgeclass_name):
-        """Returns the BadgeClass entityID corresponding to the given Issuer
-        and Badgeclass name combination.
+        """Returns the BadgeClass entityID corresponding to the given Issuer and
+        Badgeclass name combination.
 
-        :param badgeclass_name: String that corresponds to the BadgeClass name
-            (as it appears in Badgr web).
+        :param badgeclass_name: String that corresponds to the BadgeClass name (as it
+            appears in Badgr web).
         """
         issuer_id = self._get_matching_entity_id(self.issuer_name, entity_type="issuer")
         badgeclass_id = self._get_matching_entity_id(
@@ -193,22 +193,18 @@ class BadgrUtils(object):
         """Issues a badge (Badgr's assertion).
 
         :param badge_type: String that identifies the type of badge
-        :param badgeclass_name: String that corresponds to the BadgeClass
-            name (as it appears in Badgr web)
+        :param badgeclass_name: String that corresponds to the BadgeClass name (as it
+            appears in Badgr web)
         :param url: Upstream repository URL
         :param tag: Active tag of the upstream repository
-        :param commit_id: SHA that corresponds to the upstream version being
-            assessed
-        :param build_commit_id: Commit ID assigned by git as a result of pushing
-            the JePL files.
-        :param build_commit_url: Absolute URL pointing to the commit that triggered
-            the pipeline
-        :param ci_build_url: Absolute URL pointing to the build results of the
+        :param commit_id: SHA that corresponds to the upstream version being assessed
+        :param build_commit_id: Commit ID assigned by git as a result of pushing the
+            JePL files.
+        :param build_commit_url: Absolute URL pointing to the commit that triggered the
             pipeline
-        :param sw_criteria: List of fulfilled criteria codes from the Software
-            baseline
-        :param srv_criteria: List of fulfilled criteria codes from the Service
-            baseline
+        :param ci_build_url: Absolute URL pointing to the build results of the pipeline
+        :param sw_criteria: List of fulfilled criteria codes from the Software baseline
+        :param srv_criteria: List of fulfilled criteria codes from the Service baseline
         """
         badgeclass_id = self.get_badgeclass_entity(badgeclass_name)
         self.logger.info(

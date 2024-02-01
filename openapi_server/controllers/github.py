@@ -75,8 +75,7 @@ class GitHubUtils(object):
         :param file_name: Name of the file
         :param repo_name: Name of the repo (format: <user|org>/<repo_name>)
         :param branch: Name of the branch
-        :param fail_if_not_exists: Flag to indicate whether to fail if file is
-            not found
+        :param fail_if_not_exists: Flag to indicate whether to fail if file is not found
         """
         repo = self.get_org_repository(repo_name)
         try:
@@ -132,11 +131,10 @@ class GitHubUtils(object):
 
         Returns the commit ID (SHA format).
 
-        :param file_list: List of dicts with the file name (<file_name>) and
-            data (<file_data>)
+        :param file_list: List of dicts with the file name (<file_name>) and data
+            (<file_data>)
         :param commit_msg: Message to use in the commit
-        :param repo_name: Name of the repo to push (format:
-            <user|org>/<repo_name>)
+        :param repo_name: Name of the repo to push (format: <user|org>/<repo_name>)
         :param branch: Branch to push
         """
         repo = self.get_org_repository(repo_name)
@@ -229,9 +227,11 @@ class GitHubUtils(object):
 
         Returns a Repository object.
 
-        :param upstream_repo_name: Name of the remote repo to fork (format: <user|org>/<repo_name>)
+        :param upstream_repo_name: Name of the remote repo to fork (format:
+            <user|org>/<repo_name>)
         :param upstream_branch_name: Name of the remote branch to fork
-        :param org_name: Name of the Github organization to where the repo will be forked
+        :param org_name: Name of the Github organization to where the repo will be
+            forked
         """
         upstream_repo = self.get_repository(upstream_repo_name)
         fork = None
@@ -256,7 +256,8 @@ class GitHubUtils(object):
 
         :param repo_name: Name of the source repository (format: <user|org>/<repo_name>)
         :param branch_name: Name of the source branch
-        :param upstream_repo_name: Name of the remote repo to fork (format: <user|org>/<repo_name>)
+        :param upstream_repo_name: Name of the remote repo to fork (format:
+            <user|org>/<repo_name>)
         :param upstream_branch_name: Name of the remote branch to fork
         """
         upstream_repo = self.get_repository(upstream_repo_name)
@@ -321,7 +322,8 @@ class GitHubUtils(object):
 
         :param repo_name: Name of the repo (format: <user|org>/<repo_name>)
         :param repo_creds: Credentials needed for successful authentication
-        :param raise_exception: Boolean to mark whether the UnknownObjectException shall be raised
+        :param raise_exception: Boolean to mark whether the UnknownObjectException shall
+            be raised
         """
         _client = None
         if repo_creds:
@@ -425,7 +427,8 @@ class GitHubUtils(object):
         self.logger.debug("Repository <%s> successfully deleted" % repo_name)
 
     def get_commit_url(self, repo_name, commit_id):
-        """Returns the commit URL (HTML format) that corresponds to the given commit ID.
+        """Returns the commit URL (HTML format) that corresponds to the given
+        commit ID.
 
         :param repo_name: Name of the repo (format: <user|org>/<repo_name>)
         :param commit_id: SHA-based ID for the commit

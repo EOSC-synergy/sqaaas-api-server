@@ -399,22 +399,19 @@ class ProcessExtraData(object):
     def set_tool_execution_command(
         tool, criterion_name, criterion_repo, config_json, report_to_stdout=False
     ):
-        """Compose the command/s for the given tool according to its args in the tooling metadata.
+        """Compose the command/s for the given tool according to its args in the
+        tooling metadata.
 
-        Returns a mapping of the tool and associated command for the given criterion, such as:
-            {
-                "licensee": {
-                    "commands": [
-                        "licensee detect . --json"
-                    ]
-                }
-            }
+        Returns a mapping of the tool and associated command for the given criterion,
+        such as:     {         "licensee": {             "commands": [
+        "licensee detect . --json"             ]         }     }
 
         :param tool: Tool object
         :param criterion_name: Name of the criterion
         :param criterion_repo: Repo data for the criterion
         :param config_json: Config data (JSON)
-        :param report_to_stdout: Flag to indicate whether the pipeline shall print via via stdout the reports produced by the tool (required by QAA module)
+        :param report_to_stdout: Flag to indicate whether the pipeline shall print via
+            via stdout the reports produced by the tool (required by QAA module)
         """
 
         def process_value(arg, commands_builder=False, option_no_flag=False):
@@ -560,7 +557,8 @@ class ProcessExtraData(object):
         :param checkout_dir: The local path where the repo has been cloned
         :param commands_list: The list of shell commands
         :param repos_data: The individual repository data
-        :param commands_script_list: Current list of strings that generate the command builder scripts
+        :param commands_script_list: Current list of strings that generate the command
+            builder scripts
         :param template_name: Name of the template used by the tool
         :param template_kwargs: Dict with the relevant values for the template rendering
         """
@@ -582,9 +580,9 @@ class ProcessExtraData(object):
 
 
 def process_extra_data(config_json, composer_json, report_to_stdout=False):
-    """Manage those properties, present in the API spec, that cannot
-    be directly translated into a workable 'config.yml' or composer
-    (i.e. 'docker-compose.yml).
+    """Manage those properties, present in the API spec, that cannot be directly
+    translated into a workable 'config.yml' or composer (i.e. 'docker-
+    compose.yml).
 
     This method returns:
     - 'config_json_list' is a JSON List of Dicts {'data_json': <data>,
@@ -987,8 +985,54 @@ def supported_git_platform(repo_url, platforms):
     Returns the key of the git platform in case it matches with any of the supported
     platforms. Otherwise, returns None.
 
+    :param repo_url: URL of the git repository :param platforms: Dict with the git
+    supported platforms (e.g {'github':
+    'https://github.com'})
+       :param repo_url: URL of the git repository :param platforms: Dict with the git
+    supported platforms (e.g {'github':
+    'https://github.com'})
+      :param repo_url: URL of the git repository :param platforms: Dict with the git
+    supported platforms (e.g {'github':
+    'https://github.com'})
+      :param repo_url: URL of the git repository :param platforms: Dict with the git
+    supported platforms (e.g {'github':
+    'https://github.com'})
+     :param repo_url: URL of the git repository :param platforms: Dict with the git
+    supported platforms (e.g {'github':
+    'https://github.com'})
+     :param repo_url: URL of the git repository :param platforms: Dict with the git
+    supported platforms (e.g {'github':
+    'https://github.com'})
+     :param repo_url: URL of the git repository :param platforms: Dict with the git
+    supported platforms (e.g {'github':
+    'https://github.com'})
+     :param repo_url: URL of the git repository :param platforms: Dict with the git
+    supported platforms (e.g {'github':
+    'https://github.com'})
     :param repo_url: URL of the git repository
-    :param platforms: Dict with the git supported platforms (e.g {'github': 'https://github.com'})
+    :param platforms: Dict with the git supported platforms (e.g {'github':
+        'https://github.com'})
+    :param repo_url: URL of the git repository
+    :param platforms: Dict with the git supported platforms (e.g {'github':
+        'https://github.com'})
+    :param repo_url: URL of the git repository
+    :param platforms: Dict with the git supported platforms (e.g {'github':
+        'https://github.com'})
+    :param repo_url: URL of the git repository
+    :param platforms: Dict with the git supported platforms (e.g {'github':
+        'https://github.com'})
+    :param repo_url: URL of the git repository
+    :param platforms: Dict with the git supported platforms (e.g {'github':
+        'https://github.com'})
+    :param repo_url: URL of the git repository
+    :param platforms: Dict with the git supported platforms (e.g {'github':
+        'https://github.com'})
+    :param repo_url: URL of the git repository
+    :param platforms: Dict with the git supported platforms (e.g {'github':
+        'https://github.com'})
+    :param repo_url: URL of the git repository
+    :param platforms: Dict with the git supported platforms (e.g {'github':
+        'https://github.com'})
     """
     url_parsed = parse_url(repo_url)
     host_without_extension = url_parsed.host.split(".")[0]
@@ -1056,7 +1100,7 @@ def get_language_entry(lang):
     """Get the entry for the given language in the language's metadata file.
 
     :param lang: name of the language (compliant with <linguist> tool language
-                 definition)
+        definition)
     """
     language_metadata_file = config.get(
         "language_metadata_file", fallback="etc/languages.yml"
@@ -1083,11 +1127,10 @@ def get_language_entry(lang):
 
 
 def find_files_by_language(field, value, repo, path="."):
-    """Finds files in the current path that match the given list of
-    extensions.
+    """Finds files in the current path that match the given list of extensions.
 
-    :param field: field name (compliant with <linguist> tool).
-                  Choices are ('extensions', 'filenames')
+    :param field: field name (compliant with <linguist> tool). Choices are
+        ('extensions', 'filenames')
     :param value: field value (compliant with <linguist> tool)
     :param repo: repository object (URL & branch)
     :param path: look for file extensions in the given repo path
@@ -1113,8 +1156,8 @@ def find_files_by_language(field, value, repo, path="."):
 def add_explicit_paths_for_tool(tool_args, paths):
     """Adds explicit paths when executing the tool.
 
-    Modifies the 'value' property (from the tooling's 'args' object) to
-    include the list of explicit paths.
+    Modifies the 'value' property (from the tooling's 'args' object) to include the list
+    of explicit paths.
 
     :param tool_args: List of tool's argument (objects)
     :param paths: List of paths to append to tool's argument 'value' property
@@ -1146,8 +1189,8 @@ def format_filtered_data(valid, reason_list, subcriteria=None):
     """Returns the data as to be stored in the DB for filtered criteria.
 
     :param valid: Boolean value setting the overall validity of the criterion
-    :param reason_list: List of per-criterion reasons of why this criterion
-        shall be filtered
+    :param reason_list: List of per-criterion reasons of why this criterion shall be
+        filtered
     :param subcriteria: Dict-like subcriteria data
     """
     return {"valid": False, "filtered_reason": reason_list, "subcriteria": subcriteria}
@@ -1157,11 +1200,10 @@ def format_filtered_data(valid, reason_list, subcriteria=None):
 def add_image_to_im(
     im_config_file, image_id, openstack_url, tech, repo, path=".", **kwargs
 ):
-    """Adds image_id (defined in sqaaas.ini) to TOSCA and RADL files used
-    by IM.
+    """Adds image_id (defined in sqaaas.ini) to TOSCA and RADL files used by IM.
 
-    Returns a dict with the same format (<file_name> and <file_data> keys) as
-    the JePL files.
+    Returns a dict with the same format (<file_name> and <file_data> keys) as the JePL
+    files.
 
     :param im_config_file: relative path to TOSCA or RADL file
     :param image_id: ID of the image in the OpenStack site
