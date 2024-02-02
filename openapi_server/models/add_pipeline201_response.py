@@ -5,11 +5,10 @@
 # coding: utf-8
 
 from datetime import date, datetime
+from typing import Dict, List, Type
 
-from typing import List, Dict, Type
-
-from openapi_server.models.base_model_ import Model
 from openapi_server import util
+from openapi_server.models.base_model_ import Model
 
 
 class AddPipeline201Response(Model):
@@ -18,23 +17,19 @@ class AddPipeline201Response(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, id: str=None):
+    def __init__(self, id: str = None):
         """AddPipeline201Response - a model defined in OpenAPI
 
         :param id: The id of this AddPipeline201Response.
         """
-        self.openapi_types = {
-            'id': str
-        }
+        self.openapi_types = {"id": str}
 
-        self.attribute_map = {
-            'id': 'id'
-        }
+        self.attribute_map = {"id": "id"}
 
         self._id = id
 
     @classmethod
-    def from_dict(cls, dikt: dict) -> 'AddPipeline201Response':
+    def from_dict(cls, dikt: dict) -> "AddPipeline201Response":
         """Returns the dict as a model
 
         :param dikt: A dict.

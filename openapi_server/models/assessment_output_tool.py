@@ -5,12 +5,11 @@
 # coding: utf-8
 
 from datetime import date, datetime
+from typing import Dict, List, Type
 
-from typing import List, Dict, Type
-
-from openapi_server.models.base_model_ import Model
-from openapi_server.models.assessment_output_tool_ci import AssessmentOutputToolCI
 from openapi_server import util
+from openapi_server.models.assessment_output_tool_ci import AssessmentOutputToolCI
+from openapi_server.models.base_model_ import Model
 
 
 class AssessmentOutputTool(Model):
@@ -19,7 +18,13 @@ class AssessmentOutputTool(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, name: str=None, validator: str=None, ci: AssessmentOutputToolCI=None, data_unstructured: object=None):
+    def __init__(
+        self,
+        name: str = None,
+        validator: str = None,
+        ci: AssessmentOutputToolCI = None,
+        data_unstructured: object = None,
+    ):
         """AssessmentOutputTool - a model defined in OpenAPI
 
         :param name: The name of this AssessmentOutputTool.
@@ -28,17 +33,17 @@ class AssessmentOutputTool(Model):
         :param data_unstructured: The data_unstructured of this AssessmentOutputTool.
         """
         self.openapi_types = {
-            'name': str,
-            'validator': str,
-            'ci': AssessmentOutputToolCI,
-            'data_unstructured': object
+            "name": str,
+            "validator": str,
+            "ci": AssessmentOutputToolCI,
+            "data_unstructured": object,
         }
 
         self.attribute_map = {
-            'name': 'name',
-            'validator': 'validator',
-            'ci': 'ci',
-            'data_unstructured': 'data_unstructured'
+            "name": "name",
+            "validator": "validator",
+            "ci": "ci",
+            "data_unstructured": "data_unstructured",
         }
 
         self._name = name
@@ -47,7 +52,7 @@ class AssessmentOutputTool(Model):
         self._data_unstructured = data_unstructured
 
     @classmethod
-    def from_dict(cls, dikt: dict) -> 'AssessmentOutputTool':
+    def from_dict(cls, dikt: dict) -> "AssessmentOutputTool":
         """Returns the dict as a model
 
         :param dikt: A dict.

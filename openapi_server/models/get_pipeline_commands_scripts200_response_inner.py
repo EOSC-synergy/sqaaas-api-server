@@ -5,11 +5,10 @@
 # coding: utf-8
 
 from datetime import date, datetime
+from typing import Dict, List, Type
 
-from typing import List, Dict, Type
-
-from openapi_server.models.base_model_ import Model
 from openapi_server import util
+from openapi_server.models.base_model_ import Model
 
 
 class GetPipelineCommandsScripts200ResponseInner(Model):
@@ -18,27 +17,21 @@ class GetPipelineCommandsScripts200ResponseInner(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, file_name: str=None, content: str=None):
+    def __init__(self, file_name: str = None, content: str = None):
         """GetPipelineCommandsScripts200ResponseInner - a model defined in OpenAPI
 
         :param file_name: The file_name of this GetPipelineCommandsScripts200ResponseInner.
         :param content: The content of this GetPipelineCommandsScripts200ResponseInner.
         """
-        self.openapi_types = {
-            'file_name': str,
-            'content': str
-        }
+        self.openapi_types = {"file_name": str, "content": str}
 
-        self.attribute_map = {
-            'file_name': 'file_name',
-            'content': 'content'
-        }
+        self.attribute_map = {"file_name": "file_name", "content": "content"}
 
         self._file_name = file_name
         self._content = content
 
     @classmethod
-    def from_dict(cls, dikt: dict) -> 'GetPipelineCommandsScripts200ResponseInner':
+    def from_dict(cls, dikt: dict) -> "GetPipelineCommandsScripts200ResponseInner":
         """Returns the dict as a model
 
         :param dikt: A dict.

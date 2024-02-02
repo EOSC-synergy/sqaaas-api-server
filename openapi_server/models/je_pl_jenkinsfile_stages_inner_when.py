@@ -5,11 +5,10 @@
 # coding: utf-8
 
 from datetime import date, datetime
+from typing import Dict, List, Type
 
-from typing import List, Dict, Type
-
-from openapi_server.models.base_model_ import Model
 from openapi_server import util
+from openapi_server.models.base_model_ import Model
 
 
 class JePLJenkinsfileStagesInnerWhen(Model):
@@ -18,23 +17,19 @@ class JePLJenkinsfileStagesInnerWhen(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, branches: List[str]=None):
+    def __init__(self, branches: List[str] = None):
         """JePLJenkinsfileStagesInnerWhen - a model defined in OpenAPI
 
         :param branches: The branches of this JePLJenkinsfileStagesInnerWhen.
         """
-        self.openapi_types = {
-            'branches': List[str]
-        }
+        self.openapi_types = {"branches": List[str]}
 
-        self.attribute_map = {
-            'branches': 'branches'
-        }
+        self.attribute_map = {"branches": "branches"}
 
         self._branches = branches
 
     @classmethod
-    def from_dict(cls, dikt: dict) -> 'JePLJenkinsfileStagesInnerWhen':
+    def from_dict(cls, dikt: dict) -> "JePLJenkinsfileStagesInnerWhen":
         """Returns the dict as a model
 
         :param dikt: A dict.

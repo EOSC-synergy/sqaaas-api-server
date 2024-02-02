@@ -5,11 +5,10 @@
 # coding: utf-8
 
 from datetime import date, datetime
+from typing import Dict, List, Type
 
-from typing import List, Dict, Type
-
-from openapi_server.models.base_model_ import Model
 from openapi_server import util
+from openapi_server.models.base_model_ import Model
 
 
 class AssessmentOutputData(Model):
@@ -18,7 +17,12 @@ class AssessmentOutputData(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, required: Dict[str, str]=None, recommended: Dict[str, str]=None, optional: Dict[str, str]=None):
+    def __init__(
+        self,
+        required: Dict[str, str] = None,
+        recommended: Dict[str, str] = None,
+        optional: Dict[str, str] = None,
+    ):
         """AssessmentOutputData - a model defined in OpenAPI
 
         :param required: The required of this AssessmentOutputData.
@@ -26,15 +30,15 @@ class AssessmentOutputData(Model):
         :param optional: The optional of this AssessmentOutputData.
         """
         self.openapi_types = {
-            'required': Dict[str, str],
-            'recommended': Dict[str, str],
-            'optional': Dict[str, str]
+            "required": Dict[str, str],
+            "recommended": Dict[str, str],
+            "optional": Dict[str, str],
         }
 
         self.attribute_map = {
-            'required': 'REQUIRED',
-            'recommended': 'RECOMMENDED',
-            'optional': 'OPTIONAL'
+            "required": "REQUIRED",
+            "recommended": "RECOMMENDED",
+            "optional": "OPTIONAL",
         }
 
         self._required = required
@@ -42,7 +46,7 @@ class AssessmentOutputData(Model):
         self._optional = optional
 
     @classmethod
-    def from_dict(cls, dikt: dict) -> 'AssessmentOutputData':
+    def from_dict(cls, dikt: dict) -> "AssessmentOutputData":
         """Returns the dict as a model
 
         :param dikt: A dict.

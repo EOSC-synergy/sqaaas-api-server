@@ -5,11 +5,10 @@
 # coding: utf-8
 
 from datetime import date, datetime
+from typing import Dict, List, Type
 
-from typing import List, Dict, Type
-
-from openapi_server.models.base_model_ import Model
 from openapi_server import util
+from openapi_server.models.base_model_ import Model
 
 
 class ServiceDockerComposeValueImageRegistry(Model):
@@ -18,27 +17,21 @@ class ServiceDockerComposeValueImageRegistry(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, push: bool=None, credential_id: str=None):
+    def __init__(self, push: bool = None, credential_id: str = None):
         """ServiceDockerComposeValueImageRegistry - a model defined in OpenAPI
 
         :param push: The push of this ServiceDockerComposeValueImageRegistry.
         :param credential_id: The credential_id of this ServiceDockerComposeValueImageRegistry.
         """
-        self.openapi_types = {
-            'push': bool,
-            'credential_id': str
-        }
+        self.openapi_types = {"push": bool, "credential_id": str}
 
-        self.attribute_map = {
-            'push': 'push',
-            'credential_id': 'credential_id'
-        }
+        self.attribute_map = {"push": "push", "credential_id": "credential_id"}
 
         self._push = push
         self._credential_id = credential_id
 
     @classmethod
-    def from_dict(cls, dikt: dict) -> 'ServiceDockerComposeValueImageRegistry':
+    def from_dict(cls, dikt: dict) -> "ServiceDockerComposeValueImageRegistry":
         """Returns the dict as a model
 
         :param dikt: A dict.

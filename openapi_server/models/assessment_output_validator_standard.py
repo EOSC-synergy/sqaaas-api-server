@@ -5,11 +5,10 @@
 # coding: utf-8
 
 from datetime import date, datetime
+from typing import Dict, List, Type
 
-from typing import List, Dict, Type
-
-from openapi_server.models.base_model_ import Model
 from openapi_server import util
+from openapi_server.models.base_model_ import Model
 
 
 class AssessmentOutputValidatorStandard(Model):
@@ -18,31 +17,23 @@ class AssessmentOutputValidatorStandard(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, title: str=None, version: str=None, url: str=None):
+    def __init__(self, title: str = None, version: str = None, url: str = None):
         """AssessmentOutputValidatorStandard - a model defined in OpenAPI
 
         :param title: The title of this AssessmentOutputValidatorStandard.
         :param version: The version of this AssessmentOutputValidatorStandard.
         :param url: The url of this AssessmentOutputValidatorStandard.
         """
-        self.openapi_types = {
-            'title': str,
-            'version': str,
-            'url': str
-        }
+        self.openapi_types = {"title": str, "version": str, "url": str}
 
-        self.attribute_map = {
-            'title': 'title',
-            'version': 'version',
-            'url': 'url'
-        }
+        self.attribute_map = {"title": "title", "version": "version", "url": "url"}
 
         self._title = title
         self._version = version
         self._url = url
 
     @classmethod
-    def from_dict(cls, dikt: dict) -> 'AssessmentOutputValidatorStandard':
+    def from_dict(cls, dikt: dict) -> "AssessmentOutputValidatorStandard":
         """Returns the dict as a model
 
         :param dikt: A dict.

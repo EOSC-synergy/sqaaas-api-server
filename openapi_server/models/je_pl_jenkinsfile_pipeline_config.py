@@ -5,11 +5,10 @@
 # coding: utf-8
 
 from datetime import date, datetime
+from typing import Dict, List, Type
 
-from typing import List, Dict, Type
-
-from openapi_server.models.base_model_ import Model
 from openapi_server import util
+from openapi_server.models.base_model_ import Model
 
 
 class JePLJenkinsfilePipelineConfig(Model):
@@ -18,7 +17,14 @@ class JePLJenkinsfilePipelineConfig(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, config_file: str=None, base_repository: str=None, base_branch: str=None, credentials_id: str=None, jepl_validator_docker_image: str=None):
+    def __init__(
+        self,
+        config_file: str = None,
+        base_repository: str = None,
+        base_branch: str = None,
+        credentials_id: str = None,
+        jepl_validator_docker_image: str = None,
+    ):
         """JePLJenkinsfilePipelineConfig - a model defined in OpenAPI
 
         :param config_file: The config_file of this JePLJenkinsfilePipelineConfig.
@@ -28,19 +34,19 @@ class JePLJenkinsfilePipelineConfig(Model):
         :param jepl_validator_docker_image: The jepl_validator_docker_image of this JePLJenkinsfilePipelineConfig.
         """
         self.openapi_types = {
-            'config_file': str,
-            'base_repository': str,
-            'base_branch': str,
-            'credentials_id': str,
-            'jepl_validator_docker_image': str
+            "config_file": str,
+            "base_repository": str,
+            "base_branch": str,
+            "credentials_id": str,
+            "jepl_validator_docker_image": str,
         }
 
         self.attribute_map = {
-            'config_file': 'config_file',
-            'base_repository': 'base_repository',
-            'base_branch': 'base_branch',
-            'credentials_id': 'credentials_id',
-            'jepl_validator_docker_image': 'jepl_validator_docker_image'
+            "config_file": "config_file",
+            "base_repository": "base_repository",
+            "base_branch": "base_branch",
+            "credentials_id": "credentials_id",
+            "jepl_validator_docker_image": "jepl_validator_docker_image",
         }
 
         self._config_file = config_file
@@ -50,7 +56,7 @@ class JePLJenkinsfilePipelineConfig(Model):
         self._jepl_validator_docker_image = jepl_validator_docker_image
 
     @classmethod
-    def from_dict(cls, dikt: dict) -> 'JePLJenkinsfilePipelineConfig':
+    def from_dict(cls, dikt: dict) -> "JePLJenkinsfilePipelineConfig":
         """Returns the dict as a model
 
         :param dikt: A dict.

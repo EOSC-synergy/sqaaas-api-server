@@ -5,11 +5,10 @@
 # coding: utf-8
 
 from datetime import date, datetime
+from typing import Dict, List, Type
 
-from typing import List, Dict, Type
-
-from openapi_server.models.base_model_ import Model
 from openapi_server import util
+from openapi_server.models.base_model_ import Model
 
 
 class CriterionOutput(Model):
@@ -18,27 +17,21 @@ class CriterionOutput(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, id: str=None, stdout: str=None):
+    def __init__(self, id: str = None, stdout: str = None):
         """CriterionOutput - a model defined in OpenAPI
 
         :param id: The id of this CriterionOutput.
         :param stdout: The stdout of this CriterionOutput.
         """
-        self.openapi_types = {
-            'id': str,
-            'stdout': str
-        }
+        self.openapi_types = {"id": str, "stdout": str}
 
-        self.attribute_map = {
-            'id': 'id',
-            'stdout': 'stdout'
-        }
+        self.attribute_map = {"id": "id", "stdout": "stdout"}
 
         self._id = id
         self._stdout = stdout
 
     @classmethod
-    def from_dict(cls, dikt: dict) -> 'CriterionOutput':
+    def from_dict(cls, dikt: dict) -> "CriterionOutput":
         """Returns the dict as a model
 
         :param dikt: A dict.

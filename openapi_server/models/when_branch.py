@@ -5,11 +5,10 @@
 # coding: utf-8
 
 from datetime import date, datetime
+from typing import Dict, List, Type
 
-from typing import List, Dict, Type
-
-from openapi_server.models.base_model_ import Model
 from openapi_server import util
+from openapi_server.models.base_model_ import Model
 
 
 class WhenBranch(Model):
@@ -18,27 +17,21 @@ class WhenBranch(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, pattern: str=None, comparator: str='GLOB'):
+    def __init__(self, pattern: str = None, comparator: str = "GLOB"):
         """WhenBranch - a model defined in OpenAPI
 
         :param pattern: The pattern of this WhenBranch.
         :param comparator: The comparator of this WhenBranch.
         """
-        self.openapi_types = {
-            'pattern': str,
-            'comparator': str
-        }
+        self.openapi_types = {"pattern": str, "comparator": str}
 
-        self.attribute_map = {
-            'pattern': 'pattern',
-            'comparator': 'comparator'
-        }
+        self.attribute_map = {"pattern": "pattern", "comparator": "comparator"}
 
         self._pattern = pattern
         self._comparator = comparator
 
     @classmethod
-    def from_dict(cls, dikt: dict) -> 'WhenBranch':
+    def from_dict(cls, dikt: dict) -> "WhenBranch":
         """Returns the dict as a model
 
         :param dikt: A dict.
@@ -67,7 +60,9 @@ class WhenBranch(Model):
         if pattern is None:
             raise ValueError("Invalid value for `pattern`, must not be `None`")
         if pattern is not None and len(pattern) < 1:
-            raise ValueError("Invalid value for `pattern`, length must be greater than or equal to `1`")
+            raise ValueError(
+                "Invalid value for `pattern`, length must be greater than or equal to `1`"
+            )
 
         self._pattern = pattern
 
@@ -92,8 +87,9 @@ class WhenBranch(Model):
         allowed_values = ["EQUALS", "GLOB", "REGEXP"]  # noqa: E501
         if comparator not in allowed_values:
             raise ValueError(
-                "Invalid value for `comparator` ({0}), must be one of {1}"
-                .format(comparator, allowed_values)
+                "Invalid value for `comparator` ({0}), must be one of {1}".format(
+                    comparator, allowed_values
+                )
             )
 
         self._comparator = comparator

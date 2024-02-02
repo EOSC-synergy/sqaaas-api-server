@@ -5,12 +5,13 @@
 # coding: utf-8
 
 from datetime import date, datetime
+from typing import Dict, List, Type
 
-from typing import List, Dict, Type
-
-from openapi_server.models.base_model_ import Model
-from openapi_server.models.service_docker_compose_addl_props_image_registry import ServiceDockerComposeAddlPropsImageRegistry
 from openapi_server import util
+from openapi_server.models.base_model_ import Model
+from openapi_server.models.service_docker_compose_addl_props_image_registry import (
+    ServiceDockerComposeAddlPropsImageRegistry,
+)
 
 
 class ServiceDockerComposeAddlPropsImage(Model):
@@ -19,27 +20,28 @@ class ServiceDockerComposeAddlPropsImage(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, name: str=None, registry: ServiceDockerComposeAddlPropsImageRegistry=None):
+    def __init__(
+        self,
+        name: str = None,
+        registry: ServiceDockerComposeAddlPropsImageRegistry = None,
+    ):
         """ServiceDockerComposeAddlPropsImage - a model defined in OpenAPI
 
         :param name: The name of this ServiceDockerComposeAddlPropsImage.
         :param registry: The registry of this ServiceDockerComposeAddlPropsImage.
         """
         self.openapi_types = {
-            'name': str,
-            'registry': ServiceDockerComposeAddlPropsImageRegistry
+            "name": str,
+            "registry": ServiceDockerComposeAddlPropsImageRegistry,
         }
 
-        self.attribute_map = {
-            'name': 'name',
-            'registry': 'registry'
-        }
+        self.attribute_map = {"name": "name", "registry": "registry"}
 
         self._name = name
         self._registry = registry
 
     @classmethod
-    def from_dict(cls, dikt: dict) -> 'ServiceDockerComposeAddlPropsImage':
+    def from_dict(cls, dikt: dict) -> "ServiceDockerComposeAddlPropsImage":
         """Returns the dict as a model
 
         :param dikt: A dict.

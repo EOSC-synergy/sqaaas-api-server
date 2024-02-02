@@ -3,21 +3,22 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 import datetime
-
 import typing
 from typing import Union
+
 from openapi_server import typing_utils
 
-T = typing.TypeVar('T')
+T = typing.TypeVar("T")
 Class = typing.Type[T]
 
 
-def _deserialize(data: Union[dict, list, str], klass: Union[Class, str]) -> Union[dict, list, Class, int, float, str, bool, datetime.date, datetime.datetime]:
+def _deserialize(
+    data: Union[dict, list, str], klass: Union[Class, str]
+) -> Union[dict, list, Class, int, float, str, bool, datetime.date, datetime.datetime]:
     """Deserializes dict, list, str into an object.
 
     :param data: dict, list or str.
     :param klass: class literal, or string of class name.
-
     :return: object.
     """
     if data is None:
@@ -45,7 +46,6 @@ def _deserialize_primitive(data, klass: Class) -> Union[Class, int, float, str, 
 
     :param data: data to deserialize.
     :param klass: class literal.
-
     :return: int, float, str, bool.
     """
     try:
@@ -71,6 +71,7 @@ def deserialize_date(string: str) -> datetime.date:
     """
     try:
         from dateutil.parser import parse
+
         return parse(string).date()
     except ImportError:
         return string
@@ -86,6 +87,7 @@ def deserialize_datetime(string: str) -> datetime.datetime:
     """
     try:
         from dateutil.parser import parse
+
         return parse(string)
     except ImportError:
         return string
@@ -118,7 +120,6 @@ def _deserialize_list(data: list, boxed_type) -> list:
 
     :param data: list to deserialize.
     :param boxed_type: class literal.
-
     :return: deserialized list.
     """
     return [_deserialize(sub_data, boxed_type) for sub_data in data]
@@ -129,7 +130,6 @@ def _deserialize_dict(data: dict, boxed_type) -> dict:
 
     :param data: dict to deserialize.
     :param boxed_type: class literal.
-
     :return: deserialized dict.
     """
     return {k: _deserialize(v, boxed_type) for k, v in data.items()}

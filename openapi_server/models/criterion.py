@@ -5,13 +5,12 @@
 # coding: utf-8
 
 from datetime import date, datetime
+from typing import Dict, List, Type
 
-from typing import List, Dict, Type
-
+from openapi_server import util
 from openapi_server.models.base_model_ import Model
 from openapi_server.models.criterion_description import CriterionDescription
 from openapi_server.models.tool import Tool
-from openapi_server import util
 
 
 class Criterion(Model):
@@ -20,7 +19,13 @@ class Criterion(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, id: str=None, type: str=None, description: CriterionDescription=None, tools: List[Tool]=None):
+    def __init__(
+        self,
+        id: str = None,
+        type: str = None,
+        description: CriterionDescription = None,
+        tools: List[Tool] = None,
+    ):
         """Criterion - a model defined in OpenAPI
 
         :param id: The id of this Criterion.
@@ -29,17 +34,17 @@ class Criterion(Model):
         :param tools: The tools of this Criterion.
         """
         self.openapi_types = {
-            'id': str,
-            'type': str,
-            'description': CriterionDescription,
-            'tools': List[Tool]
+            "id": str,
+            "type": str,
+            "description": CriterionDescription,
+            "tools": List[Tool],
         }
 
         self.attribute_map = {
-            'id': 'id',
-            'type': 'type',
-            'description': 'description',
-            'tools': 'tools'
+            "id": "id",
+            "type": "type",
+            "description": "description",
+            "tools": "tools",
         }
 
         self._id = id
@@ -48,7 +53,7 @@ class Criterion(Model):
         self._tools = tools
 
     @classmethod
-    def from_dict(cls, dikt: dict) -> 'Criterion':
+    def from_dict(cls, dikt: dict) -> "Criterion":
         """Returns the dict as a model
 
         :param dikt: A dict.
@@ -102,8 +107,9 @@ class Criterion(Model):
         allowed_values = ["software", "service", "fair"]  # noqa: E501
         if type not in allowed_values:
             raise ValueError(
-                "Invalid value for `type` ({0}), must be one of {1}"
-                .format(type, allowed_values)
+                "Invalid value for `type` ({0}), must be one of {1}".format(
+                    type, allowed_values
+                )
             )
 
         self._type = type

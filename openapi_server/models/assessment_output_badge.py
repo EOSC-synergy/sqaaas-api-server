@@ -5,12 +5,11 @@
 # coding: utf-8
 
 from datetime import date, datetime
+from typing import Dict, List, Type
 
-from typing import List, Dict, Type
-
-from openapi_server.models.base_model_ import Model
-from openapi_server.models.badge import Badge
 from openapi_server import util
+from openapi_server.models.badge import Badge
+from openapi_server.models.base_model_ import Model
 
 
 class AssessmentOutputBadge(Model):
@@ -19,23 +18,21 @@ class AssessmentOutputBadge(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, software: Badge=None, services: Badge=None, fair: Badge=None):
+    def __init__(
+        self, software: Badge = None, services: Badge = None, fair: Badge = None
+    ):
         """AssessmentOutputBadge - a model defined in OpenAPI
 
         :param software: The software of this AssessmentOutputBadge.
         :param services: The services of this AssessmentOutputBadge.
         :param fair: The fair of this AssessmentOutputBadge.
         """
-        self.openapi_types = {
-            'software': Badge,
-            'services': Badge,
-            'fair': Badge
-        }
+        self.openapi_types = {"software": Badge, "services": Badge, "fair": Badge}
 
         self.attribute_map = {
-            'software': 'software',
-            'services': 'services',
-            'fair': 'fair'
+            "software": "software",
+            "services": "services",
+            "fair": "fair",
         }
 
         self._software = software
@@ -43,7 +40,7 @@ class AssessmentOutputBadge(Model):
         self._fair = fair
 
     @classmethod
-    def from_dict(cls, dikt: dict) -> 'AssessmentOutputBadge':
+    def from_dict(cls, dikt: dict) -> "AssessmentOutputBadge":
         """Returns the dict as a model
 
         :param dikt: A dict.

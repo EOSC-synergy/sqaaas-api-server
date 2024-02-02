@@ -5,11 +5,10 @@
 # coding: utf-8
 
 from datetime import date, datetime
+from typing import Dict, List, Type
 
-from typing import List, Dict, Type
-
-from openapi_server.models.base_model_ import Model
 from openapi_server import util
+from openapi_server.models.base_model_ import Model
 
 
 class CredsFile(Model):
@@ -18,31 +17,23 @@ class CredsFile(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, id: str=None, type: str=None, variable: str=None):
+    def __init__(self, id: str = None, type: str = None, variable: str = None):
         """CredsFile - a model defined in OpenAPI
 
         :param id: The id of this CredsFile.
         :param type: The type of this CredsFile.
         :param variable: The variable of this CredsFile.
         """
-        self.openapi_types = {
-            'id': str,
-            'type': str,
-            'variable': str
-        }
+        self.openapi_types = {"id": str, "type": str, "variable": str}
 
-        self.attribute_map = {
-            'id': 'id',
-            'type': 'type',
-            'variable': 'variable'
-        }
+        self.attribute_map = {"id": "id", "type": "type", "variable": "variable"}
 
         self._id = id
         self._type = type
         self._variable = variable
 
     @classmethod
-    def from_dict(cls, dikt: dict) -> 'CredsFile':
+    def from_dict(cls, dikt: dict) -> "CredsFile":
         """Returns the dict as a model
 
         :param dikt: A dict.
@@ -94,8 +85,9 @@ class CredsFile(Model):
         allowed_values = ["file", "zip"]  # noqa: E501
         if type not in allowed_values:
             raise ValueError(
-                "Invalid value for `type` ({0}), must be one of {1}"
-                .format(type, allowed_values)
+                "Invalid value for `type` ({0}), must be one of {1}".format(
+                    type, allowed_values
+                )
             )
 
         self._type = type

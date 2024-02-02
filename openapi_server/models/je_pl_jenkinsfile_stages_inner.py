@@ -5,13 +5,16 @@
 # coding: utf-8
 
 from datetime import date, datetime
+from typing import Dict, List, Type
 
-from typing import List, Dict, Type
-
-from openapi_server.models.base_model_ import Model
-from openapi_server.models.je_pl_jenkinsfile_stages_inner_pipeline_config import JePLJenkinsfileStagesInnerPipelineConfig
-from openapi_server.models.je_pl_jenkinsfile_stages_inner_when import JePLJenkinsfileStagesInnerWhen
 from openapi_server import util
+from openapi_server.models.base_model_ import Model
+from openapi_server.models.je_pl_jenkinsfile_stages_inner_pipeline_config import (
+    JePLJenkinsfileStagesInnerPipelineConfig,
+)
+from openapi_server.models.je_pl_jenkinsfile_stages_inner_when import (
+    JePLJenkinsfileStagesInnerWhen,
+)
 
 
 class JePLJenkinsfileStagesInner(Model):
@@ -20,27 +23,28 @@ class JePLJenkinsfileStagesInner(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, when: JePLJenkinsfileStagesInnerWhen=None, pipeline_config: JePLJenkinsfileStagesInnerPipelineConfig=None):
+    def __init__(
+        self,
+        when: JePLJenkinsfileStagesInnerWhen = None,
+        pipeline_config: JePLJenkinsfileStagesInnerPipelineConfig = None,
+    ):
         """JePLJenkinsfileStagesInner - a model defined in OpenAPI
 
         :param when: The when of this JePLJenkinsfileStagesInner.
         :param pipeline_config: The pipeline_config of this JePLJenkinsfileStagesInner.
         """
         self.openapi_types = {
-            'when': JePLJenkinsfileStagesInnerWhen,
-            'pipeline_config': JePLJenkinsfileStagesInnerPipelineConfig
+            "when": JePLJenkinsfileStagesInnerWhen,
+            "pipeline_config": JePLJenkinsfileStagesInnerPipelineConfig,
         }
 
-        self.attribute_map = {
-            'when': 'when',
-            'pipeline_config': 'pipeline_config'
-        }
+        self.attribute_map = {"when": "when", "pipeline_config": "pipeline_config"}
 
         self._when = when
         self._pipeline_config = pipeline_config
 
     @classmethod
-    def from_dict(cls, dikt: dict) -> 'JePLJenkinsfileStagesInner':
+    def from_dict(cls, dikt: dict) -> "JePLJenkinsfileStagesInner":
         """Returns the dict as a model
 
         :param dikt: A dict.

@@ -5,12 +5,11 @@
 # coding: utf-8
 
 from datetime import date, datetime
+from typing import Dict, List, Type
 
-from typing import List, Dict, Type
-
+from openapi_server import util
 from openapi_server.models.base_model_ import Model
 from openapi_server.models.service_docker_compose_value import ServiceDockerComposeValue
-from openapi_server import util
 
 
 class JePLComposer(Model):
@@ -19,27 +18,26 @@ class JePLComposer(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, version: str=None, services: Dict[str, ServiceDockerComposeValue]=None):
+    def __init__(
+        self, version: str = None, services: Dict[str, ServiceDockerComposeValue] = None
+    ):
         """JePLComposer - a model defined in OpenAPI
 
         :param version: The version of this JePLComposer.
         :param services: The services of this JePLComposer.
         """
         self.openapi_types = {
-            'version': str,
-            'services': Dict[str, ServiceDockerComposeValue]
+            "version": str,
+            "services": Dict[str, ServiceDockerComposeValue],
         }
 
-        self.attribute_map = {
-            'version': 'version',
-            'services': 'services'
-        }
+        self.attribute_map = {"version": "version", "services": "services"}
 
         self._version = version
         self._services = services
 
     @classmethod
-    def from_dict(cls, dikt: dict) -> 'JePLComposer':
+    def from_dict(cls, dikt: dict) -> "JePLComposer":
         """Returns the dict as a model
 
         :param dikt: A dict.

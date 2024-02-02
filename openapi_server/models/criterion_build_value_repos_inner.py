@@ -5,13 +5,12 @@
 # coding: utf-8
 
 from datetime import date, datetime
+from typing import Dict, List, Type
 
-from typing import List, Dict, Type
-
+from openapi_server import util
 from openapi_server.models.base_model_ import Model
 from openapi_server.models.tool import Tool
 from openapi_server.models.tox_simplified import ToxSimplified
-from openapi_server import util
 
 
 class CriterionBuildValueReposInner(Model):
@@ -20,7 +19,14 @@ class CriterionBuildValueReposInner(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, repo_url: str=None, container: str=None, commands: List[str]=None, tox: ToxSimplified=None, tool: Tool=None):
+    def __init__(
+        self,
+        repo_url: str = None,
+        container: str = None,
+        commands: List[str] = None,
+        tox: ToxSimplified = None,
+        tool: Tool = None,
+    ):
         """CriterionBuildValueReposInner - a model defined in OpenAPI
 
         :param repo_url: The repo_url of this CriterionBuildValueReposInner.
@@ -30,19 +36,19 @@ class CriterionBuildValueReposInner(Model):
         :param tool: The tool of this CriterionBuildValueReposInner.
         """
         self.openapi_types = {
-            'repo_url': str,
-            'container': str,
-            'commands': List[str],
-            'tox': ToxSimplified,
-            'tool': Tool
+            "repo_url": str,
+            "container": str,
+            "commands": List[str],
+            "tox": ToxSimplified,
+            "tool": Tool,
         }
 
         self.attribute_map = {
-            'repo_url': 'repo_url',
-            'container': 'container',
-            'commands': 'commands',
-            'tox': 'tox',
-            'tool': 'tool'
+            "repo_url": "repo_url",
+            "container": "container",
+            "commands": "commands",
+            "tox": "tox",
+            "tool": "tool",
         }
 
         self._repo_url = repo_url
@@ -52,7 +58,7 @@ class CriterionBuildValueReposInner(Model):
         self._tool = tool
 
     @classmethod
-    def from_dict(cls, dikt: dict) -> 'CriterionBuildValueReposInner':
+    def from_dict(cls, dikt: dict) -> "CriterionBuildValueReposInner":
         """Returns the dict as a model
 
         :param dikt: A dict.

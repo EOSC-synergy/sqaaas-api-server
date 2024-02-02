@@ -5,11 +5,10 @@
 # coding: utf-8
 
 from datetime import date, datetime
+from typing import Dict, List, Type
 
-from typing import List, Dict, Type
-
-from openapi_server.models.base_model_ import Model
 from openapi_server import util
+from openapi_server.models.base_model_ import Model
 
 
 class ServiceDockerComposeAddlPropsVolumesInner(Model):
@@ -18,31 +17,23 @@ class ServiceDockerComposeAddlPropsVolumesInner(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, type: str=None, source: str=None, target: str=None):
+    def __init__(self, type: str = None, source: str = None, target: str = None):
         """ServiceDockerComposeAddlPropsVolumesInner - a model defined in OpenAPI
 
         :param type: The type of this ServiceDockerComposeAddlPropsVolumesInner.
         :param source: The source of this ServiceDockerComposeAddlPropsVolumesInner.
         :param target: The target of this ServiceDockerComposeAddlPropsVolumesInner.
         """
-        self.openapi_types = {
-            'type': str,
-            'source': str,
-            'target': str
-        }
+        self.openapi_types = {"type": str, "source": str, "target": str}
 
-        self.attribute_map = {
-            'type': 'type',
-            'source': 'source',
-            'target': 'target'
-        }
+        self.attribute_map = {"type": "type", "source": "source", "target": "target"}
 
         self._type = type
         self._source = source
         self._target = target
 
     @classmethod
-    def from_dict(cls, dikt: dict) -> 'ServiceDockerComposeAddlPropsVolumesInner':
+    def from_dict(cls, dikt: dict) -> "ServiceDockerComposeAddlPropsVolumesInner":
         """Returns the dict as a model
 
         :param dikt: A dict.
@@ -71,8 +62,9 @@ class ServiceDockerComposeAddlPropsVolumesInner(Model):
         allowed_values = ["bind"]  # noqa: E501
         if type not in allowed_values:
             raise ValueError(
-                "Invalid value for `type` ({0}), must be one of {1}"
-                .format(type, allowed_values)
+                "Invalid value for `type` ({0}), must be one of {1}".format(
+                    type, allowed_values
+                )
             )
 
         self._type = type

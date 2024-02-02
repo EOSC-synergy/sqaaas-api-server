@@ -5,11 +5,10 @@
 # coding: utf-8
 
 from datetime import date, datetime
+from typing import Dict, List, Type
 
-from typing import List, Dict, Type
-
-from openapi_server.models.base_model_ import Model
 from openapi_server import util
+from openapi_server.models.base_model_ import Model
 
 
 class InlineResponse2004(Model):
@@ -18,7 +17,9 @@ class InlineResponse2004(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, build_url: str=None, build_status: str=None, openbadge_id: str=None):
+    def __init__(
+        self, build_url: str = None, build_status: str = None, openbadge_id: str = None
+    ):
         """InlineResponse2004 - a model defined in OpenAPI
 
         :param build_url: The build_url of this InlineResponse2004.
@@ -26,15 +27,15 @@ class InlineResponse2004(Model):
         :param openbadge_id: The openbadge_id of this InlineResponse2004.
         """
         self.openapi_types = {
-            'build_url': str,
-            'build_status': str,
-            'openbadge_id': str
+            "build_url": str,
+            "build_status": str,
+            "openbadge_id": str,
         }
 
         self.attribute_map = {
-            'build_url': 'build_url',
-            'build_status': 'build_status',
-            'openbadge_id': 'openbadge_id'
+            "build_url": "build_url",
+            "build_status": "build_status",
+            "openbadge_id": "openbadge_id",
         }
 
         self._build_url = build_url
@@ -42,7 +43,7 @@ class InlineResponse2004(Model):
         self._openbadge_id = openbadge_id
 
     @classmethod
-    def from_dict(cls, dikt: dict) -> 'InlineResponse2004':
+    def from_dict(cls, dikt: dict) -> "InlineResponse2004":
         """Returns the dict as a model
 
         :param dikt: A dict.
@@ -89,11 +90,19 @@ class InlineResponse2004(Model):
         :param build_status: The build_status of this InlineResponse2004.
         :type build_status: str
         """
-        allowed_values = ["success", "failure", "aborted", "not_built", "unstable", "waiting_scan_org"]  # noqa: E501
+        allowed_values = [
+            "success",
+            "failure",
+            "aborted",
+            "not_built",
+            "unstable",
+            "waiting_scan_org",
+        ]  # noqa: E501
         if build_status not in allowed_values:
             raise ValueError(
-                "Invalid value for `build_status` ({0}), must be one of {1}"
-                .format(build_status, allowed_values)
+                "Invalid value for `build_status` ({0}), must be one of {1}".format(
+                    build_status, allowed_values
+                )
             )
 
         self._build_status = build_status

@@ -5,11 +5,10 @@
 # coding: utf-8
 
 from datetime import date, datetime
+from typing import Dict, List, Type
 
-from typing import List, Dict, Type
-
-from openapi_server.models.base_model_ import Model
 from openapi_server import util
+from openapi_server.models.base_model_ import Model
 
 
 class AssessmentOutputReportValueCoverage(Model):
@@ -18,7 +17,12 @@ class AssessmentOutputReportValueCoverage(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, percentage: float=None, total_subcriteria: int=None, success_subcriteria: int=None):
+    def __init__(
+        self,
+        percentage: float = None,
+        total_subcriteria: int = None,
+        success_subcriteria: int = None,
+    ):
         """AssessmentOutputReportValueCoverage - a model defined in OpenAPI
 
         :param percentage: The percentage of this AssessmentOutputReportValueCoverage.
@@ -26,15 +30,15 @@ class AssessmentOutputReportValueCoverage(Model):
         :param success_subcriteria: The success_subcriteria of this AssessmentOutputReportValueCoverage.
         """
         self.openapi_types = {
-            'percentage': float,
-            'total_subcriteria': int,
-            'success_subcriteria': int
+            "percentage": float,
+            "total_subcriteria": int,
+            "success_subcriteria": int,
         }
 
         self.attribute_map = {
-            'percentage': 'percentage',
-            'total_subcriteria': 'total_subcriteria',
-            'success_subcriteria': 'success_subcriteria'
+            "percentage": "percentage",
+            "total_subcriteria": "total_subcriteria",
+            "success_subcriteria": "success_subcriteria",
         }
 
         self._percentage = percentage
@@ -42,7 +46,7 @@ class AssessmentOutputReportValueCoverage(Model):
         self._success_subcriteria = success_subcriteria
 
     @classmethod
-    def from_dict(cls, dikt: dict) -> 'AssessmentOutputReportValueCoverage':
+    def from_dict(cls, dikt: dict) -> "AssessmentOutputReportValueCoverage":
         """Returns the dict as a model
 
         :param dikt: A dict.

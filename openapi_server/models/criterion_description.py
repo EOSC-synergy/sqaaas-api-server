@@ -5,11 +5,10 @@
 # coding: utf-8
 
 from datetime import date, datetime
+from typing import Dict, List, Type
 
-from typing import List, Dict, Type
-
-from openapi_server.models.base_model_ import Model
 from openapi_server import util
+from openapi_server.models.base_model_ import Model
 
 
 class CriterionDescription(Model):
@@ -18,31 +17,23 @@ class CriterionDescription(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, msg: str=None, improves: str=None, docs: str=None):
+    def __init__(self, msg: str = None, improves: str = None, docs: str = None):
         """CriterionDescription - a model defined in OpenAPI
 
         :param msg: The msg of this CriterionDescription.
         :param improves: The improves of this CriterionDescription.
         :param docs: The docs of this CriterionDescription.
         """
-        self.openapi_types = {
-            'msg': str,
-            'improves': str,
-            'docs': str
-        }
+        self.openapi_types = {"msg": str, "improves": str, "docs": str}
 
-        self.attribute_map = {
-            'msg': 'msg',
-            'improves': 'improves',
-            'docs': 'docs'
-        }
+        self.attribute_map = {"msg": "msg", "improves": "improves", "docs": "docs"}
 
         self._msg = msg
         self._improves = improves
         self._docs = docs
 
     @classmethod
-    def from_dict(cls, dikt: dict) -> 'CriterionDescription':
+    def from_dict(cls, dikt: dict) -> "CriterionDescription":
         """Returns the dict as a model
 
         :param dikt: A dict.

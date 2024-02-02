@@ -5,11 +5,10 @@
 # coding: utf-8
 
 from datetime import date, datetime
+from typing import Dict, List, Type
 
-from typing import List, Dict, Type
-
-from openapi_server.models.base_model_ import Model
 from openapi_server import util
+from openapi_server.models.base_model_ import Model
 
 
 class ToolDocker(Model):
@@ -18,7 +17,13 @@ class ToolDocker(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, image: str=None, dockerfile: str=None, reviewed: date=None, oneshot: bool=True):
+    def __init__(
+        self,
+        image: str = None,
+        dockerfile: str = None,
+        reviewed: date = None,
+        oneshot: bool = True,
+    ):
         """ToolDocker - a model defined in OpenAPI
 
         :param image: The image of this ToolDocker.
@@ -27,17 +32,17 @@ class ToolDocker(Model):
         :param oneshot: The oneshot of this ToolDocker.
         """
         self.openapi_types = {
-            'image': str,
-            'dockerfile': str,
-            'reviewed': date,
-            'oneshot': bool
+            "image": str,
+            "dockerfile": str,
+            "reviewed": date,
+            "oneshot": bool,
         }
 
         self.attribute_map = {
-            'image': 'image',
-            'dockerfile': 'dockerfile',
-            'reviewed': 'reviewed',
-            'oneshot': 'oneshot'
+            "image": "image",
+            "dockerfile": "dockerfile",
+            "reviewed": "reviewed",
+            "oneshot": "oneshot",
         }
 
         self._image = image
@@ -46,7 +51,7 @@ class ToolDocker(Model):
         self._oneshot = oneshot
 
     @classmethod
-    def from_dict(cls, dikt: dict) -> 'ToolDocker':
+    def from_dict(cls, dikt: dict) -> "ToolDocker":
         """Returns the dict as a model
 
         :param dikt: A dict.

@@ -5,11 +5,10 @@
 # coding: utf-8
 
 from datetime import date, datetime
+from typing import Dict, List, Type
 
-from typing import List, Dict, Type
-
-from openapi_server.models.base_model_ import Model
 from openapi_server import util
+from openapi_server.models.base_model_ import Model
 
 
 class BadgeCriteria(Model):
@@ -18,7 +17,12 @@ class BadgeCriteria(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, to_fulfill: List[str]=None, fulfilled: List[str]=None, missing: List[str]=None):
+    def __init__(
+        self,
+        to_fulfill: List[str] = None,
+        fulfilled: List[str] = None,
+        missing: List[str] = None,
+    ):
         """BadgeCriteria - a model defined in OpenAPI
 
         :param to_fulfill: The to_fulfill of this BadgeCriteria.
@@ -26,15 +30,15 @@ class BadgeCriteria(Model):
         :param missing: The missing of this BadgeCriteria.
         """
         self.openapi_types = {
-            'to_fulfill': List[str],
-            'fulfilled': List[str],
-            'missing': List[str]
+            "to_fulfill": List[str],
+            "fulfilled": List[str],
+            "missing": List[str],
         }
 
         self.attribute_map = {
-            'to_fulfill': 'to_fulfill',
-            'fulfilled': 'fulfilled',
-            'missing': 'missing'
+            "to_fulfill": "to_fulfill",
+            "fulfilled": "fulfilled",
+            "missing": "missing",
         }
 
         self._to_fulfill = to_fulfill
@@ -42,7 +46,7 @@ class BadgeCriteria(Model):
         self._missing = missing
 
     @classmethod
-    def from_dict(cls, dikt: dict) -> 'BadgeCriteria':
+    def from_dict(cls, dikt: dict) -> "BadgeCriteria":
         """Returns the dict as a model
 
         :param dikt: A dict.

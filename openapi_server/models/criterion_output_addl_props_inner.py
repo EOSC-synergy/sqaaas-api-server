@@ -5,12 +5,13 @@
 # coding: utf-8
 
 from datetime import date, datetime
+from typing import Dict, List, Type
 
-from typing import List, Dict, Type
-
-from openapi_server.models.base_model_ import Model
-from openapi_server.models.criterion_output_addl_props_items_validation import CriterionOutputAddlPropsItemsValidation
 from openapi_server import util
+from openapi_server.models.base_model_ import Model
+from openapi_server.models.criterion_output_addl_props_items_validation import (
+    CriterionOutputAddlPropsItemsValidation,
+)
 
 
 class CriterionOutputAddlPropsInner(Model):
@@ -19,7 +20,15 @@ class CriterionOutputAddlPropsInner(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, status: str=None, stdout_command: str=None, stdout_text: str=None, tool: str=None, validator: str=None, validation: CriterionOutputAddlPropsItemsValidation=None):
+    def __init__(
+        self,
+        status: str = None,
+        stdout_command: str = None,
+        stdout_text: str = None,
+        tool: str = None,
+        validator: str = None,
+        validation: CriterionOutputAddlPropsItemsValidation = None,
+    ):
         """CriterionOutputAddlPropsInner - a model defined in OpenAPI
 
         :param status: The status of this CriterionOutputAddlPropsInner.
@@ -30,21 +39,21 @@ class CriterionOutputAddlPropsInner(Model):
         :param validation: The validation of this CriterionOutputAddlPropsInner.
         """
         self.openapi_types = {
-            'status': str,
-            'stdout_command': str,
-            'stdout_text': str,
-            'tool': str,
-            'validator': str,
-            'validation': CriterionOutputAddlPropsItemsValidation
+            "status": str,
+            "stdout_command": str,
+            "stdout_text": str,
+            "tool": str,
+            "validator": str,
+            "validation": CriterionOutputAddlPropsItemsValidation,
         }
 
         self.attribute_map = {
-            'status': 'status',
-            'stdout_command': 'stdout_command',
-            'stdout_text': 'stdout_text',
-            'tool': 'tool',
-            'validator': 'validator',
-            'validation': 'validation'
+            "status": "status",
+            "stdout_command": "stdout_command",
+            "stdout_text": "stdout_text",
+            "tool": "tool",
+            "validator": "validator",
+            "validation": "validation",
         }
 
         self._status = status
@@ -55,7 +64,7 @@ class CriterionOutputAddlPropsInner(Model):
         self._validation = validation
 
     @classmethod
-    def from_dict(cls, dikt: dict) -> 'CriterionOutputAddlPropsInner':
+    def from_dict(cls, dikt: dict) -> "CriterionOutputAddlPropsInner":
         """Returns the dict as a model
 
         :param dikt: A dict.
@@ -84,8 +93,9 @@ class CriterionOutputAddlPropsInner(Model):
         allowed_values = ["SUCCESS", "FAILED"]  # noqa: E501
         if status not in allowed_values:
             raise ValueError(
-                "Invalid value for `status` ({0}), must be one of {1}"
-                .format(status, allowed_values)
+                "Invalid value for `status` ({0}), must be one of {1}".format(
+                    status, allowed_values
+                )
             )
 
         self._status = status

@@ -5,11 +5,10 @@
 # coding: utf-8
 
 from datetime import date, datetime
+from typing import Dict, List, Type
 
-from typing import List, Dict, Type
-
-from openapi_server.models.base_model_ import Model
 from openapi_server import util
+from openapi_server.models.base_model_ import Model
 
 
 class InlineResponse2006(Model):
@@ -18,23 +17,19 @@ class InlineResponse2006(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, pull_request_url: str=None):
+    def __init__(self, pull_request_url: str = None):
         """InlineResponse2006 - a model defined in OpenAPI
 
         :param pull_request_url: The pull_request_url of this InlineResponse2006.
         """
-        self.openapi_types = {
-            'pull_request_url': str
-        }
+        self.openapi_types = {"pull_request_url": str}
 
-        self.attribute_map = {
-            'pull_request_url': 'pull_request_url'
-        }
+        self.attribute_map = {"pull_request_url": "pull_request_url"}
 
         self._pull_request_url = pull_request_url
 
     @classmethod
-    def from_dict(cls, dikt: dict) -> 'InlineResponse2006':
+    def from_dict(cls, dikt: dict) -> "InlineResponse2006":
         """Returns the dict as a model
 
         :param dikt: A dict.

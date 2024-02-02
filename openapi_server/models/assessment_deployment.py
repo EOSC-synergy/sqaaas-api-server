@@ -5,13 +5,12 @@
 # coding: utf-8
 
 from datetime import date, datetime
+from typing import Dict, List, Type
 
-from typing import List, Dict, Type
-
+from openapi_server import util
 from openapi_server.models.base_model_ import Model
 from openapi_server.models.repository import Repository
 from openapi_server.models.tool import Tool
-from openapi_server import util
 
 
 class AssessmentDeployment(Model):
@@ -20,27 +19,24 @@ class AssessmentDeployment(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, repo_deploy: Repository=None, deploy_tool: Tool=None):
+    def __init__(self, repo_deploy: Repository = None, deploy_tool: Tool = None):
         """AssessmentDeployment - a model defined in OpenAPI
 
         :param repo_deploy: The repo_deploy of this AssessmentDeployment.
         :param deploy_tool: The deploy_tool of this AssessmentDeployment.
         """
-        self.openapi_types = {
-            'repo_deploy': Repository,
-            'deploy_tool': Tool
-        }
+        self.openapi_types = {"repo_deploy": Repository, "deploy_tool": Tool}
 
         self.attribute_map = {
-            'repo_deploy': 'repo_deploy',
-            'deploy_tool': 'deploy_tool'
+            "repo_deploy": "repo_deploy",
+            "deploy_tool": "deploy_tool",
         }
 
         self._repo_deploy = repo_deploy
         self._deploy_tool = deploy_tool
 
     @classmethod
-    def from_dict(cls, dikt: dict) -> 'AssessmentDeployment':
+    def from_dict(cls, dikt: dict) -> "AssessmentDeployment":
         """Returns the dict as a model
 
         :param dikt: A dict.

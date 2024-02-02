@@ -5,13 +5,16 @@
 # coding: utf-8
 
 from datetime import date, datetime
+from typing import Dict, List, Type
 
-from typing import List, Dict, Type
-
-from openapi_server.models.base_model_ import Model
-from openapi_server.models.assessment_output_report_value_coverage import AssessmentOutputReportValueCoverage
-from openapi_server.models.assessment_output_subcriteria import AssessmentOutputSubcriteria
 from openapi_server import util
+from openapi_server.models.assessment_output_report_value_coverage import (
+    AssessmentOutputReportValueCoverage,
+)
+from openapi_server.models.assessment_output_subcriteria import (
+    AssessmentOutputSubcriteria,
+)
+from openapi_server.models.base_model_ import Model
 
 
 class AssessmentOutputReportValue(Model):
@@ -20,7 +23,13 @@ class AssessmentOutputReportValue(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, valid: bool=False, filtered_reason: List[str]=[], subcriteria: Dict[str, AssessmentOutputSubcriteria]=None, coverage: AssessmentOutputReportValueCoverage=None):
+    def __init__(
+        self,
+        valid: bool = False,
+        filtered_reason: List[str] = [],
+        subcriteria: Dict[str, AssessmentOutputSubcriteria] = None,
+        coverage: AssessmentOutputReportValueCoverage = None,
+    ):
         """AssessmentOutputReportValue - a model defined in OpenAPI
 
         :param valid: The valid of this AssessmentOutputReportValue.
@@ -29,17 +38,17 @@ class AssessmentOutputReportValue(Model):
         :param coverage: The coverage of this AssessmentOutputReportValue.
         """
         self.openapi_types = {
-            'valid': bool,
-            'filtered_reason': List[str],
-            'subcriteria': Dict[str, AssessmentOutputSubcriteria],
-            'coverage': AssessmentOutputReportValueCoverage
+            "valid": bool,
+            "filtered_reason": List[str],
+            "subcriteria": Dict[str, AssessmentOutputSubcriteria],
+            "coverage": AssessmentOutputReportValueCoverage,
         }
 
         self.attribute_map = {
-            'valid': 'valid',
-            'filtered_reason': 'filtered_reason',
-            'subcriteria': 'subcriteria',
-            'coverage': 'coverage'
+            "valid": "valid",
+            "filtered_reason": "filtered_reason",
+            "subcriteria": "subcriteria",
+            "coverage": "coverage",
         }
 
         self._valid = valid
@@ -48,7 +57,7 @@ class AssessmentOutputReportValue(Model):
         self._coverage = coverage
 
     @classmethod
-    def from_dict(cls, dikt: dict) -> 'AssessmentOutputReportValue':
+    def from_dict(cls, dikt: dict) -> "AssessmentOutputReportValue":
         """Returns the dict as a model
 
         :param dikt: A dict.

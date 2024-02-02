@@ -2,6 +2,7 @@
 #
 # SPDX-License-Identifier: GPL-3.0-only
 
+
 class SQAaaSAPIException(Exception):
     """Generic exception raised for errors in the API operation.
 

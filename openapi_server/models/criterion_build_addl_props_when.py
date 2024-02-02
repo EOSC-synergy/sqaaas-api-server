@@ -5,12 +5,11 @@
 # coding: utf-8
 
 from datetime import date, datetime
+from typing import Dict, List, Type
 
-from typing import List, Dict, Type
-
+from openapi_server import util
 from openapi_server.models.base_model_ import Model
 from openapi_server.models.when_branch import WhenBranch
-from openapi_server import util
 
 
 class CriterionBuildAddlPropsWhen(Model):
@@ -19,27 +18,21 @@ class CriterionBuildAddlPropsWhen(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, branch: WhenBranch=None, building_tag: bool=None):
+    def __init__(self, branch: WhenBranch = None, building_tag: bool = None):
         """CriterionBuildAddlPropsWhen - a model defined in OpenAPI
 
         :param branch: The branch of this CriterionBuildAddlPropsWhen.
         :param building_tag: The building_tag of this CriterionBuildAddlPropsWhen.
         """
-        self.openapi_types = {
-            'branch': WhenBranch,
-            'building_tag': bool
-        }
+        self.openapi_types = {"branch": WhenBranch, "building_tag": bool}
 
-        self.attribute_map = {
-            'branch': 'branch',
-            'building_tag': 'building_tag'
-        }
+        self.attribute_map = {"branch": "branch", "building_tag": "building_tag"}
 
         self._branch = branch
         self._building_tag = building_tag
 
     @classmethod
-    def from_dict(cls, dikt: dict) -> 'CriterionBuildAddlPropsWhen':
+    def from_dict(cls, dikt: dict) -> "CriterionBuildAddlPropsWhen":
         """Returns the dict as a model
 
         :param dikt: A dict.

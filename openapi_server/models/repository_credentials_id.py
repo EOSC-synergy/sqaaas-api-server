@@ -5,12 +5,11 @@
 # coding: utf-8
 
 from datetime import date, datetime
+from typing import Dict, List, Type
 
-from typing import List, Dict, Type
-
+from openapi_server import util
 from openapi_server.models.base_model_ import Model
 from openapi_server.models.creds_input import CredsInput
-from openapi_server import util
 
 
 class RepositoryCredentialsId(Model):
@@ -19,23 +18,19 @@ class RepositoryCredentialsId(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, secret_id: str=None, user_id: str=None, token: str=None):
+    def __init__(self, secret_id: str = None, user_id: str = None, token: str = None):
         """RepositoryCredentialsId - a model defined in OpenAPI
 
         :param secret_id: The secret_id of this RepositoryCredentialsId.
         :param user_id: The user_id of this RepositoryCredentialsId.
         :param token: The token of this RepositoryCredentialsId.
         """
-        self.openapi_types = {
-            'secret_id': str,
-            'user_id': str,
-            'token': str
-        }
+        self.openapi_types = {"secret_id": str, "user_id": str, "token": str}
 
         self.attribute_map = {
-            'secret_id': 'secret_id',
-            'user_id': 'user_id',
-            'token': 'token'
+            "secret_id": "secret_id",
+            "user_id": "user_id",
+            "token": "token",
         }
 
         self._secret_id = secret_id
@@ -43,7 +38,7 @@ class RepositoryCredentialsId(Model):
         self._token = token
 
     @classmethod
-    def from_dict(cls, dikt: dict) -> 'RepositoryCredentialsId':
+    def from_dict(cls, dikt: dict) -> "RepositoryCredentialsId":
         """Returns the dict as a model
 
         :param dikt: A dict.

@@ -5,11 +5,10 @@
 # coding: utf-8
 
 from datetime import date, datetime
+from typing import Dict, List, Type
 
-from typing import List, Dict, Type
-
-from openapi_server.models.base_model_ import Model
 from openapi_server import util
+from openapi_server.models.base_model_ import Model
 
 
 class CriterionOutputValueInnerValidation(Model):
@@ -18,27 +17,24 @@ class CriterionOutputValueInnerValidation(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, valid: bool=None, data_unstructured: object=None):
+    def __init__(self, valid: bool = None, data_unstructured: object = None):
         """CriterionOutputValueInnerValidation - a model defined in OpenAPI
 
         :param valid: The valid of this CriterionOutputValueInnerValidation.
         :param data_unstructured: The data_unstructured of this CriterionOutputValueInnerValidation.
         """
-        self.openapi_types = {
-            'valid': bool,
-            'data_unstructured': object
-        }
+        self.openapi_types = {"valid": bool, "data_unstructured": object}
 
         self.attribute_map = {
-            'valid': 'valid',
-            'data_unstructured': 'data_unstructured'
+            "valid": "valid",
+            "data_unstructured": "data_unstructured",
         }
 
         self._valid = valid
         self._data_unstructured = data_unstructured
 
     @classmethod
-    def from_dict(cls, dikt: dict) -> 'CriterionOutputValueInnerValidation':
+    def from_dict(cls, dikt: dict) -> "CriterionOutputValueInnerValidation":
         """Returns the dict as a model
 
         :param dikt: A dict.

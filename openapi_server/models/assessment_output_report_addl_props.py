@@ -5,13 +5,16 @@
 # coding: utf-8
 
 from datetime import date, datetime
+from typing import Dict, List, Type
 
-from typing import List, Dict, Type
-
-from openapi_server.models.base_model_ import Model
-from openapi_server.models.assessment_output_report_addl_props_coverage import AssessmentOutputReportAddlPropsCoverage
-from openapi_server.models.assessment_output_subcriteria import AssessmentOutputSubcriteria
 from openapi_server import util
+from openapi_server.models.assessment_output_report_addl_props_coverage import (
+    AssessmentOutputReportAddlPropsCoverage,
+)
+from openapi_server.models.assessment_output_subcriteria import (
+    AssessmentOutputSubcriteria,
+)
+from openapi_server.models.base_model_ import Model
 
 
 class AssessmentOutputReportAddlProps(Model):
@@ -20,7 +23,13 @@ class AssessmentOutputReportAddlProps(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, valid: bool=False, filtered_reason: List[str]=[], subcriteria: Dict[str, AssessmentOutputSubcriteria]=None, coverage: AssessmentOutputReportAddlPropsCoverage=None):
+    def __init__(
+        self,
+        valid: bool = False,
+        filtered_reason: List[str] = [],
+        subcriteria: Dict[str, AssessmentOutputSubcriteria] = None,
+        coverage: AssessmentOutputReportAddlPropsCoverage = None,
+    ):
         """AssessmentOutputReportAddlProps - a model defined in OpenAPI
 
         :param valid: The valid of this AssessmentOutputReportAddlProps.
@@ -29,17 +38,17 @@ class AssessmentOutputReportAddlProps(Model):
         :param coverage: The coverage of this AssessmentOutputReportAddlProps.
         """
         self.openapi_types = {
-            'valid': bool,
-            'filtered_reason': List[str],
-            'subcriteria': Dict[str, AssessmentOutputSubcriteria],
-            'coverage': AssessmentOutputReportAddlPropsCoverage
+            "valid": bool,
+            "filtered_reason": List[str],
+            "subcriteria": Dict[str, AssessmentOutputSubcriteria],
+            "coverage": AssessmentOutputReportAddlPropsCoverage,
         }
 
         self.attribute_map = {
-            'valid': 'valid',
-            'filtered_reason': 'filtered_reason',
-            'subcriteria': 'subcriteria',
-            'coverage': 'coverage'
+            "valid": "valid",
+            "filtered_reason": "filtered_reason",
+            "subcriteria": "subcriteria",
+            "coverage": "coverage",
         }
 
         self._valid = valid
@@ -48,7 +57,7 @@ class AssessmentOutputReportAddlProps(Model):
         self._coverage = coverage
 
     @classmethod
-    def from_dict(cls, dikt: dict) -> 'AssessmentOutputReportAddlProps':
+    def from_dict(cls, dikt: dict) -> "AssessmentOutputReportAddlProps":
         """Returns the dict as a model
 
         :param dikt: A dict.

@@ -1,12 +1,11 @@
 # coding: utf-8
 
 from datetime import date, datetime
+from typing import Dict, List, Type
 
-from typing import List, Dict, Type
-
+from openapi_server import util
 from openapi_server.models.base_model_ import Model
 from openapi_server.models.tool import Tool
-from openapi_server import util
 
 
 class CriterionWorkflow(Model):
@@ -15,27 +14,21 @@ class CriterionWorkflow(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, id: str=None, tools: List[Tool]=None):
+    def __init__(self, id: str = None, tools: List[Tool] = None):
         """CriterionWorkflow - a model defined in OpenAPI
 
         :param id: The id of this CriterionWorkflow.
         :param tools: The tools of this CriterionWorkflow.
         """
-        self.openapi_types = {
-            'id': str,
-            'tools': List[Tool]
-        }
+        self.openapi_types = {"id": str, "tools": List[Tool]}
 
-        self.attribute_map = {
-            'id': 'id',
-            'tools': 'tools'
-        }
+        self.attribute_map = {"id": "id", "tools": "tools"}
 
         self._id = id
         self._tools = tools
 
     @classmethod
-    def from_dict(cls, dikt: dict) -> 'CriterionWorkflow':
+    def from_dict(cls, dikt: dict) -> "CriterionWorkflow":
         """Returns the dict as a model
 
         :param dikt: A dict.

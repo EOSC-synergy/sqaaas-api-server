@@ -5,11 +5,10 @@
 # coding: utf-8
 
 from datetime import date, datetime
+from typing import Dict, List, Type
 
-from typing import List, Dict, Type
-
-from openapi_server.models.base_model_ import Model
 from openapi_server import util
+from openapi_server.models.base_model_ import Model
 
 
 class CredsInput(Model):
@@ -18,23 +17,19 @@ class CredsInput(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, secret_id: str=None, user_id: str=None, token: str=None):
+    def __init__(self, secret_id: str = None, user_id: str = None, token: str = None):
         """CredsInput - a model defined in OpenAPI
 
         :param secret_id: The secret_id of this CredsInput.
         :param user_id: The user_id of this CredsInput.
         :param token: The token of this CredsInput.
         """
-        self.openapi_types = {
-            'secret_id': str,
-            'user_id': str,
-            'token': str
-        }
+        self.openapi_types = {"secret_id": str, "user_id": str, "token": str}
 
         self.attribute_map = {
-            'secret_id': 'secret_id',
-            'user_id': 'user_id',
-            'token': 'token'
+            "secret_id": "secret_id",
+            "user_id": "user_id",
+            "token": "token",
         }
 
         self._secret_id = secret_id
@@ -42,7 +37,7 @@ class CredsInput(Model):
         self._token = token
 
     @classmethod
-    def from_dict(cls, dikt: dict) -> 'CredsInput':
+    def from_dict(cls, dikt: dict) -> "CredsInput":
         """Returns the dict as a model
 
         :param dikt: A dict.

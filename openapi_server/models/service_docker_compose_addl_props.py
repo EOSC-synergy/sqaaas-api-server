@@ -5,14 +5,19 @@
 # coding: utf-8
 
 from datetime import date, datetime
+from typing import Dict, List, Type
 
-from typing import List, Dict, Type
-
-from openapi_server.models.base_model_ import Model
-from openapi_server.models.service_docker_compose_addl_props_build import ServiceDockerComposeAddlPropsBuild
-from openapi_server.models.service_docker_compose_addl_props_image import ServiceDockerComposeAddlPropsImage
-from openapi_server.models.service_docker_compose_addl_props_volumes_inner import ServiceDockerComposeAddlPropsVolumesInner
 from openapi_server import util
+from openapi_server.models.base_model_ import Model
+from openapi_server.models.service_docker_compose_addl_props_build import (
+    ServiceDockerComposeAddlPropsBuild,
+)
+from openapi_server.models.service_docker_compose_addl_props_image import (
+    ServiceDockerComposeAddlPropsImage,
+)
+from openapi_server.models.service_docker_compose_addl_props_volumes_inner import (
+    ServiceDockerComposeAddlPropsVolumesInner,
+)
 
 
 class ServiceDockerComposeAddlProps(Model):
@@ -21,7 +26,16 @@ class ServiceDockerComposeAddlProps(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, build: ServiceDockerComposeAddlPropsBuild=None, image: ServiceDockerComposeAddlPropsImage=None, hostname: str=None, volumes: List[ServiceDockerComposeAddlPropsVolumesInner]=None, command: str=None, environment: Dict[str, str]=None, oneshot: bool=True):
+    def __init__(
+        self,
+        build: ServiceDockerComposeAddlPropsBuild = None,
+        image: ServiceDockerComposeAddlPropsImage = None,
+        hostname: str = None,
+        volumes: List[ServiceDockerComposeAddlPropsVolumesInner] = None,
+        command: str = None,
+        environment: Dict[str, str] = None,
+        oneshot: bool = True,
+    ):
         """ServiceDockerComposeAddlProps - a model defined in OpenAPI
 
         :param build: The build of this ServiceDockerComposeAddlProps.
@@ -33,23 +47,23 @@ class ServiceDockerComposeAddlProps(Model):
         :param oneshot: The oneshot of this ServiceDockerComposeAddlProps.
         """
         self.openapi_types = {
-            'build': ServiceDockerComposeAddlPropsBuild,
-            'image': ServiceDockerComposeAddlPropsImage,
-            'hostname': str,
-            'volumes': List[ServiceDockerComposeAddlPropsVolumesInner],
-            'command': str,
-            'environment': Dict[str, str],
-            'oneshot': bool
+            "build": ServiceDockerComposeAddlPropsBuild,
+            "image": ServiceDockerComposeAddlPropsImage,
+            "hostname": str,
+            "volumes": List[ServiceDockerComposeAddlPropsVolumesInner],
+            "command": str,
+            "environment": Dict[str, str],
+            "oneshot": bool,
         }
 
         self.attribute_map = {
-            'build': 'build',
-            'image': 'image',
-            'hostname': 'hostname',
-            'volumes': 'volumes',
-            'command': 'command',
-            'environment': 'environment',
-            'oneshot': 'oneshot'
+            "build": "build",
+            "image": "image",
+            "hostname": "hostname",
+            "volumes": "volumes",
+            "command": "command",
+            "environment": "environment",
+            "oneshot": "oneshot",
         }
 
         self._build = build
@@ -61,7 +75,7 @@ class ServiceDockerComposeAddlProps(Model):
         self._oneshot = oneshot
 
     @classmethod
-    def from_dict(cls, dikt: dict) -> 'ServiceDockerComposeAddlProps':
+    def from_dict(cls, dikt: dict) -> "ServiceDockerComposeAddlProps":
         """Returns the dict as a model
 
         :param dikt: A dict.

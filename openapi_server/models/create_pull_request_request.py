@@ -5,11 +5,10 @@
 # coding: utf-8
 
 from datetime import date, datetime
+from typing import Dict, List, Type
 
-from typing import List, Dict, Type
-
-from openapi_server.models.base_model_ import Model
 from openapi_server import util
+from openapi_server.models.base_model_ import Model
 
 
 class CreatePullRequestRequest(Model):
@@ -18,27 +17,21 @@ class CreatePullRequestRequest(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, repo: str=None, branch: str=None):
+    def __init__(self, repo: str = None, branch: str = None):
         """CreatePullRequestRequest - a model defined in OpenAPI
 
         :param repo: The repo of this CreatePullRequestRequest.
         :param branch: The branch of this CreatePullRequestRequest.
         """
-        self.openapi_types = {
-            'repo': str,
-            'branch': str
-        }
+        self.openapi_types = {"repo": str, "branch": str}
 
-        self.attribute_map = {
-            'repo': 'repo',
-            'branch': 'branch'
-        }
+        self.attribute_map = {"repo": "repo", "branch": "branch"}
 
         self._repo = repo
         self._branch = branch
 
     @classmethod
-    def from_dict(cls, dikt: dict) -> 'CreatePullRequestRequest':
+    def from_dict(cls, dikt: dict) -> "CreatePullRequestRequest":
         """Returns the dict as a model
 
         :param dikt: A dict.

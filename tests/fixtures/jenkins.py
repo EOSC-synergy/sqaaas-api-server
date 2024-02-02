@@ -8,7 +8,7 @@ import pytest
 class MockJenkinsUtils:
     @staticmethod
     def format_job_name(*args, **kwargs):
-        return 'job_name'
+        return "job_name"
 
     @staticmethod
     def exist_job(*args, **kwargs):

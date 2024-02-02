@@ -5,11 +5,10 @@
 # coding: utf-8
 
 from datetime import date, datetime
+from typing import Dict, List, Type
 
-from typing import List, Dict, Type
-
-from openapi_server.models.base_model_ import Model
 from openapi_server import util
+from openapi_server.models.base_model_ import Model
 
 
 class ToolArg(Model):
@@ -18,7 +17,19 @@ class ToolArg(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, type: str=None, id: str=None, description: str=None, value: object=None, option: str=None, summary: str=None, format: str=None, selectable: bool=True, repeatable: bool=False, args: List['ToolArg']=None):
+    def __init__(
+        self,
+        type: str = None,
+        id: str = None,
+        description: str = None,
+        value: object = None,
+        option: str = None,
+        summary: str = None,
+        format: str = None,
+        selectable: bool = True,
+        repeatable: bool = False,
+        args: List["ToolArg"] = None,
+    ):
         """ToolArg - a model defined in OpenAPI
 
         :param type: The type of this ToolArg.
@@ -33,29 +44,29 @@ class ToolArg(Model):
         :param args: The args of this ToolArg.
         """
         self.openapi_types = {
-            'type': str,
-            'id': str,
-            'description': str,
-            'value': object,
-            'option': str,
-            'summary': str,
-            'format': str,
-            'selectable': bool,
-            'repeatable': bool,
-            'args': List[ToolArg]
+            "type": str,
+            "id": str,
+            "description": str,
+            "value": object,
+            "option": str,
+            "summary": str,
+            "format": str,
+            "selectable": bool,
+            "repeatable": bool,
+            "args": List[ToolArg],
         }
 
         self.attribute_map = {
-            'type': 'type',
-            'id': 'id',
-            'description': 'description',
-            'value': 'value',
-            'option': 'option',
-            'summary': 'summary',
-            'format': 'format',
-            'selectable': 'selectable',
-            'repeatable': 'repeatable',
-            'args': 'args'
+            "type": "type",
+            "id": "id",
+            "description": "description",
+            "value": "value",
+            "option": "option",
+            "summary": "summary",
+            "format": "format",
+            "selectable": "selectable",
+            "repeatable": "repeatable",
+            "args": "args",
         }
 
         self._type = type
@@ -70,7 +81,7 @@ class ToolArg(Model):
         self._args = args
 
     @classmethod
-    def from_dict(cls, dikt: dict) -> 'ToolArg':
+    def from_dict(cls, dikt: dict) -> "ToolArg":
         """Returns the dict as a model
 
         :param dikt: A dict.
@@ -101,8 +112,9 @@ class ToolArg(Model):
         allowed_values = ["subcommand", "positional", "optional"]  # noqa: E501
         if type not in allowed_values:
             raise ValueError(
-                "Invalid value for `type` ({0}), must be one of {1}"
-                .format(type, allowed_values)
+                "Invalid value for `type` ({0}), must be one of {1}".format(
+                    type, allowed_values
+                )
             )
 
         self._type = type
@@ -249,8 +261,9 @@ class ToolArg(Model):
         allowed_values = ["string", "array"]  # noqa: E501
         if format not in allowed_values:
             raise ValueError(
-                "Invalid value for `format` ({0}), must be one of {1}"
-                .format(format, allowed_values)
+                "Invalid value for `format` ({0}), must be one of {1}".format(
+                    format, allowed_values
+                )
             )
 
         self._format = format

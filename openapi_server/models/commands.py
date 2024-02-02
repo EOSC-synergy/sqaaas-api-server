@@ -5,11 +5,10 @@
 # coding: utf-8
 
 from datetime import date, datetime
+from typing import Dict, List, Type
 
-from typing import List, Dict, Type
-
-from openapi_server.models.base_model_ import Model
 from openapi_server import util
+from openapi_server.models.base_model_ import Model
 
 
 class Commands(Model):
@@ -18,23 +17,19 @@ class Commands(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, commands: List[str]=[]):
+    def __init__(self, commands: List[str] = []):
         """Commands - a model defined in OpenAPI
 
         :param commands: The commands of this Commands.
         """
-        self.openapi_types = {
-            'commands': List[str]
-        }
+        self.openapi_types = {"commands": List[str]}
 
-        self.attribute_map = {
-            'commands': 'commands'
-        }
+        self.attribute_map = {"commands": "commands"}
 
         self._commands = commands
 
     @classmethod
-    def from_dict(cls, dikt: dict) -> 'Commands':
+    def from_dict(cls, dikt: dict) -> "Commands":
         """Returns the dict as a model
 
         :param dikt: A dict.

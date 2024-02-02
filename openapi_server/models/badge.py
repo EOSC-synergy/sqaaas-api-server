@@ -5,13 +5,12 @@
 # coding: utf-8
 
 from datetime import date, datetime
+from typing import Dict, List, Type
 
-from typing import List, Dict, Type
-
-from openapi_server.models.base_model_ import Model
+from openapi_server import util
 from openapi_server.models.badge_assertion import BadgeAssertion
 from openapi_server.models.badge_criteria_stats import BadgeCriteriaStats
-from openapi_server import util
+from openapi_server.models.base_model_ import Model
 
 
 class Badge(Model):
@@ -20,7 +19,13 @@ class Badge(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, criteria: Dict[str, BadgeCriteriaStats]=None, data: BadgeAssertion=None, share: str=None, verification_url: str=None):
+    def __init__(
+        self,
+        criteria: Dict[str, BadgeCriteriaStats] = None,
+        data: BadgeAssertion = None,
+        share: str = None,
+        verification_url: str = None,
+    ):
         """Badge - a model defined in OpenAPI
 
         :param criteria: The criteria of this Badge.
@@ -29,17 +34,17 @@ class Badge(Model):
         :param verification_url: The verification_url of this Badge.
         """
         self.openapi_types = {
-            'criteria': Dict[str, BadgeCriteriaStats],
-            'data': BadgeAssertion,
-            'share': str,
-            'verification_url': str
+            "criteria": Dict[str, BadgeCriteriaStats],
+            "data": BadgeAssertion,
+            "share": str,
+            "verification_url": str,
         }
 
         self.attribute_map = {
-            'criteria': 'criteria',
-            'data': 'data',
-            'share': 'share',
-            'verification_url': 'verification_url'
+            "criteria": "criteria",
+            "data": "data",
+            "share": "share",
+            "verification_url": "verification_url",
         }
 
         self._criteria = criteria
@@ -48,7 +53,7 @@ class Badge(Model):
         self._verification_url = verification_url
 
     @classmethod
-    def from_dict(cls, dikt: dict) -> 'Badge':
+    def from_dict(cls, dikt: dict) -> "Badge":
         """Returns the dict as a model
 
         :param dikt: A dict.

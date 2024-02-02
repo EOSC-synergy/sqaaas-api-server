@@ -5,11 +5,10 @@
 # coding: utf-8
 
 from datetime import date, datetime
+from typing import Dict, List, Type
 
-from typing import List, Dict, Type
-
-from openapi_server.models.base_model_ import Model
 from openapi_server import util
+from openapi_server.models.base_model_ import Model
 
 
 class ToxSimplified(Model):
@@ -18,27 +17,21 @@ class ToxSimplified(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, testenv: List[str]=["ALL"], tox_file: str='tox.ini'):
+    def __init__(self, testenv: List[str] = ["ALL"], tox_file: str = "tox.ini"):
         """ToxSimplified - a model defined in OpenAPI
 
         :param testenv: The testenv of this ToxSimplified.
         :param tox_file: The tox_file of this ToxSimplified.
         """
-        self.openapi_types = {
-            'testenv': List[str],
-            'tox_file': str
-        }
+        self.openapi_types = {"testenv": List[str], "tox_file": str}
 
-        self.attribute_map = {
-            'testenv': 'testenv',
-            'tox_file': 'tox_file'
-        }
+        self.attribute_map = {"testenv": "testenv", "tox_file": "tox_file"}
 
         self._testenv = testenv
         self._tox_file = tox_file
 
     @classmethod
-    def from_dict(cls, dikt: dict) -> 'ToxSimplified':
+    def from_dict(cls, dikt: dict) -> "ToxSimplified":
         """Returns the dict as a model
 
         :param dikt: A dict.

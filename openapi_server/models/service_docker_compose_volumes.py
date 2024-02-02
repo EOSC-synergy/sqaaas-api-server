@@ -5,11 +5,10 @@
 # coding: utf-8
 
 from datetime import date, datetime
+from typing import Dict, List, Type
 
-from typing import List, Dict, Type
-
-from openapi_server.models.base_model_ import Model
 from openapi_server import util
+from openapi_server.models.base_model_ import Model
 
 
 class ServiceDockerComposeVolumes(Model):
@@ -18,7 +17,12 @@ class ServiceDockerComposeVolumes(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, volume_type: str=None, volume_source: str=None, volume_target: str=None):
+    def __init__(
+        self,
+        volume_type: str = None,
+        volume_source: str = None,
+        volume_target: str = None,
+    ):
         """ServiceDockerComposeVolumes - a model defined in OpenAPI
 
         :param volume_type: The volume_type of this ServiceDockerComposeVolumes.
@@ -26,15 +30,15 @@ class ServiceDockerComposeVolumes(Model):
         :param volume_target: The volume_target of this ServiceDockerComposeVolumes.
         """
         self.openapi_types = {
-            'volume_type': str,
-            'volume_source': str,
-            'volume_target': str
+            "volume_type": str,
+            "volume_source": str,
+            "volume_target": str,
         }
 
         self.attribute_map = {
-            'volume_type': 'volume_type',
-            'volume_source': 'volume_source',
-            'volume_target': 'volume_target'
+            "volume_type": "volume_type",
+            "volume_source": "volume_source",
+            "volume_target": "volume_target",
         }
 
         self._volume_type = volume_type
@@ -42,7 +46,7 @@ class ServiceDockerComposeVolumes(Model):
         self._volume_target = volume_target
 
     @classmethod
-    def from_dict(cls, dikt: dict) -> 'ServiceDockerComposeVolumes':
+    def from_dict(cls, dikt: dict) -> "ServiceDockerComposeVolumes":
         """Returns the dict as a model
 
         :param dikt: A dict.
@@ -71,8 +75,9 @@ class ServiceDockerComposeVolumes(Model):
         allowed_values = ["bind"]  # noqa: E501
         if volume_type not in allowed_values:
             raise ValueError(
-                "Invalid value for `volume_type` ({0}), must be one of {1}"
-                .format(volume_type, allowed_values)
+                "Invalid value for `volume_type` ({0}), must be one of {1}".format(
+                    volume_type, allowed_values
+                )
             )
 
         self._volume_type = volume_type

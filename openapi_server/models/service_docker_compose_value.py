@@ -5,14 +5,19 @@
 # coding: utf-8
 
 from datetime import date, datetime
+from typing import Dict, List, Type
 
-from typing import List, Dict, Type
-
-from openapi_server.models.base_model_ import Model
-from openapi_server.models.service_docker_compose_value_build import ServiceDockerComposeValueBuild
-from openapi_server.models.service_docker_compose_value_image import ServiceDockerComposeValueImage
-from openapi_server.models.service_docker_compose_value_volumes_inner import ServiceDockerComposeValueVolumesInner
 from openapi_server import util
+from openapi_server.models.base_model_ import Model
+from openapi_server.models.service_docker_compose_value_build import (
+    ServiceDockerComposeValueBuild,
+)
+from openapi_server.models.service_docker_compose_value_image import (
+    ServiceDockerComposeValueImage,
+)
+from openapi_server.models.service_docker_compose_value_volumes_inner import (
+    ServiceDockerComposeValueVolumesInner,
+)
 
 
 class ServiceDockerComposeValue(Model):
@@ -21,7 +26,16 @@ class ServiceDockerComposeValue(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, build: ServiceDockerComposeValueBuild=None, image: ServiceDockerComposeValueImage=None, hostname: str=None, volumes: List[ServiceDockerComposeValueVolumesInner]=None, command: str=None, environment: Dict[str, str]=None, oneshot: bool=True):
+    def __init__(
+        self,
+        build: ServiceDockerComposeValueBuild = None,
+        image: ServiceDockerComposeValueImage = None,
+        hostname: str = None,
+        volumes: List[ServiceDockerComposeValueVolumesInner] = None,
+        command: str = None,
+        environment: Dict[str, str] = None,
+        oneshot: bool = True,
+    ):
         """ServiceDockerComposeValue - a model defined in OpenAPI
 
         :param build: The build of this ServiceDockerComposeValue.
@@ -33,23 +47,23 @@ class ServiceDockerComposeValue(Model):
         :param oneshot: The oneshot of this ServiceDockerComposeValue.
         """
         self.openapi_types = {
-            'build': ServiceDockerComposeValueBuild,
-            'image': ServiceDockerComposeValueImage,
-            'hostname': str,
-            'volumes': List[ServiceDockerComposeValueVolumesInner],
-            'command': str,
-            'environment': Dict[str, str],
-            'oneshot': bool
+            "build": ServiceDockerComposeValueBuild,
+            "image": ServiceDockerComposeValueImage,
+            "hostname": str,
+            "volumes": List[ServiceDockerComposeValueVolumesInner],
+            "command": str,
+            "environment": Dict[str, str],
+            "oneshot": bool,
         }
 
         self.attribute_map = {
-            'build': 'build',
-            'image': 'image',
-            'hostname': 'hostname',
-            'volumes': 'volumes',
-            'command': 'command',
-            'environment': 'environment',
-            'oneshot': 'oneshot'
+            "build": "build",
+            "image": "image",
+            "hostname": "hostname",
+            "volumes": "volumes",
+            "command": "command",
+            "environment": "environment",
+            "oneshot": "oneshot",
         }
 
         self._build = build
@@ -61,7 +75,7 @@ class ServiceDockerComposeValue(Model):
         self._oneshot = oneshot
 
     @classmethod
-    def from_dict(cls, dikt: dict) -> 'ServiceDockerComposeValue':
+    def from_dict(cls, dikt: dict) -> "ServiceDockerComposeValue":
         """Returns the dict as a model
 
         :param dikt: A dict.

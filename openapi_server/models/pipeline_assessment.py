@@ -5,14 +5,13 @@
 # coding: utf-8
 
 from datetime import date, datetime
+from typing import Dict, List, Type
 
-from typing import List, Dict, Type
-
-from openapi_server.models.base_model_ import Model
+from openapi_server import util
 from openapi_server.models.assessment_deployment import AssessmentDeployment
 from openapi_server.models.assessment_fair import AssessmentFAIR
+from openapi_server.models.base_model_ import Model
 from openapi_server.models.repository import Repository
-from openapi_server import util
 
 
 class PipelineAssessment(Model):
@@ -21,7 +20,13 @@ class PipelineAssessment(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, repo_code: Repository=None, repo_docs: Repository=None, deployment: AssessmentDeployment=None, fair: AssessmentFAIR=None):
+    def __init__(
+        self,
+        repo_code: Repository = None,
+        repo_docs: Repository = None,
+        deployment: AssessmentDeployment = None,
+        fair: AssessmentFAIR = None,
+    ):
         """PipelineAssessment - a model defined in OpenAPI
 
         :param repo_code: The repo_code of this PipelineAssessment.
@@ -30,17 +35,17 @@ class PipelineAssessment(Model):
         :param fair: The fair of this PipelineAssessment.
         """
         self.openapi_types = {
-            'repo_code': Repository,
-            'repo_docs': Repository,
-            'deployment': AssessmentDeployment,
-            'fair': AssessmentFAIR
+            "repo_code": Repository,
+            "repo_docs": Repository,
+            "deployment": AssessmentDeployment,
+            "fair": AssessmentFAIR,
         }
 
         self.attribute_map = {
-            'repo_code': 'repo_code',
-            'repo_docs': 'repo_docs',
-            'deployment': 'deployment',
-            'fair': 'fair'
+            "repo_code": "repo_code",
+            "repo_docs": "repo_docs",
+            "deployment": "deployment",
+            "fair": "fair",
         }
 
         self._repo_code = repo_code
@@ -49,7 +54,7 @@ class PipelineAssessment(Model):
         self._fair = fair
 
     @classmethod
-    def from_dict(cls, dikt: dict) -> 'PipelineAssessment':
+    def from_dict(cls, dikt: dict) -> "PipelineAssessment":
         """Returns the dict as a model
 
         :param dikt: A dict.

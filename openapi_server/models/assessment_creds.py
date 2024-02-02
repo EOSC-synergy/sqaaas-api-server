@@ -5,11 +5,10 @@
 # coding: utf-8
 
 from datetime import date, datetime
+from typing import Dict, List, Type
 
-from typing import List, Dict, Type
-
-from openapi_server.models.base_model_ import Model
 from openapi_server import util
+from openapi_server.models.base_model_ import Model
 
 
 class AssessmentCreds(Model):
@@ -18,23 +17,19 @@ class AssessmentCreds(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, secret_id: str=None, user_id: str=None, token: str=None):
+    def __init__(self, secret_id: str = None, user_id: str = None, token: str = None):
         """AssessmentCreds - a model defined in OpenAPI
 
         :param secret_id: The secret_id of this AssessmentCreds.
         :param user_id: The user_id of this AssessmentCreds.
         :param token: The token of this AssessmentCreds.
         """
-        self.openapi_types = {
-            'secret_id': str,
-            'user_id': str,
-            'token': str
-        }
+        self.openapi_types = {"secret_id": str, "user_id": str, "token": str}
 
         self.attribute_map = {
-            'secret_id': 'secret_id',
-            'user_id': 'user_id',
-            'token': 'token'
+            "secret_id": "secret_id",
+            "user_id": "user_id",
+            "token": "token",
         }
 
         self._secret_id = secret_id
@@ -42,7 +37,7 @@ class AssessmentCreds(Model):
         self._token = token
 
     @classmethod
-    def from_dict(cls, dikt: dict) -> 'AssessmentCreds':
+    def from_dict(cls, dikt: dict) -> "AssessmentCreds":
         """Returns the dict as a model
 
         :param dikt: A dict.

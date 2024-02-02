@@ -5,12 +5,11 @@
 # coding: utf-8
 
 from datetime import date, datetime
+from typing import Dict, List, Type
 
-from typing import List, Dict, Type
-
-from openapi_server.models.base_model_ import Model
-from openapi_server.models.badge_assertion import BadgeAssertion
 from openapi_server import util
+from openapi_server.models.badge_assertion import BadgeAssertion
+from openapi_server.models.base_model_ import Model
 
 
 class BadgeSoftware(Model):
@@ -19,7 +18,12 @@ class BadgeSoftware(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, data: BadgeAssertion=None, share: str=None, verification_url: str=None):
+    def __init__(
+        self,
+        data: BadgeAssertion = None,
+        share: str = None,
+        verification_url: str = None,
+    ):
         """BadgeSoftware - a model defined in OpenAPI
 
         :param data: The data of this BadgeSoftware.
@@ -27,15 +31,15 @@ class BadgeSoftware(Model):
         :param verification_url: The verification_url of this BadgeSoftware.
         """
         self.openapi_types = {
-            'data': BadgeAssertion,
-            'share': str,
-            'verification_url': str
+            "data": BadgeAssertion,
+            "share": str,
+            "verification_url": str,
         }
 
         self.attribute_map = {
-            'data': 'data',
-            'share': 'share',
-            'verification_url': 'verification_url'
+            "data": "data",
+            "share": "share",
+            "verification_url": "verification_url",
         }
 
         self._data = data
@@ -43,7 +47,7 @@ class BadgeSoftware(Model):
         self._verification_url = verification_url
 
     @classmethod
-    def from_dict(cls, dikt: dict) -> 'BadgeSoftware':
+    def from_dict(cls, dikt: dict) -> "BadgeSoftware":
         """Returns the dict as a model
 
         :param dikt: A dict.

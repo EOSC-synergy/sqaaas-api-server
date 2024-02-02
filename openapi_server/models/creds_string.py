@@ -5,11 +5,10 @@
 # coding: utf-8
 
 from datetime import date, datetime
+from typing import Dict, List, Type
 
-from typing import List, Dict, Type
-
-from openapi_server.models.base_model_ import Model
 from openapi_server import util
+from openapi_server.models.base_model_ import Model
 
 
 class CredsString(Model):
@@ -18,27 +17,21 @@ class CredsString(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, id: str=None, variable: str=None):
+    def __init__(self, id: str = None, variable: str = None):
         """CredsString - a model defined in OpenAPI
 
         :param id: The id of this CredsString.
         :param variable: The variable of this CredsString.
         """
-        self.openapi_types = {
-            'id': str,
-            'variable': str
-        }
+        self.openapi_types = {"id": str, "variable": str}
 
-        self.attribute_map = {
-            'id': 'id',
-            'variable': 'variable'
-        }
+        self.attribute_map = {"id": "id", "variable": "variable"}
 
         self._id = id
         self._variable = variable
 
     @classmethod
-    def from_dict(cls, dikt: dict) -> 'CredsString':
+    def from_dict(cls, dikt: dict) -> "CredsString":
         """Returns the dict as a model
 
         :param dikt: A dict.

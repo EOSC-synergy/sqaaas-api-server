@@ -5,11 +5,10 @@
 # coding: utf-8
 
 from datetime import date, datetime
+from typing import Dict, List, Type
 
-from typing import List, Dict, Type
-
-from openapi_server.models.base_model_ import Model
 from openapi_server import util
+from openapi_server.models.base_model_ import Model
 
 
 class ServiceDockerComposeValueBuild(Model):
@@ -18,23 +17,21 @@ class ServiceDockerComposeValueBuild(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, context: str=None, dockerfile: str=None, args: Dict[str, str]=None):
+    def __init__(
+        self, context: str = None, dockerfile: str = None, args: Dict[str, str] = None
+    ):
         """ServiceDockerComposeValueBuild - a model defined in OpenAPI
 
         :param context: The context of this ServiceDockerComposeValueBuild.
         :param dockerfile: The dockerfile of this ServiceDockerComposeValueBuild.
         :param args: The args of this ServiceDockerComposeValueBuild.
         """
-        self.openapi_types = {
-            'context': str,
-            'dockerfile': str,
-            'args': Dict[str, str]
-        }
+        self.openapi_types = {"context": str, "dockerfile": str, "args": Dict[str, str]}
 
         self.attribute_map = {
-            'context': 'context',
-            'dockerfile': 'dockerfile',
-            'args': 'args'
+            "context": "context",
+            "dockerfile": "dockerfile",
+            "args": "args",
         }
 
         self._context = context
@@ -42,7 +39,7 @@ class ServiceDockerComposeValueBuild(Model):
         self._args = args
 
     @classmethod
-    def from_dict(cls, dikt: dict) -> 'ServiceDockerComposeValueBuild':
+    def from_dict(cls, dikt: dict) -> "ServiceDockerComposeValueBuild":
         """Returns the dict as a model
 
         :param dikt: A dict.

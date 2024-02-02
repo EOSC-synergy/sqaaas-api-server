@@ -5,11 +5,10 @@
 # coding: utf-8
 
 from datetime import date, datetime
+from typing import Dict, List, Type
 
-from typing import List, Dict, Type
-
-from openapi_server.models.base_model_ import Model
 from openapi_server import util
+from openapi_server.models.base_model_ import Model
 
 
 class AssessmentOutputValidatorPlugin(Model):
@@ -18,27 +17,21 @@ class AssessmentOutputValidatorPlugin(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, name: str=None, version: str=None):
+    def __init__(self, name: str = None, version: str = None):
         """AssessmentOutputValidatorPlugin - a model defined in OpenAPI
 
         :param name: The name of this AssessmentOutputValidatorPlugin.
         :param version: The version of this AssessmentOutputValidatorPlugin.
         """
-        self.openapi_types = {
-            'name': str,
-            'version': str
-        }
+        self.openapi_types = {"name": str, "version": str}
 
-        self.attribute_map = {
-            'name': 'name',
-            'version': 'version'
-        }
+        self.attribute_map = {"name": "name", "version": "version"}
 
         self._name = name
         self._version = version
 
     @classmethod
-    def from_dict(cls, dikt: dict) -> 'AssessmentOutputValidatorPlugin':
+    def from_dict(cls, dikt: dict) -> "AssessmentOutputValidatorPlugin":
         """Returns the dict as a model
 
         :param dikt: A dict.

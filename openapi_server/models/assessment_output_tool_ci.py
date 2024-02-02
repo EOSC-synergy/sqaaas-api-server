@@ -5,11 +5,10 @@
 # coding: utf-8
 
 from datetime import date, datetime
+from typing import Dict, List, Type
 
-from typing import List, Dict, Type
-
-from openapi_server.models.base_model_ import Model
 from openapi_server import util
+from openapi_server.models.base_model_ import Model
 
 
 class AssessmentOutputToolCI(Model):
@@ -18,7 +17,14 @@ class AssessmentOutputToolCI(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, name: str=None, status: str=None, stdout_command: List[str]=None, stdout_text: str=None, url: str=None):
+    def __init__(
+        self,
+        name: str = None,
+        status: str = None,
+        stdout_command: List[str] = None,
+        stdout_text: str = None,
+        url: str = None,
+    ):
         """AssessmentOutputToolCI - a model defined in OpenAPI
 
         :param name: The name of this AssessmentOutputToolCI.
@@ -28,19 +34,19 @@ class AssessmentOutputToolCI(Model):
         :param url: The url of this AssessmentOutputToolCI.
         """
         self.openapi_types = {
-            'name': str,
-            'status': str,
-            'stdout_command': List[str],
-            'stdout_text': str,
-            'url': str
+            "name": str,
+            "status": str,
+            "stdout_command": List[str],
+            "stdout_text": str,
+            "url": str,
         }
 
         self.attribute_map = {
-            'name': 'name',
-            'status': 'status',
-            'stdout_command': 'stdout_command',
-            'stdout_text': 'stdout_text',
-            'url': 'url'
+            "name": "name",
+            "status": "status",
+            "stdout_command": "stdout_command",
+            "stdout_text": "stdout_text",
+            "url": "url",
         }
 
         self._name = name
@@ -50,7 +56,7 @@ class AssessmentOutputToolCI(Model):
         self._url = url
 
     @classmethod
-    def from_dict(cls, dikt: dict) -> 'AssessmentOutputToolCI':
+    def from_dict(cls, dikt: dict) -> "AssessmentOutputToolCI":
         """Returns the dict as a model
 
         :param dikt: A dict.
@@ -104,8 +110,9 @@ class AssessmentOutputToolCI(Model):
         allowed_values = ["SUCCESS", "FAILURE"]  # noqa: E501
         if status not in allowed_values:
             raise ValueError(
-                "Invalid value for `status` ({0}), must be one of {1}"
-                .format(status, allowed_values)
+                "Invalid value for `status` ({0}), must be one of {1}".format(
+                    status, allowed_values
+                )
             )
 
         self._status = status

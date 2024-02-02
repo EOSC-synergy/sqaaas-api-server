@@ -5,12 +5,13 @@
 # coding: utf-8
 
 from datetime import date, datetime
+from typing import Dict, List, Type
 
-from typing import List, Dict, Type
-
-from openapi_server.models.base_model_ import Model
-from openapi_server.models.assessment_output_subcriteria import AssessmentOutputSubcriteria
 from openapi_server import util
+from openapi_server.models.assessment_output_subcriteria import (
+    AssessmentOutputSubcriteria,
+)
+from openapi_server.models.base_model_ import Model
 
 
 class AssessmentOutputReport(Model):
@@ -19,7 +20,12 @@ class AssessmentOutputReport(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, valid: bool=False, filtered_reason: List[str]=[], subcriteria: Dict[str, AssessmentOutputSubcriteria]=None):
+    def __init__(
+        self,
+        valid: bool = False,
+        filtered_reason: List[str] = [],
+        subcriteria: Dict[str, AssessmentOutputSubcriteria] = None,
+    ):
         """AssessmentOutputReport - a model defined in OpenAPI
 
         :param valid: The valid of this AssessmentOutputReport.
@@ -27,15 +33,15 @@ class AssessmentOutputReport(Model):
         :param subcriteria: The subcriteria of this AssessmentOutputReport.
         """
         self.openapi_types = {
-            'valid': bool,
-            'filtered_reason': List[str],
-            'subcriteria': Dict[str, AssessmentOutputSubcriteria]
+            "valid": bool,
+            "filtered_reason": List[str],
+            "subcriteria": Dict[str, AssessmentOutputSubcriteria],
         }
 
         self.attribute_map = {
-            'valid': 'valid',
-            'filtered_reason': 'filtered_reason',
-            'subcriteria': 'subcriteria'
+            "valid": "valid",
+            "filtered_reason": "filtered_reason",
+            "subcriteria": "subcriteria",
         }
 
         self._valid = valid
@@ -43,7 +49,7 @@ class AssessmentOutputReport(Model):
         self._subcriteria = subcriteria
 
     @classmethod
-    def from_dict(cls, dikt: dict) -> 'AssessmentOutputReport':
+    def from_dict(cls, dikt: dict) -> "AssessmentOutputReport":
         """Returns the dict as a model
 
         :param dikt: A dict.

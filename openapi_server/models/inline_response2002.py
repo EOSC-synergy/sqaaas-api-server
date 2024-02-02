@@ -5,12 +5,11 @@
 # coding: utf-8
 
 from datetime import date, datetime
+from typing import Dict, List, Type
 
-from typing import List, Dict, Type
-
+from openapi_server import util
 from openapi_server.models.base_model_ import Model
 from openapi_server.models.je_pl_composer import JePLComposer
-from openapi_server import util
 
 
 class InlineResponse2002(Model):
@@ -19,27 +18,21 @@ class InlineResponse2002(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, file_name: str=None, content: JePLComposer=None):
+    def __init__(self, file_name: str = None, content: JePLComposer = None):
         """InlineResponse2002 - a model defined in OpenAPI
 
         :param file_name: The file_name of this InlineResponse2002.
         :param content: The content of this InlineResponse2002.
         """
-        self.openapi_types = {
-            'file_name': str,
-            'content': JePLComposer
-        }
+        self.openapi_types = {"file_name": str, "content": JePLComposer}
 
-        self.attribute_map = {
-            'file_name': 'file_name',
-            'content': 'content'
-        }
+        self.attribute_map = {"file_name": "file_name", "content": "content"}
 
         self._file_name = file_name
         self._content = content
 
     @classmethod
-    def from_dict(cls, dikt: dict) -> 'InlineResponse2002':
+    def from_dict(cls, dikt: dict) -> "InlineResponse2002":
         """Returns the dict as a model
 
         :param dikt: A dict.
