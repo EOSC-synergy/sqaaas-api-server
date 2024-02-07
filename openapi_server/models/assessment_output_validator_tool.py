@@ -1,4 +1,5 @@
 # SPDX-FileCopyrightText: Copyright contributors to the Software Quality Assurance as a Service (SQAaaS) project <sqaaas@ibergrid.eu>
+# SPDX-FileContributor: Pablo Orviz <orviz@ifca.unican.es>
 #
 # SPDX-License-Identifier: GPL-3.0-only
 
@@ -8,7 +9,8 @@ from datetime import date, datetime
 from typing import Dict, List, Type
 
 from openapi_server import util
-from openapi_server.models.assessment_output_tool_ci import AssessmentOutputToolCI
+from openapi_server.models.assessment_output_tool_ci import \
+    AssessmentOutputToolCI
 from openapi_server.models.base_model_ import Model
 from openapi_server.models.tool_docker import ToolDocker
 
