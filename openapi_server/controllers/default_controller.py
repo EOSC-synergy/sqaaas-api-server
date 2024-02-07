@@ -607,8 +607,9 @@ async def add_pipeline_for_assessment(
     main_repo = repositories[main_repo_key]
     main_repo_name = ""
     main_repo_branch = None
-    need_repo_settings = False
+    is_fair = False
     if "fair" in list(repositories):
+        is_fair = True
         # FIXME Temporary hack until the web provides all required input fields
         _fair_tool = repositories["fair"]["fair_tool"]
         for arg in _fair_tool["args"]:
@@ -618,7 +619,6 @@ async def add_pipeline_for_assessment(
     else:
         main_repo_name = main_repo["url"]
         main_repo_branch = main_repo["tag"]
-        need_repo_settings = True
     pipeline_name = ".".join([os.path.basename(main_repo_name), "assess"])
     logger.debug("Generated pipeline name for the assessment: %s" % pipeline_name)
     # Render template for JSON payload
@@ -662,7 +662,9 @@ async def add_pipeline_for_assessment(
 
     # 5 Store repo settings
     repo_settings = []
-    if need_repo_settings:
+    if is_fair:
+        repo_settings.append({"url": main_repo_name})
+    else:
         for _repo_key, _repo_data in repositories.items():
             # Get required keys from <repositories>
             _repo_settings = {
