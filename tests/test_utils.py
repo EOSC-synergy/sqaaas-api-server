@@ -1,9 +1,9 @@
 # SPDX-FileCopyrightText: Copyright contributors to the Software Quality Assurance as a Service (SQAaaS) project <sqaaas@ibergrid.eu>
+# SPDX-FileContributor: Pablo Orviz <orviz@ifca.unican.es>
 #
 # SPDX-License-Identifier: GPL-3.0-only
 
 import pytest
-
 from openapi_server.controllers import utils
 
 supported_git_platform = {"github": "https://github.com"}
