@@ -663,7 +663,14 @@ async def add_pipeline_for_assessment(
     # 5 Store repo settings
     repo_settings = []
     if is_fair:
-        repo_settings.append({"url": main_repo_name})
+        repo_settings.append(
+            {
+                "url": main_repo_name,
+                "name": ctls_utils.get_short_repo_name(
+                    main_repo_name, include_host=True
+                ),
+            }
+        )
     else:
         for _repo_key, _repo_data in repositories.items():
             # Get required keys from <repositories>
