@@ -256,10 +256,10 @@ async def _get_tooling_for_assessment(
                                         os.path.relpath(_file, path)
                                         for _file in files_found
                                     ]
-                                    tool[
-                                        "args"
-                                    ] = ctls_utils.add_explicit_paths_for_tool(
-                                        tool["args"], _relative_paths
+                                    tool["args"] = (
+                                        ctls_utils.add_explicit_paths_for_tool(
+                                            tool["args"], _relative_paths
+                                        )
                                     )
                                 break
                         if not files_found:
