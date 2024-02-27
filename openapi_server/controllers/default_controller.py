@@ -20,12 +20,14 @@ from urllib import parse as urllib_parse
 from zipfile import ZipFile, ZipInfo
 
 import namegenerator
-import openapi_server
 import pandas
 import yaml
 from aiohttp import web
 from deepdiff import DeepDiff
 from jinja2 import Environment, PackageLoader
+from report2sqaaas import utils as r2s_utils
+
+import openapi_server
 from openapi_server import config, controllers
 from openapi_server.controllers import crypto as crypto_utils
 from openapi_server.controllers import db
@@ -34,7 +36,6 @@ from openapi_server.controllers.git import GitUtils
 from openapi_server.controllers.jepl import JePLUtils
 from openapi_server.exception import SQAaaSAPIException
 from openapi_server.models.inline_object import InlineObject
-from report2sqaaas import utils as r2s_utils
 
 LEVELS_FOR_ASSESSMENT = ["REQUIRED", "RECOMMENDED"]
 
@@ -255,10 +256,10 @@ async def _get_tooling_for_assessment(
                                         os.path.relpath(_file, path)
                                         for _file in files_found
                                     ]
-                                    tool[
-                                        "args"
-                                    ] = ctls_utils.add_explicit_paths_for_tool(
-                                        tool["args"], _relative_paths
+                                    tool["args"] = (
+                                        ctls_utils.add_explicit_paths_for_tool(
+                                            tool["args"], _relative_paths
+                                        )
                                     )
                                 break
                         if not files_found:
