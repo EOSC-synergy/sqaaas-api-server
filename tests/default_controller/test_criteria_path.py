@@ -5,7 +5,7 @@
 
 
 async def test_get_criteria(mocker, client):
-    """Test case for get_criteria
+    """Test case for get_criteria.
 
     Returns data about criteria
     """

@@ -9,7 +9,7 @@ from openapi_server.models import InlineObject
 
 
 async def test_add_pipeline(client):
-    """Test case for add_pipeline
+    """Test case for add_pipeline.
 
     Creates a pipeline.
     """
@@ -355,7 +355,7 @@ async def test_add_pipeline(client):
 
 
 async def test_create_pull_request(client):
-    """Test case for create_pull_request
+    """Test case for create_pull_request.
 
     Creates pull request with JePL files.
     """
@@ -378,7 +378,7 @@ async def test_create_pull_request(client):
 
 
 async def test_delete_pipeline_by_id(client):
-    """Test case for delete_pipeline_by_id
+    """Test case for delete_pipeline_by_id.
 
     Delete pipeline by ID
     """
@@ -396,7 +396,7 @@ async def test_delete_pipeline_by_id(client):
 
 
 async def test_get_badge(client):
-    """Test case for get_badge
+    """Test case for get_badge.
 
     Gets badge data associated with the given pipeline
     """
@@ -416,7 +416,7 @@ async def test_get_badge(client):
 
 
 async def test_get_compressed_files(client):
-    """Test case for get_compressed_files
+    """Test case for get_compressed_files.
 
     Get JePL files in compressed format.
     """
@@ -436,7 +436,7 @@ async def test_get_compressed_files(client):
 
 
 async def test_get_output_for_assessment(client):
-    """Test case for get_output_for_assessment
+    """Test case for get_output_for_assessment.
 
     Get the assessment output (QAA module)
     """
@@ -456,7 +456,7 @@ async def test_get_output_for_assessment(client):
 
 
 async def test_get_pipeline_by_id(client):
-    """Test case for get_pipeline_by_id
+    """Test case for get_pipeline_by_id.
 
     Find pipeline by ID
     """
@@ -474,7 +474,7 @@ async def test_get_pipeline_by_id(client):
 
 
 async def test_get_pipeline_commands_scripts(client):
-    """Test case for get_pipeline_commands_scripts
+    """Test case for get_pipeline_commands_scripts.
 
     Gets the commands builder scripts
     """
@@ -494,7 +494,7 @@ async def test_get_pipeline_commands_scripts(client):
 
 
 async def test_get_pipeline_composer(client):
-    """Test case for get_pipeline_composer
+    """Test case for get_pipeline_composer.
 
     Gets composer configuration used by the pipeline.
     """
@@ -514,7 +514,7 @@ async def test_get_pipeline_composer(client):
 
 
 async def test_get_pipeline_composer_jepl(client):
-    """Test case for get_pipeline_composer_jepl
+    """Test case for get_pipeline_composer_jepl.
 
     Gets JePL composer configuration for the given pipeline.
     """
@@ -534,7 +534,7 @@ async def test_get_pipeline_composer_jepl(client):
 
 
 async def test_get_pipeline_config(client):
-    """Test case for get_pipeline_config
+    """Test case for get_pipeline_config.
 
     Gets pipeline's main configuration.
     """
@@ -554,7 +554,7 @@ async def test_get_pipeline_config(client):
 
 
 async def test_get_pipeline_config_jepl(client):
-    """Test case for get_pipeline_config_jepl
+    """Test case for get_pipeline_config_jepl.
 
     Gets JePL config configuration for the given pipeline.
     """
@@ -574,7 +574,7 @@ async def test_get_pipeline_config_jepl(client):
 
 
 async def test_get_pipeline_jenkinsfile(client):
-    """Test case for get_pipeline_jenkinsfile
+    """Test case for get_pipeline_jenkinsfile.
 
     Gets Jenkins pipeline definition used by the pipeline.
     """
@@ -594,7 +594,7 @@ async def test_get_pipeline_jenkinsfile(client):
 
 
 async def test_get_pipeline_jenkinsfile_jepl(client):
-    """Test case for get_pipeline_jenkinsfile_jepl
+    """Test case for get_pipeline_jenkinsfile_jepl.
 
     Gets Jenkins configuration for the given pipeline.
     """
@@ -614,7 +614,7 @@ async def test_get_pipeline_jenkinsfile_jepl(client):
 
 
 async def test_get_pipeline_output(client):
-    """Test case for get_pipeline_output
+    """Test case for get_pipeline_output.
 
     Get output from pipeline execution
     """
@@ -636,7 +636,7 @@ async def test_get_pipeline_output(client):
 
 
 async def test_get_pipeline_status(client):
-    """Test case for get_pipeline_status
+    """Test case for get_pipeline_status.
 
     Get pipeline status.
     """
@@ -656,7 +656,7 @@ async def test_get_pipeline_status(client):
 
 
 async def test_get_pipelines(client):
-    """Test case for get_pipelines
+    """Test case for get_pipelines.
 
     Gets pipeline IDs.
     """
@@ -674,7 +674,7 @@ async def test_get_pipelines(client):
 
 
 async def test_update_pipeline_by_id(client):
-    """Test case for update_pipeline_by_id
+    """Test case for update_pipeline_by_id.
 
     Update pipeline by ID
     """

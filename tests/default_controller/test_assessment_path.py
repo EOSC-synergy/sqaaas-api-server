@@ -21,7 +21,7 @@ expected_response = [
 
 @pytest.mark.parametrize("body,expected", expected_response)
 async def test_add_pipeline_for_assessment(mocker, client, body, expected):
-    """Test case for add_pipeline_for_assessment
+    """Test case for add_pipeline_for_assessment.
 
     Creates a pipeline for assessment (QAA module).
     """
