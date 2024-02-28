@@ -237,6 +237,7 @@ class GitUtils(object):
             if not repo_url:
                 _msg = "Repository URL not provided: will not trigger git repository action"
                 logger.warning(_msg)
+                ret = f(*args, **kwargs)
             else:
                 repo_creds = repo.get("credential_data", {})
                 source_repo = GitUtils._format_git_url(repo_url, repo_creds=repo_creds)
@@ -272,6 +273,6 @@ class GitUtils(object):
                         kwargs["tag"] = source_repo_branch
                         kwargs["commit_id"] = repo.commit(source_repo_branch).hexsha
                     ret = f(*args, **kwargs)
-                    return ret
+            return ret
 
         return decorated_function
