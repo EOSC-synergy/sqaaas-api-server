@@ -146,7 +146,6 @@ async def _get_tooling_for_assessment(
 
     @GitUtils.do_git_work
     def _filter_tools(repo, criteria_data_list, path=".", **kwargs):
-        print('+'*50)
         _repo_name = repo["repo"]
         criteria_data_list_filtered = []
         criteria_filtered = {}
@@ -343,17 +342,11 @@ async def _get_tooling_for_assessment(
     criteria_filtered = {}
     for repo_criteria_mapping in relevant_criteria_data:
         try:
-            # print(relevant_criteria_data)
-            # print(json.dumps(repo_criteria_mapping, indent=4))
-            # print(repo_criteria_mapping.keys())
-            # print('?'*20)
             (
                 _criteria_data_list_filtered,
                 _criteria_filtered,
                 _repo_settings,
             ) = _filter_tools(**repo_criteria_mapping)
-            import sys
-            sys.exit(0)
         except SQAaaSAPIException as e:
             raise e
         else:
