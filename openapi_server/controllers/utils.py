@@ -17,13 +17,12 @@ import yaml
 from aiohttp import web
 from github.GithubException import GithubException, UnknownObjectException
 from jenkins import JenkinsException
-from urllib3.util import parse_url
-
 from openapi_server import config
 from openapi_server.controllers import db
 from openapi_server.controllers.git import GitUtils
 from openapi_server.controllers.jepl import JePLUtils
 from openapi_server.exception import SQAaaSAPIException
+from urllib3.util import parse_url
 
 logger = logging.getLogger("sqaaas.api.controller")
 
@@ -788,9 +787,9 @@ def process_extra_data(config_json, composer_json, report_to_stdout=False):
                                     PurePath(parent_dir, any_ec3_template_file_name)
                                 ).as_posix()
                                 # Add modified ec3 template to template_kwargs
-                                template_kwargs["ec3_template_modified"] = (
-                                    _file_to_modify
-                                )
+                                template_kwargs[
+                                    "ec3_template_modified"
+                                ] = _file_to_modify
                             im_image_id = template_kwargs["im_image_id"]
                             openstack_url = template_kwargs["openstack_url"]
                             if repo_url:
@@ -1333,9 +1332,10 @@ def get_status_badge(status, digital_object_type):
     # FIXME: software -> source code shall be done elsewhere
     if digital_object_type in ["software"]:
         digital_object_type = "source code"
+    logger.debug("Digital object type: %s" % digital_object_type)
+    badge_data = status_badge_map.get(status, status_badge_map["nullified"])
+    logger.debug("Badge data to be passed to anybadge: %s" % badge_data)
     badge = anybadge.Badge(
-        label="SQAaaS | %s" % digital_object_type,
-        num_padding_chars=1,
-        **status_badge_map.get(status, status_badge_map["nullified"])
+        label="SQAaaS | %s" % digital_object_type, num_padding_chars=1, **badge_data
     )
     return badge.badge_svg_text

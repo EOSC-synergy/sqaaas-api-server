@@ -9,8 +9,7 @@ from datetime import date, datetime
 from typing import Dict, List, Type
 
 from openapi_server import util
-from openapi_server.models.assessment_output_tool_ci import \
-    AssessmentOutputToolCI
+from openapi_server.models.assessment_output_tool_ci import AssessmentOutputToolCI
 from openapi_server.models.base_model_ import Model
 from openapi_server.models.tool_docker import ToolDocker
 
@@ -66,10 +65,11 @@ class AssessmentOutputValidatorTool(Model):
 
     @classmethod
     def from_dict(cls, dikt: dict) -> "AssessmentOutputValidatorTool":
-        """Returns the dict as a model
+        """Returns the dict as a model.
 
         :param dikt: A dict.
-        :return: The AssessmentOutputValidatorTool of this AssessmentOutputValidatorTool.
+        :return: The AssessmentOutputValidatorTool of this
+            AssessmentOutputValidatorTool.
         """
         return util.deserialize_model(dikt, cls)
 
@@ -146,7 +146,6 @@ class AssessmentOutputValidatorTool(Model):
     def docker(self):
         """Gets the docker of this AssessmentOutputValidatorTool.
 
-
         :return: The docker of this AssessmentOutputValidatorTool.
         :rtype: ToolDocker
         """
@@ -155,7 +154,6 @@ class AssessmentOutputValidatorTool(Model):
     @docker.setter
     def docker(self, docker):
         """Sets the docker of this AssessmentOutputValidatorTool.
-
 
         :param docker: The docker of this AssessmentOutputValidatorTool.
         :type docker: ToolDocker
@@ -167,7 +165,6 @@ class AssessmentOutputValidatorTool(Model):
     def ci(self):
         """Gets the ci of this AssessmentOutputValidatorTool.
 
-
         :return: The ci of this AssessmentOutputValidatorTool.
         :rtype: AssessmentOutputToolCI
         """
@@ -176,7 +173,6 @@ class AssessmentOutputValidatorTool(Model):
     @ci.setter
     def ci(self, ci):
         """Sets the ci of this AssessmentOutputValidatorTool.
-
 
         :param ci: The ci of this AssessmentOutputValidatorTool.
         :type ci: AssessmentOutputToolCI
