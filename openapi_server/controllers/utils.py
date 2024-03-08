@@ -1326,7 +1326,7 @@ def get_status_badge(status, digital_object_type):
         "building": {"value": "building", "default_color": "skyblue"},
         "nullified": {"value": "nullified", "default_color": "lightcoral"},
         "no_badge": {"value": "no badge", "default_color": "chocolate"},
-        "gold": {"value": "gold", "default_color": "golden"},
+        "gold": {"value": "gold", "default_color": "gold"},
         "silver": {"value": "silver", "default_color": "silver"},
         "bronze": {"value": "bronze", "default_color": "#E6AE77"},
     }
