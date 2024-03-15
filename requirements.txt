@@ -33,7 +33,7 @@ cryptography
 pandas
 anybadge==1.14.0
 # report2sqaaas == 2.0.0
-git+https://github.com/EOSC-synergy/sqaaas-reporting@feature/qc_uni#egg=report2sqaaas
+git+https://github.com/EOSC-synergy/sqaaas-reporting@2.0.0#egg=report2sqaaas
 # report2sqaaas-plugin-markdownlint = release/2.1.0
 git+https://github.com/EOSC-synergy/sqaaas-reporting-plugins@release/2.1.0#egg=report2sqaaas-plugin-markdownlint&subdirectory=qc_doc_markdownlint
 # report2sqaaas-plugin-find_doc_files = release/2.1.0
