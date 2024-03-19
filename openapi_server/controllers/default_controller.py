@@ -1899,6 +1899,7 @@ async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Re
                             "hint": subcriterion_data["hint"],
                             "evidence": [],
                         }
+                    # evidence
                     evidence_data = {
                         "valid": subcriterion_data["valid"],
                         "message": subcriterion_data["evidence"],
@@ -1910,6 +1911,9 @@ async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Re
                         ),
                     }
                     subcriteria[subcriterion_id]["evidence"].append(evidence_data)
+                    # FAIR points
+                    if "points" in subcriterion_data.keys():
+                        subcriteria[subcriterion_id]["points"] = subcriterion_data.get("points", -1)
                 # Subcriterion validity
                 for subcriterion_id, subcriterion_data in subcriteria.items():
                     valid = all(
