@@ -8,7 +8,6 @@ import logging
 from github import Github, GithubObject, InputGitTreeElement
 from github.GithubException import GithubException, UnknownObjectException
 from jinja2 import Environment, PackageLoader
-
 from openapi_server.controllers import crypto as crypto_utils
 from openapi_server.exception import SQAaaSAPIException
 

@@ -10,7 +10,6 @@ import jenkins
 import requests
 from bs4 import BeautifulSoup
 from jinja2 import Environment, PackageLoader
-
 from openapi_server.exception import SQAaaSAPIException
 
 CREATE_CREDENTIAL_ORG = (

@@ -8,7 +8,6 @@ import logging
 import os
 
 import connexion
-
 from openapi_server import config
 
 

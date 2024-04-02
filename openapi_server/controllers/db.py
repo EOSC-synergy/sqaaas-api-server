@@ -9,7 +9,6 @@ import logging
 import pathlib
 
 import yaml
-
 from openapi_server import config
 from openapi_server.controllers import utils as ctls_utils
 from openapi_server.controllers.jepl import JePLUtils

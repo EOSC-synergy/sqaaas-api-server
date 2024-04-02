@@ -8,7 +8,6 @@ import logging
 
 import namegenerator
 from jinja2 import Environment, PackageLoader
-
 from openapi_server.controllers import utils as ctls_utils
 from openapi_server.exception import SQAaaSAPIException
 
