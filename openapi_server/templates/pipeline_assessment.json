@@ -27,7 +27,8 @@
 	    "credentials_id": "{{ ci_credential_id }}",
 	    {%- endif -%}
 	    "repo": "{{ repo_data.repo }}",
-	    "branch": "{{ repo_data.branch }}"
+	    "branch": "{{ repo_data.branch }}",
+		"subfolder": "{{ repo_data.subfolder|default('') }}"
 	  }
 	  {%- endif -%}
 	  {%- endfor -%}
