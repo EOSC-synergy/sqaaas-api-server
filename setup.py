@@ -8,7 +8,7 @@
 from setuptools import find_packages, setup
 
 NAME = "sqaaas_api_server"
-VERSION = "3.1.0"
+VERSION = "3.2.0"
 
 # To install the library, run the following
 #
