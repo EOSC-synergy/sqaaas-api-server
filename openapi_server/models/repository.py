@@ -24,28 +24,33 @@ class Repository(Model):
         repo: str = None,
         branch: str = None,
         credentials_id: RepositoryCredentialsId = None,
+        subfolder: str = None,
     ):
         """Repository - a model defined in OpenAPI
 
         :param repo: The repo of this Repository.
         :param branch: The branch of this Repository.
         :param credentials_id: The credentials_id of this Repository.
+        :param subfolder: The subfolder of this Repository.
         """
         self.openapi_types = {
             "repo": str,
             "branch": str,
             "credentials_id": RepositoryCredentialsId,
+            "subfolder": str,
         }
 
         self.attribute_map = {
             "repo": "repo",
             "branch": "branch",
             "credentials_id": "credentials_id",
+            "subfolder": "subfolder",
         }
 
         self._repo = repo
         self._branch = branch
         self._credentials_id = credentials_id
+        self._subfolder = subfolder
 
     @classmethod
     def from_dict(cls, dikt: dict) -> "Repository":
@@ -122,3 +127,26 @@ class Repository(Model):
         """
 
         self._credentials_id = credentials_id
+
+    @property
+    def subfolder(self):
+        """Gets the subfolder of this Repository.
+
+        Subfolder name
+
+        :return: The subfolder of this Repository.
+        :rtype: str
+        """
+        return self._subfolder
+
+    @subfolder.setter
+    def subfolder(self, subfolder):
+        """Sets the subfolder of this Repository.
+
+        Subfolder name
+
+        :param subfolder: The subfolder of this Repository.
+        :type subfolder: str
+        """
+
+        self._subfolder = subfolder

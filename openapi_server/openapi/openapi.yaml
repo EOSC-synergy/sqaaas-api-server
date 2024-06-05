@@ -11,7 +11,7 @@ info:
     name: GPLv3
     url: https://www.gnu.org/licenses/gpl-3.0.txt
   title: SQAaaS API
-  version: 3.0.0
+  version: 3.2.0
 servers:
 - description: Main (production) API server
   url: http://api.sqaaas.eosc-synergy.eu/v1
@@ -852,10 +852,10 @@ components:
           value: detect
           option: option
         docs: https://openapi-generator.tech
-        name: flake8
-        lang: Python
+        name: fair-eva
+        lang: fair
         jepl_support: true
-        version: 4.0.1
+        version: 2.0.0
         executable: executable
         docker:
           image: image
@@ -865,17 +865,17 @@ components:
       properties:
         name:
           description: Name of the tool
-          example: flake8
+          example: fair-eva
           title: name
           type: string
         lang:
           description: Language that the tool is aligned with
-          example: Python
+          example: fair
           title: lang
           type: string
         version:
           description: Version of the tool
-          example: 4.0.1
+          example: 2.0.0
           title: version
           type: string
         jepl_support:
@@ -934,10 +934,10 @@ components:
             value: detect
             option: option
           docs: https://openapi-generator.tech
-          name: flake8
-          lang: Python
+          name: fair-eva
+          lang: fair
           jepl_support: true
-          version: 4.0.1
+          version: 2.0.0
           executable: executable
           docker:
             image: image
@@ -970,10 +970,10 @@ components:
             value: detect
             option: option
           docs: https://openapi-generator.tech
-          name: flake8
-          lang: Python
+          name: fair-eva
+          lang: fair
           jepl_support: true
-          version: 4.0.1
+          version: 2.0.0
           executable: executable
           docker:
             image: image
@@ -1034,6 +1034,7 @@ components:
       example:
         credentials_id: null
         repo: https://github.com/eosc-synergy/sqaaas-api-spec
+        subfolder: src
         branch: master
       properties:
         repo:
@@ -1049,6 +1050,11 @@ components:
           type: string
         credentials_id:
           $ref: '#/components/schemas/Repository_credentials_id'
+        subfolder:
+          description: Subfolder name
+          example: src
+          title: subfolder
+          type: string
       title: Repository
       type: object
     Creds_user_pass:
@@ -1200,10 +1206,10 @@ components:
                   value: detect
                   option: option
                 docs: https://openapi-generator.tech
-                name: flake8
-                lang: Python
+                name: fair-eva
+                lang: fair
                 jepl_support: true
-                version: 4.0.1
+                version: 2.0.0
                 executable: executable
                 docker:
                   image: image
@@ -1245,10 +1251,10 @@ components:
                   value: detect
                   option: option
                 docs: https://openapi-generator.tech
-                name: flake8
-                lang: Python
+                name: fair-eva
+                lang: fair
                 jepl_support: true
-                version: 4.0.1
+                version: 2.0.0
                 executable: executable
                 docker:
                   image: image
@@ -1264,9 +1270,11 @@ components:
           project_repos:
           - credentials_id: null
             repo: https://github.com/eosc-synergy/sqaaas-api-spec
+            subfolder: src
             branch: master
           - credentials_id: null
             repo: https://github.com/eosc-synergy/sqaaas-api-spec
+            subfolder: src
             branch: master
           credentials:
           - password_var: GIT_PASS
@@ -1427,10 +1435,10 @@ components:
                     value: detect
                     option: option
                   docs: https://openapi-generator.tech
-                  name: flake8
-                  lang: Python
+                  name: fair-eva
+                  lang: fair
                   jepl_support: true
-                  version: 4.0.1
+                  version: 2.0.0
                   executable: executable
                   docker:
                     image: image
@@ -1472,10 +1480,10 @@ components:
                     value: detect
                     option: option
                   docs: https://openapi-generator.tech
-                  name: flake8
-                  lang: Python
+                  name: fair-eva
+                  lang: fair
                   jepl_support: true
-                  version: 4.0.1
+                  version: 2.0.0
                   executable: executable
                   docker:
                     image: image
@@ -1491,9 +1499,11 @@ components:
             project_repos:
             - credentials_id: null
               repo: https://github.com/eosc-synergy/sqaaas-api-spec
+              subfolder: src
               branch: master
             - credentials_id: null
               repo: https://github.com/eosc-synergy/sqaaas-api-spec
+              subfolder: src
               branch: master
             credentials:
             - password_var: GIT_PASS
@@ -1546,10 +1556,10 @@ components:
                     value: detect
                     option: option
                   docs: https://openapi-generator.tech
-                  name: flake8
-                  lang: Python
+                  name: fair-eva
+                  lang: fair
                   jepl_support: true
-                  version: 4.0.1
+                  version: 2.0.0
                   executable: executable
                   docker:
                     image: image
@@ -1591,10 +1601,10 @@ components:
                     value: detect
                     option: option
                   docs: https://openapi-generator.tech
-                  name: flake8
-                  lang: Python
+                  name: fair-eva
+                  lang: fair
                   jepl_support: true
-                  version: 4.0.1
+                  version: 2.0.0
                   executable: executable
                   docker:
                     image: image
@@ -1610,9 +1620,11 @@ components:
             project_repos:
             - credentials_id: null
               repo: https://github.com/eosc-synergy/sqaaas-api-spec
+              subfolder: src
               branch: master
             - credentials_id: null
               repo: https://github.com/eosc-synergy/sqaaas-api-spec
+              subfolder: src
               branch: master
             credentials:
             - password_var: GIT_PASS
@@ -1705,6 +1717,7 @@ components:
         repo_deploy:
           credentials_id: null
           repo: https://github.com/eosc-synergy/sqaaas-api-spec
+          subfolder: src
           branch: master
         deploy_tool:
           args:
@@ -1733,10 +1746,10 @@ components:
             value: detect
             option: option
           docs: https://openapi-generator.tech
-          name: flake8
-          lang: Python
+          name: fair-eva
+          lang: fair
           jepl_support: true
-          version: 4.0.1
+          version: 2.0.0
           executable: executable
           docker:
             image: image
@@ -1752,46 +1765,46 @@ components:
       type: object
     AssessmentFAIR:
       example:
-        metadata_protocol: oai-pmh
-        metadata_endpoint: http://digital.csic.es/dspace-oai/request
-        badge_policy_url: https://example.org/badge-matchmaking-policies.ini
-        evaluator_endpoint: http://localhost:9090/v1.0/rda/rda_all
-        evaluator_tool: fair-eva
-        persistent_identifier: https://doi.org/10.5281/zenodo.5993188
+        fair_tool:
+          args:
+          - summary: summary
+            args:
+            - null
+            - null
+            repeatable: false
+            selectable: true
+            format: string
+            description: Detect the license of the given project
+            id: id
+            type: subcommand
+            value: detect
+            option: option
+          - summary: summary
+            args:
+            - null
+            - null
+            repeatable: false
+            selectable: true
+            format: string
+            description: Detect the license of the given project
+            id: id
+            type: subcommand
+            value: detect
+            option: option
+          docs: https://openapi-generator.tech
+          name: fair-eva
+          lang: fair
+          jepl_support: true
+          version: 2.0.0
+          executable: executable
+          docker:
+            image: image
+            dockerfile: dockerfile
+            reviewed: 2000-01-23
+            oneshot: true
       properties:
-        persistent_identifier:
-          description: Persistent identifier for the dataset
-          example: https://doi.org/10.5281/zenodo.5993188
-          title: persistent_identifier
-          type: string
-        metadata_protocol:
-          description: Protocol for metadata harvesting
-          example: oai-pmh
-          title: metadata_protocol
-          type: string
-        metadata_endpoint:
-          description: URL of the metadata protocol interface
-          example: http://digital.csic.es/dspace-oai/request
-          format: uri
-          title: metadata_endpoint
-          type: string
-        evaluator_tool:
-          description: Name of the evaluator tool
-          example: fair-eva
-          title: evaluator_tool
-          type: string
-        evaluator_endpoint:
-          description: URL of the endpoint where the evaluator is accessible
-          example: http://localhost:9090/v1.0/rda/rda_all
-          format: uri
-          title: evaluator_endpoint
-          type: string
-        badge_policy_url:
-          description: URL where the badge policies are defined
-          example: https://example.org/badge-matchmaking-policies.ini
-          format: uri
-          title: badge_policy_url
-          type: string
+        fair_tool:
+          $ref: '#/components/schemas/Tool'
       title: AssessmentFAIR
       type: object
     CriterionWorkflow:
@@ -1824,10 +1837,10 @@ components:
             value: detect
             option: option
           docs: https://openapi-generator.tech
-          name: flake8
-          lang: Python
+          name: fair-eva
+          lang: fair
           jepl_support: true
-          version: 4.0.1
+          version: 2.0.0
           executable: executable
           docker:
             image: image
@@ -1860,10 +1873,10 @@ components:
             value: detect
             option: option
           docs: https://openapi-generator.tech
-          name: flake8
-          lang: Python
+          name: fair-eva
+          lang: fair
           jepl_support: true
-          version: 4.0.1
+          version: 2.0.0
           executable: executable
           docker:
             image: image
@@ -1889,18 +1902,51 @@ components:
         repo_docs:
           credentials_id: null
           repo: https://github.com/eosc-synergy/sqaaas-api-spec
+          subfolder: src
           branch: master
         repo_code:
           credentials_id: null
           repo: https://github.com/eosc-synergy/sqaaas-api-spec
+          subfolder: src
           branch: master
         fair:
-          metadata_protocol: oai-pmh
-          metadata_endpoint: http://digital.csic.es/dspace-oai/request
-          badge_policy_url: https://example.org/badge-matchmaking-policies.ini
-          evaluator_endpoint: http://localhost:9090/v1.0/rda/rda_all
-          evaluator_tool: fair-eva
-          persistent_identifier: https://doi.org/10.5281/zenodo.5993188
+          fair_tool:
+            args:
+            - summary: summary
+              args:
+              - null
+              - null
+              repeatable: false
+              selectable: true
+              format: string
+              description: Detect the license of the given project
+              id: id
+              type: subcommand
+              value: detect
+              option: option
+            - summary: summary
+              args:
+              - null
+              - null
+              repeatable: false
+              selectable: true
+              format: string
+              description: Detect the license of the given project
+              id: id
+              type: subcommand
+              value: detect
+              option: option
+            docs: https://openapi-generator.tech
+            name: fair-eva
+            lang: fair
+            jepl_support: true
+            version: 2.0.0
+            executable: executable
+            docker:
+              image: image
+              dockerfile: dockerfile
+              reviewed: 2000-01-23
+              oneshot: true
         criteria_workflow:
         - id: QC.Sty
           tools:
@@ -1930,10 +1976,10 @@ components:
               value: detect
               option: option
             docs: https://openapi-generator.tech
-            name: flake8
-            lang: Python
+            name: fair-eva
+            lang: fair
             jepl_support: true
-            version: 4.0.1
+            version: 2.0.0
             executable: executable
             docker:
               image: image
@@ -1966,10 +2012,10 @@ components:
               value: detect
               option: option
             docs: https://openapi-generator.tech
-            name: flake8
-            lang: Python
+            name: fair-eva
+            lang: fair
             jepl_support: true
-            version: 4.0.1
+            version: 2.0.0
             executable: executable
             docker:
               image: image
@@ -2004,10 +2050,10 @@ components:
               value: detect
               option: option
             docs: https://openapi-generator.tech
-            name: flake8
-            lang: Python
+            name: fair-eva
+            lang: fair
             jepl_support: true
-            version: 4.0.1
+            version: 2.0.0
             executable: executable
             docker:
               image: image
@@ -2040,10 +2086,10 @@ components:
               value: detect
               option: option
             docs: https://openapi-generator.tech
-            name: flake8
-            lang: Python
+            name: fair-eva
+            lang: fair
             jepl_support: true
-            version: 4.0.1
+            version: 2.0.0
             executable: executable
             docker:
               image: image
@@ -2054,6 +2100,7 @@ components:
           repo_deploy:
             credentials_id: null
             repo: https://github.com/eosc-synergy/sqaaas-api-spec
+            subfolder: src
             branch: master
           deploy_tool:
             args:
@@ -2082,10 +2129,10 @@ components:
               value: detect
               option: option
             docs: https://openapi-generator.tech
-            name: flake8
-            lang: Python
+            name: fair-eva
+            lang: fair
             jepl_support: true
-            version: 4.0.1
+            version: 2.0.0
             executable: executable
             docker:
               image: image
@@ -2887,10 +2934,10 @@ components:
                   value: detect
                   option: option
                 docs: https://openapi-generator.tech
-                name: flake8
-                lang: Python
+                name: fair-eva
+                lang: fair
                 jepl_support: true
-                version: 4.0.1
+                version: 2.0.0
                 executable: executable
                 docker:
                   image: image
@@ -2932,10 +2979,10 @@ components:
                   value: detect
                   option: option
                 docs: https://openapi-generator.tech
-                name: flake8
-                lang: Python
+                name: fair-eva
+                lang: fair
                 jepl_support: true
-                version: 4.0.1
+                version: 2.0.0
                 executable: executable
                 docker:
                   image: image
@@ -3223,10 +3270,10 @@ components:
             value: detect
             option: option
           docs: https://openapi-generator.tech
-          name: flake8
-          lang: Python
+          name: fair-eva
+          lang: fair
           jepl_support: true
-          version: 4.0.1
+          version: 2.0.0
           executable: executable
           docker:
             image: image
@@ -3317,10 +3364,10 @@ components:
               value: detect
               option: option
             docs: https://openapi-generator.tech
-            name: flake8
-            lang: Python
+            name: fair-eva
+            lang: fair
             jepl_support: true
-            version: 4.0.1
+            version: 2.0.0
             executable: executable
             docker:
               image: image
@@ -3362,10 +3409,10 @@ components:
               value: detect
               option: option
             docs: https://openapi-generator.tech
-            name: flake8
-            lang: Python
+            name: fair-eva
+            lang: fair
             jepl_support: true
-            version: 4.0.1
+            version: 2.0.0
             executable: executable
             docker:
               image: image
@@ -3398,9 +3445,11 @@ components:
         project_repos:
         - credentials_id: null
           repo: https://github.com/eosc-synergy/sqaaas-api-spec
+          subfolder: src
           branch: master
         - credentials_id: null
           repo: https://github.com/eosc-synergy/sqaaas-api-spec
+          subfolder: src
           branch: master
         credentials:
         - password_var: GIT_PASS
