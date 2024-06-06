@@ -4,5 +4,10 @@
 #
 # SPDX-License-Identifier: GPL-3.0-only
 
+workflow:
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+
 include:
   remote: 'https://gitlab.com/yesolutions/gitlab-ci-templates/raw/main/templates/pre-commit-autofix.yaml'
+      
