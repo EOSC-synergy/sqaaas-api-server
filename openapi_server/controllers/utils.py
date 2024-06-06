@@ -17,12 +17,13 @@ import yaml
 from aiohttp import web
 from github.GithubException import GithubException, UnknownObjectException
 from jenkins import JenkinsException
+from urllib3.util import parse_url
+
 from openapi_server import config
 from openapi_server.controllers import db
 from openapi_server.controllers.git import GitUtils
 from openapi_server.controllers.jepl import JePLUtils
 from openapi_server.exception import SQAaaSAPIException
-from urllib3.util import parse_url
 
 logger = logging.getLogger("sqaaas.api.controller")
 
@@ -724,22 +725,29 @@ def process_extra_data(config_json, composer_json, report_to_stdout=False):
                         tool_creds.append(creds)
 
                 if repo_url or tool_has_template:
+                    subfolder = project_repos_mapping[repo_url].get("subfolder", "")
                     template_kwargs = {}
                     # Create script for 'commands' builder
                     # NOTE: This is a workaround -> a specific builder to tackle this will be implemented in JePL
                     if "commands" in repo.keys():
+                        # subfolder
+                        checkout_dir = project_repos_mapping[repo_url]["name"]
+                        if subfolder:
+                            checkout_dir = os.path.join(checkout_dir, subfolder)
                         ProcessExtraData.generate_script_for_commands(
                             stage_name=stage_name,
-                            checkout_dir=project_repos_mapping[repo_url]["name"],
+                            checkout_dir=checkout_dir,
                             commands_list=repo["commands"],
                             repos_data=repos_new,
                             commands_script_list=commands_script_list,
                         )
                     elif tool_has_template:
-                        # checkout_dir
+                        # subfolder
                         checkout_dir = "."
                         if repo_url:
                             checkout_dir = project_repos_mapping[repo_url]["name"]
+                        if subfolder:
+                            checkout_dir = os.path.join(checkout_dir, subfolder)
                         # template_kwargs
                         for arg in tool.get("args", []):
                             if arg.get("id", None):
@@ -787,9 +795,9 @@ def process_extra_data(config_json, composer_json, report_to_stdout=False):
                                     PurePath(parent_dir, any_ec3_template_file_name)
                                 ).as_posix()
                                 # Add modified ec3 template to template_kwargs
-                                template_kwargs[
-                                    "ec3_template_modified"
-                                ] = _file_to_modify
+                                template_kwargs["ec3_template_modified"] = (
+                                    _file_to_modify
+                                )
                             im_image_id = template_kwargs["im_image_id"]
                             openstack_url = template_kwargs["openstack_url"]
                             if repo_url:
