@@ -59,6 +59,8 @@ FAIR_RDA_PREFIX = "RDA"
 
 BADGE_CATEGORIES = ["bronze", "silver", "gold"]
 
+CUSTOMISABLE_CRITERIA = ["QC.Uni"]
+
 logger = logging.getLogger("sqaaas.api.controller")
 
 
@@ -652,7 +654,7 @@ async def add_pipeline_for_assessment(
             _tool_name = _tool_data["name"]
             criteria_tools[_criterion_id][_tool_name].update(
                 {
-                    "lang": _tool_data["lang"],
+                    "lang": _tool_data.get("lang", ""),
                     "version": _tool_data.get("version", "not-provided"),
                     "docker": _tool_data["docker"],
                 }
@@ -2743,12 +2745,17 @@ async def _get_criteria(
         tooling_metadata_json, criteria_id_list=criteria_id_list
     )
 
-    if assessment:  # exclude 'commands' tool
+    if assessment:  # exclude 'commands' tool but customisable criteria
         for criterion_data in criteria_data_list:
             _tool_list = []
+            exclude_commands = True
+            if criterion_data["id"] in CUSTOMISABLE_CRITERIA:
+                exclude_commands = False
             for tool_data in criterion_data["tools"]:
-                if tool_data["name"] not in ["commands"]:
-                    _tool_list.append(tool_data)
+                if tool_data["name"] in ["commands"]:
+                    if exclude_commands:
+                        continue
+                _tool_list.append(tool_data)
             criterion_data["tools"] = _tool_list
 
     _criteria_data_list_new = []
