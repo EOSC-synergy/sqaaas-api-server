@@ -1329,6 +1329,7 @@ async def _handle_job_building(jk_job_name, build_to_check):
     build_no = None
     build_status = None
     build_item_no = None
+    build_url = ""
     while not _build_triggered:
         if _count_tries >= _max_tries:
             break
