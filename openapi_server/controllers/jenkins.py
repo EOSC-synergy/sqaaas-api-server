@@ -78,8 +78,10 @@ class JenkinsUtils(object):
             self.logger.debug(
                 "Information for job <%s> obtained from Jenkins: %s" % (name, job_info)
             )
-        except jenkins.JenkinsException:
-            self.logger.error("No info could be fetched for Jenkins job <%s>" % name)
+        except jenkins.JenkinsException as e:
+            self.logger.error(
+                "No info could be fetched for Jenkins job <%s>: %s" % (name, str(e))
+            )
         return job_info
 
     def exist_job(self, job_name):
