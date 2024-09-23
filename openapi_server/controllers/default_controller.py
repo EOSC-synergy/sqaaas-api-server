@@ -621,6 +621,8 @@ async def add_pipeline_for_assessment(
     else:
         main_repo_name = main_repo["url"]
         main_repo_branch = main_repo["tag"]
+    # Generate pipeline name. Note: 'os.path.basename' returns empty string when having a trailing slash
+    main_repo_name = main_repo_name.rstrip("/")
     pipeline_name = ".".join([os.path.basename(main_repo_name), "assess"])
     logger.debug("Generated pipeline name for the assessment: %s" % pipeline_name)
     # Render template for JSON payload
