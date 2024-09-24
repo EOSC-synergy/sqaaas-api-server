@@ -20,12 +20,14 @@ from urllib import parse as urllib_parse
 from zipfile import ZipFile, ZipInfo
 
 import namegenerator
-import openapi_server
 import pandas
 import yaml
 from aiohttp import web
 from deepdiff import DeepDiff
 from jinja2 import Environment, PackageLoader
+from report2sqaaas import utils as r2s_utils
+
+import openapi_server
 from openapi_server import config, controllers
 from openapi_server.controllers import crypto as crypto_utils
 from openapi_server.controllers import db
@@ -34,7 +36,6 @@ from openapi_server.controllers.git import GitUtils
 from openapi_server.controllers.jepl import JePLUtils
 from openapi_server.exception import SQAaaSAPIException
 from openapi_server.models.inline_object import InlineObject
-from report2sqaaas import utils as r2s_utils
 
 LEVELS_FOR_ASSESSMENT = ["REQUIRED", "RECOMMENDED"]
 
@@ -257,10 +258,10 @@ async def _get_tooling_for_assessment(
                                         os.path.relpath(_file, path)
                                         for _file in files_found
                                     ]
-                                    tool[
-                                        "args"
-                                    ] = ctls_utils.add_explicit_paths_for_tool(
-                                        tool["args"], _relative_paths
+                                    tool["args"] = (
+                                        ctls_utils.add_explicit_paths_for_tool(
+                                            tool["args"], _relative_paths
+                                        )
                                     )
                                 break
                         if not files_found:
@@ -620,6 +621,8 @@ async def add_pipeline_for_assessment(
     else:
         main_repo_name = main_repo["url"]
         main_repo_branch = main_repo["tag"]
+    # Generate pipeline name. Note: 'os.path.basename' returns empty string when having a trailing slash
+    main_repo_name = main_repo_name.rstrip("/")
     pipeline_name = ".".join([os.path.basename(main_repo_name), "assess"])
     logger.debug("Generated pipeline name for the assessment: %s" % pipeline_name)
     # Render template for JSON payload
@@ -1326,6 +1329,7 @@ async def _handle_job_building(jk_job_name, build_to_check):
     build_no = None
     build_status = None
     build_item_no = None
+    build_url = ""
     while not _build_triggered:
         if _count_tries >= _max_tries:
             break

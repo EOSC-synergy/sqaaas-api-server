@@ -54,6 +54,15 @@ class JenkinsUtils(object):
         r = requests.post(
             urljoin(self.endpoint, path), auth=(self.access_user, self.access_token)
         )
+        if not r.ok:
+            self.logger.error(
+                "Could not trigger SCAN_ORGANIZATION in Jenkins endpoint: %s"
+                % self.endpoint
+            )
+        else:
+            self.logger.debug(
+                "Triggered SCAN_ORGANIZATION in Jenkins endpoint: %s" % self.endpoint
+            )
         r.raise_for_status()
         self.logger.debug("Triggered GitHub organization scan")
 
@@ -78,8 +87,11 @@ class JenkinsUtils(object):
             self.logger.debug(
                 "Information for job <%s> obtained from Jenkins: %s" % (name, job_info)
             )
-        except jenkins.JenkinsException:
-            self.logger.error("No info could be fetched for Jenkins job <%s>" % name)
+        except jenkins.JenkinsException as e:
+            self.logger.error(
+                "No info could be fetched for Jenkins job <%s>: %s (%s)"
+                % (name, str(e), dir(e))
+            )
         return job_info
 
     def exist_job(self, job_name):
