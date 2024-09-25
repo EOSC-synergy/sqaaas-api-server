@@ -75,10 +75,10 @@ class JenkinsUtils(object):
             )
         else:
             self.logger.debug(
-                "Triggered %s in Jenkins endpoint: %s" % (label, self.endpoint)
+                "Successfully triggered %s in Jenkins endpoint: %s"
+                % (label, self.endpoint)
             )
         r.raise_for_status()
-        self.logger.debug("Successfully triggered GitHub %s" % label)
 
     @timeout_decorator.timeout(
         10,
