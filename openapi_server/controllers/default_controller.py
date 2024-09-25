@@ -1175,7 +1175,8 @@ async def run_pipeline(
     )
 
     _pipeline_repo_name = pipeline_repo.split("/")[-1]
-    jk_job_name = "/".join(
+    jk_job_name = _pipeline_repo_name  # job name is the same as the branch
+    jk_job_name_full = "/".join(
         [
             JENKINS_GITHUB_ORG,
             _pipeline_repo_name,
@@ -1183,7 +1184,7 @@ async def run_pipeline(
         ]
     )
 
-    logger.info("Triggering pipeline in Jenkins CI: %s" % jk_job_name)
+    logger.info("Triggering pipeline in Jenkins CI: %s" % jk_job_name_full)
 
     build_item_no = None
     build_no = None
@@ -1222,11 +1223,11 @@ async def run_pipeline(
     # 1) Check if job already exists on Jenkins
     job_exists = False
     last_build_no = -1
-    if jk_utils.exist_job(jk_job_name):
+    if jk_utils.exist_job(jk_job_name_full):
         job_exists = True
-        logger.warning("Jenkins job <%s> already exists!" % jk_job_name)
-        _job_info = jk_utils.get_job_info(jk_job_name)
-        jk_job_name = _job_info["fullName"]
+        logger.warning("Jenkins job <%s> already exists!" % jk_job_name_full)
+        _job_info = jk_utils.get_job_info(jk_job_name_full)
+        jk_job_name_full = _job_info["fullName"]
         last_build_no = _job_info["lastBuild"]["number"]
 
     # 2) Include badge status in the commit
@@ -1271,12 +1272,12 @@ async def run_pipeline(
         _build_to_check = last_build_no + 1
         # Fire & forget _handle_job_building()
         build_job_task = asyncio.create_task(
-            _handle_job_building(jk_job_name, _build_to_check)
+            _handle_job_building(jk_job_name_full, _build_to_check)
         )
         if build_job_task.done():
             build_no, build_status, build_url, build_item_no = build_job_task.result()
     else:
-        jk_utils.scan_organization(org_name=JENKINS_GITHUB_ORG)
+        jk_utils.scan_organization(org_name=JENKINS_GITHUB_ORG, job_name=jk_job_name)
         scan_org_wait = True
         build_status = "WAITING_SCAN_ORG"
         reason = "Triggered scan organization for building the Jenkins job"
@@ -1296,7 +1297,7 @@ async def run_pipeline(
     #   <build_status>, <build_item_no>, <scan_org_wait>, <issue_badge>?
     db.update_jenkins(
         pipeline_id,
-        jk_job_name,
+        jk_job_name_full,
         commit_id,
         commit_url,
         build_item_no=build_item_no,
@@ -1321,7 +1322,7 @@ async def run_pipeline(
     return web.Response(status=204, reason=reason, text=reason)
 
 
-async def _handle_job_building(jk_job_name, build_to_check):
+async def _handle_job_building(jk_job_name_full, build_to_check):
     # wait for automated triggering
     _build_triggered = False
     _max_tries = 8
@@ -1333,7 +1334,7 @@ async def _handle_job_building(jk_job_name, build_to_check):
     while not _build_triggered:
         if _count_tries >= _max_tries:
             break
-        _job_info = jk_utils.get_job_info(jk_job_name)
+        _job_info = jk_utils.get_job_info(jk_job_name_full)
         # NOTE (Jenkins API specific) First element of _builds
         # should match 'build_to_check'
         _builds = _job_info["builds"]
@@ -1348,7 +1349,7 @@ async def _handle_job_building(jk_job_name, build_to_check):
                 (
                     "Last build number in Jenkins (%s) does not match with the "
                     "required build number to check (%s) for job: %s"
-                    % (_builds_last, build_to_check, jk_job_name)
+                    % (_builds_last, build_to_check, jk_job_name_full)
                 )
             )
         _count_tries += 1
@@ -1356,10 +1357,12 @@ async def _handle_job_building(jk_job_name, build_to_check):
     # Build manually if not triggered automatically
     if not _build_triggered:
         # <build_item_no> is only valid for about 5 min after job completion
-        build_item_no = jk_utils.build_job(jk_job_name)
+        build_item_no = jk_utils.build_job(jk_job_name_full)
         if build_item_no:
             build_status = "QUEUED"
-            logger.info("Build status for job <%s>: %s" % (jk_job_name, build_status))
+            logger.info(
+                "Build status for job <%s>: %s" % (jk_job_name_full, build_status)
+            )
         else:
             _reason = "Could not trigger build job"
             logger.error(_reason)

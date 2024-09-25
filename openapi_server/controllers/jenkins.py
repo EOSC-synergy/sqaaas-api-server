@@ -10,6 +10,7 @@ import jenkins
 import requests
 from bs4 import BeautifulSoup
 from jinja2 import Environment, PackageLoader
+
 from openapi_server.exception import SQAaaSAPIException
 
 CREATE_CREDENTIAL_ORG = (
@@ -49,22 +50,30 @@ class JenkinsUtils(object):
         """
         return quote_plus(job_name.replace("/", "%2F"))
 
-    def scan_organization(self, org_name):
+    def scan_organization(self, org_name, job_name=""):
         path = "/job/%s/build?delay=0" % org_name
+        label = "SCAN_ORGANIZATION"
+        if job_name:
+            self.logger.debug("Requested to scan a single job. Using path: %s" % path)
+            path = "/job/%s/job/%s/build?delay=0" % (org_name, job_name)
+            label = "SCAN_ORGANIZATION_JOB"
+        else:
+            self.logger.debug(
+                "Requested to scan the entire organization. Using path: %s" % path
+            )
         r = requests.post(
             urljoin(self.endpoint, path), auth=(self.access_user, self.access_token)
         )
         if not r.ok:
             self.logger.error(
-                "Could not trigger SCAN_ORGANIZATION in Jenkins endpoint: %s"
-                % self.endpoint
+                "Could not trigger %s in Jenkins endpoint: %s" % (label, self.endpoint)
             )
         else:
             self.logger.debug(
-                "Triggered SCAN_ORGANIZATION in Jenkins endpoint: %s" % self.endpoint
+                "Triggered %s in Jenkins endpoint: %s" % (label, self.endpoint)
             )
         r.raise_for_status()
-        self.logger.debug("Triggered GitHub organization scan")
+        self.logger.debug("Successfully triggered GitHub %s" % label)
 
     def get_job_info(self, name, depth=0):
         job_info = {}
