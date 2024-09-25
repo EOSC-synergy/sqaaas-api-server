@@ -59,9 +59,9 @@ class JenkinsUtils(object):
         path = "/job/%s/build?delay=0" % org_name
         label = "SCAN_ORGANIZATION"
         if job_name:
-            self.logger.debug("Requested to scan a single job. Using path: %s" % path)
             path = "/job/%s/job/%s/build?delay=0" % (org_name, job_name)
             label = "SCAN_ORGANIZATION_JOB"
+            self.logger.debug("Requested to scan a single job. Using path: %s" % path)
         else:
             self.logger.debug(
                 "Requested to scan the entire organization. Using path: %s" % path
