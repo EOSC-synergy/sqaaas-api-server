@@ -1276,7 +1276,7 @@ async def run_pipeline(
         if build_job_task.done():
             build_no, build_status, build_url, build_item_no = build_job_task.result()
     else:
-        jk_utils.scan_organization()
+        jk_utils.scan_organization(org_name=JENKINS_GITHUB_ORG)
         scan_org_wait = True
         build_status = "WAITING_SCAN_ORG"
         reason = "Triggered scan organization for building the Jenkins job"

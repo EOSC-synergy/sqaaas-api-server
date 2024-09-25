@@ -49,7 +49,7 @@ class JenkinsUtils(object):
         """
         return quote_plus(job_name.replace("/", "%2F"))
 
-    def scan_organization(self, org_name="eosc-synergy-org"):
+    def scan_organization(self, org_name):
         path = "/job/%s/build?delay=0" % org_name
         r = requests.post(
             urljoin(self.endpoint, path), auth=(self.access_user, self.access_token)
