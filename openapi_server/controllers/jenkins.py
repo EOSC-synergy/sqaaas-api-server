@@ -11,7 +11,6 @@ import requests
 import timeout_decorator
 from bs4 import BeautifulSoup
 from jinja2 import Environment, PackageLoader
-
 from openapi_server.exception import SQAaaSAPIException
 
 CREATE_CREDENTIAL_ORG = (
@@ -109,8 +108,7 @@ class JenkinsUtils(object):
             )
         except jenkins.JenkinsException as e:
             self.logger.error(
-                "No info could be fetched for Jenkins job <%s>: %s (%s)"
-                % (name, str(e), dir(e))
+                "No info could be fetched for Jenkins job <%s>: %s" % (name, str(e))
             )
         return job_info
 
