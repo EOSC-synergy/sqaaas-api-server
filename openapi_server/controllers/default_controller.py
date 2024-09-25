@@ -1232,6 +1232,7 @@ async def run_pipeline(
 
     # 1) Check if job already exists on Jenkins
     job_exists = False
+    job_exists_no_branch = False  # when job exists, but branch does not
     last_build_no = -1
     try:
         if jk_utils.exist_job(jk_job_name_full):
@@ -1240,6 +1241,10 @@ async def run_pipeline(
             _job_info = jk_utils.get_job_info(jk_job_name_full)
             jk_job_name_full = _job_info["fullName"]
             last_build_no = _job_info["lastBuild"]["number"]
+        else:
+            if jk_utils.exist_job(jk_job_name_full, no_branch=True):
+                job_exists_no_branch = True
+                logger.debug("Jenkins job exists, regardless of the branch name")
     except Exception as e:
         logger.error(str(e))
         return web.Response(status=502, reason=str(e), text=str(e))
@@ -1292,16 +1297,22 @@ async def run_pipeline(
             build_no, build_status, build_url, build_item_no = build_job_task.result()
     else:
         try:
-            jk_utils.scan_organization(
-                org_name=JENKINS_GITHUB_ORG, job_name=jk_job_name
-            )
+            # Option 1: Job exists but branch does not -> SCAN_ORGANIZATION_JOB
+            if job_exists_no_branch:
+                jk_utils.scan_organization(
+                    org_name=JENKINS_GITHUB_ORG, job_name=jk_job_name
+                )
+                reason = "Triggered SCAN_ORGANIZATION_JOB for building a specific branch of the job"
+            # Option 2: Job DOES NOT exist -> SCAN_ORGANIZATION
+            else:
+                jk_utils.scan_organization(org_name=JENKINS_GITHUB_ORG)
         except Exception as e:
             logger.error(str(e))
             return web.Response(status=502, reason=str(e), text=str(e))
         else:
             scan_org_wait = True
             build_status = "WAITING_SCAN_ORG"
-            reason = "Triggered scan organization for building the Jenkins job"
+            reason = "Triggered SCAN_ORGANIZATION for building the Jenkins job"
 
     if issue_badge:
         logger.debug(

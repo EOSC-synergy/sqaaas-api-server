@@ -85,7 +85,13 @@ class JenkinsUtils(object):
         timeout_exception=jenkins.JenkinsException,
         exception_message="Timeout reached when trying to connect to Jenkins",
     )
-    def get_job_info(self, name, depth=0):
+    def get_job_info(self, name, depth=0, no_branch=False):
+        """Return job information.
+
+        :param name: full job name as labelled by Jenkins.
+        :param depth: number that indicates depth level for Jenkins.
+        :param no_branch: flag to return the presence of the job regardless of the branch.
+        """
         job_info = {}
         job_name_list = []
 
@@ -93,14 +99,20 @@ class JenkinsUtils(object):
         for folder in self.server.get_jobs(folder_depth=1):
             if folder["name"] in [_org]:
                 job_name_list = [job["name"] for job in folder["jobs"]]
+        job_without_branch_exists = False
         # Try case-insensitive (Jenkins org-folder limitation)
         if _repo not in job_name_list:
             self.logger.debug("Trying case-insensitive match with job: <%s>" % name)
             for job_name in job_name_list:
                 if _repo.lower() in [job_name.lower()]:
+                    job_without_branch_exists = True
                     name = "/".join([_org, job_name, _branch])
                     self.logger.debug("Using new job name: <%s>" % name)
                     break
+        else:
+            job_without_branch_exists = True
+        if no_branch:
+            return job_without_branch_exists
         try:
             job_info = self.server.get_job_info(name, depth=depth)
             self.logger.debug(
@@ -112,12 +124,13 @@ class JenkinsUtils(object):
             )
         return job_info
 
-    def exist_job(self, job_name):
+    def exist_job(self, job_name, no_branch=False):
         """Check whether given job is defined in Jenkins.
 
         :param job_name: job name including folder/s, name & branch
+        :param no_branch: flag to indicate whether to check for the branch name in the job
         """
-        return self.get_job_info(job_name)
+        return self.get_job_info(job_name, no_branch=no_branch)
 
     @timeout_decorator.timeout(
         10,
