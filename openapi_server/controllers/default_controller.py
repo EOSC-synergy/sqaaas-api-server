@@ -258,10 +258,10 @@ async def _get_tooling_for_assessment(
                                         os.path.relpath(_file, path)
                                         for _file in files_found
                                     ]
-                                    tool["args"] = (
-                                        ctls_utils.add_explicit_paths_for_tool(
-                                            tool["args"], _relative_paths
-                                        )
+                                    tool[
+                                        "args"
+                                    ] = ctls_utils.add_explicit_paths_for_tool(
+                                        tool["args"], _relative_paths
                                     )
                                 break
                         if not files_found:
@@ -829,7 +829,11 @@ async def delete_pipeline_by_id(request: web.Request, pipeline_id) -> web.Respon
                 "%s)" % (pipeline_id, build_status)
             )
         else:
-            jk_utils.stop_build(jk_job_name, build_no)
+            try:
+                jk_utils.stop_build(jk_job_name, build_no)
+            except Exception as e:
+                logger.error(str(e))
+                return web.Response(status=502, reason=str(e), text=str(e))
             logger.info("Stopping current build of pipeline <%s>" % pipeline_id)
             logger.debug("Stopping build: %s" % build_info["url"])
             # Set build status to ABORTED
@@ -1216,19 +1220,29 @@ async def run_pipeline(
                     "organisation folder name: %s" % JENKINS_GITHUB_ORG
                 )
                 creds_folder = JENKINS_GITHUB_ORG
-
-            jk_utils.create_credential(_id, _user_id, _token, folder_name=creds_folder)
-            creds_tmp.append(_id)
+            try:
+                jk_utils.create_credential(
+                    _id, _user_id, _token, folder_name=creds_folder
+                )
+            except Exception as e:
+                logger.error(str(e))
+                return web.Response(status=502, reason=str(e), text=str(e))
+            else:
+                creds_tmp.append(_id)
 
     # 1) Check if job already exists on Jenkins
     job_exists = False
     last_build_no = -1
-    if jk_utils.exist_job(jk_job_name_full):
-        job_exists = True
-        logger.warning("Jenkins job <%s> already exists!" % jk_job_name_full)
-        _job_info = jk_utils.get_job_info(jk_job_name_full)
-        jk_job_name_full = _job_info["fullName"]
-        last_build_no = _job_info["lastBuild"]["number"]
+    try:
+        if jk_utils.exist_job(jk_job_name_full):
+            job_exists = True
+            logger.warning("Jenkins job <%s> already exists!" % jk_job_name_full)
+            _job_info = jk_utils.get_job_info(jk_job_name_full)
+            jk_job_name_full = _job_info["fullName"]
+            last_build_no = _job_info["lastBuild"]["number"]
+    except Exception as e:
+        logger.error(str(e))
+        return web.Response(status=502, reason=str(e), text=str(e))
 
     # 2) Include badge status in the commit
     badge_status = "not assessed"
@@ -1277,10 +1291,17 @@ async def run_pipeline(
         if build_job_task.done():
             build_no, build_status, build_url, build_item_no = build_job_task.result()
     else:
-        jk_utils.scan_organization(org_name=JENKINS_GITHUB_ORG, job_name=jk_job_name)
-        scan_org_wait = True
-        build_status = "WAITING_SCAN_ORG"
-        reason = "Triggered scan organization for building the Jenkins job"
+        try:
+            jk_utils.scan_organization(
+                org_name=JENKINS_GITHUB_ORG, job_name=jk_job_name
+            )
+        except Exception as e:
+            logger.error(str(e))
+            return web.Response(status=502, reason=str(e), text=str(e))
+        else:
+            scan_org_wait = True
+            build_status = "WAITING_SCAN_ORG"
+            reason = "Triggered scan organization for building the Jenkins job"
 
     if issue_badge:
         logger.debug(
@@ -1334,7 +1355,11 @@ async def _handle_job_building(jk_job_name_full, build_to_check):
     while not _build_triggered:
         if _count_tries >= _max_tries:
             break
-        _job_info = jk_utils.get_job_info(jk_job_name_full)
+        try:
+            _job_info = jk_utils.get_job_info(jk_job_name_full)
+        except Exception as e:
+            logger.error(str(e))
+            return web.Response(status=502, reason=str(e), text=str(e))
         # NOTE (Jenkins API specific) First element of _builds
         # should match 'build_to_check'
         _builds = _job_info["builds"]
@@ -1356,8 +1381,12 @@ async def _handle_job_building(jk_job_name_full, build_to_check):
         await asyncio.sleep(5)
     # Build manually if not triggered automatically
     if not _build_triggered:
-        # <build_item_no> is only valid for about 5 min after job completion
-        build_item_no = jk_utils.build_job(jk_job_name_full)
+        try:
+            # <build_item_no> is only valid for about 5 min after job completion
+            build_item_no = jk_utils.build_job(jk_job_name_full)
+        except Exception as e:
+            logger.error(str(e))
+            return web.Response(status=502, reason=str(e), text=str(e))
         if build_item_no:
             build_status = "QUEUED"
             logger.info(
@@ -1411,7 +1440,11 @@ async def _update_status(pipeline_id, triggered_by_run=False, build_task=None):
 
     if jenkins_info["scan_org_wait"]:
         logger.debug("scan_org_wait still enabled for pipeline job: %s" % jk_job_name)
-        _job_info = jk_utils.get_job_info(jk_job_name)
+        try:
+            _job_info = jk_utils.get_job_info(jk_job_name)
+        except Exception as e:
+            logger.error(str(e))
+            return web.Response(status=502, reason=str(e), text=str(e))
         if _job_info.get("lastBuild", None):
             try:
                 build_url = _job_info["lastBuild"]["url"]
@@ -1440,7 +1473,11 @@ async def _update_status(pipeline_id, triggered_by_run=False, build_task=None):
                     await build_task
                 build_no, build_status, build_url, build_item_no = build_task.result()
                 if build_item_no:
-                    build_data = await jk_utils.get_queue_item(build_item_no)
+                    try:
+                        build_data = await jk_utils.get_queue_item(build_item_no)
+                    except Exception as e:
+                        logger.error(str(e))
+                        return web.Response(status=502, reason=str(e), text=str(e))
                     if build_data:
                         build_no = build_data["number"]
                         build_url = build_data["url"]
@@ -1459,14 +1496,24 @@ async def _update_status(pipeline_id, triggered_by_run=False, build_task=None):
                 elif build_no and build_status:
                     build_data = True
     else:
-        _status = jk_utils.get_build_info(jk_job_name, build_no)
+        try:
+            _status = jk_utils.get_build_info(jk_job_name, build_no)
+        except Exception as e:
+            logger.error(str(e))
+            return web.Response(status=502, reason=str(e), text=str(e))
         if _status["result"]:
             build_status = _status["result"]
             logger.debug("Job result returned from Jenkins: %s" % _status["result"])
             # Set as UNSTABLE when cleanup stage fails
-            if jk_utils.cleanup_stage_failed(jk_job_name, build_no):
-                build_status = "UNSTABLE"
-                logger.info("Cleanup stage failed: setting pipeline status to UNSTABLE")
+            try:
+                if jk_utils.cleanup_stage_failed(jk_job_name, build_no):
+                    build_status = "UNSTABLE"
+                    logger.info(
+                        "Cleanup stage failed: setting pipeline status to UNSTABLE"
+                    )
+            except Exception as e:
+                logger.error(str(e))
+                return web.Response(status=502, reason=str(e), text=str(e))
         else:
             if _status.get("queueId", None):
                 build_status = "EXECUTING"
@@ -1538,8 +1585,13 @@ async def get_pipeline_status(request: web.Request, pipeline_id) -> web.Response
     creds_tmp_copy = copy.deepcopy(creds_tmp)
     if build_status in JENKINS_COMPLETED_STATUS:
         for _id in creds_tmp:
-            jk_utils.remove_credential(_id, folder_name=creds_folder)
-            creds_tmp_copy.remove(_id)
+            try:
+                jk_utils.remove_credential(_id, folder_name=creds_folder)
+            except Exception as e:
+                logger.error(str(e))
+                return web.Response(status=502, reason=str(e), text=str(e))
+            else:
+                creds_tmp_copy.remove(_id)
 
     # Return values
     r = {"build_url": build_url, "build_status": build_status}
@@ -1775,9 +1827,13 @@ async def _get_output(pipeline_id, validate=False):
     jenkins_info = pipeline_data["jenkins"]
     build_info = jenkins_info["build_info"]
 
-    stage_data_list = jk_utils.get_stage_data(
-        jenkins_info["job_name"], build_info["number"]
-    )
+    try:
+        stage_data_list = jk_utils.get_stage_data(
+            jenkins_info["job_name"], build_info["number"]
+        )
+    except Exception as e:
+        logger.error(str(e))
+        return web.Response(status=502, reason=str(e), text=str(e))
 
     output_data = stage_data_list
     if validate:
