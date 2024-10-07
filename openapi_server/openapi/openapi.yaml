@@ -11,7 +11,7 @@ info:
     name: GPLv3
     url: https://www.gnu.org/licenses/gpl-3.0.txt
   title: SQAaaS API
-  version: 3.2.1
+  version: 3.4.0
 servers:
 - description: Main (production) API server
   url: https://api.sqaaas.eosc-synergy.eu/v1
@@ -121,6 +121,39 @@ paths:
       description: |
         Creates a pipeline for assessment (QAA module).
       operationId: add_pipeline_for_assessment
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CriterionWorkflow'
+        required: true
+        x-body-name: body
+      responses:
+        "201":
+          content:
+            application/json:
+              example:
+                id: dd7d8481-81a3-407f-95f0-a2f1cb382a4b
+              schema:
+                $ref: '#/components/schemas/add_pipeline_201_response'
+          description: Created
+          links:
+            get_pipeline_by_pipeline_id:
+              description: |
+                The `id` value returned in the response can be used as the `pipeline_id` parameter in `GET /pipeline/{pipeline_id}`.
+              operationId: get_pipeline_by_id
+              parameters:
+                pipeline_id: $response.body#/id
+        "400":
+          description: Request failed validation
+      summary: Creates a pipeline for assessment (QAA module).
+      x-openapi-router-controller: openapi_server.controllers.default_controller
+      x-codegen-request-body-name: body
+  /pipeline/assessment/custom:
+    post:
+      description: |
+        Creates a pipeline for a custom assessment (QAA module).
+      operationId: add_pipeline_for_assessment_custom
       parameters:
       - description: Optional tools that shall be accounted
         explode: true
@@ -157,7 +190,7 @@ paths:
                 pipeline_id: $response.body#/id
         "400":
           description: Request failed validation
-      summary: Creates a pipeline for assessment (QAA module).
+      summary: Creates a pipeline for a custom assessment (QAA module).
       x-openapi-router-controller: openapi_server.controllers.default_controller
       x-codegen-request-body-name: body
   /pipeline/assessment/{pipeline_id}/output:
@@ -1712,101 +1745,6 @@ components:
           $ref: '#/components/schemas/JePL_jenkinsfile'
       title: Pipeline
       type: object
-    AssessmentDeployment:
-      example:
-        repo_deploy:
-          credentials_id: null
-          repo: https://github.com/eosc-synergy/sqaaas-api-spec
-          subfolder: src
-          branch: master
-        deploy_tool:
-          args:
-          - summary: summary
-            args:
-            - null
-            - null
-            repeatable: false
-            selectable: true
-            format: string
-            description: Detect the license of the given project
-            id: id
-            type: subcommand
-            value: detect
-            option: option
-          - summary: summary
-            args:
-            - null
-            - null
-            repeatable: false
-            selectable: true
-            format: string
-            description: Detect the license of the given project
-            id: id
-            type: subcommand
-            value: detect
-            option: option
-          docs: https://openapi-generator.tech
-          name: fair-eva
-          lang: fair
-          jepl_support: true
-          version: 2.0.0
-          executable: executable
-          docker:
-            image: image
-            dockerfile: dockerfile
-            reviewed: 2000-01-23
-            oneshot: true
-      properties:
-        repo_deploy:
-          $ref: '#/components/schemas/Repository'
-        deploy_tool:
-          $ref: '#/components/schemas/Tool'
-      title: AssessmentDeployment
-      type: object
-    AssessmentFAIR:
-      example:
-        fair_tool:
-          args:
-          - summary: summary
-            args:
-            - null
-            - null
-            repeatable: false
-            selectable: true
-            format: string
-            description: Detect the license of the given project
-            id: id
-            type: subcommand
-            value: detect
-            option: option
-          - summary: summary
-            args:
-            - null
-            - null
-            repeatable: false
-            selectable: true
-            format: string
-            description: Detect the license of the given project
-            id: id
-            type: subcommand
-            value: detect
-            option: option
-          docs: https://openapi-generator.tech
-          name: fair-eva
-          lang: fair
-          jepl_support: true
-          version: 2.0.0
-          executable: executable
-          docker:
-            image: image
-            dockerfile: dockerfile
-            reviewed: 2000-01-23
-            oneshot: true
-      properties:
-        fair_tool:
-          $ref: '#/components/schemas/Tool'
-      title: AssessmentFAIR
-      type: object
     CriterionWorkflow:
       example:
         id: QC.Sty
@@ -1896,264 +1834,6 @@ components:
           title: tools
           type: array
       title: CriterionWorkflow
-      type: object
-    Assessment:
-      example:
-        repo_docs:
-          credentials_id: null
-          repo: https://github.com/eosc-synergy/sqaaas-api-spec
-          subfolder: src
-          branch: master
-        repo_code:
-          credentials_id: null
-          repo: https://github.com/eosc-synergy/sqaaas-api-spec
-          subfolder: src
-          branch: master
-        fair:
-          fair_tool:
-            args:
-            - summary: summary
-              args:
-              - null
-              - null
-              repeatable: false
-              selectable: true
-              format: string
-              description: Detect the license of the given project
-              id: id
-              type: subcommand
-              value: detect
-              option: option
-            - summary: summary
-              args:
-              - null
-              - null
-              repeatable: false
-              selectable: true
-              format: string
-              description: Detect the license of the given project
-              id: id
-              type: subcommand
-              value: detect
-              option: option
-            docs: https://openapi-generator.tech
-            name: fair-eva
-            lang: fair
-            jepl_support: true
-            version: 2.0.0
-            executable: executable
-            docker:
-              image: image
-              dockerfile: dockerfile
-              reviewed: 2000-01-23
-              oneshot: true
-        criteria_workflow:
-        - id: QC.Sty
-          tools:
-          - args:
-            - summary: summary
-              args:
-              - null
-              - null
-              repeatable: false
-              selectable: true
-              format: string
-              description: Detect the license of the given project
-              id: id
-              type: subcommand
-              value: detect
-              option: option
-            - summary: summary
-              args:
-              - null
-              - null
-              repeatable: false
-              selectable: true
-              format: string
-              description: Detect the license of the given project
-              id: id
-              type: subcommand
-              value: detect
-              option: option
-            docs: https://openapi-generator.tech
-            name: fair-eva
-            lang: fair
-            jepl_support: true
-            version: 2.0.0
-            executable: executable
-            docker:
-              image: image
-              dockerfile: dockerfile
-              reviewed: 2000-01-23
-              oneshot: true
-          - args:
-            - summary: summary
-              args:
-              - null
-              - null
-              repeatable: false
-              selectable: true
-              format: string
-              description: Detect the license of the given project
-              id: id
-              type: subcommand
-              value: detect
-              option: option
-            - summary: summary
-              args:
-              - null
-              - null
-              repeatable: false
-              selectable: true
-              format: string
-              description: Detect the license of the given project
-              id: id
-              type: subcommand
-              value: detect
-              option: option
-            docs: https://openapi-generator.tech
-            name: fair-eva
-            lang: fair
-            jepl_support: true
-            version: 2.0.0
-            executable: executable
-            docker:
-              image: image
-              dockerfile: dockerfile
-              reviewed: 2000-01-23
-              oneshot: true
-        - id: QC.Sty
-          tools:
-          - args:
-            - summary: summary
-              args:
-              - null
-              - null
-              repeatable: false
-              selectable: true
-              format: string
-              description: Detect the license of the given project
-              id: id
-              type: subcommand
-              value: detect
-              option: option
-            - summary: summary
-              args:
-              - null
-              - null
-              repeatable: false
-              selectable: true
-              format: string
-              description: Detect the license of the given project
-              id: id
-              type: subcommand
-              value: detect
-              option: option
-            docs: https://openapi-generator.tech
-            name: fair-eva
-            lang: fair
-            jepl_support: true
-            version: 2.0.0
-            executable: executable
-            docker:
-              image: image
-              dockerfile: dockerfile
-              reviewed: 2000-01-23
-              oneshot: true
-          - args:
-            - summary: summary
-              args:
-              - null
-              - null
-              repeatable: false
-              selectable: true
-              format: string
-              description: Detect the license of the given project
-              id: id
-              type: subcommand
-              value: detect
-              option: option
-            - summary: summary
-              args:
-              - null
-              - null
-              repeatable: false
-              selectable: true
-              format: string
-              description: Detect the license of the given project
-              id: id
-              type: subcommand
-              value: detect
-              option: option
-            docs: https://openapi-generator.tech
-            name: fair-eva
-            lang: fair
-            jepl_support: true
-            version: 2.0.0
-            executable: executable
-            docker:
-              image: image
-              dockerfile: dockerfile
-              reviewed: 2000-01-23
-              oneshot: true
-        deployment:
-          repo_deploy:
-            credentials_id: null
-            repo: https://github.com/eosc-synergy/sqaaas-api-spec
-            subfolder: src
-            branch: master
-          deploy_tool:
-            args:
-            - summary: summary
-              args:
-              - null
-              - null
-              repeatable: false
-              selectable: true
-              format: string
-              description: Detect the license of the given project
-              id: id
-              type: subcommand
-              value: detect
-              option: option
-            - summary: summary
-              args:
-              - null
-              - null
-              repeatable: false
-              selectable: true
-              format: string
-              description: Detect the license of the given project
-              id: id
-              type: subcommand
-              value: detect
-              option: option
-            docs: https://openapi-generator.tech
-            name: fair-eva
-            lang: fair
-            jepl_support: true
-            version: 2.0.0
-            executable: executable
-            docker:
-              image: image
-              dockerfile: dockerfile
-              reviewed: 2000-01-23
-              oneshot: true
-      properties:
-        repo_code:
-          $ref: '#/components/schemas/Repository'
-        repo_docs:
-          $ref: '#/components/schemas/Repository'
-        deployment:
-          $ref: '#/components/schemas/AssessmentDeployment'
-        fair:
-          $ref: '#/components/schemas/AssessmentFAIR'
-        criteria_workflow:
-          items:
-            $ref: '#/components/schemas/CriterionWorkflow'
-          title: criteria_workflow
-          type: array
-      title: Assessment
       type: object
     AssessmentOutputRepository:
       example:
@@ -2852,6 +2532,359 @@ components:
         badge:
           $ref: '#/components/schemas/AssessmentOutput_badge'
       title: AssessmentOutput
+      type: object
+    AssessmentDeployment:
+      example:
+        repo_deploy:
+          credentials_id: null
+          repo: https://github.com/eosc-synergy/sqaaas-api-spec
+          subfolder: src
+          branch: master
+        deploy_tool:
+          args:
+          - summary: summary
+            args:
+            - null
+            - null
+            repeatable: false
+            selectable: true
+            format: string
+            description: Detect the license of the given project
+            id: id
+            type: subcommand
+            value: detect
+            option: option
+          - summary: summary
+            args:
+            - null
+            - null
+            repeatable: false
+            selectable: true
+            format: string
+            description: Detect the license of the given project
+            id: id
+            type: subcommand
+            value: detect
+            option: option
+          docs: https://openapi-generator.tech
+          name: fair-eva
+          lang: fair
+          jepl_support: true
+          version: 2.0.0
+          executable: executable
+          docker:
+            image: image
+            dockerfile: dockerfile
+            reviewed: 2000-01-23
+            oneshot: true
+      properties:
+        repo_deploy:
+          $ref: '#/components/schemas/Repository'
+        deploy_tool:
+          $ref: '#/components/schemas/Tool'
+      title: AssessmentDeployment
+      type: object
+    AssessmentFAIR:
+      example:
+        fair_tool:
+          args:
+          - summary: summary
+            args:
+            - null
+            - null
+            repeatable: false
+            selectable: true
+            format: string
+            description: Detect the license of the given project
+            id: id
+            type: subcommand
+            value: detect
+            option: option
+          - summary: summary
+            args:
+            - null
+            - null
+            repeatable: false
+            selectable: true
+            format: string
+            description: Detect the license of the given project
+            id: id
+            type: subcommand
+            value: detect
+            option: option
+          docs: https://openapi-generator.tech
+          name: fair-eva
+          lang: fair
+          jepl_support: true
+          version: 2.0.0
+          executable: executable
+          docker:
+            image: image
+            dockerfile: dockerfile
+            reviewed: 2000-01-23
+            oneshot: true
+      properties:
+        fair_tool:
+          $ref: '#/components/schemas/Tool'
+      title: AssessmentFAIR
+      type: object
+    Assessment:
+      example:
+        repo_docs:
+          credentials_id: null
+          repo: https://github.com/eosc-synergy/sqaaas-api-spec
+          subfolder: src
+          branch: master
+        repo_code:
+          credentials_id: null
+          repo: https://github.com/eosc-synergy/sqaaas-api-spec
+          subfolder: src
+          branch: master
+        fair:
+          fair_tool:
+            args:
+            - summary: summary
+              args:
+              - null
+              - null
+              repeatable: false
+              selectable: true
+              format: string
+              description: Detect the license of the given project
+              id: id
+              type: subcommand
+              value: detect
+              option: option
+            - summary: summary
+              args:
+              - null
+              - null
+              repeatable: false
+              selectable: true
+              format: string
+              description: Detect the license of the given project
+              id: id
+              type: subcommand
+              value: detect
+              option: option
+            docs: https://openapi-generator.tech
+            name: fair-eva
+            lang: fair
+            jepl_support: true
+            version: 2.0.0
+            executable: executable
+            docker:
+              image: image
+              dockerfile: dockerfile
+              reviewed: 2000-01-23
+              oneshot: true
+        criteria_workflow:
+        - id: QC.Sty
+          tools:
+          - args:
+            - summary: summary
+              args:
+              - null
+              - null
+              repeatable: false
+              selectable: true
+              format: string
+              description: Detect the license of the given project
+              id: id
+              type: subcommand
+              value: detect
+              option: option
+            - summary: summary
+              args:
+              - null
+              - null
+              repeatable: false
+              selectable: true
+              format: string
+              description: Detect the license of the given project
+              id: id
+              type: subcommand
+              value: detect
+              option: option
+            docs: https://openapi-generator.tech
+            name: fair-eva
+            lang: fair
+            jepl_support: true
+            version: 2.0.0
+            executable: executable
+            docker:
+              image: image
+              dockerfile: dockerfile
+              reviewed: 2000-01-23
+              oneshot: true
+          - args:
+            - summary: summary
+              args:
+              - null
+              - null
+              repeatable: false
+              selectable: true
+              format: string
+              description: Detect the license of the given project
+              id: id
+              type: subcommand
+              value: detect
+              option: option
+            - summary: summary
+              args:
+              - null
+              - null
+              repeatable: false
+              selectable: true
+              format: string
+              description: Detect the license of the given project
+              id: id
+              type: subcommand
+              value: detect
+              option: option
+            docs: https://openapi-generator.tech
+            name: fair-eva
+            lang: fair
+            jepl_support: true
+            version: 2.0.0
+            executable: executable
+            docker:
+              image: image
+              dockerfile: dockerfile
+              reviewed: 2000-01-23
+              oneshot: true
+        - id: QC.Sty
+          tools:
+          - args:
+            - summary: summary
+              args:
+              - null
+              - null
+              repeatable: false
+              selectable: true
+              format: string
+              description: Detect the license of the given project
+              id: id
+              type: subcommand
+              value: detect
+              option: option
+            - summary: summary
+              args:
+              - null
+              - null
+              repeatable: false
+              selectable: true
+              format: string
+              description: Detect the license of the given project
+              id: id
+              type: subcommand
+              value: detect
+              option: option
+            docs: https://openapi-generator.tech
+            name: fair-eva
+            lang: fair
+            jepl_support: true
+            version: 2.0.0
+            executable: executable
+            docker:
+              image: image
+              dockerfile: dockerfile
+              reviewed: 2000-01-23
+              oneshot: true
+          - args:
+            - summary: summary
+              args:
+              - null
+              - null
+              repeatable: false
+              selectable: true
+              format: string
+              description: Detect the license of the given project
+              id: id
+              type: subcommand
+              value: detect
+              option: option
+            - summary: summary
+              args:
+              - null
+              - null
+              repeatable: false
+              selectable: true
+              format: string
+              description: Detect the license of the given project
+              id: id
+              type: subcommand
+              value: detect
+              option: option
+            docs: https://openapi-generator.tech
+            name: fair-eva
+            lang: fair
+            jepl_support: true
+            version: 2.0.0
+            executable: executable
+            docker:
+              image: image
+              dockerfile: dockerfile
+              reviewed: 2000-01-23
+              oneshot: true
+        deployment:
+          repo_deploy:
+            credentials_id: null
+            repo: https://github.com/eosc-synergy/sqaaas-api-spec
+            subfolder: src
+            branch: master
+          deploy_tool:
+            args:
+            - summary: summary
+              args:
+              - null
+              - null
+              repeatable: false
+              selectable: true
+              format: string
+              description: Detect the license of the given project
+              id: id
+              type: subcommand
+              value: detect
+              option: option
+            - summary: summary
+              args:
+              - null
+              - null
+              repeatable: false
+              selectable: true
+              format: string
+              description: Detect the license of the given project
+              id: id
+              type: subcommand
+              value: detect
+              option: option
+            docs: https://openapi-generator.tech
+            name: fair-eva
+            lang: fair
+            jepl_support: true
+            version: 2.0.0
+            executable: executable
+            docker:
+              image: image
+              dockerfile: dockerfile
+              reviewed: 2000-01-23
+              oneshot: true
+      properties:
+        repo_code:
+          $ref: '#/components/schemas/Repository'
+        repo_docs:
+          $ref: '#/components/schemas/Repository'
+        deployment:
+          $ref: '#/components/schemas/AssessmentDeployment'
+        fair:
+          $ref: '#/components/schemas/AssessmentFAIR'
+        criteria_workflow:
+          items:
+            $ref: '#/components/schemas/CriterionWorkflow'
+          title: criteria_workflow
+          type: array
+      title: Assessment
       type: object
     UpstreamError:
       properties:
