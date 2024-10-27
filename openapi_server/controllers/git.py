@@ -12,10 +12,11 @@ import tempfile
 
 from git import Repo, cmd
 from git.exc import GitCommandError
+from urllib3.util import Url, parse_url
+
 from openapi_server import config
 from openapi_server.controllers import crypto as crypto_utils
 from openapi_server.exception import SQAaaSAPIException
-from urllib3.util import Url, parse_url
 
 logger = logging.getLogger("sqaaas.api.git")
 
@@ -202,7 +203,11 @@ class GitUtils(object):
             repo = None
             try:
                 repo = Repo.clone_from(
-                    source_repo, dirpath, single_branch=True, b=source_repo_branch
+                    source_repo,
+                    dirpath,
+                    single_branch=True,
+                    b=source_repo_branch,
+                    depth=1,
                 )
             except GitCommandError as e:
                 _msg = GitUtils._custom_exception_messages(
@@ -253,6 +258,7 @@ class GitUtils(object):
                             dirpath,
                             single_branch=True,
                             b=source_repo_branch,
+                            depth=1,
                         )
                         msg = "Repository <%s> was cloned (branch: %s)" % (
                             source_repo_no_creds,
