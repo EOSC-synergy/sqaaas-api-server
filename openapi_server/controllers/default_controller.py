@@ -258,10 +258,10 @@ async def _get_tooling_for_assessment(
                                         os.path.relpath(_file, path)
                                         for _file in files_found
                                     ]
-                                    tool[
-                                        "args"
-                                    ] = ctls_utils.add_explicit_paths_for_tool(
-                                        tool["args"], _relative_paths
+                                    tool["args"] = (
+                                        ctls_utils.add_explicit_paths_for_tool(
+                                            tool["args"], _relative_paths
+                                        )
                                     )
                                 break
                         if not files_found:
@@ -757,6 +757,14 @@ async def add_pipeline_for_assessment_custom(
     :type optional_tools: List[str]
     """
     body = ctls_utils.del_empty_keys(body)
+    criterion_id = body.get("id", "")
+    tools = body.get("tools", [])
+
+    logger.debug(
+        "Requested custom assessment of criterion <%s> with tool/s: %s"
+        % (criterion_id, tools)
+    )
+
     return web.Response(status=200)
 
 
