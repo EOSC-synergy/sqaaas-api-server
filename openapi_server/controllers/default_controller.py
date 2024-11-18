@@ -2293,10 +2293,14 @@ async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Re
     # Compose the final payload
     pipeline_repo = pipeline_data["pipeline_repo"]
     pipeline_repo_branch = pipeline_data["pipeline_repo_branch"]
+    report_url_raw = _get_report_url_raw(pipeline_repo, pipeline_repo_branch)
     r = {
         "meta": {
             "version": _get_spec_version(),
-            "report_json_url": _get_report_url_raw(pipeline_repo, pipeline_repo_branch),
+            "report_json_url": report_url_raw,
+            "report_permalink": os.path.join(
+                "https://sqaaas.eosc-synergy.eu/full-assessment/report/", report_url_raw
+            ),
         },
         "repository": _repo_settings,
         "report": report_data_copy,
