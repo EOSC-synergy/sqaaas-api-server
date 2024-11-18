@@ -20,7 +20,6 @@ repos:
   rev: 5.13.2
   hooks:
     - id: isort
-      exclude: openapi_server/models
 - repo: https://github.com/pycqa/flake8
   rev: 3.7.9
   hooks:

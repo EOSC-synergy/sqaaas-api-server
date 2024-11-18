@@ -21,12 +21,14 @@ from urllib import parse as urllib_parse
 from zipfile import ZipFile, ZipInfo
 
 import namegenerator
-import openapi_server
 import pandas
 import yaml
 from aiohttp import web
 from deepdiff import DeepDiff
 from jinja2 import Environment, PackageLoader
+from report2sqaaas import utils as r2s_utils
+
+import openapi_server
 from openapi_server import config, controllers
 from openapi_server.controllers import crypto as crypto_utils
 from openapi_server.controllers import db
@@ -35,7 +37,6 @@ from openapi_server.controllers.git import GitUtils
 from openapi_server.controllers.jepl import JePLUtils
 from openapi_server.exception import SQAaaSAPIException
 from openapi_server.models.inline_object import InlineObject
-from report2sqaaas import utils as r2s_utils
 
 LEVELS_FOR_ASSESSMENT = ["REQUIRED", "RECOMMENDED"]
 
@@ -758,12 +759,39 @@ async def add_pipeline_for_assessment_custom(
     """
     body = ctls_utils.del_empty_keys(body)
     criterion_id = body.get("id", "")
-    tools = body.get("tools", [])
+    tool_list = body.get("tools", [])
 
     logger.debug(
         "Requested custom assessment of criterion <%s> with tool/s: %s"
-        % (criterion_id, tools)
+        % (criterion_id, tool_list)
     )
+
+    criteria_data_list = await _get_criteria()
+    matched_criterion_data = {}
+    for _criterion_data in criteria_data_list:
+        if criterion_id in [_criterion_data["id"]]:
+            matched_criterion_data = _criterion_data
+
+    if not matched_criterion_data:
+        _reason = (
+            "No matching quality criterion found for the given identifier '%s'"
+            % criterion_id
+        )
+        logger.error(_reason)
+        raise SQAaaSAPIException(422, _reason)
+
+    matched_tool_list = []
+    for _tool_data in tool_list:
+        _tool_name = _tool_data["name"]
+        _tool_list_matched = matched_criterion_data.get("tools", [])
+        for _tool_data_matched in _tool_list_matched:
+            if _tool_name in [_tool_data_matched.get("name", "")]:
+                matched_tool_list.append(_tool_data_matched)
+
+    if not matched_tool_list:
+        logger.debug("No built-in supported tool found for: %s" % tool_list)
+    else:
+        logger.debug("Matched tool list: %s" % matched_tool_list)
 
     return web.Response(status=200)
 
