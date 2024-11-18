@@ -12,6 +12,7 @@ import json
 import logging
 import os
 import re
+import time
 import uuid
 from importlib.metadata import version as impversion
 from importlib.resources import files as impfiles
@@ -2301,6 +2302,7 @@ async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Re
             "report_permalink": os.path.join(
                 "https://sqaaas.eosc-synergy.eu/full-assessment/report/", report_url_raw
             ),
+            "timestamp": time.time(),
         },
         "repository": _repo_settings,
         "report": report_data_copy,
