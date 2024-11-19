@@ -519,7 +519,10 @@ def _validate_assessment_input(body):
 
 @ctls_utils.debug_request
 async def add_pipeline_for_assessment(
-    request: web.Request, body, user_requested_tools=[]
+    request: web.Request,
+    body,
+    user_requested_tools=[],
+    run_criteria_workflow_only=False,
 ) -> web.Response:
     """Creates a pipeline for assessment (QAA module).
 
@@ -529,6 +532,9 @@ async def add_pipeline_for_assessment(
     :type body: dict | bytes
     :param user_requested_tools: Optional tools that shall be accounted
     :type user_requested_tools: list
+    :param run_criteria_workflow_only: Boolean that triggers only the assessment of the
+        criteria passed under criteria_workflow
+    :type run_criteria_workflow_only: bool
     """
     # FIXME If it is applicable to every HTTP request, it shall be added as
     # part of the validate_request() decorator
