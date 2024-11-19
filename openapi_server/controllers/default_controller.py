@@ -591,6 +591,7 @@ async def add_pipeline_for_assessment(
 
     # 1.1 Add custom criteria
     criteria_workflow = body.get("criteria_workflow", [])
+    do_full_assessment = True
     if criteria_workflow:
         if run_criteria_workflow_only:
             logger.debug(
@@ -599,9 +600,10 @@ async def add_pipeline_for_assessment(
             # Overwrite the criteria list to the one passed in 'criteria_workflow'
             criteria_data_list = criteria_workflow
             logger.info(
-                "The list of criteria is now restricted to the one passed through the 'criteria_workflow' parameter"
+                "Full assessment not requested: the list of criteria is now restricted to the one passed through the 'criteria_workflow' parameter"
             )
             logger.debug("Resultant criteria list is: %s" % criteria_data_list)
+            do_full_assessment = False
         else:
             criteria_data_list_new = []
             # Overwrite the criterion id (if present)
@@ -757,6 +759,7 @@ async def add_pipeline_for_assessment(
         {
             "digital_object_type": digital_object_type,
             "criteria_filtered": criteria_filtered,
+            "do_full_assessment": do_full_assessment,
         },
     )
 
@@ -1325,19 +1328,27 @@ async def run_pipeline(
         return web.Response(status=502, reason=str(e), text=str(e))
 
     # 2) Include badge status in the commit
-    badge_status = "not assessed"
-    digital_object_type = pipeline_data["qaa"]["digital_object_type"]
-    additional_files_list.append(
-        {
-            "file_name": STATUS_BADGE_LOCATION,
-            "file_data": ctls_utils.get_status_badge(badge_status, digital_object_type),
-        }
-    )
-    # Update DB
-    _repo_settings = pipeline_data.get("repo_settings", [])
-    for _repo_data in _repo_settings:
-        _repo_data["badge_status"] = badge_status
-    db.add_repo_settings(pipeline_id, _repo_settings)
+    pipeline_qaa_data = pipeline_data["qaa"]
+    do_full_assessment = pipeline_qaa_data.get("do_full_assessment", True)
+    if do_full_assessment:
+        digital_object_type = pipeline_qaa_data["digital_object_type"]
+        badge_status = "not assessed"
+        additional_files_list.append(
+            {
+                "file_name": STATUS_BADGE_LOCATION,
+                "file_data": ctls_utils.get_status_badge(
+                    badge_status, digital_object_type
+                ),
+            }
+        )
+        # Update DB
+        _repo_settings = pipeline_data.get("repo_settings", [])
+        for _repo_data in _repo_settings:
+            _repo_data["badge_status"] = badge_status
+        db.add_repo_settings(pipeline_id, _repo_settings)
+    else:
+        issue_badge = False
+        logger.debug("Full assessment not requested: disabling badge issuance")
 
     # 3) Do the commit
     try:
@@ -1612,20 +1623,26 @@ async def _update_status(pipeline_id, triggered_by_run=False, build_task=None):
     )
 
     # Update assessment status on DB (and push payload)
-    badge_status = None
-    if build_status in ["SUCCESS", "UNSTABLE"]:  # done, success
-        pass  # keep previous status
-    elif build_status in ["ABORTED", "FAILURE"]:  # done, failure
-        badge_status = "nullified"
-    elif build_status in ["WAITING_SCAN_ORG"]:
-        badge_status = "not assessed"  # hack to avoid doing a new commit
+    pipeline_qaa_data = pipeline_data["qaa"]
+    do_full_assessment = pipeline_qaa_data.get("do_full_assessment", True)
+    if do_full_assessment:
+        logger.debug("Updating badge status")
+        badge_status = None
+        if build_status in ["SUCCESS", "UNSTABLE"]:  # done, success
+            pass  # keep previous status
+        elif build_status in ["ABORTED", "FAILURE"]:  # done, failure
+            badge_status = "nullified"
+        elif build_status in ["WAITING_SCAN_ORG"]:
+            badge_status = "not assessed"  # hack to avoid doing a new commit
+        else:
+            badge_status = "building"
+        logger.debug(
+            "Got current badge status for assessment (build: %s): %s"
+            % (build_status, badge_status)
+        )
+        await _handle_badge_status(pipeline_id, pipeline_data, badge_status)
     else:
-        badge_status = "building"
-    logger.debug(
-        "Got current badge status for assessment (build: %s): %s"
-        % (build_status, badge_status)
-    )
-    await _handle_badge_status(pipeline_id, pipeline_data, badge_status)
+        logger.debug("Full assessment not required: skipping badge status update")
 
     # Add build status to DB
     db.update_jenkins(
@@ -2232,10 +2249,26 @@ async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Re
     except SQAaaSAPIException as e:
         return web.Response(status=e.http_code, reason=e.message, text=e.message)
 
+    # Baseline response
+    pipeline_data = db.get_entry(pipeline_id)
+    r = {
+        "meta": {
+            "version": _get_spec_version(),
+            "timestamp": time.time(),
+        },
+        "repository": pipeline_data["repo_settings"],
+        "report": report_data,
+    }
+
+    # Return baseline response if not tackling full assessment
+    pipeline_qaa_data = pipeline_data["qaa"]
+    do_full_assessment = pipeline_qaa_data.get("do_full_assessment", True)
+    if not do_full_assessment:
+        return web.json_response(r, status=200)
+
     # Gather & format <badge> key
     badge_data = {}
     share_data = None
-    pipeline_data = {}
     report_data_copy = {}
     badge_status = "no_badge"
     _repo_settings = {}
