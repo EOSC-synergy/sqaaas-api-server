@@ -1,5 +1,11 @@
-version: '3.8'
 services:
+  sqaaas-api:
+    build:
+      context: ../
+      dockerfile: ./docker/Dockerfile
+    container_name: sqaaas-api
+    ports:
+     - 8081:8081
   jenkins:
     image: jenkins/jenkins:lts
     container_name: jenkins

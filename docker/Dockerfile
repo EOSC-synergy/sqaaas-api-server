@@ -11,8 +11,7 @@ COPY . /sqaaas-api-server
 WORKDIR /sqaaas-api-server
 RUN pip3 install -r requirements.txt
 RUN pip3 install .
-
-COPY ./docker/docker-entrypoint.sh /usr/local/bin/
+RUN cp ./docker/docker-entrypoint.sh /usr/local/bin/
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 
 ENTRYPOINT ["docker-entrypoint.sh"]
