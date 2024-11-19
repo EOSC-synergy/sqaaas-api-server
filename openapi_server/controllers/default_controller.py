@@ -2165,10 +2165,11 @@ async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Re
     report_data_copy = {}
     badge_status = "no_badge"
     _repo_settings = {}
-    # List of fullfilled criteria per badge type (i.e. [software, services, fair])
+
+    # 1. List of fullfilled criteria per badge type (i.e. [software, services, fair])
     criteria_fulfilled_map = _get_criteria_per_badge_type(report_data)
     if criteria_fulfilled_map:
-        # Get pipeline data for the badge
+        # 1.1. Get pipeline data for the badge
         pipeline_data = db.get_entry(pipeline_id)
         try:
             jenkins_info = pipeline_data["jenkins"]
@@ -2180,7 +2181,24 @@ async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Re
             )
             logger.error(_reason)
             return web.Response(status=422, reason=_reason, text=_reason)
-        # Get Badgr's badgeclass and proceed with badge issuance
+
+        # 1.2. Produce metadata
+        pipeline_repo = pipeline_data["pipeline_repo"]
+        pipeline_repo_branch = pipeline_data["pipeline_repo_branch"]
+        report_url_raw = _get_report_url_raw(pipeline_repo, pipeline_repo_branch)
+        r = {
+            "meta": {
+                "version": _get_spec_version(),
+                "report_json_url": report_url_raw,
+                "report_permalink": os.path.join(
+                    "https://sqaaas.eosc-synergy.eu/full-assessment/report/",
+                    report_url_raw,
+                ),
+                "timestamp": time.time(),
+            }
+        }
+
+        # 1.3. Get Badgr's badgeclass and proceed with badge issuance
         missing_criteria_all = []  # required_for_next_level flag
         # NOTE: 1-to-1 relationship between badge_type and assessment
         badge_type, criteria_fulfilled_list = list(criteria_fulfilled_map.items())[0]
@@ -2191,7 +2209,7 @@ async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Re
         ) = await _badgeclass_matchmaking(
             pipeline_id, badge_type, criteria_fulfilled_list
         )
-        # Generate criteria summary
+        # 1.4. Generate criteria summary
         criteria_summary_copy = copy.deepcopy(criteria_summary)
         for _badge_category, _badge_category_data in criteria_summary_copy.items():
             to_fulfill_set = set(_badge_category_data["to_fulfill"])
@@ -2208,6 +2226,8 @@ async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Re
                     pipeline_id,
                     badge_type,
                     badgeclass_name,
+                    report_permalink=r["meta"]["report_permalink"],
+                    fulfilled_list=fulfilled_list,
                 )
                 badge_data[badge_type]["data"] = badge_obj
             except SQAaaSAPIException as e:
@@ -2237,15 +2257,15 @@ async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Re
                     pipeline_id, pipeline_data, badge_status
                 )
 
-        # Next level badge
+        # 1.5. Next level badge
         next_level_badge = await _get_next_level_badge(badge_category)
         if next_level_badge:
             missing_criteria_all.extend(criteria_summary[next_level_badge]["missing"])
 
-        # Store badge data in DB
+        # 1.6. Store badge data in DB
         db.add_badge_data(pipeline_id, badge_data)
 
-        # Subcriterion required_for_next_level
+        # 1.7. Subcriterion required_for_next_level
         report_data_copy = copy.deepcopy(report_data)
         for criterion, criterion_data in report_data.items():
             _subcriteria = criterion_data["subcriteria"]
@@ -2292,22 +2312,13 @@ async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Re
     )
 
     # Compose the final payload
-    pipeline_repo = pipeline_data["pipeline_repo"]
-    pipeline_repo_branch = pipeline_data["pipeline_repo_branch"]
-    report_url_raw = _get_report_url_raw(pipeline_repo, pipeline_repo_branch)
-    r = {
-        "meta": {
-            "version": _get_spec_version(),
-            "report_json_url": report_url_raw,
-            "report_permalink": os.path.join(
-                "https://sqaaas.eosc-synergy.eu/full-assessment/report/", report_url_raw
-            ),
-            "timestamp": time.time(),
-        },
-        "repository": _repo_settings,
-        "report": report_data_copy,
-        "badge": badge_data,
-    }
+    r.update(
+        {
+            "repository": _repo_settings,
+            "report": report_data_copy,
+            "badge": badge_data,
+        }
+    )
 
     # Store JSON report in the assessment repository
     logger.debug(
@@ -2560,7 +2571,9 @@ async def _badgeclass_matchmaking(pipeline_id, badge_type, criteria_fulfilled_li
     return (badge_awarded_badgeclass_name, badge_awarded_category, criteria_summary)
 
 
-async def _issue_badge(pipeline_id, badge_type, badgeclass_name):
+async def _issue_badge(
+    pipeline_id, badge_type, badgeclass_name, report_permalink, fulfilled_list
+):
     """Issues a badge using BadgrUtils.
 
     :param pipeline_id: ID of the pipeline to get
@@ -2570,19 +2583,15 @@ async def _issue_badge(pipeline_id, badge_type, badgeclass_name):
     :param badgeclass_name: String that corresponds to the BadgeClass name (as it
         appears in Badgr web)
     :type badgeclass_name: str
+    :param report_permalink: Permanent URL for the SQAaaS web URL.
+    :type report_permalink: str
+    :param fulfilled_list: List of fulfilled criteria.
+    :type fulfilled_list: list
     """
     logger.info("Issuing badge for pipeline <%s>" % pipeline_id)
 
     # Get pipeline data
     pipeline_data = db.get_entry(pipeline_id)
-    try:
-        jenkins_info = pipeline_data["jenkins"]
-        build_info = jenkins_info["build_info"]
-    except KeyError:
-        _reason = "Could not retrieve Jenkins job information: Pipeline has not ran yet"
-        logger.error(_reason)
-        return web.Response(status=422, reason=_reason, text=_reason)
-
     badge_args = {}
     if badge_type not in ["fair"]:
         repo_settings = pipeline_data["repo_settings"]
@@ -2595,15 +2604,16 @@ async def _issue_badge(pipeline_id, badge_type, badgeclass_name):
                     badge_args[param].insert(0, _repo_settings[param])
                 else:
                     badge_args[param].append(_repo_settings[param])
-        logger.debug("Resultant badge arguments: %s" % badge_args)
+        logger.debug(
+            "Additional badge arguments passed to BadgrUtils.issue_badge(): %s"
+            % badge_args
+        )
     try:
         badge_data = badgr_utils.issue_badge(
             badge_type=badge_type,
             badgeclass_name=badgeclass_name,
-            build_commit_id=build_info["commit_id"],
-            build_commit_url=build_info["commit_url"],
-            ci_build_url=build_info["url"],
-            **badge_args,
+            report_permalink=report_permalink,
+            fulfilled_list=fulfilled_list**badge_args,
         )
     except Exception as e:
         _reason = "Cannot issue a badge for pipeline <%s>: %s" % (pipeline_id, e)

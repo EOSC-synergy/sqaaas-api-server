@@ -183,11 +183,10 @@ class BadgrUtils(object):
         badge_type,
         badgeclass_name,
         url,
+        report_permalink,
+        fulfilled_list,
         tag=[],
         commit_id=[],
-        build_commit_id=None,
-        build_commit_url=None,
-        ci_build_url=None,
         sw_criteria=[],
         srv_criteria=[],
     ):
@@ -221,20 +220,19 @@ class BadgrUtils(object):
         }
         # First item is the main repository
         main_repo = url.pop(0)
-        main_repo_tag = tag.pop(0)
         main_repo_commit_id = commit_id.pop(0)
         # Assertion data: narrative
         narrative = None
         if badge_type in ["fair"]:
             narrative = "SQAaaS assessment results for dataset %s" % url
         else:
+            criteria_fulfilled_str = " ".join(fulfilled_list)
             narrative = (
-                "SQAaaS assessment results for repository %s "
-                "(commit: %s, branch/tag: %s)"
-                % (main_repo, main_repo_commit_id, main_repo_tag)
+                "Repository '%s' at version '%s' passed for the following quality criteria: %s"
+                % (main_repo, main_repo_commit_id, criteria_fulfilled_str)
             )
             if len(url) > 0:
-                narrative += "\n Additional repositories being analysed:"
+                narrative += "\n\n Additional repositories being analysed:\n"
                 for index in range(len(url)):
                     narrative += "\n\t- %s (commit: %s, branch/tag: %s)" % (
                         url[index],
@@ -247,8 +245,7 @@ class BadgrUtils(object):
                 "recipient": {"identity": main_repo, "hashed": True, "type": "url"},
                 "narrative": narrative,
                 "evidence": [
-                    {"url": build_commit_url, "narrative": "SQAaaS build repository"},
-                    {"url": ci_build_url, "narrative": "Build page from Jenkins CI"},
+                    {"url": report_permalink, "narrative": "SQAaaS report"},
                 ],
             }
         )
