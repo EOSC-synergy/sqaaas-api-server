@@ -11,6 +11,8 @@ from urllib.parse import urljoin
 
 import requests
 
+logger = logging.getLogger("sqaaas.api.badgr")
+
 
 class BadgrUtils(object):
     """Class for handling requests to Badgr API."""
@@ -24,7 +26,6 @@ class BadgrUtils(object):
         :param issuer_name: String that corresponds to the Issuer name (as it appears in
             Badgr web)
         """
-        self.logger = logging.getLogger("sqaaas.api.badgr")
         self.endpoint = endpoint
         self.issuer_name = issuer_name
         self.access_user = access_user
@@ -35,7 +36,7 @@ class BadgrUtils(object):
             if not access_token:
                 raise Exception("Could not get access token from Badgr API!")
         except Exception as e:
-            self.logger.debug(e)
+            logger.debug(e)
         else:
             self.access_token = access_token
             self.refresh_token = refresh_token
@@ -50,21 +51,19 @@ class BadgrUtils(object):
         path = "o/token"
         if refresh:
             if self.refresh_token:
-                self.logger.debug(
-                    "Refreshing user token using Badgr API: 'POST %s'" % path
-                )
+                logger.debug("Refreshing user token using Badgr API: 'POST %s'" % path)
                 data = {
                     "grant_type": "refresh_token",
                     "refresh_token": self.refresh_token,
                 }
             else:
-                self.logger.warn("No refresh token found, cannot renew token")
+                logger.warn("No refresh token found, cannot renew token")
         else:
-            self.logger.debug("Getting user token from Badgr API: 'POST %s'" % path)
+            logger.debug("Getting user token from Badgr API: 'POST %s'" % path)
             data = {"username": self.access_user, "password": self.access_pass}
         try:
             r = requests.post(urljoin(self.endpoint, path), data=data)
-            self.logger.debug("'POST %s' response content: %s" % (path, r.__dict__))
+            logger.debug("'POST %s' response content: %s" % (path, r.__dict__))
             r.raise_for_status()
             r_json = r.json()
             return (
@@ -73,7 +72,7 @@ class BadgrUtils(object):
                 r_json["expires_in"],
             )
         except Exception as e:
-            self.logger.debug(e)
+            logger.debug(e)
             return None
 
     def refresh_token(f):
@@ -97,9 +96,9 @@ class BadgrUtils(object):
         """Gets all the Issuers associated with the current user."""
         path = "v2/issuers"
         headers = {"Authorization": "Bearer %s" % self.access_token}
-        self.logger.debug("Getting issuers from Badgr API: 'GET %s'" % path)
+        logger.debug("Getting issuers from Badgr API: 'GET %s'" % path)
         r = requests.get(urljoin(self.endpoint, path), headers=headers)
-        self.logger.debug("'GET %s' response content: %s" % (path, r.__dict__))
+        logger.debug("'GET %s' response content: %s" % (path, r.__dict__))
         if r.ok:
             r_json = r.json()
             return r_json["result"]
@@ -112,14 +111,14 @@ class BadgrUtils(object):
         """
         path = "v2/issuers/%s/badgeclasses" % issuer_id
         headers = {"Authorization": "Bearer %s" % self.access_token}
-        self.logger.debug(
+        logger.debug(
             (
                 "Getting BadgeClasses for Issuer <%s> from Badgr API: "
                 "'GET %s'" % (issuer_id, path)
             )
         )
         r = requests.get(urljoin(self.endpoint, path), headers=headers)
-        self.logger.debug("'GET %s' response content: %s" % (path, r.__dict__))
+        logger.debug("'GET %s' response content: %s" % (path, r.__dict__))
         if r.ok:
             r_json = r.json()
             return r_json["result"]
@@ -145,7 +144,7 @@ class BadgrUtils(object):
         )
         entity_name_list = entity_name_dict.keys()
         if len(entity_name_list) > 1:
-            self.logger.warn(
+            logger.warn(
                 "Number of matching entities (type: %s) bigger than one: %s"
                 % (entity_type, entity_name_list)
             )
@@ -156,7 +155,7 @@ class BadgrUtils(object):
                 )
             )
         if len(entity_name_list) == 0:
-            self.logger.warn(
+            logger.warn(
                 "Found 0 matches for entity name <%s> (type: %s)"
                 % (entity_name, entity_type)
             )
@@ -206,8 +205,9 @@ class BadgrUtils(object):
         :param sw_criteria: List of fulfilled criteria codes from the Software baseline
         :param srv_criteria: List of fulfilled criteria codes from the Service baseline
         """
+        logger.debug("Get BadgeClass entityId")
         badgeclass_id = self.get_badgeclass_entity(badgeclass_name)
-        self.logger.info(
+        logger.info(
             (
                 "BadgeClass entityId found for Issuer <%s> and BadgeClass "
                 "<%s>: %s" % (self.issuer_name, badgeclass_name, badgeclass_id)
@@ -249,9 +249,9 @@ class BadgrUtils(object):
                 ],
             }
         )
-        self.logger.debug("Assertion data: %s" % assertion_data)
+        logger.debug("Assertion data: %s" % assertion_data)
 
-        self.logger.debug(
+        logger.debug(
             (
                 "Posting to get an Assertion of BadgeClass <%s> from Badgr API: "
                 "'POST %s'" % (badgeclass_name, path)
@@ -261,21 +261,21 @@ class BadgrUtils(object):
             urljoin(self.endpoint, path), headers=headers, data=assertion_data
         )
         r_json = r.json()
-        self.logger.debug("Result from 'POST %s': %s" % (path, r_json))
+        logger.debug("Result from 'POST %s': %s" % (path, r_json))
 
         if r.ok:
             if len(r_json["result"]) > 1:
-                self.logger.warn("More than one badge being issued")
+                logger.warn("More than one badge being issued")
 
             # Return the first result
             return r_json["result"][0]
         else:
             if "fieldErrors" in r_json.keys() and r_json["fieldErrors"]:
-                self.logger.warn(
+                logger.warn(
                     "Unsuccessful POST (Field errors): %s" % r_json["fieldErrors"]
                 )
             if "validationErrors" in r_json.keys() and r_json["validationErrors"]:
-                self.logger.warn(
+                logger.warn(
                     (
                         "Unsuccessful POST (Validation errors): "
                         "%s" % r_json["validationErrors"]
