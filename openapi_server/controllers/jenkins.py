@@ -90,7 +90,8 @@ class JenkinsUtils(object):
 
         :param name: full job name as labelled by Jenkins.
         :param depth: number that indicates depth level for Jenkins.
-        :param no_branch: flag to return the presence of the job regardless of the branch.
+        :param no_branch: flag to return the presence of the job regardless of the
+            branch.
         """
         job_info = {}
         job_name_list = []
@@ -128,7 +129,8 @@ class JenkinsUtils(object):
         """Check whether given job is defined in Jenkins.
 
         :param job_name: job name including folder/s, name & branch
-        :param no_branch: flag to indicate whether to check for the branch name in the job
+        :param no_branch: flag to indicate whether to check for the branch name in the
+            job
         """
         return self.get_job_info(job_name, no_branch=no_branch)
 
@@ -225,7 +227,7 @@ class JenkinsUtils(object):
         self.logger.debug("Jenkins job <%s> successfully deleted" % full_job_name)
 
     @timeout_decorator.timeout(
-        10,
+        20,
         timeout_exception=jenkins.JenkinsException,
         exception_message="Timeout reached when trying to connect to Jenkins",
     )
