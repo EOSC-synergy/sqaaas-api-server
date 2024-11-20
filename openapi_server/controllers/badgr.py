@@ -228,7 +228,7 @@ class BadgrUtils(object):
         else:
             criteria_fulfilled_str = " ".join(fulfilled_list)
             narrative = (
-                "Repository '%s' at version '%s' passed for the following quality criteria: %s"
+                "Repository '%s' at version '%s' passed successfully the following quality criteria: %s"
                 % (main_repo, main_repo_commit_id, criteria_fulfilled_str)
             )
             if len(url) > 0:
