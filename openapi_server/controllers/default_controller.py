@@ -2613,7 +2613,8 @@ async def _issue_badge(
             badge_type=badge_type,
             badgeclass_name=badgeclass_name,
             report_permalink=report_permalink,
-            fulfilled_list=fulfilled_list**badge_args,
+            fulfilled_list=fulfilled_list,
+            **badge_args,
         )
     except Exception as e:
         _reason = "Cannot issue a badge for pipeline <%s>: %s" % (pipeline_id, e)
