@@ -182,8 +182,8 @@ class BadgrUtils(object):
         badge_type,
         badgeclass_name,
         url,
-        report_permalink,
         fulfilled_list,
+        metadata,
         tag=[],
         commit_id=[],
         sw_criteria=[],
@@ -197,11 +197,10 @@ class BadgrUtils(object):
         :param url: Upstream repository URL
         :param tag: Active tag of the upstream repository
         :param commit_id: SHA that corresponds to the upstream version being assessed
-        :param build_commit_id: Commit ID assigned by git as a result of pushing the
-            JePL files.
-        :param build_commit_url: Absolute URL pointing to the commit that triggered the
-            pipeline
-        :param ci_build_url: Absolute URL pointing to the build results of the pipeline
+        :param fulfilled_list: List of fulfilled criteria.
+        :type fulfilled_list: list
+        :param metadata: object that contains metadata for the report
+        :type metadata: dict
         :param sw_criteria: List of fulfilled criteria codes from the Software baseline
         :param srv_criteria: List of fulfilled criteria codes from the Service baseline
         """
@@ -245,7 +244,11 @@ class BadgrUtils(object):
                 "recipient": {"identity": main_repo, "hashed": True, "type": "url"},
                 "narrative": narrative,
                 "evidence": [
-                    {"url": report_permalink, "narrative": "SQAaaS report"},
+                    {
+                        "url": metadata["report_permalink"],
+                        "narrative": "SQAaaS (version: %s) report "
+                        % metadata["version"],
+                    },
                 ],
             }
         )

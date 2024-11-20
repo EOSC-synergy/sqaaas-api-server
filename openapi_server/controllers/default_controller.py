@@ -2226,7 +2226,7 @@ async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Re
                     pipeline_id,
                     badge_type,
                     badgeclass_name,
-                    report_permalink=r["meta"]["report_permalink"],
+                    metadata=r["meta"],
                     fulfilled_list=fulfilled_list,
                 )
                 badge_data[badge_type]["data"] = badge_obj
@@ -2572,7 +2572,7 @@ async def _badgeclass_matchmaking(pipeline_id, badge_type, criteria_fulfilled_li
 
 
 async def _issue_badge(
-    pipeline_id, badge_type, badgeclass_name, report_permalink, fulfilled_list
+    pipeline_id, badge_type, badgeclass_name, fulfilled_list, metadata
 ):
     """Issues a badge using BadgrUtils.
 
@@ -2583,10 +2583,10 @@ async def _issue_badge(
     :param badgeclass_name: String that corresponds to the BadgeClass name (as it
         appears in Badgr web)
     :type badgeclass_name: str
-    :param report_permalink: Permanent URL for the SQAaaS web URL.
-    :type report_permalink: str
     :param fulfilled_list: List of fulfilled criteria.
     :type fulfilled_list: list
+    :param metadata: object that contains metadata for the report
+    :type metadata: dict
     """
     logger.info("Issuing badge for pipeline <%s>" % pipeline_id)
 
@@ -2612,8 +2612,8 @@ async def _issue_badge(
         badge_data = badgr_utils.issue_badge(
             badge_type=badge_type,
             badgeclass_name=badgeclass_name,
-            report_permalink=report_permalink,
             fulfilled_list=fulfilled_list,
+            metadata=metadata,
             **badge_args,
         )
     except Exception as e:
