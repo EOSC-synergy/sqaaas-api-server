@@ -11,6 +11,7 @@ import requests
 import timeout_decorator
 from bs4 import BeautifulSoup
 from jinja2 import Environment, PackageLoader
+
 from openapi_server.exception import SQAaaSAPIException
 
 CREATE_CREDENTIAL_ORG = (
@@ -227,7 +228,7 @@ class JenkinsUtils(object):
         self.logger.debug("Jenkins job <%s> successfully deleted" % full_job_name)
 
     @timeout_decorator.timeout(
-        20,
+        100,
         timeout_exception=jenkins.JenkinsException,
         exception_message="Timeout reached when trying to connect to Jenkins",
     )
