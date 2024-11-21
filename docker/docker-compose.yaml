@@ -5,7 +5,10 @@ services:
       dockerfile: ./docker/Dockerfile
     container_name: sqaaas-api
     ports:
-     - 8081:8081
+      - 8082:8082
+    volumes:
+      - ../etc:/etc/sqaaas
+    command: ['-p 8082', '-c /etc/sqaaas/sqaaas.ini.sample', '-d']
   jenkins:
     image: jenkins/jenkins:lts
     container_name: jenkins
