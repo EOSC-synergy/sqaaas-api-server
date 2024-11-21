@@ -1,0 +1,177 @@
+# SPDX-FileCopyrightText: Copyright contributors to the Software Quality Assurance as a Service (SQAaaS) project <sqaaas@ibergrid.eu>
+#
+# SPDX-License-Identifier: GPL-3.0-only
+
+[DEFAULT]
+## -------------------- ##
+## Mandatory parameters ##
+## -------------------- ##
+## - Backend used for the repository management. Options: 'github'
+##   A section with this name MUST be defined below
+repository_backend = github
+
+## ------------------------------------------ ##
+## Optional parameters (incl. default values) ##
+## ------------------------------------------ ##
+## - Path to the JSON file used as DB
+# db_file = /sqaaas/sqaaas.json
+## - Criteria tooling: repository URL
+# tooling_repo_url = https://github.com/EOSC-synergy/sqaaas-tooling
+## - Criteria tooling: repository branch
+# tooling_repo_branch = main
+## - Criteria tooling: metadata (relative path from <tooling_repo_url>)
+# tooling_metadata_file = tooling.json
+## - File extensions for supported languages, following the same structure
+##   as GitHub's <linguist> tool:
+##      https://github.com/github/linguist/blob/master/lib/linguist/languages.yml
+# language_metadata_file = languages.yml
+## - Interrupt execution and return a HTTP code error if any validation action fails
+# interrupt_on_validation_error = no
+## - Path to store Fernet key for encryption
+# key_encryption_path = etc/.fernet.key
+## - Repository (relative) path to store the assessment report
+# assessment_report_location = .report/assessment_output.json
+
+[jenkins]
+## -------------------- ##
+## Mandatory parameters ##
+## -------------------- ##
+## - Jenkins URL endpoint
+url = https://jenkins.sqaaas.local/
+## - Jenkins user with admin permissions
+user = paco
+## - Name in Jenkins of the base repository organization
+github_organization_name = my_org
+## - Name of the temporary folder for storing the credentials in Jenkins. This
+##   is required for accessing private repositories. If not defined, the
+##   'github_organization_name' will be used instead.
+# credentials_folder = my_creds_folder
+
+## ------------------------------------------ ##
+## Optional parameters (incl. default values) ##
+## ------------------------------------------ ##
+## - Path to file containing the Jenkins user's token
+##   + Defaults to: /etc/sqaaas/.jk_token
+# token = /etc/sqaaas/.jk_token
+## - Jenkins credential's ID to be used in order to push docker images to a remote
+##   registry. This feature allows to have a default credential, without the
+##   burden of requesting the user to add a credential in Jenkins as part of
+##   the pipeline composition.
+# docker_credential_id = my_docker_hub_creds
+## - (Only in conjunction with 'docker_credential_id') Docker Hub's organization
+##   where the credentials set in 'docker_credential_id' are able to push images.
+# docker_credential_org = my_docker_hub_org
+
+[git]
+## ------------------------------------------ ##
+## Optional parameters (incl. default values) ##
+## ------------------------------------------ ##
+## - Path to file containing the GitHub token to carry out requests to GitHub API
+# clone_folder = /tmp
+
+[github]
+## -------------------- ##
+## Mandatory parameters ##
+## -------------------- ##
+## - Name of the GitHub organization to use for managing repos containing pipelines
+organization = my_github_org
+
+## ------------------------------------------ ##
+## Optional parameters (incl. default values) ##
+## ------------------------------------------ ##
+## - Path to file containing the GitHub token to carry out requests to GitHub API
+# token = /etc/sqaaas/.gh_token
+
+
+[badgr]
+## -------------------- ##
+## Mandatory parameters ##
+## -------------------- ##
+## - Badgr URL endpoint
+url = https://badgr.example.org/
+## - Badgr user with Issuer permissions
+user = pepe
+## - Badgr's Issuer name
+issuer = my_issuer_name
+
+## ------------------------------------------ ##
+## Optional parameters (incl. default values) ##
+## ------------------------------------------ ##
+## - Path to file containing the given Badgr user's password
+# token = /etc/sqaaas/.bdgr_token
+
+[badgr:software:bronze]
+## - Badgr's BadgeClass name that belongs to the former issuer
+badgeclass = badgeclass_for_software_bronze
+## Badge matchmaking
+criteria = QC.Acc QC.Lic QC.Met QC.Doc
+
+[badgr:software:silver]
+## - Badgr's BadgeClass name that belongs to the former issuer
+badgeclass = badgeclass_for_software_silver
+## Badge matchmaking
+criteria = ${badgr:software:bronze:criteria} QC.Sty QC.Sec QC.Ver
+
+[badgr:software:gold]
+## - Badgr's BadgeClass name that belongs to the former issuer
+badgeclass = badgeclass_for_software_gold
+## Badge matchmaking
+criteria = ${badgr:software:silver:criteria} QC.Uni QC.Wor QC.Man QC.Del
+
+[badgr:services:bronze]
+## - Badgr's BadgeClass name that belongs to the former issuer
+badgeclass = badgeclass_for_services_bronze
+## Badge matchmaking
+criteria = SvcQC.Aud
+
+[badgr:services:silver]
+## - Badgr's BadgeClass name that belongs to the former issuer
+badgeclass = badgeclass_for_services_silver
+## Badge matchmaking
+criteria = ${badgr:services:bronze:criteria} SvcQC.Fun SvcQC.Sec SvcQC.Doc
+
+[badgr:services:gold]
+## - Badgr's BadgeClass name that belongs to the former issuer
+badgeclass = badgeclass_for_services_gold
+## Badge matchmaking
+criteria = ${badgr:services:silver:criteria} SvcQC.Api SvcQC.Per SvcQC.Int
+
+[badgr:fair:bronze]
+## - Badgr's BadgeClass name that belongs to the former issuer
+badgeclass = badgeclass_for_fair_bronze
+## Badge matchmaking
+criteria = rda_f1_01d rda_f1_01m rda_f1_02d rda_f1_02m rda_f2_01m rda_f3_01m rda_f4_01m rda_a1_02d rda_a1_02m rda_a1_03d rda_a1_03m rda_a1_04d rda_a1_04m rda_a1_1_01m rda_a2_01m rda_r1_01m da_r1_1_01m rda_r1_3_01d rda_r1_3_01m rda_r1_3_02m
+
+[badgr:fair:silver]
+## - Badgr's BadgeClass name that belongs to the former issuer
+badgeclass = badgeclass_for_fair_silver
+## Badge matchmaking
+criteria = ${badgr:fair:bronze:criteria} rda_a1_01m rda_a1_05d rda_a1_1_01d rda_i1_01d rda_i1_01m rda_i1_02d rda_i1_02m rda_i2_01m rda_i3_01m rda_i3_03m rda_r1_1_02m rda_r1_1_03m rda_r1_2_01m rda_r1_3_02d
+
+[badgr:fair:gold]
+## - Badgr's BadgeClass name that belongs to the former issuer
+badgeclass = badgeclass_for_fair_gold
+## Badge matchmaking
+criteria = ${badgr:fair:silver:criteria} rda_a1_2_01d rda_i2_01d rda_i3_01d rda_i3_02d rda_i3_02m rda_i3_04m rda_r1_2_02m
+
+[service_deployment]
+im_server = https://im_endpoint.example.org/
+im_jenkins_credential_id = my_im_cred
+im_jenkins_credential_user_var = IM_USER
+im_jenkins_credential_pass_var = IM_PASS
+
+[service_deployment:my_site]
+## -------------------- ##
+## Mandatory parameters ##
+## -------------------- ##
+openstack_site_id = my_site
+openstack_url = https://mysite.example.org
+openstack_port = 5000
+openstack_domain_name = default
+openstack_auth_version = 3.x_password
+openstack_tenant_name = my_openstack_tenant_name
+openstack_tenant_domain_id = my_openstack_tenant_domain_id
+openstack_jenkins_credential_id = my_openstack_cred
+openstack_jenkins_credential_user_var = OPENSTACK_USER
+openstack_jenkins_credential_pass_var = OPENSTACK_PASS
+im_image_id = image_id
