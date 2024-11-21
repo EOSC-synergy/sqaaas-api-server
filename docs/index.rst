@@ -6,9 +6,10 @@
 SQAaaS API documentation
 ========================
 
-Add your content using ``reStructuredText`` syntax. See the
-`reStructuredText <https://www.sphinx-doc.org/en/master/usage/restructuredtext/index.html>`_
-documentation for details.
+The SQAaaS API is the core of the SQAaaS platform. By following the sections below you will
+be able to set up your own instance of the SQAaaS API and use it to assess research content
+--including code, services and data-- and adopt the good practices during their development
+life cycle.
 
 
 .. toctree::
