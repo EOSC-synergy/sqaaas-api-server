@@ -57,24 +57,31 @@ def replace_sections_with_colon():
     replace_values(section_map)
 
 
+def _get(section, key, fallback=None):
+    value = CONF.get(section, key, fallback=fallback)
+    # handle booleans
+    if value in ["true", "True"]:
+        value = True
+    elif value in ["false", "False"]:
+        value = False
+
+    return value
+
+
 def get(key, fallback=None):
-    return CONF.get("DEFAULT", key, fallback=fallback)
-
-
-def get_boolean(key, fallback=None):
-    return CONF.getboolean("DEFAULT", key, fallback=fallback)
+    return _get("DEFAULT", key, fallback=fallback)
 
 
 def get_repo(key, fallback=None):
-    return CONF.get(REPO_BACKEND, key, fallback=fallback)
+    return _get(REPO_BACKEND, key, fallback=fallback)
 
 
 def get_ci(key, fallback=None):
-    return CONF.get(CI_SECTION, key, fallback=fallback)
+    return _get(CI_SECTION, key, fallback=fallback)
 
 
 def get_vcs(key, fallback=None):
-    return CONF.get(VCS_SECTION, key, fallback=fallback)
+    return _get(VCS_SECTION, key, fallback=fallback)
 
 
 def get_badge(key, subsection_list=None, fallback=None):
@@ -92,7 +99,7 @@ def get_badge(key, subsection_list=None, fallback=None):
         section_name = "__".join(subsection_list)
     else:
         section_name = BADGE_SECTION
-    return CONF.get(section_name, key, fallback=fallback)
+    return _get(section_name, key, fallback=fallback)
 
 
 def get_service_deployment(iaas):
