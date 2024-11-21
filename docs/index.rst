@@ -15,3 +15,15 @@ documentation for details.
    :maxdepth: 2
    :caption: Contents:
 
+
+Deploying the SQAaaS API
+------------------------
+
+This documentation dives into the basic steps to get the SQAaaS API up & running. We will
+go through the main methods of deployment, including quickstarts and more production-like
+setups.
+
+.. toctree::
+   :maxdepth: 2
+
+   user/index.rst
