@@ -11,7 +11,11 @@ from urllib.parse import urljoin
 
 import requests
 
+from openapi_server import config
+
 logger = logging.getLogger("sqaaas.api.badgr")
+
+BADGING_ENABLED = config.get_badge("enabled", fallback=True)
 
 
 class BadgrUtils(object):
@@ -204,6 +208,10 @@ class BadgrUtils(object):
         :param sw_criteria: List of fulfilled criteria codes from the Software baseline
         :param srv_criteria: List of fulfilled criteria codes from the Service baseline
         """
+        if not BADGING_ENABLED:
+            logger.warning("Badging is disable in configuration")
+            return
+
         logger.debug("Get BadgeClass entityId")
         badgeclass_id = self.get_badgeclass_entity(badgeclass_name)
         logger.info(
