@@ -15,7 +15,7 @@ from openapi_server import config
 
 logger = logging.getLogger("sqaaas.api.badgr")
 
-BADGING_ENABLED = config.get_badge("enabled", fallback=True)
+BADGING_ENABLED = config.get_badge("enable", fallback=True)
 
 
 class BadgrUtils(object):
