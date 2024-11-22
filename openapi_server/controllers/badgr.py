@@ -34,6 +34,7 @@ class BadgrUtils(object):
         self.issuer_name = issuer_name
         self.access_user = access_user
         self.access_pass = access_pass
+        self.access_token_expiration = -1
 
         try:
             access_token, refresh_token, expiry = self.get_token()
