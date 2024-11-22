@@ -30,6 +30,11 @@ class BadgrUtils(object):
         :param issuer_name: String that corresponds to the Issuer name (as it appears in
             Badgr web)
         """
+        # Return empty JSON if badging issuance is disabled
+        if not BADGING_ENABLED:
+            logger.warning("Badging is disabled in configuration")
+            return {}
+
         self.endpoint = endpoint
         self.issuer_name = issuer_name
         self.access_user = access_user
@@ -209,10 +214,6 @@ class BadgrUtils(object):
         :param sw_criteria: List of fulfilled criteria codes from the Software baseline
         :param srv_criteria: List of fulfilled criteria codes from the Service baseline
         """
-        if not BADGING_ENABLED:
-            logger.warning("Badging is disable in configuration")
-            return
-
         logger.debug("Get BadgeClass entityId")
         badgeclass_id = self.get_badgeclass_entity(badgeclass_name)
         logger.info(
