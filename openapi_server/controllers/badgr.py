@@ -33,7 +33,7 @@ class BadgrUtils(object):
         # Return empty JSON if badging issuance is disabled
         if not BADGING_ENABLED:
             logger.warning("Badging is disabled in configuration")
-            return {}
+            return None
 
         self.endpoint = endpoint
         self.issuer_name = issuer_name
