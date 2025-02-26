@@ -12,6 +12,7 @@ import json
 import logging
 import os
 import re
+import time
 import uuid
 from importlib.metadata import version as impversion
 from importlib.resources import files as impfiles
@@ -518,7 +519,10 @@ def _validate_assessment_input(body):
 
 @ctls_utils.debug_request
 async def add_pipeline_for_assessment(
-    request: web.Request, body, user_requested_tools=[]
+    request: web.Request,
+    body,
+    user_requested_tools=[],
+    run_criteria_workflow_only=False,
 ) -> web.Response:
     """Creates a pipeline for assessment (QAA module).
 
@@ -528,6 +532,9 @@ async def add_pipeline_for_assessment(
     :type body: dict | bytes
     :param user_requested_tools: Optional tools that shall be accounted
     :type user_requested_tools: list
+    :param run_criteria_workflow_only: Boolean that triggers only the assessment of the
+        criteria passed under criteria_workflow
+    :type run_criteria_workflow_only: bool
     """
     # FIXME If it is applicable to every HTTP request, it shall be added as
     # part of the validate_request() decorator
@@ -584,25 +591,43 @@ async def add_pipeline_for_assessment(
 
     # 1.1 Add custom criteria
     criteria_workflow = body.get("criteria_workflow", [])
+    do_full_assessment = True
     if criteria_workflow:
-        criteria_data_list_new = []
-        # Overwrite the criterion id (if present)
-        # FIXME This is a costly operation, it might be better to move to a dict instead of a list
-        for criterion_data in criteria_data_list:
-            _criterion_id = criterion_data["id"]
-            _need_update = False
-            for updated_criterion_data in criteria_workflow:
-                _updated_criterion_id = updated_criterion_data["id"]
-                if _updated_criterion_id in [_criterion_id]:
-                    criteria_data_list_new.append(updated_criterion_data)
-                    _need_update = True
-            if not _need_update:
-                criteria_data_list_new.append(criterion_data)
-        criteria_data_list = criteria_data_list_new
-        logger.debug(
-            "Criteria workflow added to current criteria data list: %s"
-            % criteria_workflow
-        )
+        if run_criteria_workflow_only:
+            logger.debug(
+                "Query parameter 'run_criteria_workflow_only' passed ('true' value)"
+            )
+            # Overwrite the criteria list to the one passed in 'criteria_workflow'
+            criteria_data_list = criteria_workflow
+            logger.info(
+                "Full assessment not requested: the list of criteria is now restricted to the one passed through the 'criteria_workflow' parameter"
+            )
+            logger.debug("Resultant criteria list is: %s" % criteria_data_list)
+            do_full_assessment = False
+        else:
+            criteria_data_list_new = []
+            # Overwrite the criterion id (if present)
+            # FIXME This is a costly operation, it might be better to move to a dict instead of a list
+            for criterion_data in criteria_data_list:
+                _criterion_id = criterion_data["id"]
+                _need_update = False
+                for updated_criterion_data in criteria_workflow:
+                    _updated_criterion_id = updated_criterion_data["id"]
+                    if _updated_criterion_id in [_criterion_id]:
+                        criteria_data_list_new.append(updated_criterion_data)
+                        _need_update = True
+                if not _need_update:
+                    criteria_data_list_new.append(criterion_data)
+            criteria_data_list = criteria_data_list_new
+            logger.debug(
+                "Criteria workflow added to current criteria data list: %s"
+                % criteria_workflow
+            )
+    else:
+        if run_criteria_workflow_only:
+            logger.warning(
+                "Query parameter 'run_criteria_workflow_only' passed ('true' value), but no 'criteria_workflow' has been defined in the input payload"
+            )
 
     # 2 Load request payload (same as passed to POST /pipeline) from templates
     # Use the main repo as the reference
@@ -734,6 +759,7 @@ async def add_pipeline_for_assessment(
         {
             "digital_object_type": digital_object_type,
             "criteria_filtered": criteria_filtered,
+            "do_full_assessment": do_full_assessment,
         },
     )
 
@@ -741,6 +767,58 @@ async def add_pipeline_for_assessment(
 
     r = {"id": pipeline_id}
     return web.json_response(r, status=201)
+
+
+@ctls_utils.debug_request
+async def add_pipeline_for_assessment_custom(
+    request: web.Request, body, optional_tools=None
+) -> web.Response:
+    """Creates a pipeline for a custom assessment (QAA module).
+
+    Creates a pipeline for a custom assessment (QAA module).
+
+    :param body:
+    :type body: dict | bytes
+    :param optional_tools: Optional tools that shall be accounted
+    :type optional_tools: List[str]
+    """
+    body = ctls_utils.del_empty_keys(body)
+    criterion_id = body.get("id", "")
+    tool_list = body.get("tools", [])
+
+    logger.debug(
+        "Requested custom assessment of criterion <%s> with tool/s: %s"
+        % (criterion_id, tool_list)
+    )
+
+    criteria_data_list = await _get_criteria()
+    matched_criterion_data = {}
+    for _criterion_data in criteria_data_list:
+        if criterion_id in [_criterion_data["id"]]:
+            matched_criterion_data = _criterion_data
+
+    if not matched_criterion_data:
+        _reason = (
+            "No matching quality criterion found for the given identifier '%s'"
+            % criterion_id
+        )
+        logger.error(_reason)
+        raise SQAaaSAPIException(422, _reason)
+
+    matched_tool_list = []
+    for _tool_data in tool_list:
+        _tool_name = _tool_data["name"]
+        _tool_list_matched = matched_criterion_data.get("tools", [])
+        for _tool_data_matched in _tool_list_matched:
+            if _tool_name in [_tool_data_matched.get("name", "")]:
+                matched_tool_list.append(_tool_data_matched)
+
+    if not matched_tool_list:
+        logger.debug("No built-in supported tool found for: %s" % tool_list)
+    else:
+        logger.debug("Matched tool list: %s" % matched_tool_list)
+
+    return web.Response(status=200)
 
 
 @ctls_utils.debug_request
@@ -829,7 +907,11 @@ async def delete_pipeline_by_id(request: web.Request, pipeline_id) -> web.Respon
                 "%s)" % (pipeline_id, build_status)
             )
         else:
-            jk_utils.stop_build(jk_job_name, build_no)
+            try:
+                jk_utils.stop_build(jk_job_name, build_no)
+            except Exception as e:
+                logger.error(str(e))
+                return web.Response(status=502, reason=str(e), text=str(e))
             logger.info("Stopping current build of pipeline <%s>" % pipeline_id)
             logger.debug("Stopping build: %s" % build_info["url"])
             # Set build status to ABORTED
@@ -1175,7 +1257,8 @@ async def run_pipeline(
     )
 
     _pipeline_repo_name = pipeline_repo.split("/")[-1]
-    jk_job_name = "/".join(
+    jk_job_name = _pipeline_repo_name  # job name is the same as the branch
+    jk_job_name_full = "/".join(
         [
             JENKINS_GITHUB_ORG,
             _pipeline_repo_name,
@@ -1183,7 +1266,7 @@ async def run_pipeline(
         ]
     )
 
-    logger.info("Triggering pipeline in Jenkins CI: %s" % jk_job_name)
+    logger.info("Triggering pipeline in Jenkins CI: %s" % jk_job_name_full)
 
     build_item_no = None
     build_no = None
@@ -1215,34 +1298,57 @@ async def run_pipeline(
                     "organisation folder name: %s" % JENKINS_GITHUB_ORG
                 )
                 creds_folder = JENKINS_GITHUB_ORG
-
-            jk_utils.create_credential(_id, _user_id, _token, folder_name=creds_folder)
-            creds_tmp.append(_id)
+            try:
+                jk_utils.create_credential(
+                    _id, _user_id, _token, folder_name=creds_folder
+                )
+            except Exception as e:
+                logger.error(str(e))
+                return web.Response(status=502, reason=str(e), text=str(e))
+            else:
+                creds_tmp.append(_id)
 
     # 1) Check if job already exists on Jenkins
     job_exists = False
+    job_exists_no_branch = False  # when job exists, but branch does not
     last_build_no = -1
-    if jk_utils.exist_job(jk_job_name):
-        job_exists = True
-        logger.warning("Jenkins job <%s> already exists!" % jk_job_name)
-        _job_info = jk_utils.get_job_info(jk_job_name)
-        jk_job_name = _job_info["fullName"]
-        last_build_no = _job_info["lastBuild"]["number"]
+    try:
+        if jk_utils.exist_job(jk_job_name_full):
+            job_exists = True
+            logger.warning("Jenkins job <%s> already exists!" % jk_job_name_full)
+            _job_info = jk_utils.get_job_info(jk_job_name_full)
+            jk_job_name_full = _job_info["fullName"]
+            last_build_no = _job_info["lastBuild"]["number"]
+        else:
+            if jk_utils.exist_job(jk_job_name_full, no_branch=True):
+                job_exists_no_branch = True
+                logger.debug("Jenkins job exists, regardless of the branch name")
+    except Exception as e:
+        logger.error(str(e))
+        return web.Response(status=502, reason=str(e), text=str(e))
 
     # 2) Include badge status in the commit
-    badge_status = "not assessed"
-    digital_object_type = pipeline_data["qaa"]["digital_object_type"]
-    additional_files_list.append(
-        {
-            "file_name": STATUS_BADGE_LOCATION,
-            "file_data": ctls_utils.get_status_badge(badge_status, digital_object_type),
-        }
-    )
-    # Update DB
-    _repo_settings = pipeline_data.get("repo_settings", [])
-    for _repo_data in _repo_settings:
-        _repo_data["badge_status"] = badge_status
-    db.add_repo_settings(pipeline_id, _repo_settings)
+    pipeline_qaa_data = pipeline_data["qaa"]
+    do_full_assessment = pipeline_qaa_data.get("do_full_assessment", True)
+    if do_full_assessment:
+        digital_object_type = pipeline_qaa_data["digital_object_type"]
+        badge_status = "not assessed"
+        additional_files_list.append(
+            {
+                "file_name": STATUS_BADGE_LOCATION,
+                "file_data": ctls_utils.get_status_badge(
+                    badge_status, digital_object_type
+                ),
+            }
+        )
+        # Update DB
+        _repo_settings = pipeline_data.get("repo_settings", [])
+        for _repo_data in _repo_settings:
+            _repo_data["badge_status"] = badge_status
+        db.add_repo_settings(pipeline_id, _repo_settings)
+    else:
+        issue_badge = False
+        logger.debug("Full assessment not requested: disabling badge issuance")
 
     # 3) Do the commit
     try:
@@ -1271,15 +1377,28 @@ async def run_pipeline(
         _build_to_check = last_build_no + 1
         # Fire & forget _handle_job_building()
         build_job_task = asyncio.create_task(
-            _handle_job_building(jk_job_name, _build_to_check)
+            _handle_job_building(jk_job_name_full, _build_to_check)
         )
         if build_job_task.done():
             build_no, build_status, build_url, build_item_no = build_job_task.result()
     else:
-        jk_utils.scan_organization()
-        scan_org_wait = True
-        build_status = "WAITING_SCAN_ORG"
-        reason = "Triggered scan organization for building the Jenkins job"
+        try:
+            # Option 1: Job exists but branch does not -> SCAN_ORGANIZATION_JOB
+            if job_exists_no_branch:
+                jk_utils.scan_organization(
+                    org_name=JENKINS_GITHUB_ORG, job_name=jk_job_name
+                )
+                reason = "Triggered SCAN_ORGANIZATION_JOB for building a specific branch of the job"
+            # Option 2: Job DOES NOT exist -> SCAN_ORGANIZATION
+            else:
+                jk_utils.scan_organization(org_name=JENKINS_GITHUB_ORG)
+        except Exception as e:
+            logger.error(str(e))
+            return web.Response(status=502, reason=str(e), text=str(e))
+        else:
+            scan_org_wait = True
+            build_status = "WAITING_SCAN_ORG"
+            reason = "Triggered SCAN_ORGANIZATION for building the Jenkins job"
 
     if issue_badge:
         logger.debug(
@@ -1296,7 +1415,7 @@ async def run_pipeline(
     #   <build_status>, <build_item_no>, <scan_org_wait>, <issue_badge>?
     db.update_jenkins(
         pipeline_id,
-        jk_job_name,
+        jk_job_name_full,
         commit_id,
         commit_url,
         build_item_no=build_item_no,
@@ -1321,7 +1440,7 @@ async def run_pipeline(
     return web.Response(status=204, reason=reason, text=reason)
 
 
-async def _handle_job_building(jk_job_name, build_to_check):
+async def _handle_job_building(jk_job_name_full, build_to_check):
     # wait for automated triggering
     _build_triggered = False
     _max_tries = 8
@@ -1333,7 +1452,11 @@ async def _handle_job_building(jk_job_name, build_to_check):
     while not _build_triggered:
         if _count_tries >= _max_tries:
             break
-        _job_info = jk_utils.get_job_info(jk_job_name)
+        try:
+            _job_info = jk_utils.get_job_info(jk_job_name_full)
+        except Exception as e:
+            logger.error(str(e))
+            return web.Response(status=502, reason=str(e), text=str(e))
         # NOTE (Jenkins API specific) First element of _builds
         # should match 'build_to_check'
         _builds = _job_info["builds"]
@@ -1348,18 +1471,24 @@ async def _handle_job_building(jk_job_name, build_to_check):
                 (
                     "Last build number in Jenkins (%s) does not match with the "
                     "required build number to check (%s) for job: %s"
-                    % (_builds_last, build_to_check, jk_job_name)
+                    % (_builds_last, build_to_check, jk_job_name_full)
                 )
             )
         _count_tries += 1
         await asyncio.sleep(5)
     # Build manually if not triggered automatically
     if not _build_triggered:
-        # <build_item_no> is only valid for about 5 min after job completion
-        build_item_no = jk_utils.build_job(jk_job_name)
+        try:
+            # <build_item_no> is only valid for about 5 min after job completion
+            build_item_no = jk_utils.build_job(jk_job_name_full)
+        except Exception as e:
+            logger.error(str(e))
+            return web.Response(status=502, reason=str(e), text=str(e))
         if build_item_no:
             build_status = "QUEUED"
-            logger.info("Build status for job <%s>: %s" % (jk_job_name, build_status))
+            logger.info(
+                "Build status for job <%s>: %s" % (jk_job_name_full, build_status)
+            )
         else:
             _reason = "Could not trigger build job"
             logger.error(_reason)
@@ -1408,7 +1537,11 @@ async def _update_status(pipeline_id, triggered_by_run=False, build_task=None):
 
     if jenkins_info["scan_org_wait"]:
         logger.debug("scan_org_wait still enabled for pipeline job: %s" % jk_job_name)
-        _job_info = jk_utils.get_job_info(jk_job_name)
+        try:
+            _job_info = jk_utils.get_job_info(jk_job_name)
+        except Exception as e:
+            logger.error(str(e))
+            return web.Response(status=502, reason=str(e), text=str(e))
         if _job_info.get("lastBuild", None):
             try:
                 build_url = _job_info["lastBuild"]["url"]
@@ -1437,7 +1570,11 @@ async def _update_status(pipeline_id, triggered_by_run=False, build_task=None):
                     await build_task
                 build_no, build_status, build_url, build_item_no = build_task.result()
                 if build_item_no:
-                    build_data = await jk_utils.get_queue_item(build_item_no)
+                    try:
+                        build_data = await jk_utils.get_queue_item(build_item_no)
+                    except Exception as e:
+                        logger.error(str(e))
+                        return web.Response(status=502, reason=str(e), text=str(e))
                     if build_data:
                         build_no = build_data["number"]
                         build_url = build_data["url"]
@@ -1456,14 +1593,24 @@ async def _update_status(pipeline_id, triggered_by_run=False, build_task=None):
                 elif build_no and build_status:
                     build_data = True
     else:
-        _status = jk_utils.get_build_info(jk_job_name, build_no)
+        try:
+            _status = jk_utils.get_build_info(jk_job_name, build_no)
+        except Exception as e:
+            logger.error(str(e))
+            return web.Response(status=502, reason=str(e), text=str(e))
         if _status["result"]:
             build_status = _status["result"]
             logger.debug("Job result returned from Jenkins: %s" % _status["result"])
             # Set as UNSTABLE when cleanup stage fails
-            if jk_utils.cleanup_stage_failed(jk_job_name, build_no):
-                build_status = "UNSTABLE"
-                logger.info("Cleanup stage failed: setting pipeline status to UNSTABLE")
+            try:
+                if jk_utils.cleanup_stage_failed(jk_job_name, build_no):
+                    build_status = "UNSTABLE"
+                    logger.info(
+                        "Cleanup stage failed: setting pipeline status to UNSTABLE"
+                    )
+            except Exception as e:
+                logger.error(str(e))
+                return web.Response(status=502, reason=str(e), text=str(e))
         else:
             if _status.get("queueId", None):
                 build_status = "EXECUTING"
@@ -1476,20 +1623,26 @@ async def _update_status(pipeline_id, triggered_by_run=False, build_task=None):
     )
 
     # Update assessment status on DB (and push payload)
-    badge_status = None
-    if build_status in ["SUCCESS", "UNSTABLE"]:  # done, success
-        pass  # keep previous status
-    elif build_status in ["ABORTED", "FAILURE"]:  # done, failure
-        badge_status = "nullified"
-    elif build_status in ["WAITING_SCAN_ORG"]:
-        badge_status = "not assessed"  # hack to avoid doing a new commit
+    pipeline_qaa_data = pipeline_data["qaa"]
+    do_full_assessment = pipeline_qaa_data.get("do_full_assessment", True)
+    if do_full_assessment:
+        logger.debug("Updating badge status")
+        badge_status = None
+        if build_status in ["SUCCESS", "UNSTABLE"]:  # done, success
+            pass  # keep previous status
+        elif build_status in ["ABORTED", "FAILURE"]:  # done, failure
+            badge_status = "nullified"
+        elif build_status in ["WAITING_SCAN_ORG"]:
+            badge_status = "not assessed"  # hack to avoid doing a new commit
+        else:
+            badge_status = "building"
+        logger.debug(
+            "Got current badge status for assessment (build: %s): %s"
+            % (build_status, badge_status)
+        )
+        await _handle_badge_status(pipeline_id, pipeline_data, badge_status)
     else:
-        badge_status = "building"
-    logger.debug(
-        "Got current badge status for assessment (build: %s): %s"
-        % (build_status, badge_status)
-    )
-    await _handle_badge_status(pipeline_id, pipeline_data, badge_status)
+        logger.debug("Full assessment not required: skipping badge status update")
 
     # Add build status to DB
     db.update_jenkins(
@@ -1535,8 +1688,13 @@ async def get_pipeline_status(request: web.Request, pipeline_id) -> web.Response
     creds_tmp_copy = copy.deepcopy(creds_tmp)
     if build_status in JENKINS_COMPLETED_STATUS:
         for _id in creds_tmp:
-            jk_utils.remove_credential(_id, folder_name=creds_folder)
-            creds_tmp_copy.remove(_id)
+            try:
+                jk_utils.remove_credential(_id, folder_name=creds_folder)
+            except Exception as e:
+                logger.error(str(e))
+                return web.Response(status=502, reason=str(e), text=str(e))
+            else:
+                creds_tmp_copy.remove(_id)
 
     # Return values
     r = {"build_url": build_url, "build_status": build_status}
@@ -1772,9 +1930,13 @@ async def _get_output(pipeline_id, validate=False):
     jenkins_info = pipeline_data["jenkins"]
     build_info = jenkins_info["build_info"]
 
-    stage_data_list = jk_utils.get_stage_data(
-        jenkins_info["job_name"], build_info["number"]
-    )
+    try:
+        stage_data_list = jk_utils.get_stage_data(
+            jenkins_info["job_name"], build_info["number"]
+        )
+    except Exception as e:
+        logger.error(str(e))
+        return web.Response(status=502, reason=str(e), text=str(e))
 
     output_data = stage_data_list
     if validate:
@@ -2087,17 +2249,34 @@ async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Re
     except SQAaaSAPIException as e:
         return web.Response(status=e.http_code, reason=e.message, text=e.message)
 
+    # Baseline response
+    pipeline_data = db.get_entry(pipeline_id)
+    r = {
+        "meta": {
+            "version": _get_spec_version(),
+            "timestamp": time.time(),
+        },
+        "repository": pipeline_data["repo_settings"],
+        "report": report_data,
+    }
+
+    # Return baseline response if not tackling full assessment
+    pipeline_qaa_data = pipeline_data["qaa"]
+    do_full_assessment = pipeline_qaa_data.get("do_full_assessment", True)
+    if not do_full_assessment:
+        return web.json_response(r, status=200)
+
     # Gather & format <badge> key
     badge_data = {}
     share_data = None
-    pipeline_data = {}
     report_data_copy = {}
     badge_status = "no_badge"
     _repo_settings = {}
-    # List of fullfilled criteria per badge type (i.e. [software, services, fair])
+
+    # 1. List of fullfilled criteria per badge type (i.e. [software, services, fair])
     criteria_fulfilled_map = _get_criteria_per_badge_type(report_data)
     if criteria_fulfilled_map:
-        # Get pipeline data for the badge
+        # 1.1. Get pipeline data for the badge
         pipeline_data = db.get_entry(pipeline_id)
         try:
             jenkins_info = pipeline_data["jenkins"]
@@ -2109,7 +2288,24 @@ async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Re
             )
             logger.error(_reason)
             return web.Response(status=422, reason=_reason, text=_reason)
-        # Get Badgr's badgeclass and proceed with badge issuance
+
+        # 1.2. Produce metadata
+        pipeline_repo = pipeline_data["pipeline_repo"]
+        pipeline_repo_branch = pipeline_data["pipeline_repo_branch"]
+        report_url_raw = _get_report_url_raw(pipeline_repo, pipeline_repo_branch)
+        r = {
+            "meta": {
+                "version": _get_spec_version(),
+                "report_json_url": report_url_raw,
+                "report_permalink": os.path.join(
+                    "https://sqaaas.eosc-synergy.eu/full-assessment/report/",
+                    report_url_raw,
+                ),
+                "timestamp": time.time(),
+            }
+        }
+
+        # 1.3. Get Badgr's badgeclass and proceed with badge issuance
         missing_criteria_all = []  # required_for_next_level flag
         # NOTE: 1-to-1 relationship between badge_type and assessment
         badge_type, criteria_fulfilled_list = list(criteria_fulfilled_map.items())[0]
@@ -2120,7 +2316,7 @@ async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Re
         ) = await _badgeclass_matchmaking(
             pipeline_id, badge_type, criteria_fulfilled_list
         )
-        # Generate criteria summary
+        # 1.4. Generate criteria summary
         criteria_summary_copy = copy.deepcopy(criteria_summary)
         for _badge_category, _badge_category_data in criteria_summary_copy.items():
             to_fulfill_set = set(_badge_category_data["to_fulfill"])
@@ -2137,6 +2333,8 @@ async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Re
                     pipeline_id,
                     badge_type,
                     badgeclass_name,
+                    metadata=r["meta"],
+                    fulfilled_list=fulfilled_list,
                 )
                 badge_data[badge_type]["data"] = badge_obj
             except SQAaaSAPIException as e:
@@ -2166,15 +2364,15 @@ async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Re
                     pipeline_id, pipeline_data, badge_status
                 )
 
-        # Next level badge
+        # 1.5. Next level badge
         next_level_badge = await _get_next_level_badge(badge_category)
         if next_level_badge:
             missing_criteria_all.extend(criteria_summary[next_level_badge]["missing"])
 
-        # Store badge data in DB
+        # 1.6. Store badge data in DB
         db.add_badge_data(pipeline_id, badge_data)
 
-        # Subcriterion required_for_next_level
+        # 1.7. Subcriterion required_for_next_level
         report_data_copy = copy.deepcopy(report_data)
         for criterion, criterion_data in report_data.items():
             _subcriteria = criterion_data["subcriteria"]
@@ -2221,17 +2419,13 @@ async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Re
     )
 
     # Compose the final payload
-    pipeline_repo = pipeline_data["pipeline_repo"]
-    pipeline_repo_branch = pipeline_data["pipeline_repo_branch"]
-    r = {
-        "meta": {
-            "version": _get_spec_version(),
-            "report_json_url": _get_report_url_raw(pipeline_repo, pipeline_repo_branch),
-        },
-        "repository": _repo_settings,
-        "report": report_data_copy,
-        "badge": badge_data,
-    }
+    r.update(
+        {
+            "repository": _repo_settings,
+            "report": report_data_copy,
+            "badge": badge_data,
+        }
+    )
 
     # Store JSON report in the assessment repository
     logger.debug(
@@ -2484,7 +2678,9 @@ async def _badgeclass_matchmaking(pipeline_id, badge_type, criteria_fulfilled_li
     return (badge_awarded_badgeclass_name, badge_awarded_category, criteria_summary)
 
 
-async def _issue_badge(pipeline_id, badge_type, badgeclass_name):
+async def _issue_badge(
+    pipeline_id, badge_type, badgeclass_name, fulfilled_list, metadata
+):
     """Issues a badge using BadgrUtils.
 
     :param pipeline_id: ID of the pipeline to get
@@ -2494,19 +2690,15 @@ async def _issue_badge(pipeline_id, badge_type, badgeclass_name):
     :param badgeclass_name: String that corresponds to the BadgeClass name (as it
         appears in Badgr web)
     :type badgeclass_name: str
+    :param fulfilled_list: List of fulfilled criteria.
+    :type fulfilled_list: list
+    :param metadata: object that contains metadata for the report
+    :type metadata: dict
     """
     logger.info("Issuing badge for pipeline <%s>" % pipeline_id)
 
     # Get pipeline data
     pipeline_data = db.get_entry(pipeline_id)
-    try:
-        jenkins_info = pipeline_data["jenkins"]
-        build_info = jenkins_info["build_info"]
-    except KeyError:
-        _reason = "Could not retrieve Jenkins job information: Pipeline has not ran yet"
-        logger.error(_reason)
-        return web.Response(status=422, reason=_reason, text=_reason)
-
     badge_args = {}
     if badge_type not in ["fair"]:
         repo_settings = pipeline_data["repo_settings"]
@@ -2519,14 +2711,16 @@ async def _issue_badge(pipeline_id, badge_type, badgeclass_name):
                     badge_args[param].insert(0, _repo_settings[param])
                 else:
                     badge_args[param].append(_repo_settings[param])
-        logger.debug("Resultant badge arguments: %s" % badge_args)
+        logger.debug(
+            "Additional badge arguments passed to BadgrUtils.issue_badge(): %s"
+            % badge_args
+        )
     try:
         badge_data = badgr_utils.issue_badge(
             badge_type=badge_type,
             badgeclass_name=badgeclass_name,
-            build_commit_id=build_info["commit_id"],
-            build_commit_url=build_info["commit_url"],
-            ci_build_url=build_info["url"],
+            fulfilled_list=fulfilled_list,
+            metadata=metadata,
             **badge_args,
         )
     except Exception as e:

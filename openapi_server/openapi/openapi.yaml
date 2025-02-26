@@ -11,7 +11,7 @@ info:
     name: GPLv3
     url: https://www.gnu.org/licenses/gpl-3.0.txt
   title: SQAaaS API
-  version: 3.2.1
+  version: 3.5.0
 servers:
 - description: Main (production) API server
   url: https://api.sqaaas.eosc-synergy.eu/v1
@@ -132,6 +132,16 @@ paths:
             type: string
           type: array
         style: form
+      - description: Boolean that triggers only the assessment of the criteria passed
+          under criteria_workflow
+        explode: true
+        in: query
+        name: run_criteria_workflow_only
+        required: false
+        schema:
+          default: false
+          type: boolean
+        style: form
       requestBody:
         content:
           application/json:
@@ -158,6 +168,32 @@ paths:
         "400":
           description: Request failed validation
       summary: Creates a pipeline for assessment (QAA module).
+      x-openapi-router-controller: openapi_server.controllers.default_controller
+      x-codegen-request-body-name: body
+  /pipeline/assessment/custom:
+    post:
+      description: |
+        Creates a pipeline for a custom assessment (QAA module).
+      operationId: add_pipeline_for_assessment_custom
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Assessment'
+        required: true
+        x-body-name: body
+      responses:
+        "201":
+          content:
+            application/json:
+              example:
+                id: dd7d8481-81a3-407f-95f0-a2f1cb382a4b
+              schema:
+                $ref: '#/components/schemas/add_pipeline_201_response'
+          description: Created
+        "400":
+          description: Request failed validation
+      summary: Creates a pipeline for a custom assessment (QAA module).
       x-openapi-router-controller: openapi_server.controllers.default_controller
       x-codegen-request-body-name: body
   /pipeline/assessment/{pipeline_id}/output:

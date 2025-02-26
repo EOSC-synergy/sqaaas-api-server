@@ -8,8 +8,10 @@ from urllib.parse import quote_plus, urljoin
 
 import jenkins
 import requests
+import timeout_decorator
 from bs4 import BeautifulSoup
 from jinja2 import Environment, PackageLoader
+
 from openapi_server.exception import SQAaaSAPIException
 
 CREATE_CREDENTIAL_ORG = (
@@ -49,24 +51,49 @@ class JenkinsUtils(object):
         """
         return quote_plus(job_name.replace("/", "%2F"))
 
-    def scan_organization(self, org_name="eosc-synergy-org"):
+    @timeout_decorator.timeout(
+        10,
+        timeout_exception=jenkins.JenkinsException,
+        exception_message="Timeout reached when trying to connect to Jenkins",
+    )
+    def scan_organization(self, org_name, job_name=""):
         path = "/job/%s/build?delay=0" % org_name
+        label = "SCAN_ORGANIZATION"
+        if job_name:
+            path = "/job/%s/job/%s/build?delay=0" % (org_name, job_name)
+            label = "SCAN_ORGANIZATION_JOB"
+            self.logger.debug("Requested to scan a single job. Using path: %s" % path)
+        else:
+            self.logger.debug(
+                "Requested to scan the entire organization. Using path: %s" % path
+            )
         r = requests.post(
             urljoin(self.endpoint, path), auth=(self.access_user, self.access_token)
         )
         if not r.ok:
             self.logger.error(
-                "Could not trigger SCAN_ORGANIZATION in Jenkins endpoint: %s"
-                % self.endpoint
+                "Could not trigger %s in Jenkins endpoint: %s" % (label, self.endpoint)
             )
         else:
             self.logger.debug(
-                "Triggered SCAN_ORGANIZATION in Jenkins endpoint: %s" % self.endpoint
+                "Successfully triggered %s in Jenkins endpoint: %s"
+                % (label, self.endpoint)
             )
         r.raise_for_status()
-        self.logger.debug("Triggered GitHub organization scan")
 
-    def get_job_info(self, name, depth=0):
+    @timeout_decorator.timeout(
+        10,
+        timeout_exception=jenkins.JenkinsException,
+        exception_message="Timeout reached when trying to connect to Jenkins",
+    )
+    def get_job_info(self, name, depth=0, no_branch=False):
+        """Return job information.
+
+        :param name: full job name as labelled by Jenkins.
+        :param depth: number that indicates depth level for Jenkins.
+        :param no_branch: flag to return the presence of the job regardless of the
+            branch.
+        """
         job_info = {}
         job_name_list = []
 
@@ -74,14 +101,20 @@ class JenkinsUtils(object):
         for folder in self.server.get_jobs(folder_depth=1):
             if folder["name"] in [_org]:
                 job_name_list = [job["name"] for job in folder["jobs"]]
+        job_without_branch_exists = False
         # Try case-insensitive (Jenkins org-folder limitation)
         if _repo not in job_name_list:
             self.logger.debug("Trying case-insensitive match with job: <%s>" % name)
             for job_name in job_name_list:
                 if _repo.lower() in [job_name.lower()]:
+                    job_without_branch_exists = True
                     name = "/".join([_org, job_name, _branch])
                     self.logger.debug("Using new job name: <%s>" % name)
                     break
+        else:
+            job_without_branch_exists = True
+        if no_branch:
+            return job_without_branch_exists
         try:
             job_info = self.server.get_job_info(name, depth=depth)
             self.logger.debug(
@@ -89,18 +122,24 @@ class JenkinsUtils(object):
             )
         except jenkins.JenkinsException as e:
             self.logger.error(
-                "No info could be fetched for Jenkins job <%s>: %s (%s)"
-                % (name, str(e), dir(e))
+                "No info could be fetched for Jenkins job <%s>: %s" % (name, str(e))
             )
         return job_info
 
-    def exist_job(self, job_name):
+    def exist_job(self, job_name, no_branch=False):
         """Check whether given job is defined in Jenkins.
 
         :param job_name: job name including folder/s, name & branch
+        :param no_branch: flag to indicate whether to check for the branch name in the
+            job
         """
-        return self.get_job_info(job_name)
+        return self.get_job_info(job_name, no_branch=no_branch)
 
+    @timeout_decorator.timeout(
+        10,
+        timeout_exception=jenkins.JenkinsException,
+        exception_message="Timeout reached when trying to connect to Jenkins",
+    )
     def build_job(self, full_job_name):
         """Build existing job.
 
@@ -115,6 +154,11 @@ class JenkinsUtils(object):
             self.logger.debug("Triggered job build (queue item number: %s)" % item_no)
         return item_no
 
+    @timeout_decorator.timeout(
+        10,
+        timeout_exception=jenkins.JenkinsException,
+        exception_message="Timeout reached when trying to connect to Jenkins",
+    )
     async def get_queue_item(self, item_no):
         """Get the status of the build item in the Jenkins queue.
 
@@ -135,6 +179,11 @@ class JenkinsUtils(object):
                 )
         return executable_data
 
+    @timeout_decorator.timeout(
+        10,
+        timeout_exception=jenkins.JenkinsException,
+        exception_message="Timeout reached when trying to connect to Jenkins",
+    )
     def get_build_info(self, full_job_name, build_no, depth=0):
         self.logger.debug(
             "Getting status for job <%s> (build_no: %s)" % (full_job_name, build_no)
@@ -152,6 +201,11 @@ class JenkinsUtils(object):
             )
         return build_info
 
+    @timeout_decorator.timeout(
+        10,
+        timeout_exception=jenkins.JenkinsException,
+        exception_message="Timeout reached when trying to connect to Jenkins",
+    )
     def stop_build(self, full_job_name, build_no):
         """Stop a build from a job.
 
@@ -163,11 +217,21 @@ class JenkinsUtils(object):
         )
         return self.server.stop_build(full_job_name, build_no)
 
+    @timeout_decorator.timeout(
+        10,
+        timeout_exception=jenkins.JenkinsException,
+        exception_message="Timeout reached when trying to connect to Jenkins",
+    )
     def delete_job(self, full_job_name):
         self.logger.debug("Deleting Jenkins job: %s" % full_job_name)
         self.server.delete_job(full_job_name)
         self.logger.debug("Jenkins job <%s> successfully deleted" % full_job_name)
 
+    @timeout_decorator.timeout(
+        100,
+        timeout_exception=jenkins.JenkinsException,
+        exception_message="Timeout reached when trying to connect to Jenkins",
+    )
     def get_stage_data(self, job_name, build_no):
         """Get the info from the pipeline stages.
 
@@ -288,6 +352,11 @@ class JenkinsUtils(object):
 
         return criteria_data_list
 
+    @timeout_decorator.timeout(
+        10,
+        timeout_exception=jenkins.JenkinsException,
+        exception_message="Timeout reached when trying to connect to Jenkins",
+    )
     def cleanup_stage_failed(self, full_job_name, build_no):
         _cleanup_failed = False
         try:
@@ -312,6 +381,11 @@ class JenkinsUtils(object):
 
         return _cleanup_failed
 
+    @timeout_decorator.timeout(
+        10,
+        timeout_exception=jenkins.JenkinsException,
+        exception_message="Timeout reached when trying to connect to Jenkins",
+    )
     def remove_credential(self, credential_id, folder_name, domain_name="_"):
         """Removes a temporary credential in Jenkins.
 
@@ -331,6 +405,11 @@ class JenkinsUtils(object):
                 "Could not remove credential <%s>: not found" % credential_id
             )
 
+    @timeout_decorator.timeout(
+        10,
+        timeout_exception=jenkins.JenkinsException,
+        exception_message="Timeout reached when trying to connect to Jenkins",
+    )
     def create_credential(
         self,
         credential_id,
