@@ -1328,10 +1328,10 @@ async def run_pipeline(
         return web.Response(status=502, reason=str(e), text=str(e))
 
     # 2) Include badge status in the commit
-    pipeline_qaa_data = pipeline_data["qaa"]
+    pipeline_qaa_data = pipeline_data.get("qaa", {})
     do_full_assessment = pipeline_qaa_data.get("do_full_assessment", True)
     if do_full_assessment:
-        digital_object_type = pipeline_qaa_data["digital_object_type"]
+        digital_object_type = pipeline_qaa_data.get("digital_object_type", "")
         badge_status = "not assessed"
         additional_files_list.append(
             {
@@ -1623,7 +1623,7 @@ async def _update_status(pipeline_id, triggered_by_run=False, build_task=None):
     )
 
     # Update assessment status on DB (and push payload)
-    pipeline_qaa_data = pipeline_data["qaa"]
+    pipeline_qaa_data = pipeline_data.get("qaa", {})
     do_full_assessment = pipeline_qaa_data.get("do_full_assessment", True)
     if do_full_assessment:
         logger.debug("Updating badge status")
@@ -2261,7 +2261,7 @@ async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Re
     }
 
     # Return baseline response if not tackling full assessment
-    pipeline_qaa_data = pipeline_data["qaa"]
+    pipeline_qaa_data = pipeline_data.get("qaa", {})
     do_full_assessment = pipeline_qaa_data.get("do_full_assessment", True)
     if not do_full_assessment:
         return web.json_response(r, status=200)
