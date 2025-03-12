@@ -30,11 +30,6 @@ class BadgrUtils(object):
         :param issuer_name: String that corresponds to the Issuer name (as it appears in
             Badgr web)
         """
-        # Return empty JSON if badging issuance is disabled
-        if not BADGING_ENABLED:
-            logger.warning("Badging is disabled in configuration")
-            return None
-
         self.endpoint = endpoint
         self.issuer_name = issuer_name
         self.access_user = access_user
@@ -52,6 +47,14 @@ class BadgrUtils(object):
             self.refresh_token = refresh_token
             # Give a small buffer of 100 seconds
             self.access_token_expiration = time.time() + expiry - 100
+
+    @classmethod
+    def create_badge_object(cls, endpoint, access_user, access_pass, issuer_name):
+        """Create a BadgrUtils object if badging is not disabled in config."""
+        if not BADGING_ENABLED:
+            logger.warning("Badging is disabled in configuration")
+            return None
+        return cls(endpoint, access_user, access_pass, issuer_name)
 
     def get_token(self, refresh=False):
         """Obtains a Bearer-type token according to the provided credentials.

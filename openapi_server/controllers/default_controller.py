@@ -2325,44 +2325,45 @@ async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Re
             criteria_summary[_badge_category]["fulfilled"] = fulfilled_list
         badge_data[badge_type] = {"criteria": criteria_summary}
 
-        badge_data[badge_type]["data"] = {}
-        if badgeclass_name:
-            badge_status = badge_category
-            try:
-                badge_obj = await _issue_badge(
-                    pipeline_id,
-                    badge_type,
-                    badgeclass_name,
-                    metadata=r["meta"],
-                    fulfilled_list=fulfilled_list,
-                )
-                badge_data[badge_type]["data"] = badge_obj
-            except SQAaaSAPIException as e:
-                badge_status = "nullified"
-                return web.Response(
-                    status=e.http_code, reason=e.message, text=e.message
-                )
-            else:
-                # Generate & store share
-                share_data = await _get_badge_share(badge_obj, commit_url)
-                badge_data[badge_type]["share"] = share_data
-                # Generate verification URL
-                openbadgeid = badge_obj["openBadgeId"]
-                openbadgeid_urlencode = urllib_parse.quote_plus(openbadgeid)
-                commit_urlencode = urllib_parse.quote_plus(commit_url)
-                embed_url = (
-                    f"{openbadgeid_urlencode}?identity__url="
-                    f"{commit_urlencode}&amp;identity__url="
-                    f"{commit_urlencode}"
-                )
-                badge_data[badge_type]["verification_url"] = (
-                    "https://badgecheck.io/?url=%s" % embed_url
-                )
-            finally:
-                # Manage repo_settings
-                _repo_settings = await _handle_badge_status(
-                    pipeline_id, pipeline_data, badge_status
-                )
+        if badgr_utils:
+            badge_data[badge_type]["data"] = {}
+            if badgeclass_name:
+                badge_status = badge_category
+                try:
+                    badge_obj = await _issue_badge(
+                        pipeline_id,
+                        badge_type,
+                        badgeclass_name,
+                        metadata=r["meta"],
+                        fulfilled_list=fulfilled_list,
+                    )
+                    badge_data[badge_type]["data"] = badge_obj
+                except SQAaaSAPIException as e:
+                    badge_status = "nullified"
+                    return web.Response(
+                        status=e.http_code, reason=e.message, text=e.message
+                    )
+                else:
+                    # Generate & store share
+                    share_data = await _get_badge_share(badge_obj, commit_url)
+                    badge_data[badge_type]["share"] = share_data
+                    # Generate verification URL
+                    openbadgeid = badge_obj["openBadgeId"]
+                    openbadgeid_urlencode = urllib_parse.quote_plus(openbadgeid)
+                    commit_urlencode = urllib_parse.quote_plus(commit_url)
+                    embed_url = (
+                        f"{openbadgeid_urlencode}?identity__url="
+                        f"{commit_urlencode}&amp;identity__url="
+                        f"{commit_urlencode}"
+                    )
+                    badge_data[badge_type]["verification_url"] = (
+                        "https://badgecheck.io/?url=%s" % embed_url
+                    )
+                finally:
+                    # Manage repo_settings
+                    _repo_settings = await _handle_badge_status(
+                        pipeline_id, pipeline_data, badge_status
+                    )
 
         # 1.5. Next level badge
         next_level_badge = await _get_next_level_badge(badge_category)

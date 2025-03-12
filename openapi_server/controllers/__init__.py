@@ -47,6 +47,8 @@ def init_utils():
     with open(TOKEN_BADGR_FILE, "r") as f:
         badgr_token = f.read().strip()
     logger.debug("Loading Badgr password from local filesystem")
-    badgr_utils = BadgrUtils(BADGR_URL, BADGR_USER, badgr_token, BADGR_ISSUER)
+    badgr_utils = BadgrUtils.create_badge_object(
+        BADGR_URL, BADGR_USER, badgr_token, BADGR_ISSUER
+    )
 
     return (git_utils, gh_utils, jk_utils, badgr_utils)
