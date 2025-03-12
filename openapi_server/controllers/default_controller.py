@@ -2449,6 +2449,12 @@ async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Re
         logger.warning(
             "Could not store assessment report in repository " "<%s>" % pipeline_repo
         )
+    report_permalink = report_url_raw.replace(pipeline_repo_branch, commit)
+    r["meta"]["report_json_url_permalink"] = report_permalink
+    logger.debug(
+        "Permalink URL to the SQAaaS report added to the response payload: %s"
+        % report_permalink
+    )
 
     return web.json_response(r, status=200)
 
