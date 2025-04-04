@@ -1328,10 +1328,10 @@ async def run_pipeline(
         return web.Response(status=502, reason=str(e), text=str(e))
 
     # 2) Include badge status in the commit
-    pipeline_qaa_data = pipeline_data["qaa"]
+    pipeline_qaa_data = pipeline_data.get("qaa", {})
     do_full_assessment = pipeline_qaa_data.get("do_full_assessment", True)
     if do_full_assessment:
-        digital_object_type = pipeline_qaa_data["digital_object_type"]
+        digital_object_type = pipeline_qaa_data.get("digital_object_type", "")
         badge_status = "not assessed"
         additional_files_list.append(
             {
@@ -1623,7 +1623,7 @@ async def _update_status(pipeline_id, triggered_by_run=False, build_task=None):
     )
 
     # Update assessment status on DB (and push payload)
-    pipeline_qaa_data = pipeline_data["qaa"]
+    pipeline_qaa_data = pipeline_data.get("qaa", {})
     do_full_assessment = pipeline_qaa_data.get("do_full_assessment", True)
     if do_full_assessment:
         logger.debug("Updating badge status")
@@ -2261,7 +2261,7 @@ async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Re
     }
 
     # Return baseline response if not tackling full assessment
-    pipeline_qaa_data = pipeline_data["qaa"]
+    pipeline_qaa_data = pipeline_data.get("qaa", {})
     do_full_assessment = pipeline_qaa_data.get("do_full_assessment", True)
     if not do_full_assessment:
         return web.json_response(r, status=200)
@@ -2325,44 +2325,45 @@ async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Re
             criteria_summary[_badge_category]["fulfilled"] = fulfilled_list
         badge_data[badge_type] = {"criteria": criteria_summary}
 
-        badge_data[badge_type]["data"] = {}
-        if badgeclass_name:
-            badge_status = badge_category
-            try:
-                badge_obj = await _issue_badge(
-                    pipeline_id,
-                    badge_type,
-                    badgeclass_name,
-                    metadata=r["meta"],
-                    fulfilled_list=fulfilled_list,
-                )
-                badge_data[badge_type]["data"] = badge_obj
-            except SQAaaSAPIException as e:
-                badge_status = "nullified"
-                return web.Response(
-                    status=e.http_code, reason=e.message, text=e.message
-                )
-            else:
-                # Generate & store share
-                share_data = await _get_badge_share(badge_obj, commit_url)
-                badge_data[badge_type]["share"] = share_data
-                # Generate verification URL
-                openbadgeid = badge_obj["openBadgeId"]
-                openbadgeid_urlencode = urllib_parse.quote_plus(openbadgeid)
-                commit_urlencode = urllib_parse.quote_plus(commit_url)
-                embed_url = (
-                    f"{openbadgeid_urlencode}?identity__url="
-                    f"{commit_urlencode}&amp;identity__url="
-                    f"{commit_urlencode}"
-                )
-                badge_data[badge_type]["verification_url"] = (
-                    "https://badgecheck.io/?url=%s" % embed_url
-                )
-            finally:
-                # Manage repo_settings
-                _repo_settings = await _handle_badge_status(
-                    pipeline_id, pipeline_data, badge_status
-                )
+        if badgr_utils:
+            badge_data[badge_type]["data"] = {}
+            if badgeclass_name:
+                badge_status = badge_category
+                try:
+                    badge_obj = await _issue_badge(
+                        pipeline_id,
+                        badge_type,
+                        badgeclass_name,
+                        metadata=r["meta"],
+                        fulfilled_list=fulfilled_list,
+                    )
+                    badge_data[badge_type]["data"] = badge_obj
+                except SQAaaSAPIException as e:
+                    badge_status = "nullified"
+                    return web.Response(
+                        status=e.http_code, reason=e.message, text=e.message
+                    )
+                else:
+                    # Generate & store share
+                    share_data = await _get_badge_share(badge_obj, commit_url)
+                    badge_data[badge_type]["share"] = share_data
+                    # Generate verification URL
+                    openbadgeid = badge_obj["openBadgeId"]
+                    openbadgeid_urlencode = urllib_parse.quote_plus(openbadgeid)
+                    commit_urlencode = urllib_parse.quote_plus(commit_url)
+                    embed_url = (
+                        f"{openbadgeid_urlencode}?identity__url="
+                        f"{commit_urlencode}&amp;identity__url="
+                        f"{commit_urlencode}"
+                    )
+                    badge_data[badge_type]["verification_url"] = (
+                        "https://badgecheck.io/?url=%s" % embed_url
+                    )
+                finally:
+                    # Manage repo_settings
+                    _repo_settings = await _handle_badge_status(
+                        pipeline_id, pipeline_data, badge_status
+                    )
 
         # 1.5. Next level badge
         next_level_badge = await _get_next_level_badge(badge_category)
@@ -2448,6 +2449,12 @@ async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Re
         logger.warning(
             "Could not store assessment report in repository " "<%s>" % pipeline_repo
         )
+    report_permalink = report_url_raw.replace(pipeline_repo_branch, commit)
+    r["meta"]["report_json_url_permalink"] = report_permalink
+    logger.debug(
+        "Permalink URL to the SQAaaS report added to the response payload: %s"
+        % report_permalink
+    )
 
     return web.json_response(r, status=200)
 

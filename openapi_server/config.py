@@ -57,8 +57,13 @@ def replace_sections_with_colon():
     replace_values(section_map)
 
 
-def _get(section, key, fallback=None):
+def _get(section, key, fallback=None, fail_if_no_value=False):
     value = CONF.get(section, key, fallback=fallback)
+    # value enforcement
+    if fail_if_no_value and not value:
+        raise SQAaaSAPIException(
+            422, "Bad API configuration setting: no value defined for %s:%s" % (section, key)
+        )
     # handle booleans
     if value in ["true", "True"]:
         value = True
@@ -73,7 +78,7 @@ def get(key, fallback=None):
 
 
 def get_repo(key, fallback=None):
-    return _get(REPO_BACKEND, key, fallback=fallback)
+    return _get(REPO_BACKEND, key, fallback=fallback, fail_if_no_value=True)
 
 
 def get_ci(key, fallback=None):
