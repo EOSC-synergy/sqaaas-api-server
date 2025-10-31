@@ -326,6 +326,9 @@ class GitHubUtils(object):
             be raised
         """
         _client = None
+        self.logger.info('ivan test clone repo')
+        print('cogiendo el repo')
+        print(repo_name,repo_creds)
         if repo_creds:
             _user_id = repo_creds.get("user_id", "")
             _user_id_decrypted = crypto_utils.decrypt_str(_user_id)

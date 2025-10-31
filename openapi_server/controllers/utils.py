@@ -1304,9 +1304,16 @@ def get_credential_data(credential_id, pipeline_data):
     project_repos = pipeline_data["config_data"][0]["config"]["project_repos"]
     credential_data = {}
     credential_tmp = False
+    print('inicio de projectrepo')
+    print(project_repos)
+    print(project_repos[0]['repo'])
+    print('fin    de projectrepo')
+    print('getingcredentialdata')
     for project_repo in project_repos:
         project_repo_name = project_repo["repo"]
-        if project_repo.get("credentials_id", "") == credential_id:
+        print(project_repo.get("credentials_id", ""))
+        print(project_repo_name)
+        if project_repo.get("repo", "") == credential_id:
             credential_data = project_repo["credential_data"]
             credential_tmp = project_repo.get("credential_tmp", False)
             logger.debug(

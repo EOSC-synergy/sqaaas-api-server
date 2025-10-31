@@ -21,19 +21,24 @@ def load_content():
     data = {}
     if DB_FILE.exists():
         data = json.loads(DB_FILE.read_text(encoding="utf-8"))
+        
     return data
 
 
 def store_content(data):
+    #print('Ivan : i am storing content')
     try:
         DB_FILE.parent.mkdir(parents=True, exist_ok=False)
     except FileExistsError:
         logger.debug("DB file path: parent folder already exists")
     else:
         logger.debug("DB file path: parent folder created")
-
+    #print('what to print')
+    #print(data.keys())
     DB_FILE.write_text(json.dumps(data), encoding="utf-8")
-
+    #print('what is  print')
+    #print(DB_FILE)
+    #print(load_content().keys())
 
 def print_content():
     db = load_content()
@@ -120,6 +125,9 @@ def get_entry(pipeline_id=None):
     :param pipeline_id: UUID-format identifier for the pipeline.
     """
     db = load_content()
+    
+    logger.info(db[pipeline_id].keys())
+    logger.info('cesfini')
     if pipeline_id:
         logger.debug("Loading pipeline <%s> from DB" % pipeline_id)
         r = db[pipeline_id]

@@ -45,6 +45,8 @@ REPOSITORY_BACKEND = config.get("repository_backend")
 GITHUB_ORG = config.get_repo("organization")
 JENKINS_GITHUB_ORG = config.get_ci("github_organization_name")
 JENKINS_CREDENTIALS_FOLDER = config.get_ci("credentials_folder")
+
+
 JENKINS_COMPLETED_STATUS = ["SUCCESS", "FAILURE", "UNSTABLE", "ABORTED"]
 TOOLING_QAA_SPECIFIC_KEY = "tools_qaa_specific"
 ASSESSMENT_REPORT_LOCATION = config.get(
@@ -65,7 +67,7 @@ CUSTOMISABLE_CRITERIA = ["QC.Uni"]
 
 logger = logging.getLogger("sqaaas.api.controller")
 
-
+logger.info(config.get_ci("credentials_folder"))
 git_utils, gh_utils, jk_utils, badgr_utils = controllers.init_utils()
 
 
@@ -92,6 +94,7 @@ async def _add_pipeline_to_db(body, branch_upstream=None, report_to_stdout=False
         "Repository ID for pipeline name <%s>: %s" % (pipeline_name, pipeline_repo)
     )
     logger.debug("Using GitHub repository name: %s" % pipeline_repo)
+    logger.info("los cambios se han aplicado")
 
     db.add_entry(
         pipeline_id,
@@ -152,7 +155,10 @@ async def _get_tooling_for_assessment(
         _repo_name = repo["repo"]
         criteria_data_list_filtered = []
         criteria_filtered = {}
+        logger.info('Ivan, criteria data_list ')
+        print(criteria_data_list[0])
         for criterion_data in criteria_data_list:
+            logger.info('el reporting de criterion'+str(criterion_data['id']))
             criterion_data_copy = copy.deepcopy(criterion_data)
             criterion_id = criterion_data_copy["id"]
             # Exception for 'SvcQC.Dep' & 'QC.FAIR': the tool to be used is
@@ -169,6 +175,7 @@ async def _get_tooling_for_assessment(
             filtered_required_tools = []
             for tool in criterion_data_copy["tools"]:
                 tool_name = tool["name"]
+                logger.info('tool used '+ tool_name)
                 # Tool filter #1: <reporting:requirement_level> property
                 logger.debug(
                     "[tool: <%s>] Running filtering #1 (requirement "
@@ -236,6 +243,7 @@ async def _get_tooling_for_assessment(
                         files_found = []
                         value = None
                         for field_name in ["extensions", "filenames"]:
+                            
                             value = lang_entry.get(field_name, None)
                             if not value:
                                 continue
@@ -247,7 +255,15 @@ async def _get_tooling_for_assessment(
                             files_found = ctls_utils.find_files_by_language(
                                 field_name, value, repo=repo, path=path
                             )
+                            print('mine',field_name)
                             if files_found:
+                                logger.info('files_found' + str(files_found))
+                                print('cookie')
+                                if []:
+                                   print('fold and')
+                                if files_found:
+                                   print(files_found)
+                                print(files_found)
                                 account_tool = True
                                 logger.debug(
                                     "[tool: <%s>] Found matching files in "
@@ -297,7 +313,8 @@ async def _get_tooling_for_assessment(
                         "extensions/names) as the tool did not pass filtering "
                         "#1" % tool_name
                     )
-
+            logger.info ('final toolset:')        
+            logger.info(toolset_for_reporting)
             if not toolset_for_reporting:
                 _reason = (
                     "No tool defined for assessment (missing <reporting> "
@@ -369,7 +386,7 @@ async def _get_tooling_for_assessment(
         _reason = "Could not find any tool for criteria assessment"
         logger.error(_reason)
         raise SQAaaSAPIException(422, _reason)
-
+    logger.debug('Iván criteria_data_list',str(criteria_data_list_filtered))
     return (
         criteria_data_list_filtered,
         criteria_filtered,
@@ -390,8 +407,11 @@ async def _get_criteria_for_digital_object(repositories):
                          validate
     :type repositories: dict
     """
+    
     _repo_keys = list(repositories)
     _digital_object_type = None
+    logger.debug('repo_keys'+ str(repositories))
+    logger.debug(_repo_keys)
     # source code
     if "repo_code" in _repo_keys:
         _repo_key = "repo_code"
@@ -415,7 +435,10 @@ async def _get_criteria_for_digital_object(repositories):
 
     # Get the criteria that corresponds to the DO type
     criteria_data_list = await _get_criteria(digital_object_type=_digital_object_type)
-
+    logger.debug('Ivan')
+    for criteria in criteria_data_list:
+        
+         logger.debug(criteria['id'])
     relevant_criteria_data = []
     # Exception 'repo_docs': add a separate entry if docs are in
     # a different repo
@@ -444,7 +467,7 @@ async def _get_criteria_for_digital_object(repositories):
     logger.debug(
         "Resultant repository and criteria mapping: " "%s" % relevant_criteria_data
     )
-
+    #print(relevant_criteria_data)
     return relevant_criteria_data, _digital_object_type
 
 
@@ -542,9 +565,13 @@ async def add_pipeline_for_assessment(
     repositories, main_repo_key = _validate_assessment_input(body)
 
     # 0 Encrypt credentials before storing in DB
+    logger.info('Start creating pipeline ivan')
     for _repo_key, _repo_data in repositories.items():
+        logger.info(str(_repo_key)+'ivan')
         ci_credential_id = None
         _repo_creds = _repo_data.get("credentials_id", None)
+        
+        logger.info(str(_repo_creds)+'ivan')
         # type(str) == CI credentials (only id required)
         if type(_repo_creds) in [str]:
             ci_credential_id = _repo_creds
@@ -558,10 +585,12 @@ async def add_pipeline_for_assessment(
                 if _prop_value:
                     _prop_encrypted = crypto_utils.encrypt_str(_prop_value)
                     _repo_data["credential_data"][prop] = _prop_encrypted
+                    print(prop,_prop_encrypted)
             # Generate and add Jenkins credential ID
             ci_credential_id = "-".join(["sqaaas_tmp_cred", namegenerator.gen()])
             _repo_data["credentials_id"] = ci_credential_id
             _repo_data["credential_tmp"] = True
+            print('ivan3',_repo_creds)
         else:
             logger.error(
                 (
@@ -653,12 +682,29 @@ async def add_pipeline_for_assessment(
     # Render template for JSON payload
     env = Environment(loader=PackageLoader("openapi_server", "templates"))
     template = env.get_template("pipeline_assessment.json")
-    json_rendered = template.render(
+    if  'credential_data' in _repo_data.keys():#_repo_data["credential_data"]['user_id']:
+    
+        json_rendered = template.render(
+        pipeline_name=pipeline_name,
+        repositories=repositories,
+        ci_credential_id=main_repo_name,
+        GIT_USER=_repo_data["credential_data"]['user_id'],
+        GIT_PASSWORD=_repo_data["credential_data"]['token'],
+        criteria_data_list=criteria_data_list,
+        tooling_qaa_specific_key=TOOLING_QAA_SPECIFIC_KEY,
+    )
+    else:
+       
+        json_rendered = template.render(
         pipeline_name=pipeline_name,
         repositories=repositories,
         criteria_data_list=criteria_data_list,
         tooling_qaa_specific_key=TOOLING_QAA_SPECIFIC_KEY,
     )
+    print('pipeline_name',pipeline_name)
+    print('repositories',repositories)
+    print('criteria_data_list',criteria_data_list)
+    print('tooling_qaa_specific_key','ii')
     json_data = json.loads(json_rendered)
     logger.debug(
         "Generated JSON payload (from template) required to create the pipeline for the assessment: %s"
@@ -667,10 +713,17 @@ async def add_pipeline_for_assessment(
 
     # 3 Create pipeline
     try:
+        print('addd 1st batch')
+        print(json_data.keys())
+        print(json_data['config_data'])
+        #print(json_data['459cd450-1ad0-4c2a-85a2-a906bd15ef6c']['config_data'])
         pipeline_id = await _add_pipeline_to_db(
             json_data, branch_upstream=main_repo_branch, report_to_stdout=True
         )
+        print('finishadd')
+        print(json_data,)
     except SQAaaSAPIException as e:
+        print('ha fallado')
         return web.Response(status=e.http_code, reason=e.message, text=e.message)
 
     # 4 Store tool related data in the DB
@@ -848,7 +901,7 @@ async def update_pipeline_by_id(
         composer_json_last,
         jenkinsfile_data_last,
     ) = ctls_utils.get_pipeline_data(pipeline_data_raw)
-
+    
     diff_exists = False
     for elem in [
         (config_json_last, config_json),
@@ -1168,9 +1221,12 @@ async def run_pipeline(
     :param keepgoing: Flag to indicate that the pipeline will run until the end
     :type keepgoing: bool
     """
+    print('Ivan this is for the run')
     if keepgoing:
         db.update_environment(pipeline_id, {"JPL_KEEPGOING": "enabled"})
-
+    
+    
+    #toca ahora el pileine data miralo y en db y cxq no tiene el key
     pipeline_data = db.get_entry(pipeline_id)
     pipeline_data_raw = pipeline_data["raw_request"]
     pipeline_repo = pipeline_data["pipeline_repo"]
@@ -1181,10 +1237,20 @@ async def run_pipeline(
         logger.info("Repository branch provided: %s" % repo_branch)
 
     config_data_list = pipeline_data["data"]["config"]
+    print('datalist')
+    print(pipeline_repo_url)
+    print(repo_url)
+    print(config_data_list[0].keys())
+    print(config_data_list[0]['data_json'])
+    print(config_data_list[0]['data_json']['config'].keys())#['credentials'])
+    print('datalisto')
+    #print(config_data_list[0]['data_json']['config']['credentials'][0].keys())
+    
     composer_data = pipeline_data["data"]["composer"]
     jenkinsfile = pipeline_data["data"]["jenkinsfile"]
 
     additional_files_list = pipeline_data["data"].get("additional_files_to_commit", [])
+    
     if repo_url:
         if not ctls_utils.has_this_repo(config_data_list):
             _reason = (
@@ -1202,10 +1268,13 @@ async def run_pipeline(
         )
         logger.debug("Create target repository: %s" % pipeline_repo_url)
         gh_utils.create_org_repository(pipeline_repo)
+        print('Ivan repo', repo_url, pipeline_repo_url)
         logger.debug(
             "Clone & Push source repository <%s> to target repository <%s>"
             % (repo_url, pipeline_repo_url)
         )
+        print('thiis the repo clone adn push')
+        print(repo_url, pipeline_repo_url)
         try:
             pipeline_repo_branch = git_utils.clone_and_push(
                 repo_url, pipeline_repo_url, source_repo_branch=repo_branch
@@ -1230,7 +1299,10 @@ async def run_pipeline(
         )
     else:
         _create_repo = False
-        _repo = gh_utils.get_repository(pipeline_repo)
+        print('ivan the second ')
+        #if this dooesnt work try to put the same variable as the first for credentials
+        _repo = gh_utils.get_repository(pipeline_repo,)
+        print(_repo)
         if not _repo:
             _create_repo = True
         else:
@@ -1278,30 +1350,49 @@ async def run_pipeline(
     # 0) Create CI temporary credentials ('credential_tmp') if needed
     creds_tmp = []
     creds_folder = JENKINS_CREDENTIALS_FOLDER
-    ci_credentials = config_data_list[0]["data_json"]["config"]["credentials"]
+    ci_credentials = config_data_list[0]['data_json']['config']['credentials']
+    #config_data_list[0]["data_json"]["config"]["credentials"]
+    #logger.info('sminecraftaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa '+str(JENKINS_CREDENTIALS_FOLDER))
+    #logger.info('hola+ '+str(pipeline_data["data"]["config"]))
+    #logger.info('hola2+ '+str(pipeline_data["data"]["config"][0].keys()))
+    #logger.info('minecraft '+str(ctls_utils.get_pipeline_data(pipeline_data_raw)))
+    print('looping')
+    print(config_data_list[0]["data_json"]["config"])
+    
     for ci_credential in ci_credentials:
         _id = ci_credential["id"]
+        print('looping')
+        print(ci_credential)
+        
         credential_data, credential_tmp = ctls_utils.get_credential_data(
             _id, pipeline_data_raw
         )
+        #logger.info('minecraft '+credential_data)
+        print('default ivancredentals')    
         if credential_tmp:
             logger.info(
                 "Credential <%s> will be added temporarily to the CI " "server" % _id
             )
             _user_id = crypto_utils.decrypt_str(credential_data["user_id"])
             _token = crypto_utils.decrypt_str(credential_data["token"])
-
+            print('desencriptado',_user_id,_token)
+            #logger.info('minecraft ivan '+credential_data)
             if not creds_folder:
                 logger.info(
                     "Jenkins credential folder (<credentials_folder> "
                     "property) not defined in config. Using project's "
                     "organisation folder name: %s" % JENKINS_GITHUB_ORG
                 )
+                #logger.info('minecraft '+credential_data)
                 creds_folder = JENKINS_GITHUB_ORG
             try:
-                jk_utils.create_credential(
-                    _id, _user_id, _token, folder_name=creds_folder
+                print(_id, _user_id, _token, creds_folder
                 )
+                jk_utils.create_credential(
+                    _id, _user_id, _token, folder_name=creds_folder,
+                )
+                #mine
+                #logger.info(['info_tokens',_id, _user_id, _token])
             except Exception as e:
                 logger.error(str(e))
                 return web.Response(status=502, reason=str(e), text=str(e))
@@ -1324,6 +1415,7 @@ async def run_pipeline(
                 job_exists_no_branch = True
                 logger.debug("Jenkins job exists, regardless of the branch name")
     except Exception as e:
+        print ('fallo en 1383')
         logger.error(str(e))
         return web.Response(status=502, reason=str(e), text=str(e))
 
@@ -1383,6 +1475,7 @@ async def run_pipeline(
             build_no, build_status, build_url, build_item_no = build_job_task.result()
     else:
         try:
+            print('fallo e eñ 1453')
             # Option 1: Job exists but branch does not -> SCAN_ORGANIZATION_JOB
             if job_exists_no_branch:
                 jk_utils.scan_organization(
@@ -1393,6 +1486,7 @@ async def run_pipeline(
             else:
                 jk_utils.scan_organization(org_name=JENKINS_GITHUB_ORG)
         except Exception as e:
+            
             logger.error(str(e))
             return web.Response(status=502, reason=str(e), text=str(e))
         else:
@@ -1427,7 +1521,7 @@ async def run_pipeline(
         creds_folder=creds_folder,
         issue_badge=issue_badge,
     )
-
+    print(creds_tmp,creds_folder)
     # Fire & forget _update_status()
     asyncio.create_task(
         _update_status(pipeline_id, triggered_by_run=True, build_task=build_job_task)
@@ -1436,7 +1530,7 @@ async def run_pipeline(
         "Creating a parallel task to watch for the start of the "
         "pipeline <%s>" % pipeline_id
     )
-
+    logger.info("finished running pipeline with credentials"+str(creds_folder))
     return web.Response(status=204, reason=reason, text=reason)
 
 
@@ -2492,6 +2586,7 @@ async def create_pull_request(request: web.Request, pipeline_id, body) -> web.Re
     logger.debug(
         "Target repository (base) formatted. Resultant name: %s" % target_repo_name
     )
+    print('ivan the third')
     target_repo = gh_utils.get_repository(target_repo_name, raise_exception=True)
 
     target_branch_name = target_repo.default_branch
