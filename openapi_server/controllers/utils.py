@@ -1042,8 +1042,12 @@ def supported_git_platform(repo_url, platforms):
     :param platforms: Dict with the git supported platforms (e.g {'github':
         'https://github.com'})
     """
+    print('defaultutils1045')
+    print(parse_url(repo_url))
     url_parsed = parse_url(repo_url)
     host_without_extension = url_parsed.host.split(".")[0]
+    print(host_without_extension)
+    print (platforms)
     if host_without_extension not in list(platforms):
         host_without_extension = None
     return host_without_extension

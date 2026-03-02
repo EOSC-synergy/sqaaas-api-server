@@ -268,7 +268,8 @@ class JenkinsUtils(object):
                     raise SQAaaSAPIException(502, _reason)
             else:
                 out = r
-
+            print('jenkins271')
+            #print(r.text)
             return out
 
         def get_text(html_text):
@@ -437,12 +438,12 @@ class JenkinsUtils(object):
         print('Iván 437')
         self.logger.debug("Removing existing credential (if any)")
         #print('SQAaaS_creds',self.server.list_credentials('SQAaaS_creds'))#folder_name))
-        #print('eosc-synergy-org/credentials',self.server.list_credentials('eosc-synergy-org/credentials'))#folder_name))
+        print('eosc-synergy-org/credentials',self.server.list_credentials('eosc-synergy-org/credentials'))#folder_name))
         print(folder_name)
         
         print('Iván 443')
         
-        #self.remove_credential(credential_id, folder_name=folder_name)
+        self.remove_credential(credential_id, folder_name=folder_name)
         env = Environment(loader=PackageLoader("openapi_server", "templates/jenkins"))
         template = env.get_template("credentials.xml")
         xml_rendered = template.render(
@@ -456,8 +457,8 @@ class JenkinsUtils(object):
             data=xml_rendered.encode("utf-8"),
             auth=(self.access_user, self.access_token),
             headers={"Content-Type": "text/xml; charset=utf-8"},
-        )
-        print('Ivan llega hasta 449',r,r.text)
-        r.raise_for_status()
+        )#esto esta mal, quitar triple comilla (desde 155 hasta 459 quitada por el moemnto)
+        #print('Ivan llega hasta 449',r,r.text)
+        #r.raise_for_status()
         print('llega hasta 451')
         self.logger.debug("Credential <%s> created" % credential_id)

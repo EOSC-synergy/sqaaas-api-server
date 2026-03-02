@@ -33,7 +33,7 @@ cryptography
 pandas
 anybadge==1.14.0
 timeout-decorator==0.5.0
-# report2sqaaas == 2.2.1
+# report2sqaaas == 2.0.0
 git+https://github.com/EOSC-synergy/sqaaas-reporting@2.0.0#egg=report2sqaaas
 # report2sqaaas-plugin-markdownlint = 2.1.1
 git+https://github.com/EOSC-synergy/sqaaas-reporting-plugins@2.1.1#egg=report2sqaaas-plugin-markdownlint&subdirectory=qc_doc_markdownlint
@@ -63,3 +63,5 @@ git+https://github.com/EOSC-synergy/sqaaas-reporting-plugins@2.1.1#egg=report2sq
 git+https://github.com/EOSC-synergy/sqaaas-reporting-plugins@2.1.1#egg=report2sqaaas-plugin-gosec&subdirectory=qc_sec_gosec
 # report2sqaaas-plugin-Ophidia = 2.2.1
 git+https://github.com/EOSC-synergy/sqaaas-reporting-plugins@2.2.1#egg=report2sqaaas-plugin-Ophidia&subdirectory=qc_sty_Ophidia
+# report2sqaaas-plugin-general_file_reporter = 2.2.3
+git+https://github.com/EOSC-synergy/sqaaas-reporting-plugins@2.2.3#egg=report2sqaaas-plugin-general_file_reporter&subdirectory=qc_ALL_general_file_reporter

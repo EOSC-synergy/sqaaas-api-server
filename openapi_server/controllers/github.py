@@ -456,7 +456,11 @@ class GitHubUtils(object):
         :param repo: Repository object
         :param repo_name: Name of the repo to push (format: <user|org>/<repo_name>)
         """
+        
+        
         languages = repo.get_languages()
+        print('gitutils')
+        print(repo,repo.get_languages())
         return sorted(languages, key=languages.get, reverse=True)
 
     @_check_repo_args
