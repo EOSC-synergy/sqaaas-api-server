@@ -62,8 +62,6 @@ def replace_sections_with_colon():
 def _get(section, key, fallback=None, fail_if_no_value=False):
     value = CONF.get(section, key, fallback=fallback)
 
-    logger.info(value)  # (key,value)
-    logger.info(key)
     # value enforcement
     if fail_if_no_value and not value:
         raise SQAaaSAPIException(
