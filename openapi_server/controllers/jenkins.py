@@ -444,4 +444,6 @@ class JenkinsUtils(object):
             data=xml_rendered.encode("utf-8"),
             auth=(self.access_user, self.access_token),
             headers={"Content-Type": "text/xml; charset=utf-8"},
-        )  # r.raise_for_status()
+        )
+        r.raise_for_status()
+        self.logger.debug("Credential <%s> created %credential_id")

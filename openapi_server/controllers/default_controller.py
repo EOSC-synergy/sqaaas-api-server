@@ -93,7 +93,6 @@ async def _add_pipeline_to_db(body, branch_upstream=None, report_to_stdout=False
         "Repository ID for pipeline name <%s>: %s" % (pipeline_name, pipeline_repo)
     )
     logger.debug("Using GitHub repository name: %s" % pipeline_repo)
-    logger.info("los cambios se han aplicado")
 
     db.add_entry(
         pipeline_id,
@@ -1787,7 +1786,7 @@ async def _run_validation(criterion_name, **kwargs):
 
     def _get_tool_reporting_data(tool):
         data = {}
-        i = 0
+
         for tool_type, tools in tooling_metadata_json["tools"].items():
 
             if tool in list(tools):
