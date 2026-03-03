@@ -20,6 +20,7 @@ CREATE_CREDENTIAL_ORG = (
     "domain/%(domain_name)s/createCredentials"
 )
 
+
 class JenkinsUtils(object):
     """Class for handling requests to Jenkins API.
 
@@ -117,9 +118,7 @@ class JenkinsUtils(object):
             return job_without_branch_exists
         try:
             job_info = self.server.get_job_info(name, depth=depth)
-            '''self.logger.debug(
-                "Information for job <%s> obtained from Jenkins: %s" % (name, job_info)
-            )'''
+
         except jenkins.JenkinsException as e:
             self.logger.error(
                 "No info could be fetched for Jenkins job <%s>: %s" % (name, str(e))
@@ -268,8 +267,7 @@ class JenkinsUtils(object):
                     raise SQAaaSAPIException(502, _reason)
             else:
                 out = r
-            print('jenkins271')
-            #print(r.text)
+
             return out
 
         def get_text(html_text):
@@ -398,11 +396,9 @@ class JenkinsUtils(object):
             "Removing a temporary credential <%s> in Jenkins" % credential_id
         )
         try:
-             
-            print('Iván ', credential_id,folder_name)
-            print('Ivántest',self.server.list_credentials(folder_name))
+
             self.server.delete_credential(credential_id, folder_name=folder_name)
-            
+
             self.logger.debug("Credential <%s> removed" % credential_id)
         except jenkins.NotFoundException as e:
             self.logger.error(e)
@@ -422,9 +418,7 @@ class JenkinsUtils(object):
         credential_token,
         folder_name,
         domain_name="_",
-    ):  
-        print('creating crederntials')
-        #self.logger.info('Ivan- '+credential_id,credential_user,credential_token)
+    ):
         """Creates a temporary credential in Jenkins.
 
         :param credential_user: User identifier
@@ -435,14 +429,8 @@ class JenkinsUtils(object):
         self.logger.debug(
             "Creating a temporary credential <%s> in Jenkins" % credential_id
         )
-        print('Iván 437')
         self.logger.debug("Removing existing credential (if any)")
-        #print('SQAaaS_creds',self.server.list_credentials('SQAaaS_creds'))#folder_name))
-        print('eosc-synergy-org/credentials',self.server.list_credentials('eosc-synergy-org/credentials'))#folder_name))
-        print(folder_name)
-        
-        print('Iván 443')
-        
+
         self.remove_credential(credential_id, folder_name=folder_name)
         env = Environment(loader=PackageLoader("openapi_server", "templates/jenkins"))
         template = env.get_template("credentials.xml")
@@ -451,14 +439,9 @@ class JenkinsUtils(object):
             credential_user=credential_user,
             credential_token=credential_token,
         )
-        print('Ivan llga hasta 452',self.endpoint,CREATE_CREDENTIAL_ORG % locals(),xml_rendered.encode("utf-8"))
         r = requests.post(
             urljoin(self.endpoint, CREATE_CREDENTIAL_ORG % locals()),
             data=xml_rendered.encode("utf-8"),
             auth=(self.access_user, self.access_token),
             headers={"Content-Type": "text/xml; charset=utf-8"},
-        )#esto esta mal, quitar triple comilla (desde 155 hasta 459 quitada por el moemnto)
-        #print('Ivan llega hasta 449',r,r.text)
-        #r.raise_for_status()
-        print('llega hasta 451')
-        self.logger.debug("Credential <%s> created" % credential_id)
+        )  # r.raise_for_status()

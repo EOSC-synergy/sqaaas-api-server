@@ -1042,12 +1042,10 @@ def supported_git_platform(repo_url, platforms):
     :param platforms: Dict with the git supported platforms (e.g {'github':
         'https://github.com'})
     """
-    print('defaultutils1045')
-    print(parse_url(repo_url))
+
     url_parsed = parse_url(repo_url)
     host_without_extension = url_parsed.host.split(".")[0]
-    print(host_without_extension)
-    print (platforms)
+
     if host_without_extension not in list(platforms):
         host_without_extension = None
     return host_without_extension
@@ -1308,15 +1306,10 @@ def get_credential_data(credential_id, pipeline_data):
     project_repos = pipeline_data["config_data"][0]["config"]["project_repos"]
     credential_data = {}
     credential_tmp = False
-    print('inicio de projectrepo')
-    print(project_repos)
-    print(project_repos[0]['repo'])
-    print('fin    de projectrepo')
-    print('getingcredentialdata')
+
     for project_repo in project_repos:
         project_repo_name = project_repo["repo"]
-        print(project_repo.get("credentials_id", ""))
-        print(project_repo_name)
+
         if project_repo.get("repo", "") == credential_id:
             credential_data = project_repo["credential_data"]
             credential_tmp = project_repo.get("credential_tmp", False)

@@ -326,9 +326,6 @@ class GitHubUtils(object):
             be raised
         """
         _client = None
-        self.logger.info('ivan test clone repo')
-        print('cogiendo el repo')
-        print(repo_name,repo_creds)
         if repo_creds:
             _user_id = repo_creds.get("user_id", "")
             _user_id_decrypted = crypto_utils.decrypt_str(_user_id)
@@ -456,11 +453,9 @@ class GitHubUtils(object):
         :param repo: Repository object
         :param repo_name: Name of the repo to push (format: <user|org>/<repo_name>)
         """
-        
-        
+
         languages = repo.get_languages()
-        print('gitutils')
-        print(repo,repo.get_languages())
+
         return sorted(languages, key=languages.get, reverse=True)
 
     @_check_repo_args
