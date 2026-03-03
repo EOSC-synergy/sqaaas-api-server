@@ -67,7 +67,6 @@ CUSTOMISABLE_CRITERIA = ["QC.Uni"]
 
 logger = logging.getLogger("sqaaas.api.controller")
 
-logger.info(config.get_ci("credentials_folder"))
 git_utils, gh_utils, jk_utils, badgr_utils = controllers.init_utils()
 
 
@@ -156,9 +155,7 @@ async def _get_tooling_for_assessment(
         criteria_data_list_filtered = []
         criteria_filtered = {}
 
-        
         for criterion_data in criteria_data_list:
-            logger.info('el reporting de criterion'+str(criterion_data['id']))
             criterion_data_copy = copy.deepcopy(criterion_data)
             criterion_id = criterion_data_copy["id"]
             # Exception for 'SvcQC.Dep' & 'QC.FAIR': the tool to be used is
@@ -173,13 +170,10 @@ async def _get_tooling_for_assessment(
             filter_tool_by_requirement_level = True
             toolset_for_reporting = []
             filtered_required_tools = []
-            
-            
-            
+
             for tool in criterion_data_copy["tools"]:
-                
+
                 tool_name = tool["name"]
-                logger.info('tool used '+ tool_name)
                 # Tool filter #1: <reporting:requirement_level> property
                 logger.debug(
                     "[tool: <%s>] Running filtering #1 (requirement "
@@ -233,7 +227,7 @@ async def _get_tooling_for_assessment(
                     )
                     account_tool = False
                     lang = tool["lang"]
-                    
+
                     lang_entry = ctls_utils.get_language_entry(lang)
                     if not lang_entry:
                         account_tool = True
@@ -248,7 +242,7 @@ async def _get_tooling_for_assessment(
                         files_found = []
                         value = None
                         for field_name in ["extensions", "filenames"]:
-                            
+
                             value = lang_entry.get(field_name, None)
                             if not value:
                                 continue
@@ -260,13 +254,10 @@ async def _get_tooling_for_assessment(
                             files_found = ctls_utils.find_files_by_language(
                                 field_name, value, repo=repo, path=path
                             )
-                            
-                            if files_found:
-                                logger.debug('files_found' + str(files_found))
-                                
 
-                        
-                                   
+                            if files_found:
+
+
                                 account_tool = True
                                 logger.debug(
                                     "[tool: <%s>] Found matching files in "
@@ -285,7 +276,7 @@ async def _get_tooling_for_assessment(
                                     )
                                 break
                         if not files_found:
-                        
+
                             _reason = (
                                 "No matching files found for language <%s> in "
                                 "repository searching by extensions or "
@@ -317,8 +308,6 @@ async def _get_tooling_for_assessment(
                         "extensions/names) as the tool did not pass filtering "
                         "#1" % tool_name
                     )
-            logger.info ('final toolset:')        
-            logger.info(toolset_for_reporting)
             if not toolset_for_reporting:
                 _reason = (
                     "No tool defined for assessment (missing <reporting> "
@@ -358,15 +347,14 @@ async def _get_tooling_for_assessment(
         relevant_criteria_data,
         digital_object_type,
     ) = await _get_criteria_for_digital_object(repositories)
-    
-    
+
     # Get the tools that are relevant based on the repo content (add them to
     # <criteria_data_list_filtered>) and also the ones that are not (add them
     # in <criteria_filtered>)
     criteria_data_list_filtered = []
     criteria_filtered = {}
     for repo_criteria_mapping in relevant_criteria_data:
-    
+
         try:
             (
                 _criteria_data_list_filtered,
@@ -392,8 +380,8 @@ async def _get_tooling_for_assessment(
         _reason = "Could not find any tool for criteria assessment"
         logger.error(_reason)
         raise SQAaaSAPIException(422, _reason)
-    
-    #logger.debug('Iván criteria_data_list',str(criteria_data_list_filtered))
+
+
     return (
         criteria_data_list_filtered,
         criteria_filtered,
@@ -414,11 +402,9 @@ async def _get_criteria_for_digital_object(repositories):
                          validate
     :type repositories: dict
     """
-    
+
     _repo_keys = list(repositories)
     _digital_object_type = None
-    logger.debug('repo_keys'+ str(repositories))
-    logger.debug(_repo_keys)
     # source code
     if "repo_code" in _repo_keys:
         _repo_key = "repo_code"
@@ -442,10 +428,8 @@ async def _get_criteria_for_digital_object(repositories):
 
     # Get the criteria that corresponds to the DO type
     criteria_data_list = await _get_criteria(digital_object_type=_digital_object_type)
+
     
-    for criteria in criteria_data_list:
-        
-         logger.debug(criteria['id'])
     relevant_criteria_data = []
     # Exception 'repo_docs': add a separate entry if docs are in
     # a different repo
@@ -474,7 +458,7 @@ async def _get_criteria_for_digital_object(repositories):
     logger.debug(
         "Resultant repository and criteria mapping: " "%s" % relevant_criteria_data
     )
-    
+
     return relevant_criteria_data, _digital_object_type
 
 
@@ -543,7 +527,7 @@ def _validate_assessment_input(body):
             "been provided for the assessment"
         )
         raise SQAaaSAPIException(422, _reason)
-    
+
     return repositories, main_repo_key
 
 
@@ -570,14 +554,13 @@ async def add_pipeline_for_assessment(
     # part of the validate_request() decorator
     body = ctls_utils.del_empty_keys(body)
     repositories, main_repo_key = _validate_assessment_input(body)
-    
+
     # 0 Encrypt credentials before storing in DB
-    
+
     for _repo_key, _repo_data in repositories.items():
-        
+
         ci_credential_id = None
         _repo_creds = _repo_data.get("credentials_id", None)
-        
 
         # type(str) == CI credentials (only id required)
         if type(_repo_creds) in [str]:
@@ -592,12 +575,12 @@ async def add_pipeline_for_assessment(
                 if _prop_value:
                     _prop_encrypted = crypto_utils.encrypt_str(_prop_value)
                     _repo_data["credential_data"][prop] = _prop_encrypted
-                    
+
             # Generate and add Jenkins credential ID
             ci_credential_id = "-".join(["sqaaas_tmp_cred", namegenerator.gen()])
             _repo_data["credentials_id"] = ci_credential_id
             _repo_data["credential_tmp"] = True
-            
+
         else:
             logger.error(
                 (
@@ -622,11 +605,10 @@ async def add_pipeline_for_assessment(
         logger.debug(
             ("Gathered tooling data enabled for assessment" ": %s" % criteria_data_list)
         )
-        
-        
+
     except SQAaaSAPIException as e:
         return web.Response(status=e.http_code, reason=e.message, text=e.message)
-    
+
     # 1.1 Add custom criteria
     criteria_workflow = body.get("criteria_workflow", [])
     do_full_assessment = True
@@ -648,7 +630,7 @@ async def add_pipeline_for_assessment(
             # FIXME This is a costly operation, it might be better to move to a dict instead of a list
             for criterion_data in criteria_data_list:
                 _criterion_id = criterion_data["id"]
-                
+
                 _need_update = False
                 for updated_criterion_data in criteria_workflow:
                     _updated_criterion_id = updated_criterion_data["id"]
@@ -657,13 +639,13 @@ async def add_pipeline_for_assessment(
                         _need_update = True
                 if not _need_update:
                     criteria_data_list_new.append(criterion_data)
-                
+
             criteria_data_list = criteria_data_list_new
             logger.debug(
                 "Criteria workflow added to current criteria data list: %s"
                 % criteria_workflow
             )
-            
+
     else:
         if run_criteria_workflow_only:
             logger.warning(
@@ -694,27 +676,28 @@ async def add_pipeline_for_assessment(
     # Render template for JSON payload
     env = Environment(loader=PackageLoader("openapi_server", "templates"))
     template = env.get_template("pipeline_assessment.json")
-    if  'credential_data' in _repo_data.keys():#_repo_data["credential_data"]['user_id']:
-    
+    if (
+        "credential_data" in _repo_data.keys()
+    ):  # _repo_data["credential_data"]['user_id']:
+
         json_rendered = template.render(
-        pipeline_name=pipeline_name,
-        repositories=repositories,
-        ci_credential_id=main_repo_name,
-        GIT_USER=_repo_data["credential_data"]['user_id'],
-        GIT_PASSWORD=_repo_data["credential_data"]['token'],
-        criteria_data_list=criteria_data_list,
-        tooling_qaa_specific_key=TOOLING_QAA_SPECIFIC_KEY,
-    )
+            pipeline_name=pipeline_name,
+            repositories=repositories,
+            ci_credential_id=main_repo_name,
+            GIT_USER=_repo_data["credential_data"]["user_id"],
+            GIT_PASSWORD=_repo_data["credential_data"]["token"],
+            criteria_data_list=criteria_data_list,
+            tooling_qaa_specific_key=TOOLING_QAA_SPECIFIC_KEY,
+        )
     else:
-       
+
         json_rendered = template.render(
-        pipeline_name=pipeline_name,
-        repositories=repositories,
-        criteria_data_list=criteria_data_list,
-        tooling_qaa_specific_key=TOOLING_QAA_SPECIFIC_KEY,
-    )
-    
-    
+            pipeline_name=pipeline_name,
+            repositories=repositories,
+            criteria_data_list=criteria_data_list,
+            tooling_qaa_specific_key=TOOLING_QAA_SPECIFIC_KEY,
+        )
+
     json_data = json.loads(json_rendered)
     logger.debug(
         "Generated JSON payload (from template) required to create the pipeline for the assessment: %s"
@@ -723,13 +706,13 @@ async def add_pipeline_for_assessment(
 
     # 3 Create pipeline
     try:
-        
+
         pipeline_id = await _add_pipeline_to_db(
             json_data, branch_upstream=main_repo_branch, report_to_stdout=True
         )
-        
+
     except SQAaaSAPIException as e:
-        
+
         return web.Response(status=e.http_code, reason=e.message, text=e.message)
 
     # 4 Store tool related data in the DB
@@ -776,15 +759,14 @@ async def add_pipeline_for_assessment(
                 _repo_data["url"], platforms=SUPPORTED_PLATFORMS
             )
             _main_repo_creds = _repo_data.get("credential_data", {})
-            
-            
+
             if platform in ["github"]:
                 gh_repo_name = _repo_data["name"]
                 try:
                     gh_repo = gh_utils.get_repository(
                         gh_repo_name, _main_repo_creds, raise_exception=True
                     )
-                    
+
                     _repo_settings.update(
                         {
                             "avatar_url": gh_utils.get_avatar(
@@ -801,7 +783,7 @@ async def add_pipeline_for_assessment(
                             "forks_count": gh_utils.get_forks(repo=gh_repo),
                         }
                     )
-                    
+
                 except SQAaaSAPIException as e:
                     _reason = e.message
                     return web.Response(
@@ -825,7 +807,7 @@ async def add_pipeline_for_assessment(
             "do_full_assessment": do_full_assessment,
         },
     )
-    
+
     logger.info("Pipeline for the QA assessment successfully created: %s" % pipeline_id)
 
     r = {"id": pipeline_id}
@@ -911,7 +893,7 @@ async def update_pipeline_by_id(
         composer_json_last,
         jenkinsfile_data_last,
     ) = ctls_utils.get_pipeline_data(pipeline_data_raw)
-    
+
     diff_exists = False
     for elem in [
         (config_json_last, config_json),
@@ -1231,18 +1213,17 @@ async def run_pipeline(
     :param keepgoing: Flag to indicate that the pipeline will run until the end
     :type keepgoing: bool
     """
-    
+
     if keepgoing:
         db.update_environment(pipeline_id, {"JPL_KEEPGOING": "enabled"})
-    
-    
-    #toca ahora el pileine data miralo y en db y cxq no tiene el key
+
+
     pipeline_data = db.get_entry(pipeline_id)
     pipeline_data_raw = pipeline_data["raw_request"]
     pipeline_repo = pipeline_data["pipeline_repo"]
     pipeline_repo_url = pipeline_data["pipeline_repo_url"]
     pipeline_repo_branch = pipeline_data["pipeline_repo_branch"]
-    
+
     if repo_branch:
         pipeline_repo_branch = repo_branch
         logger.info("Repository branch provided: %s" % repo_branch)
@@ -1252,7 +1233,7 @@ async def run_pipeline(
     jenkinsfile = pipeline_data["data"]["jenkinsfile"]
 
     additional_files_list = pipeline_data["data"].get("additional_files_to_commit", [])
-    
+
     if repo_url:
         if not ctls_utils.has_this_repo(config_data_list):
             _reason = (
@@ -1270,12 +1251,12 @@ async def run_pipeline(
         )
         logger.debug("Create target repository: %s" % pipeline_repo_url)
         gh_utils.create_org_repository(pipeline_repo)
-        
+
         logger.debug(
             "Clone & Push source repository <%s> to target repository <%s>"
             % (repo_url, pipeline_repo_url)
         )
-        
+
         try:
             pipeline_repo_branch = git_utils.clone_and_push(
                 repo_url, pipeline_repo_url, source_repo_branch=repo_branch
@@ -1300,10 +1281,12 @@ async def run_pipeline(
         )
     else:
         _create_repo = False
-        
-        #if this dooesnt work try to put the same variable as the first for credentials
-        _repo = gh_utils.get_repository(pipeline_repo,)
-        
+
+
+        _repo = gh_utils.get_repository(
+            pipeline_repo,
+        )
+
         if not _repo:
             _create_repo = True
         else:
@@ -1351,23 +1334,21 @@ async def run_pipeline(
     # 0) Create CI temporary credentials ('credential_tmp') if needed
     creds_tmp = []
     creds_folder = JENKINS_CREDENTIALS_FOLDER
-    ci_credentials = config_data_list[0]['data_json']['config']['credentials']
-    
+    ci_credentials = config_data_list[0]["data_json"]["config"]["credentials"]
+
     for ci_credential in ci_credentials:
         _id = ci_credential["id"]
-        
-        
+
         credential_data, credential_tmp = ctls_utils.get_credential_data(
             _id, pipeline_data_raw
         )
-            
+
         if credential_tmp:
             logger.info(
                 "Credential <%s> will be added temporarily to the CI " "server" % _id
             )
             _user_id = crypto_utils.decrypt_str(credential_data["user_id"])
             _token = crypto_utils.decrypt_str(credential_data["token"])
-            
 
             if not creds_folder:
                 logger.info(
@@ -1375,14 +1356,17 @@ async def run_pipeline(
                     "property) not defined in config. Using project's "
                     "organisation folder name: %s" % JENKINS_GITHUB_ORG
                 )
-                
+
                 creds_folder = JENKINS_GITHUB_ORG
             try:
-                
+
                 jk_utils.create_credential(
-                    _id, _user_id, _token, folder_name=creds_folder,
+                    _id,
+                    _user_id,
+                    _token,
+                    folder_name=creds_folder,
                 )
-                
+
             except Exception as e:
                 logger.error(str(e))
                 return web.Response(status=502, reason=str(e), text=str(e))
@@ -1390,7 +1374,7 @@ async def run_pipeline(
                 creds_tmp.append(_id)
 
     # 1) Check if job already exists on Jenkins
-    
+
     job_exists = False
     job_exists_no_branch = False  # when job exists, but branch does not
     last_build_no = -1
@@ -1432,7 +1416,7 @@ async def run_pipeline(
     else:
         issue_badge = False
         logger.debug("Full assessment not requested: disabling badge issuance")
-    logger.info('llega hasta la 1444 del defaultcontroller')
+
     # 3) Do the commit
     try:
         commit_id = JePLUtils.push_files(
@@ -1477,7 +1461,7 @@ async def run_pipeline(
             else:
                 jk_utils.scan_organization(org_name=JENKINS_GITHUB_ORG)
         except Exception as e:
-            
+
             logger.error(str(e))
             return web.Response(status=502, reason=str(e), text=str(e))
         else:
@@ -1512,7 +1496,7 @@ async def run_pipeline(
         creds_folder=creds_folder,
         issue_badge=issue_badge,
     )
-    
+
     # Fire & forget _update_status()
     asyncio.create_task(
         _update_status(pipeline_id, triggered_by_run=True, build_task=build_job_task)
@@ -1521,7 +1505,7 @@ async def run_pipeline(
         "Creating a parallel task to watch for the start of the "
         "pipeline <%s>" % pipeline_id
     )
-    logger.info("finished running pipeline with credentials"+str(creds_folder))
+
     return web.Response(status=204, reason=reason, text=reason)
 
 
@@ -1803,18 +1787,18 @@ async def _run_validation(criterion_name, **kwargs):
     :type kwargs: dict
     """
     tool = kwargs.get("tool", None)
-    
+
     tooling_metadata_json = await _get_tooling_metadata()
-    
+
     def _get_tool_reporting_data(tool):
         data = {}
-        i=0
+        i = 0
         for tool_type, tools in tooling_metadata_json["tools"].items():
-            
+
             if tool in list(tools):
-                
+
                 data = tools[tool]["reporting"]
-              
+
                 logger.debug("Found reporting data in tooling for tool <%s>" % tool)
                 return data
         return data
@@ -1835,9 +1819,7 @@ async def _run_validation(criterion_name, **kwargs):
     validator_opts["status"] = kwargs.get("status", None)
     validator_opts["criterion"] = criterion_name
 
-
     allowed_validators = r2s_utils.get_validators()
-    
 
     validator_name = reporting_data["validator"]
     out = None
@@ -1853,8 +1835,7 @@ async def _run_validation(criterion_name, **kwargs):
         validator = r2s_utils.get_validator(validator_opts)
         try:
             out = validator.driver.validate()
-            
-           
+
         except Exception as e:
             _reason = (
                 "Error raised when validating tool <%s> with validator "
@@ -1953,9 +1934,9 @@ async def _validate_output(stage_data_list, pipeline_data):
     logger.debug("Output validation has been requested")
     output_data = {}
     broken_validation_data = {}
-    
+
     for stage_data in stage_data_list:
-        
+
         criterion_stage_data = copy.deepcopy(stage_data)
         criterion_name = criterion_stage_data["criterion"]
 
@@ -1973,15 +1954,15 @@ async def _validate_output(stage_data_list, pipeline_data):
             )
             stdout_command = commands_from_script
         tool_criterion_map = pipeline_data["tools"][criterion_name]
-      
+
         matched_tool = await _get_tool_from_command(tool_criterion_map, stdout_command)
         criterion_stage_data["tool"] = matched_tool
-        
+
         logger.debug("Validating output from criterion <%s>" % criterion_name)
         reporting_data, out, broken_data = await _run_validation(
             criterion_name, **criterion_stage_data
         )
-        
+
         # If broken criterion, add to filtered criteria list
         if broken_data:
             # Health check: broken criteria should not be already in
@@ -2003,8 +1984,7 @@ async def _validate_output(stage_data_list, pipeline_data):
         logger.debug("Output returned by <%s> tool validator: %s" % (matched_tool, out))
         criterion_stage_data.update(reporting_data)
         criterion_stage_data["validation"] = out
-        
-        
+
         # Append if criterion is already there
         if criterion_name in list(output_data):
             output_data[criterion_name].append(criterion_stage_data)
@@ -2032,17 +2012,17 @@ async def _get_output(pipeline_id, validate=False):
     build_info = jenkins_info["build_info"]
 
     try:
-        
+
         stage_data_list = jk_utils.get_stage_data(
             jenkins_info["job_name"], build_info["number"]
         )
-    
+
     except Exception as e:
         logger.error(str(e))
         return web.Response(status=502, reason=str(e), text=str(e))
 
     output_data = stage_data_list
-    
+
     if validate:
         output_data, broken_validation_data = await _validate_output(
             stage_data_list, pipeline_data
@@ -2080,7 +2060,7 @@ async def get_pipeline_output(
         output_data = await _get_output(pipeline_id, validate=validate)
     except SQAaaSAPIException as e:
         return web.Response(status=e.http_code, reason=e.message, text=e.message)
-    
+
     return web.json_response(output_data, status=200)
 
 
@@ -2098,10 +2078,10 @@ async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Re
     try:
 
         output_data = await _get_output(pipeline_id, validate=True)
-         
+
     except SQAaaSAPIException as e:
         return web.Response(status=e.http_code, reason=e.message, text=e.message)
-    
+
     def _get_coverage(subcriteria):
         total_subcriteria = len(list(subcriteria))
         success_subcriteria = 0
@@ -2120,9 +2100,7 @@ async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Re
         pipeline_data = db.get_entry(pipeline_id)
         criteria_filtered = pipeline_data["qaa"]["criteria_filtered"]
         criteria_tools = pipeline_data["tools"]
-        
-        
-        
+
         for criterion_name, criterion_output_data_list in output_data.items():
             # Health check: a given criterion MUST NOT be present both in the
             # filtered list and as part of the pipeline execution stages
@@ -2134,17 +2112,15 @@ async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Re
             #     logger.error(_reason)
             #     raise SQAaaSAPIException(422, _reason)
 
-
-               
             criterion_valid_list = []
             subcriteria = {}
-            
+
             for criterion_output_data in criterion_output_data_list:
-                
+
                 validator_data = criterion_output_data["validation"]
-                
+
                 criterion_valid_list.append(validator_data["valid"])
-                
+
                 # Plugin data
                 package_name = validator_data.pop("package_name")
                 package_version = validator_data.pop("package_version")
@@ -2173,8 +2149,7 @@ async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Re
 
                 # Compose subcriteria record
                 for subcriterion_data in validator_data["subcriteria"]:
-                    
-                    
+
                     subcriterion_id = subcriterion_data["id"]
                     if subcriterion_id not in list(subcriteria):
                         subcriteria[subcriterion_id] = {
@@ -2270,7 +2245,7 @@ async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Re
             }
             # Add filtered criterion to reporting data
             report_data.update(_criteria_filtered)
-        
+
         return report_data
 
     def _get_criteria_per_badge_type(report_data):
@@ -2360,7 +2335,7 @@ async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Re
     # Format <report> key
     try:
         report_data = _format_report()
-        
+
         if not report_data:
             _reason = "Could not gather reporting data. Exiting.."
             logger.error(_reason)
@@ -2437,7 +2412,7 @@ async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Re
         )
         # 1.4. Generate criteria summary
         criteria_summary_copy = copy.deepcopy(criteria_summary)
-        
+
         for _badge_category, _badge_category_data in criteria_summary_copy.items():
             to_fulfill_set = set(_badge_category_data["to_fulfill"])
             missing_set = set(_badge_category_data["missing"])
@@ -2497,7 +2472,7 @@ async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Re
         report_data_copy = copy.deepcopy(report_data)
         for criterion, criterion_data in report_data.items():
             _subcriteria = criterion_data["subcriteria"]
-            
+
             if _subcriteria:
                 for subcriterion, subcriterion_data in _subcriteria.items():
                     _valid = subcriterion_data["valid"]
@@ -2940,13 +2915,13 @@ async def _get_tooling_metadata():
             branch=tooling_repo_branch,
             fail_if_not_exists=True,
         )
-        
+
         tooling_metadata_encoded = tooling_metadata_content.content
         tooling_metadata_decoded = base64.b64decode(tooling_metadata_encoded).decode(
             "UTF-8"
         )
         tooling_metadata_json = json.loads(tooling_metadata_decoded)
-        
+
     else:
         raise NotImplementedError(
             (
@@ -3074,7 +3049,7 @@ async def _get_criteria(
     criteria_data_list = await _sort_tooling_by_criteria(
         tooling_metadata_json, criteria_id_list=criteria_id_list
     )
-    
+
     if assessment:  # exclude 'commands' tool but customisable criteria
         for criterion_data in criteria_data_list:
             _tool_list = []
