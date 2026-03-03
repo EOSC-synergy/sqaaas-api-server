@@ -257,7 +257,6 @@ async def _get_tooling_for_assessment(
 
                             if files_found:
 
-
                                 account_tool = True
                                 logger.debug(
                                     "[tool: <%s>] Found matching files in "
@@ -381,7 +380,6 @@ async def _get_tooling_for_assessment(
         logger.error(_reason)
         raise SQAaaSAPIException(422, _reason)
 
-
     return (
         criteria_data_list_filtered,
         criteria_filtered,
@@ -429,7 +427,6 @@ async def _get_criteria_for_digital_object(repositories):
     # Get the criteria that corresponds to the DO type
     criteria_data_list = await _get_criteria(digital_object_type=_digital_object_type)
 
-    
     relevant_criteria_data = []
     # Exception 'repo_docs': add a separate entry if docs are in
     # a different repo
@@ -1217,7 +1214,6 @@ async def run_pipeline(
     if keepgoing:
         db.update_environment(pipeline_id, {"JPL_KEEPGOING": "enabled"})
 
-
     pipeline_data = db.get_entry(pipeline_id)
     pipeline_data_raw = pipeline_data["raw_request"]
     pipeline_repo = pipeline_data["pipeline_repo"]
@@ -1281,7 +1277,6 @@ async def run_pipeline(
         )
     else:
         _create_repo = False
-
 
         _repo = gh_utils.get_repository(
             pipeline_repo,
