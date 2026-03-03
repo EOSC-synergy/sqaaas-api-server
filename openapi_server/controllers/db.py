@@ -18,34 +18,30 @@ logger = logging.getLogger("sqaaas.api.controller.db")
 
 
 def load_content():
-    print('edit load')
+
     data = {}
     if DB_FILE.exists():
         data = json.loads(DB_FILE.read_text(encoding="utf-8"))
-        
+
     return data
 
 
 def store_content(data):
-    print('Ivan : i am storing content')
-    print('edit store')
+
     try:
         DB_FILE.parent.mkdir(parents=True, exist_ok=False)
     except FileExistsError:
         logger.debug("DB file path: parent folder already exists")
     else:
         logger.debug("DB file path: parent folder created")
-    print('what to print')
-    #print(json.dumps(data))
+
     DB_FILE.write_text(json.dumps(data), encoding="utf-8")
-    print('kibohope')
-    #print(json.dumps(data['aadfd686-869c-4b86-a0aa-1e68adfeb024']))
-    #print(load_content().keys())
+
 
 def print_content():
     db = load_content()
     logger.debug("Current DB content: %s" % list(db))
-    print('edit print')
+
 
 def add_entry(
     pipeline_id,
@@ -88,7 +84,7 @@ def add_entry(
     :param report_to_stdout: Flag to indicate whether the pipeline shall print via via
         stdout the reports produced by the tools (required by QAA module)
     """
-    print('edit add entry')
+
     raw_request = copy.deepcopy(body)
     config_json, composer_json, jenkinsfile_data = ctls_utils.get_pipeline_data(body)
     (
@@ -118,10 +114,6 @@ def add_entry(
         "tools": tool_criteria_map,
     }
 
-    print('tool_criteria_map')
-    #print(tool_criteria_map)
-    print('hopedb117')
-    logger.debug('hopedb118')
     store_content(db)
 
 
@@ -132,18 +124,9 @@ def get_entry(pipeline_id=None):
 
     :param pipeline_id: UUID-format identifier for the pipeline.
     """
-    print('edit get entry')
+
     db = load_content()
-    
-    print(db[pipeline_id].keys())
-    
-    print ('keys')
-    #print(db[pipeline_id].keys())
-    for key in db[pipeline_id].keys():
-       print (key)
-       print ('db144')
-       #print (db[pipeline_id][key])
-    logger.info('cesfini')
+
     if pipeline_id:
         logger.debug("Loading pipeline <%s> from DB" % pipeline_id)
         r = db[pipeline_id]
@@ -165,7 +148,7 @@ def del_entry(pipeline_id):
     db.pop(pipeline_id)
     store_content(db)
     logger.debug("Pipeline <%s> removed from DB" % pipeline_id)
-    print('edit del entry')
+
 
 def update_entry(pipeline_id, **kwargs):
     """Updates any of the root properties for the given pipeline ID.
@@ -173,7 +156,7 @@ def update_entry(pipeline_id, **kwargs):
     :param pipeline_id: UUID-format identifier for the pipeline.
     :param kwargs: map with the required properties and values to update.
     """
-    print('edit update')
+
     db = load_content()
     for k, v in kwargs.items():
         if k in db[pipeline_id].keys():
@@ -237,7 +220,7 @@ def update_jenkins(
         "Jenkins data updated for pipeline <%s>: %s"
         % (pipeline_id, db[pipeline_id]["jenkins"])
     )
-    print('edit update')
+
 
 def add_badge_data(pipeline_id, badge_data):
     """Updates the Badgr data in the DB for the given pipeline ID.
@@ -245,7 +228,7 @@ def add_badge_data(pipeline_id, badge_data):
     :param pipeline_id: UUID-format identifier for the pipeline.
     :param badge_data: Badge data for the pipeline.
     """
-    print('edit add badge data')
+
     db = load_content()
     db[pipeline_id]["badge"] = badge_data
     store_content(db)
@@ -261,7 +244,7 @@ def add_assessment_data(pipeline_id, assessment_data):
     :param pipeline_id: UUID-format identifier for the pipeline.
     :param assessment_data: Data use for the QAA module.
     """
-    print('edit assesment')
+
     db = load_content()
     db[pipeline_id]["qaa"] = assessment_data
     store_content(db)
@@ -277,7 +260,7 @@ def add_tool_data(pipeline_id, criteria_tools):
     :param pipeline_id: UUID-format identifier for the pipeline.
     :param criteria_tools: Tool data from each criterion.
     """
-    print('edit toll data')
+
     db = load_content()
     db[pipeline_id]["tools"] = criteria_tools
     store_content(db)

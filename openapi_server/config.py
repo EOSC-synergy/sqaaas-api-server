@@ -5,7 +5,7 @@
 
 import logging
 import sys
-import os
+
 from configparser import ConfigParser, ExtendedInterpolation
 
 from openapi_server.exception import SQAaaSAPIException
@@ -24,9 +24,7 @@ def init(config_file):
 
     CONF = ConfigParser(interpolation=ExtendedInterpolation())
     config_exists = CONF.read(config_file)
-    logger.info(config_exists)
-    logger.info('texto1'+str(os.getcwd()))
-    
+
     if not config_exists:
         logger.error("Configuration file <%s> does not exist" % config_file)
         sys.exit(1)
@@ -63,13 +61,15 @@ def replace_sections_with_colon():
 
 def _get(section, key, fallback=None, fail_if_no_value=False):
     value = CONF.get(section, key, fallback=fallback)
-    
-    logger.info(value)#(key,value)
+
+    logger.info(value)  # (key,value)
     logger.info(key)
     # value enforcement
     if fail_if_no_value and not value:
         raise SQAaaSAPIException(
-            422, "Bad API configuration setting: no value defined for %s:%s" % (section, key)
+            422,
+            "Bad API configuration setting: no value defined for %s:%s"
+            % (section, key),
         )
     # handle booleans
     if value in ["true", "True"]:
@@ -88,8 +88,8 @@ def get_repo(key, fallback=None):
     return _get(REPO_BACKEND, key, fallback=fallback, fail_if_no_value=True)
 
 
-def get_ci(key, fallback='eosc-synergy-org'):
-    print('eosc-synergy-org, hardcodeded as fallback')
+def get_ci(key, fallback="eosc-synergy-org"):
+
     return _get(CI_SECTION, key, fallback=fallback)
 
 
