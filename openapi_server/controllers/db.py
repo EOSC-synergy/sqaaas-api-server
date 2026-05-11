@@ -90,6 +90,7 @@ def add_entry(
     """
     print('edit add entry')
     raw_request = copy.deepcopy(body)
+    print('db93')
     config_json, composer_json, jenkinsfile_data = ctls_utils.get_pipeline_data(body)
     (
         config_data_list,
@@ -101,7 +102,7 @@ def add_entry(
     ) = JePLUtils.compose_files(
         config_json, composer_json, report_to_stdout=report_to_stdout
     )
-
+    print('db104')
     db = load_content()
     db[pipeline_id] = {
         "pipeline_repo": pipeline_repo,

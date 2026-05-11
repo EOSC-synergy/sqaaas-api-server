@@ -570,6 +570,8 @@ class ProcessExtraData(object):
             template_name=template_name,
             template_kwargs=template_kwargs,
         )
+        print('utils579')
+        print(template_kwargs)
         commands_script_data = JePLUtils.append_file_name(
             "commands_script",
             [{"content": commands_script_data}],
@@ -840,6 +842,8 @@ def process_extra_data(config_json, composer_json, report_to_stdout=False):
                                 ),
                             ]:
                                 creds = {}
+                                print('utils845')
+                                print(template_kwargs)
                                 creds["id"] = template_kwargs[cred_id[0]]
                                 creds["username_var"] = template_kwargs[cred_id[1]]
                                 creds["password_var"] = template_kwargs[cred_id[2]]

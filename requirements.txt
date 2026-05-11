@@ -39,8 +39,8 @@ git+https://github.com/EOSC-synergy/sqaaas-reporting@2.0.0#egg=report2sqaaas
 git+https://github.com/EOSC-synergy/sqaaas-reporting-plugins@2.1.1#egg=report2sqaaas-plugin-markdownlint&subdirectory=qc_doc_markdownlint
 # report2sqaaas-plugin-find_doc_files = 2.1.1
 git+https://github.com/EOSC-synergy/sqaaas-reporting-plugins@2.1.1#egg=report2sqaaas-plugin-find_doc_files&subdirectory=qc_doc_find_doc_files
-# report2sqaaas-plugin-licensee = 2.1.1
-git+https://github.com/EOSC-synergy/sqaaas-reporting-plugins@2.1.1#egg=report2sqaaas-plugin-licensee&subdirectory=qc_lic_licensee
+# report2sqaaas-plugin-licensee = 2.2.4
+git+https://github.com/EOSC-synergy/sqaaas-reporting-plugins@2.2.4#egg=report2sqaaas-plugin-licensee&subdirectory=qc_lic_licensee
 # report2sqaaas-plugin-boolean = 2.1.1
 git+https://github.com/EOSC-synergy/sqaaas-reporting-plugins@2.1.1#egg=report2sqaaas-plugin-boolean&subdirectory=qc_ALL_boolean
 # report2sqaaas-plugin-json_not_empty = 2.1.1

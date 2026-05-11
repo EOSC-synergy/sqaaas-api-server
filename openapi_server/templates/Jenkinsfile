@@ -11,6 +11,8 @@ pipeline {
     agent any
 
     stages {
+        {%- set credentials = config_data_list[0]['data_json']['config'].get('credentials', []) %}
+        {%- set ci_credential_id = credentials[0]['id'] if credentials else None %}
         {%- for config_data in config_data_list %}
         stage('SQA baseline criterion: {{ config_data.data_json.sqa_criteria |list |join(" & " ) }}') {
             when {
@@ -35,7 +37,11 @@ pipeline {
                         configFile: '{{ config_data.file_name }}',
                         scmConfigs: [ localBranch: true ],
                         validatorDockerImage: 'eoscsynergy/jpl-validator:2.4.0'
-                    )
+                        {%- if true %},
+                        credentialsId: '{{ ci_credential_id }}'
+                        {%- endif %}
+
+                                     )
                     buildStages(projectConfig)
                 }
             }

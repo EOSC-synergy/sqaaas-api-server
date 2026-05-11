@@ -718,6 +718,9 @@ async def add_pipeline_for_assessment(
         ci_credential_id=main_repo_name,
         GIT_USER=_repo_data["credential_data"]['user_id'],
         GIT_PASSWORD=_repo_data["credential_data"]['token'],
+        #ci_credential_id='sqaaas-github-cred-test',
+        #GIT_USER="GIT_USERNAME",
+        #GIT_PASSWORD="GIT_PASSWORD",
         criteria_data_list=criteria_data_list,
         tooling_qaa_specific_key=TOOLING_QAA_SPECIFIC_KEY,
     )
@@ -1275,6 +1278,7 @@ async def run_pipeline(
     pipeline_repo = pipeline_data["pipeline_repo"]
     pipeline_repo_url = pipeline_data["pipeline_repo_url"]
     pipeline_repo_branch = pipeline_data["pipeline_repo_branch"]
+    print('default1278')
     print(pipeline_data['data'].keys())
     print(pipeline_data['data']['config'][0].keys())
     for key in (pipeline_data['data']['config'][0].keys()):
@@ -1426,7 +1430,7 @@ async def run_pipeline(
             )
             _user_id = crypto_utils.decrypt_str(credential_data["user_id"])
             _token = crypto_utils.decrypt_str(credential_data["token"])
-            print('desencriptado',_user_id,_token)
+            #print('desencriptado',_user_id,_token)
             #logger.info('minecraft ivan '+credential_data)
             if not creds_folder:
                 logger.info(
@@ -1438,6 +1442,11 @@ async def run_pipeline(
                 creds_folder = JENKINS_GITHUB_ORG
             try:
                 print('zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz')
+                #this next line is for testing
+                #_id='sqaaas-test-credential'
+                print('_id:', _id)
+                print('_user_id:', _user_id)
+                print('creds_folder:', creds_folder)
                 jk_utils.create_credential(
                     _id, _user_id, _token, folder_name=creds_folder,
                 )
@@ -1834,6 +1843,8 @@ async def get_pipeline_status(request: web.Request, pipeline_id) -> web.Response
     if build_status in JENKINS_COMPLETED_STATUS:
         for _id in creds_tmp:
             try:
+                print('defailt1837')
+                print('build_status')
                 jk_utils.remove_credential(_id, folder_name=creds_folder)
             except Exception as e:
                 logger.error(str(e))
@@ -1876,8 +1887,8 @@ async def _run_validation(criterion_name, **kwargs):
             #print('default1828')
             if tool in list(tools):
                 i=i+1
-                #print('default1829')
-                #print(i)
+                print('default1890')
+                print(i)
                 data = tools[tool]["reporting"]
                 #print('tool and list')
                 #print(tool)
@@ -1890,6 +1901,7 @@ async def _run_validation(criterion_name, **kwargs):
         # Obtain the report2sqaaas input args (aka <opts>) from tooling
         print('default1861',tool)
         reporting_data = _get_tool_reporting_data(tool)
+        print('default1904')
         print(reporting_data)
     except KeyError as e:
         _reason = "Cannot get reporting data for tool <%s>: %s" % (tool, e)
@@ -1912,6 +1924,7 @@ async def _run_validation(criterion_name, **kwargs):
     validator_name = reporting_data["validator"]
     out = None
     broken_validation_data = None
+    print('default1927')
     if validator_name not in allowed_validators:
         _reason = "Could not find report2sqaaas validator plugin <%s> (found: %s)" % (
             validator_name,
@@ -1922,9 +1935,11 @@ async def _run_validation(criterion_name, **kwargs):
     else:
         validator = r2s_utils.get_validator(validator_opts)
         try:
+            print('default1938')
+            print(validator_name)
             out = validator.driver.validate()
+            print('default1940')
             
-            print('default1894')
             print(validator_opts)
             print(validator_name)
             print(validator)
@@ -2027,13 +2042,21 @@ async def _validate_output(stage_data_list, pipeline_data):
     logger.debug("Output validation has been requested")
     output_data = {}
     broken_validation_data = {}
-    
+    print('default2041')
+    i=0
+    print(len(stage_data_list))
     for stage_data in stage_data_list:
+        
+        print(i)
+        i+=1
         print('default1973' )
-        print(stage_data)
+        #print(stage_data)
         criterion_stage_data = copy.deepcopy(stage_data)
         criterion_name = criterion_stage_data["criterion"]
-
+        print('default1894')
+        print(criterion_name)
+        #if criterion_name!= 'QC.Lic':
+        #       continue
         logger.debug("Successful stage exit status for criterion <%s>" % criterion_name)
         # Check if the command lies within a bash script
         stdout_command = criterion_stage_data["stdout_command"]
@@ -2049,7 +2072,7 @@ async def _validate_output(stage_data_list, pipeline_data):
             stdout_command = commands_from_script
         tool_criterion_map = pipeline_data["tools"][criterion_name]
         #print(tool_criterion_map)
-        #print('default_1992')
+        print('default2071')
         matched_tool = await _get_tool_from_command(tool_criterion_map, stdout_command)
         criterion_stage_data["tool"] = matched_tool
         print('default2023')
@@ -2059,6 +2082,7 @@ async def _validate_output(stage_data_list, pipeline_data):
         reporting_data, out, broken_data = await _run_validation(
             criterion_name, **criterion_stage_data
         )
+        print('default2081')
         #print(broken_data)
         #print(out)
         #print('cookie')
@@ -2129,7 +2153,8 @@ async def _get_output(pipeline_id, validate=False):
         return web.Response(status=502, reason=str(e), text=str(e))
 
     output_data = stage_data_list
-    
+    print('default2151')
+    print(output_data)
     if validate:
         output_data, broken_validation_data = await _validate_output(
             stage_data_list, pipeline_data
@@ -2189,8 +2214,8 @@ async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Re
         print('default2126')
         print (output_data.keys())
         #print (output_data['QC.Sty'])
-        print (len(output_data['QC.Sty']))
-        print (output_data['QC.Sty'][-1])
+        #print (len(output_data['QC.Sty']))
+        #print (output_data['QC.Sty'][-1])
         
         
         

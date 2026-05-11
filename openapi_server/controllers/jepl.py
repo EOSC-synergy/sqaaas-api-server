@@ -124,7 +124,12 @@ class JePLUtils(object):
         """
         env = Environment(loader=PackageLoader("openapi_server", "templates"))
         template = env.get_template("Jenkinsfile")
-
+        print('jepl127')
+        print(config_data_list)
+        print('jepl129')
+        print(template.render(config_data_list=config_data_list))
+        print('jenkins131')
+        print('credentials en config_data_list:', config_data_list[0]['data_json']['config'].get('credentials', 'NO HAY CREDENTIALS'))
         return template.render(config_data_list=config_data_list)
 
     @classmethod

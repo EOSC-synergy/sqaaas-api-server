@@ -129,6 +129,7 @@ class GitUtils(object):
         logger.debug(("Inspecting content of repo <%s>" % (repo_url_no_creds)))
         g = cmd.Git()
         try:
+            print('git132')
             blob = g.ls_remote(repo_url, "HEAD", symref=True)
             branch = blob.split("\n")[0].split("/")[-1].split("\t")[0]
         except GitCommandError as e:
