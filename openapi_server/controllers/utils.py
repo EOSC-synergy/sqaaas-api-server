@@ -12,7 +12,7 @@ import uuid
 from pathlib import Path, PurePath
 
 import anybadge
-import namegenerator
+import  randomgennames
 import yaml
 from aiohttp import web
 from github.GithubException import GithubException, UnknownObjectException
@@ -355,7 +355,7 @@ class ProcessExtraData(object):
             # For now <build_args> are only present in user-defined services
             build_args = service_data.get("build", {}).get("args", None)
         else:
-            service_name = "_".join([criterion_name.lower(), namegenerator.gen()])
+            service_name = "_".join([criterion_name.lower(),  randomgennames.gen()])
             logger.debug("Service name set: %s" % service_name)
             dockerfile_path = tool["docker"].get("dockerfile", "")
             context = os.path.join(

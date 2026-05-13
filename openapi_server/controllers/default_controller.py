@@ -20,7 +20,7 @@ from typing import Dict, List
 from urllib import parse as urllib_parse
 from zipfile import ZipFile, ZipInfo
 
-import namegenerator
+import randomgennames
 import pandas
 import yaml
 from aiohttp import web
@@ -559,7 +559,7 @@ async def add_pipeline_for_assessment(
                     _prop_encrypted = crypto_utils.encrypt_str(_prop_value)
                     _repo_data["credential_data"][prop] = _prop_encrypted
             # Generate and add Jenkins credential ID
-            ci_credential_id = "-".join(["sqaaas_tmp_cred", namegenerator.gen()])
+            ci_credential_id = "-".join(["sqaaas_tmp_cred",  randomgennames.gen()])
             _repo_data["credentials_id"] = ci_credential_id
             _repo_data["credential_tmp"] = True
         else:
@@ -2509,7 +2509,7 @@ async def create_pull_request(request: web.Request, pipeline_id, body) -> web.Re
         source_branch_name = fork_created.parent.default_branch
     else:
         logger.debug("Source (head) and target (base) are the same repository")
-        source_branch_name = "_".join(["sqaaas", namegenerator.gen()])
+        source_branch_name = "_".join(["sqaaas",  randomgennames.gen()])
         logger.debug(
             "Source (head) random branch name generated: %s" % source_branch_name
         )
