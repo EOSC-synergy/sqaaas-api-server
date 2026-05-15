@@ -454,7 +454,9 @@ class GitHubUtils(object):
         :param repo_name: Name of the repo to push (format: <user|org>/<repo_name>)
         """
         languages = repo.get_languages()
-        return sorted(languages, key=languages.get, reverse=True)
+        lang_only= {key: value for key,value in languages.items() if isinstance(value, int)} 
+          
+        return sorted(lang_only, key=lang_only.get, reverse=True)
 
     @_check_repo_args
     def get_topics(self, repo=None, repo_name=None, repo_creds={}):
