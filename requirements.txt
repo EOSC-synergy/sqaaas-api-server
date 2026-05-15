@@ -20,11 +20,12 @@ Jinja2
 # python-jenkins - Last version in PyPI does not include last 'master' changes
 git+https://opendev.org/jjb/python-jenkins
 deepdiff
-namegenerator
+#namegenerator
+randomgennames==1.0.3
 GitPython==3.1.29
 stevedore
 beautifulsoup4
-namegenerator>=1.0.6
+#namegenerator>=1.0.6
 aiohttp>=3.8.1
 urllib3~=1.26
 RADL~=1.2.0

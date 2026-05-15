@@ -6,7 +6,7 @@
 import copy
 import logging
 
-import namegenerator
+import randomgennames
 from jinja2 import Environment, PackageLoader
 from openapi_server.controllers import utils as ctls_utils
 from openapi_server.exception import SQAaaSAPIException
@@ -32,7 +32,7 @@ class JePLUtils(object):
         }
         chunk_list = copy.deepcopy(file_type_chunks[file_type])
         if random:
-            random_str = namegenerator.gen()
+            random_str = randomgennames.gen()
             chunk_list.insert(1, random_str)
 
         return ".".join(chunk_list)
