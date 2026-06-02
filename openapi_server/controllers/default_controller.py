@@ -1450,6 +1450,9 @@ async def run_pipeline(
                 jk_utils.create_credential(
                     _id, _user_id, _token, folder_name=creds_folder,
                 )
+                print(creds_folder)
+                print('default1453')
+                
                 #mine
                 #logger.info(['info_tokens',_id, _user_id, _token])
             except Exception as e:
@@ -1465,6 +1468,7 @@ async def run_pipeline(
     last_build_no = -1
     try:
         if jk_utils.exist_job(jk_job_name_full):
+            print('default1471')
             job_exists = True
             logger.warning("Jenkins job <%s> already exists!" % jk_job_name_full)
             _job_info = jk_utils.get_job_info(jk_job_name_full)
@@ -1480,6 +1484,7 @@ async def run_pipeline(
         return web.Response(status=502, reason=str(e), text=str(e))
 
     # 2) Include badge status in the commit
+    print('default1486')
     pipeline_qaa_data = pipeline_data.get("qaa", {})
     do_full_assessment = pipeline_qaa_data.get("do_full_assessment", True)
     if do_full_assessment:
@@ -1514,12 +1519,15 @@ async def run_pipeline(
             additional_files_list,
             branch=pipeline_repo_branch,
         )
+        
+    
     except SQAaaSAPIException as e:
         return web.Response(status=e.http_code, reason=e.message, text=e.message)
     else:
         commit_url = gh_utils.get_commit_url(pipeline_repo, commit_id)
 
     # 4) Automated-run check: previous commit should trigger the build
+    print('default1528')
     build_job_task = None
     if job_exists:
         if last_build_no == -1:
@@ -1591,6 +1599,10 @@ async def run_pipeline(
         "pipeline <%s>" % pipeline_id
     )
     logger.info("finished running pipeline with credentials"+str(creds_folder))
+    print('default1599')
+    #print(jk_utils.exist_job(jk_job_name_full))
+    print(jk_job_name_full)
+    #jk_utils.update_job_credential(_id,'eosc-synergy-org',jk_job_name_full)
     return web.Response(status=204, reason=reason, text=reason)
 
 

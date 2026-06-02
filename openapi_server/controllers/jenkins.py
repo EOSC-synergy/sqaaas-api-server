@@ -497,7 +497,7 @@ class JenkinsUtils(object):
         print('Iván 443')
         print('jenkins452')
         print("jenkins497")
-        self.remove_credential(credential_id, folder_name=folder_name)
+        #self.remove_credential(credential_id, folder_name=folder_name)
         print('jenkins454')
         env = Environment(loader=PackageLoader("openapi_server", "templates/jenkins"))
         template = env.get_template("credentials.xml")
@@ -560,5 +560,88 @@ class JenkinsUtils(object):
                  print(domain['credentials'])
                  for item in domain['credentials']:
                    print(item['id'])
-                 print(domain.keys())
+                   
+                   
+                   print(domain.keys())
         self.logger.debug("Credential <%s> created" % credential_id)
+        
+        
+        
+        
+    def update_job_credential(
+        self,
+        credential_id,
+        folder_name,
+        job_name,
+        domain_name="_",
+        ):
+        """Updates the SCM credentialsId of an existing Jenkins job.
+
+        :param credential_id: the credential ID to set on the job's Branch Sources
+        :param folder_name: Jenkins folder where the job lives (e.g. 'EOSC-Synergy')
+        :param repo_name: repository name as it appears in Jenkins (e.g. 'private-sqaaastesting')
+        :param domain_name: Credential domain in Jenkins (kept for API consistency)
+        """
+        #job_name = "%s/%s" % (folder_name, repo_name)
+        self.logger.debug(
+            "Updating SCM credential for job <%s> to <%s>" % (job_name, credential_id)
+        )
+        job_name2='eosc-synergy-org/private-sqaaastesting.assess.sqaaas'
+        print('jenkins589')
+        #print(self.server.get_jobs())
+        current_config = self.server.get_job_config(job_name2)
+        print('jenkins592')
+        print(current_config)
+        soup = BeautifulSoup(current_config, "xml")
+        print('jenkins594')
+        
+        cred_tags = soup.find_all("credentialsId")
+        if not cred_tags:
+            self.logger.warning(
+                "No <credentialsId> tag found in job <%s> config" % job_name
+            )
+            return
+        print('jenkins598')
+        for tag in cred_tags:
+            tag.string = credential_id
+
+        # Get CSRF crumb first
+        crumb_url = urljoin(self.endpoint, "/crumbIssuer/api/json")
+        crumb_response = requests.get(
+            crumb_url,
+            auth=(self.access_user, self.access_token)
+        )
+        crumb_data = crumb_response.json()
+
+        # Post updated config back
+        # Drop the branch segment
+        job_segments = job_name.split("/")[:-1]  
+        # ['eosc-synergy-org', 'private-sqaaasteting.assess.sqaaas']
+
+        items = list(map("/job/".__add__, job_segments))
+        path = "".join(items) + "/config.xml"
+        # /job/eosc-synergy-org/job/private-sqaaasteting.assess.sqaaas/config.xml
+        print('jenkins623')
+        r = requests.post(
+            urljoin(self.endpoint, path),
+            data=str(soup).encode("utf-8"),
+            auth=(self.access_user, self.access_token),
+            headers={
+                "Content-Type": "text/xml; charset=utf-8",
+                crumb_data["crumbRequestField"]: crumb_data["crumb"]
+            }
+        )
+        self.logger.debug(
+            "SCM credential for job <%s> updated to <%s>" % (job_name, credential_id)
+            )
+        print('jenkins636')
+        job_name2='eosc-synergy-org/private-sqaaastesting.assess.sqaaas'
+        print(job_name2)
+        current_config2 = self.server.get_job_config(job_name2)
+        print(current_config2)
+        #print(current_config)
+        print('jenkins638')
+        if current_config==current_config2:
+             print('sad')
+        else:
+             print('happY?')        

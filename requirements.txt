@@ -32,6 +32,7 @@ RADL~=1.2.0
 ec3-cli~=2.2.1
 cryptography
 pandas
+lxml
 anybadge==1.14.0
 timeout-decorator==0.5.0
 # report2sqaaas == 2.0.0
