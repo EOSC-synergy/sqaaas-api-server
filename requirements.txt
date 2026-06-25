@@ -61,8 +61,8 @@ git+https://github.com/EOSC-synergy/sqaaas-reporting-plugins@2.1.1#egg=report2sq
 git+https://github.com/EOSC-synergy/sqaaas-reporting-plugins@2.1.1#egg=report2sqaaas-plugin-fuji&subdirectory=qc_fair_fuji
 # report2sqaaas-plugin-jenkins_exit_status = 2.1.1
 git+https://github.com/EOSC-synergy/sqaaas-reporting-plugins@2.1.1#egg=report2sqaaas-plugin-jenkins_exit_status&subdirectory=qc_ALL_jenkins_exit_status
-# report2sqaaas-plugin-gosec = 2.1.1
-git+https://github.com/EOSC-synergy/sqaaas-reporting-plugins@2.1.1#egg=report2sqaaas-plugin-gosec&subdirectory=qc_sec_gosec
+# report2sqaaas-plugin-gosec = 2.2.5
+git+https://github.com/EOSC-synergy/sqaaas-reporting-plugins@2.2.5#egg=report2sqaaas-plugin-gosec&subdirectory=qc_sec_gosec
 # report2sqaaas-plugin-Ophidia = 2.2.1
 git+https://github.com/EOSC-synergy/sqaaas-reporting-plugins@2.2.1#egg=report2sqaaas-plugin-Ophidia&subdirectory=qc_sty_Ophidia
 # report2sqaaas-plugin-general_file_reporter = 2.2.3
