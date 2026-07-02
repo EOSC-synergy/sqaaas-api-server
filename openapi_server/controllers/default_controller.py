@@ -591,6 +591,9 @@ async def add_pipeline_for_assessment(
         logger.info(str(_repo_creds)+'ivannew576')
         # type(str) == CI credentials (only id required)
         if type(_repo_creds) in [str]:
+            print('default594')
+            print('str')
+            print(_repo_creds)
             ci_credential_id = _repo_creds
         # type(dict) == Credentials directly provided (user_id, token needed)
         elif type(_repo_creds) in [dict]:
@@ -607,7 +610,9 @@ async def add_pipeline_for_assessment(
             ci_credential_id = "-".join(["sqaaas_tmp_cred",  randomgennames.gen()])
             _repo_data["credentials_id"] = ci_credential_id
             _repo_data["credential_tmp"] = True
-            print('ivan3',_repo_creds)
+            print('default613')
+            print('dict')
+            print(_repo_data)
         else:
             logger.error(
                 (

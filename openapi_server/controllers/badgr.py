@@ -76,7 +76,7 @@ class BadgrUtils(object):
             data = {"username": self.access_user, "password": self.access_pass}
         try:
             print('bdgr75')
-            print(data)
+            #print(data)
             print('url')
             print(urljoin(self.endpoint, path))
             r = requests.post(urljoin(self.endpoint, path), data=data)

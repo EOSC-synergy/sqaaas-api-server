@@ -601,6 +601,8 @@ def process_extra_data(config_json, composer_json, report_to_stdout=False):
     # Compose 'project_repos'
     project_repos_mapping = {}
     if "project_repos" in config_json["config"].keys():
+        print('utils604')
+        print(config_json["config"].get("project_repos")) 
         project_repos_final = {}
         for project_repo in config_json["config"]["project_repos"]:
             repo_url = project_repo.pop("repo")
@@ -616,6 +618,15 @@ def process_extra_data(config_json, composer_json, report_to_stdout=False):
             # Set repo name
             repo_name_generated = get_short_repo_name(repo_url, include_host=True)
             # Compose final <project_repos>
+            
+            
+            print('utils621')
+            print(repo_url)
+            if project_repo.get("credential_tmp") and not project_repo.get("credentials_id"):
+                project_repo["credentials_id"] = repo_url
+                print('utils621')
+                
+                
             project_repos_final[repo_name_generated] = {
                 "repo": repo_url,
                 **project_repo,

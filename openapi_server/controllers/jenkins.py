@@ -436,12 +436,13 @@ class JenkinsUtils(object):
             print('jenkins419')
             #print('Ivántest',self.server.list_credentials(folder_name))
             #delete old method
-            #self.server.delete_credential(credential_id, folder_name=folder_name)
+            self.server.delete_credential(credential_id, folder_name=folder_name)
             print('jenkins434')
+            '''
             r = requests.post( urljoin(self.endpoint, f"/job/{folder_name}/credentials/store/folder/domain/{domain_name}/credential/{encoded_id}/doDelete"), auth=(self.access_user, self.access_token),)
             print('Remove status:', r.status_code)
             print('Remove response:', r.text)
-            
+            '''
             self.logger.debug("Credential <%s> removed" % credential_id)
             print ('afterremoval')
             r = requests.get(
