@@ -24,6 +24,13 @@ CREATE_CREDENTIAL_ORG = (
     "domain/%(domain_name)s/createCredentials"
 )
 '''
+
+DELETE_CREDENTIAL_ORG = (
+    "credentials/store/system/domain/"
+    "%(domain_name)s/credential/%(credential_id)s/config.xml"
+)
+
+
 class JenkinsUtils(object):
     """Class for handling requests to Jenkins API.
 
@@ -404,8 +411,7 @@ class JenkinsUtils(object):
             "Removing a temporary credential <%s> in Jenkins" % credential_id
         )
         try:
-            print('URL delete:', urljoin(self.endpoint, f"/credentials/store/system/domain/_/credential/{credential_id}"))
-            print('preremoval')
+            
             r = requests.get(
             urljoin(self.endpoint, "/job/eosc-synergy-org/credentials/api/json?depth=3"),
             auth=(self.access_user, self.access_token),
@@ -419,7 +425,7 @@ class JenkinsUtils(object):
                    print(item['id'])
                  print(domain.keys())
             print('Iván ', credential_id,folder_name)
-            encoded_id = quote(credential_id, safe='')
+            encoded_id = quote_plus(credential_id, safe='')
             #print(self.server.get_jobs())
             print('jenkins418')
             jobs = self.server.get_jobs()
@@ -436,7 +442,31 @@ class JenkinsUtils(object):
             print('jenkins419')
             #print('Ivántest',self.server.list_credentials(folder_name))
             #delete old method
-            self.server.delete_credential(credential_id, folder_name=folder_name)
+            #self.logger.debug("Atempting to delete credential with id: <%r>" % credential_id)
+            self.logger.debug("Atempting to delete credential with url: <%r>" % urljoin(
+                   self.endpoint,
+                   DELETE_CREDENTIAL_ORG % {
+                    #"folder_name": folder_name,
+                    "domain_name": domain_name,
+                    "credential_id": encoded_id,
+                    }
+                 ))
+            r = requests.delete(
+                urljoin(
+                   self.endpoint,
+                   DELETE_CREDENTIAL_ORG % {
+                    #"folder_name": folder_name,
+                    "domain_name": domain_name,
+                    "credential_id": encoded_id,
+                    }
+                 ),
+                auth=(self.access_user, self.access_token),
+                #headers={"Jenkins-Crumb":self.server.get_crumb()}
+            )
+            print('Remove status:', r.status_code)
+            print('Remove response:', r.text)
+            #self.server.delete_credential(credential_id, folder_name)
+            
             print('jenkins434')
             '''
             r = requests.post( urljoin(self.endpoint, f"/job/{folder_name}/credentials/store/folder/domain/{domain_name}/credential/{encoded_id}/doDelete"), auth=(self.access_user, self.access_token),)
@@ -498,7 +528,7 @@ class JenkinsUtils(object):
         print('Iván 443')
         print('jenkins452')
         print("jenkins497")
-        #self.remove_credential(credential_id, folder_name=folder_name)
+        self.remove_credential(credential_id, folder_name=folder_name)
         print('jenkins454')
         env = Environment(loader=PackageLoader("openapi_server", "templates/jenkins"))
         template = env.get_template("credentials.xml")
