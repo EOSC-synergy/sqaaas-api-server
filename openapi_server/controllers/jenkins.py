@@ -279,8 +279,6 @@ class JenkinsUtils(object):
                     raise SQAaaSAPIException(502, _reason)
             else:
                 out = r
-            print('jenkins271')
-            #print(r.text)
             return out
 
         def get_text(html_text):
@@ -405,52 +403,16 @@ class JenkinsUtils(object):
         :param folder_name: Credential folder name in Jenkins
         :param domain_name: Credential domain in Jenkins
         """
-        print('jenkins399')
+
         from urllib.parse import quote
         self.logger.debug(
             "Removing a temporary credential <%s> in Jenkins" % credential_id
         )
         try:
             
-            r = requests.get(
-            urljoin(self.endpoint, "/job/eosc-synergy-org/credentials/api/json?depth=3"),
-            auth=(self.access_user, self.access_token),
-            )
-            data = r.json()
-            for store in data.get('stores', {}).values():
-               for domain in store.get('domains', {}).values():
-             
-                 print(domain['credentials'])
-                 for item in domain['credentials']:
-                   print(item['id'])
-                 print(domain.keys())
-            print('Iván ', credential_id,folder_name)
+            #Call to remove previus credential 
             encoded_id = quote_plus(credential_id, safe='')
-            #print(self.server.get_jobs())
-            print('jenkins418')
-            jobs = self.server.get_jobs()
-            print('jenkins420')
-            i=0
-            for job in jobs:
-                 i+=1
-                 print('jenkins424')
-                 print(i)
-                 if 'folder' in job.get('_class','').lower() or 'organization' in job.get('_class','').lower():
-                    print(job['name'])
-                    #print(job)
-            print(folder_name)
-            print('jenkins419')
-            #print('Ivántest',self.server.list_credentials(folder_name))
-            #delete old method
-            #self.logger.debug("Atempting to delete credential with id: <%r>" % credential_id)
-            self.logger.debug("Atempting to delete credential with url: <%r>" % urljoin(
-                   self.endpoint,
-                   DELETE_CREDENTIAL_ORG % {
-                    #"folder_name": folder_name,
-                    "domain_name": domain_name,
-                    "credential_id": encoded_id,
-                    }
-                 ))
+            self.logger.debug("Atempting to delete credential with id: <%r>" % credential_id)
             r = requests.delete(
                 urljoin(
                    self.endpoint,
@@ -461,32 +423,9 @@ class JenkinsUtils(object):
                     }
                  ),
                 auth=(self.access_user, self.access_token),
-                #headers={"Jenkins-Crumb":self.server.get_crumb()}
+
             )
-            print('Remove status:', r.status_code)
-            print('Remove response:', r.text)
-            #self.server.delete_credential(credential_id, folder_name)
             
-            print('jenkins434')
-            '''
-            r = requests.post( urljoin(self.endpoint, f"/job/{folder_name}/credentials/store/folder/domain/{domain_name}/credential/{encoded_id}/doDelete"), auth=(self.access_user, self.access_token),)
-            print('Remove status:', r.status_code)
-            print('Remove response:', r.text)
-            '''
-            self.logger.debug("Credential <%s> removed" % credential_id)
-            print ('afterremoval')
-            r = requests.get(
-            urljoin(self.endpoint, "/job/eosc-synergy-org/credentials/api/json?depth=3"),
-            auth=(self.access_user, self.access_token),
-            )
-            data = r.json()
-            for store in data.get('stores', {}).values():
-               for domain in store.get('domains', {}).values():
-             
-                 print(domain['credentials'])
-                 for item in domain['credentials']:
-                   print(item['id'])
-                 print(domain.keys())
         except jenkins.NotFoundException as e:
             self.logger.error(e)
             self.logger.debug(
