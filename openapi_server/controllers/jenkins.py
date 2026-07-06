@@ -445,8 +445,7 @@ class JenkinsUtils(object):
         folder_name,
         domain_name="_",
     ):  
-        print('creating crederntials')
-        #self.logger.info('Ivan- '+credential_id,credential_user,credential_token)
+        
         """Creates a temporary credential in Jenkins.
 
         :param credential_user: User identifier
@@ -457,18 +456,9 @@ class JenkinsUtils(object):
         self.logger.debug(
             "Creating a temporary credential <%s> in Jenkins" % credential_id
         )
-        print('Iván 437')
-        self.logger.debug("Removing existing credential (if any)")
-        #print('SQAaaS_creds',self.server.list_credentials('SQAaaS_creds'))#folder_name))
-        #print('eosc-synergy-org/credentials',self.server.list_credentials('eosc-synergy-org/credentials'))#folder_name))
-        print(folder_name)
-        
-        
-        print('Iván 443')
-        print('jenkins452')
-        print("jenkins497")
+
         self.remove_credential(credential_id, folder_name=folder_name)
-        print('jenkins454')
+
         env = Environment(loader=PackageLoader("openapi_server", "templates/jenkins"))
         template = env.get_template("credentials.xml")
         xml_rendered = template.render(
@@ -476,63 +466,16 @@ class JenkinsUtils(object):
             credential_user=credential_user,
             credential_token=credential_token,
         )
-        print('jenkins463')
-        
-        print('Ivan llga hasta 452',CREATE_CREDENTIAL_ORG % locals(),xml_rendered.encode("utf-8"))
-        
+
         r = requests.post(
             urljoin(self.endpoint, CREATE_CREDENTIAL_ORG % locals()),
             data=xml_rendered.encode("utf-8"),
             auth=(self.access_user, self.access_token),
             headers={"Content-Type": "text/xml; charset=utf-8"},
         )
-        #esto esta mal, quitar triple comilla (desde 500 hasta 507 esta quitada)
-        #print('Ivan llega hasta 449',r,r.text)
-        print('Status create:', r.status_code)
-        print('Response create:', r.text)
-        print ('jenkins508')
-        #r.raise_for_status()
-        '''
-        #test request code
-        r = requests.post(
-         urljoin(self.endpoint, CREATE_CREDENTIAL_ORG % locals()),
-         data=xml_rendered.encode("utf-8"),
-         auth=(self.access_user, self.access_token),
-         headers={"Content-Type": "text/xml; charset=utf-8"},
-        )
-        print('Status create:', r.status_code)
-        print('Response create:', r.text)
-        #end request code
-        '''
-        print('jenkins472')
-        #print(self.server.list_credentials('eosc-synergy-org'))
-        print('URL final:', urljoin(self.endpoint, CREATE_CREDENTIAL_ORG % locals()))
-        print('Status:', r.status_code)
-        print('Response:', r.text)
-        print('llega hasta 451')
-        CHECK_CREDENTIALS = "/credentials/store/system/domain/_/api/json?depth=3&pretty=true"
-        
-        tester = requests.get(urljoin(self.endpoint, CHECK_CREDENTIALS),auth=(self.access_user, self.access_token))
-                  
-        data = tester.json()
-        for cred in data['credentials']:
-            print(cred.get('id'), '-', cred.get('typeName'))
-            
-        print('jenkins535')    
-        r = requests.get(
-          urljoin(self.endpoint, "/job/eosc-synergy-org/credentials/api/json?depth=3"),
-          auth=(self.access_user, self.access_token),
-          )
-        data = r.json()
-        for store in data.get('stores', {}).values():
-             for domain in store.get('domains', {}).values():
-             
-                 print(domain['credentials'])
-                 for item in domain['credentials']:
-                   print(item['id'])
-                   
-                   
-                   print(domain.keys())
+
+
+
         self.logger.debug("Credential <%s> created" % credential_id)
         
         
