@@ -109,7 +109,7 @@ class GitUtils(object):
             query=repo_url_parsed.query,
             fragment=repo_url_parsed.fragment,
         )
-        logger.debug(repo_url_final.url)
+
         return repo_url_final.url
 
     @staticmethod
@@ -123,13 +123,12 @@ class GitUtils(object):
         """
         repo_url_no_creds = repo_url  # for logging purposes
         if repo_creds:
-            logger.debug('2')
             repo_url = GitUtils._format_git_url(repo_url, repo_creds=repo_creds)
 
         logger.debug(("Inspecting content of repo <%s>" % (repo_url_no_creds)))
         g = cmd.Git()
         try:
-            print('git132')
+
             blob = g.ls_remote(repo_url, "HEAD", symref=True)
             branch = blob.split("\n")[0].split("/")[-1].split("\t")[0]
         except GitCommandError as e:
@@ -198,10 +197,10 @@ class GitUtils(object):
         :param source_repo_branch: Specific branch name to use from the source
             repository
         """
-        print ('Ivan clonemos',source_repo)
+
         if not source_repo_branch:
             source_repo_branch = GitUtils.get_default_branch_from_remote(source_repo)
-        logger.debug('3')
+
         source_repo = GitUtils._format_git_url(source_repo)
         with tempfile.TemporaryDirectory(dir=CLONE_FOLDER) as dirpath:
             repo = None
@@ -248,19 +247,17 @@ class GitUtils(object):
                 ret = f(*args, **kwargs)
             else:
                 repo_creds = repo.get("credential_data", {})
-                logger.debug('ivan log3')
-                print(repo_creds)
+
                 source_repo = GitUtils._format_git_url(repo_url, repo_creds=repo_creds)
                 source_repo_no_creds = repo_url  # for logging purposes
                 source_repo_branch = repo.get("branch", None)
-                logger.debug('repo-gotten')
+
                 if not source_repo_branch:
                     source_repo_branch = GitUtils.get_default_branch_from_remote(
                         repo_url, repo_creds
                     )
                 with tempfile.TemporaryDirectory(dir=CLONE_FOLDER) as dirpath:
                     try:
-                        logger.debug('repo-try')
                         repo = Repo.clone_from(
                             source_repo,
                             dirpath,
@@ -268,12 +265,10 @@ class GitUtils(object):
                             b=source_repo_branch,
                             depth=1,
                         )
-                        logger.debug('repo-cloned aaaaaa')
                         msg = "Repository <%s> was cloned (branch: %s)" % (
                             source_repo_no_creds,
                             source_repo_branch,
                         )
-                        logger.debug(msg)
                     except GitCommandError as e:
                         _msg = GitUtils._custom_exception_messages(
                             e, repo=repo_url, branch=source_repo_branch

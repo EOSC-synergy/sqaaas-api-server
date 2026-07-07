@@ -75,16 +75,12 @@ class BadgrUtils(object):
             logger.debug("Getting user token from Badgr API: 'POST %s'" % path)
             data = {"username": self.access_user, "password": self.access_pass}
         try:
-            print('bdgr75')
-            #print(data)
-            print('url')
-            print(urljoin(self.endpoint, path))
+
             r = requests.post(urljoin(self.endpoint, path), data=data)
-            print('bdgr81')
-            logger.debug("'POST %s' response content: %s" % (path, r.__dict__))
+
             r.raise_for_status()
             r_json = r.json()
-            print('bdgr87')
+
             return (
                 r_json["access_token"],
                 r_json["refresh_token"],
@@ -128,7 +124,7 @@ class BadgrUtils(object):
 
         :param issuer_id: issuer entityID to where this BadgeClass belongs.
         """
-        print('badgr131')
+
         path = "v2/issuers/%s/badgeclasses" % issuer_id
         headers = {"Authorization": "Bearer %s" % self.access_token}
         logger.debug(
@@ -138,8 +134,7 @@ class BadgrUtils(object):
             )
         )
         r = requests.get(urljoin(self.endpoint, path), headers=headers)
-        print('badgr141')
-        print(r.ok)
+
         logger.debug("'GET %s' response content: %s" % (path, r.__dict__))
         if r.ok:
             r_json = r.json()
@@ -156,8 +151,7 @@ class BadgrUtils(object):
             all_entities = self.get_issuers()
         elif entity_type == "badgeclass":
             all_entities = self.get_badgeclasses(**kwargs)
-            print('badgr159')
-            print(all_entities)
+
         entity_name_dict = dict(
             [
                 [entity["name"], entity["entityId"]]
@@ -165,10 +159,7 @@ class BadgrUtils(object):
                 if entity["name"] == entity_name
             ]
         )
-        if entity_type == "badgeclass":
-           print(entity_name)
-           for entity in all_entities:
-               print(entity["name"])
+
         entity_name_list = entity_name_dict.keys()
         if len(entity_name_list) > 1:
             logger.warn(
@@ -182,8 +173,7 @@ class BadgrUtils(object):
                 )
             )
         if len(entity_name_list) == 0:
-            if entity_type == "badgeclass":
-               print('badgr184')
+
             logger.warn(
                 "Found 0 matches for entity name <%s> (type: %s)"
                 % (entity_name, entity_type)
@@ -199,13 +189,13 @@ class BadgrUtils(object):
         :param badgeclass_name: String that corresponds to the BadgeClass name (as it
             appears in Badgr web).
         """
-        
+
         issuer_id = self._get_matching_entity_id(self.issuer_name, entity_type="issuer")
-        print('badgr194')
+
         badgeclass_id = self._get_matching_entity_id(
             badgeclass_name, entity_type="badgeclass", issuer_id=issuer_id
         )
-        print('badgr198')
+
         return badgeclass_id
 
     @refresh_token
@@ -237,10 +227,9 @@ class BadgrUtils(object):
         :param srv_criteria: List of fulfilled criteria codes from the Service baseline
         """
         logger.debug("Get BadgeClass entityId")
-        print('badgr227')
-        print(badgeclass_name)
+
         badgeclass_id = self.get_badgeclass_entity(badgeclass_name)
-        print('badgr229')
+
         logger.info(
             (
                 "BadgeClass entityId found for Issuer <%s> and BadgeClass "
@@ -257,7 +246,7 @@ class BadgrUtils(object):
         main_repo_commit_id = commit_id.pop(0)
         # Assertion data: narrative
         narrative = None
-        print('bagr244')
+
         if badge_type in ["fair"]:
             narrative = "SQAaaS assessment results for dataset %s" % url
         else:
@@ -288,7 +277,7 @@ class BadgrUtils(object):
                 ],
             }
         )
-        print('badgr275')
+
         logger.debug("Assertion data: %s" % assertion_data)
 
         logger.debug(
