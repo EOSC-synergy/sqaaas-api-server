@@ -144,7 +144,7 @@ def del_entry(pipeline_id):
     db.pop(pipeline_id)
     store_content(db)
     logger.debug("Pipeline <%s> removed from DB" % pipeline_id)
-    print('edit del entry')
+
 
 def update_entry(pipeline_id, **kwargs):
     """Updates any of the root properties for the given pipeline ID.
@@ -237,7 +237,6 @@ def add_assessment_data(pipeline_id, assessment_data):
     :param pipeline_id: UUID-format identifier for the pipeline.
     :param assessment_data: Data use for the QAA module.
     """
-    print('edit assesment')
     db = load_content()
     db[pipeline_id]["qaa"] = assessment_data
     store_content(db)
