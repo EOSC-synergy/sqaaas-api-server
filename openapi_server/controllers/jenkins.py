@@ -14,9 +14,20 @@ from jinja2 import Environment, PackageLoader
 
 from openapi_server.exception import SQAaaSAPIException
 
+
+# original create credential
+
+CREATE_CREDENTIAL_ORG = "credentials/store/system/domain/_/createCredentials"
+"""
 CREATE_CREDENTIAL_ORG = (
     "/job/%(folder_name)s/credentials/store/folder/"
     "domain/%(domain_name)s/createCredentials"
+)
+"""
+
+DELETE_CREDENTIAL_ORG = (
+    "credentials/store/system/domain/"
+    "%(domain_name)s/credential/%(credential_id)s/config.xml"
 )
 
 
@@ -268,7 +279,6 @@ class JenkinsUtils(object):
                     raise SQAaaSAPIException(502, _reason)
             else:
                 out = r
-
             return out
 
         def get_text(html_text):
@@ -393,12 +403,32 @@ class JenkinsUtils(object):
         :param folder_name: Credential folder name in Jenkins
         :param domain_name: Credential domain in Jenkins
         """
+
+        from urllib.parse import quote
+
         self.logger.debug(
             "Removing a temporary credential <%s> in Jenkins" % credential_id
         )
         try:
-            self.server.delete_credential(credential_id, folder_name=folder_name)
-            self.logger.debug("Credential <%s> removed" % credential_id)
+
+            # Call to remove previus credential
+            encoded_id = quote_plus(credential_id, safe="")
+            self.logger.debug(
+                "Atempting to delete credential with id: <%r>" % credential_id
+            )
+            r = requests.delete(
+                urljoin(
+                    self.endpoint,
+                    DELETE_CREDENTIAL_ORG
+                    % {
+                        # "folder_name": folder_name,
+                        "domain_name": domain_name,
+                        "credential_id": encoded_id,
+                    },
+                ),
+                auth=(self.access_user, self.access_token),
+            )
+
         except jenkins.NotFoundException as e:
             self.logger.error(e)
             self.logger.debug(
@@ -429,7 +459,9 @@ class JenkinsUtils(object):
             "Creating a temporary credential <%s> in Jenkins" % credential_id
         )
         self.logger.debug("Removing existing credential (if any)")
+        
         self.remove_credential(credential_id, folder_name=folder_name)
+
         env = Environment(loader=PackageLoader("openapi_server", "templates/jenkins"))
         template = env.get_template("credentials.xml")
         xml_rendered = template.render(
@@ -437,6 +469,7 @@ class JenkinsUtils(object):
             credential_user=credential_user,
             credential_token=credential_token,
         )
+
         r = requests.post(
             urljoin(self.endpoint, CREATE_CREDENTIAL_ORG % locals()),
             data=xml_rendered.encode("utf-8"),
@@ -444,4 +477,5 @@ class JenkinsUtils(object):
             headers={"Content-Type": "text/xml; charset=utf-8"},
         )
         r.raise_for_status()
+ 
         self.logger.debug("Credential <%s> created" % credential_id)

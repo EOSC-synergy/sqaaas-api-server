@@ -124,7 +124,6 @@ class JePLUtils(object):
         """
         env = Environment(loader=PackageLoader("openapi_server", "templates"))
         template = env.get_template("Jenkinsfile")
-
         return template.render(config_data_list=config_data_list)
 
     @classmethod

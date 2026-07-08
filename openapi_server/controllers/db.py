@@ -21,10 +21,12 @@ def load_content():
     data = {}
     if DB_FILE.exists():
         data = json.loads(DB_FILE.read_text(encoding="utf-8"))
+        
     return data
 
 
 def store_content(data):
+
     try:
         DB_FILE.parent.mkdir(parents=True, exist_ok=False)
     except FileExistsError:
@@ -38,7 +40,6 @@ def store_content(data):
 def print_content():
     db = load_content()
     logger.debug("Current DB content: %s" % list(db))
-
 
 def add_entry(
     pipeline_id,
@@ -93,7 +94,6 @@ def add_entry(
     ) = JePLUtils.compose_files(
         config_json, composer_json, report_to_stdout=report_to_stdout
     )
-
     db = load_content()
     db[pipeline_id] = {
         "pipeline_repo": pipeline_repo,
@@ -109,6 +109,8 @@ def add_entry(
         "raw_request": raw_request,
         "tools": tool_criteria_map,
     }
+
+
     store_content(db)
 
 
@@ -120,6 +122,7 @@ def get_entry(pipeline_id=None):
     :param pipeline_id: UUID-format identifier for the pipeline.
     """
     db = load_content()
+    
     if pipeline_id:
         logger.debug("Loading pipeline <%s> from DB" % pipeline_id)
         r = db[pipeline_id]
@@ -212,7 +215,6 @@ def update_jenkins(
         "Jenkins data updated for pipeline <%s>: %s"
         % (pipeline_id, db[pipeline_id]["jenkins"])
     )
-
 
 def add_badge_data(pipeline_id, badge_data):
     """Updates the Badgr data in the DB for the given pipeline ID.

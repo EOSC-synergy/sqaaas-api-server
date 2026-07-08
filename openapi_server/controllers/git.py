@@ -128,6 +128,7 @@ class GitUtils(object):
         logger.debug(("Inspecting content of repo <%s>" % (repo_url_no_creds)))
         g = cmd.Git()
         try:
+
             blob = g.ls_remote(repo_url, "HEAD", symref=True)
             branch = blob.split("\n")[0].split("/")[-1].split("\t")[0]
         except GitCommandError as e:
@@ -196,8 +197,10 @@ class GitUtils(object):
         :param source_repo_branch: Specific branch name to use from the source
             repository
         """
+
         if not source_repo_branch:
             source_repo_branch = GitUtils.get_default_branch_from_remote(source_repo)
+
         source_repo = GitUtils._format_git_url(source_repo)
         with tempfile.TemporaryDirectory(dir=CLONE_FOLDER) as dirpath:
             repo = None
@@ -244,9 +247,11 @@ class GitUtils(object):
                 ret = f(*args, **kwargs)
             else:
                 repo_creds = repo.get("credential_data", {})
+
                 source_repo = GitUtils._format_git_url(repo_url, repo_creds=repo_creds)
                 source_repo_no_creds = repo_url  # for logging purposes
                 source_repo_branch = repo.get("branch", None)
+
                 if not source_repo_branch:
                     source_repo_branch = GitUtils.get_default_branch_from_remote(
                         repo_url, repo_creds
@@ -264,7 +269,6 @@ class GitUtils(object):
                             source_repo_no_creds,
                             source_repo_branch,
                         )
-                        logger.debug(msg)
                     except GitCommandError as e:
                         _msg = GitUtils._custom_exception_messages(
                             e, repo=repo_url, branch=source_repo_branch
