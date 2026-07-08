@@ -616,12 +616,12 @@ def process_extra_data(config_json, composer_json, report_to_stdout=False):
             # Set repo name
             repo_name_generated = get_short_repo_name(repo_url, include_host=True)
             # Compose final <project_repos>
-
+            
             if project_repo.get("credential_tmp") and not project_repo.get(
                 "credentials_id"
             ):
                 project_repo["credentials_id"] = repo_url
-
+            
             project_repos_final[repo_name_generated] = {
                 "repo": repo_url,
                 **project_repo,
@@ -1319,7 +1319,10 @@ def get_credential_data(credential_id, pipeline_data):
     for project_repo in project_repos:
         project_repo_name = project_repo["repo"]
 
+
+        #If this fails the pipeline has probably gets unstable issues 
         if project_repo.get("repo", "") == credential_id:
+
             credential_data = project_repo["credential_data"]
             credential_tmp = project_repo.get("credential_tmp", False)
             logger.debug(

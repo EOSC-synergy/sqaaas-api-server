@@ -37,8 +37,8 @@
                     {%- if ci_credential_id -%}
                     {
                         "id": "{{ ci_credential_id }}",
-                        "username_var": "{{GIT_USER}}",
-                        "password_var": "{{GIT_PASSWORD}}"
+                        "username_var": "GIT_USER",
+                        "password_var": "GIT_PASSWORD"
                     }
                     {%- endif -%}
                 ]

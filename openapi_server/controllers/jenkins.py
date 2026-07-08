@@ -458,7 +458,8 @@ class JenkinsUtils(object):
         self.logger.debug(
             "Creating a temporary credential <%s> in Jenkins" % credential_id
         )
-
+        self.logger.debug("Removing existing credential (if any)")
+        
         self.remove_credential(credential_id, folder_name=folder_name)
 
         env = Environment(loader=PackageLoader("openapi_server", "templates/jenkins"))
@@ -475,5 +476,6 @@ class JenkinsUtils(object):
             auth=(self.access_user, self.access_token),
             headers={"Content-Type": "text/xml; charset=utf-8"},
         )
-
+        r.raise_for_status()
+ 
         self.logger.debug("Credential <%s> created" % credential_id)
