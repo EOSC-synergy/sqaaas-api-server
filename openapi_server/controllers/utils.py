@@ -617,6 +617,7 @@ def process_extra_data(config_json, composer_json, report_to_stdout=False):
             repo_name_generated = get_short_repo_name(repo_url, include_host=True)
             # Compose final <project_repos>
             
+            # Make sure the credential identifier is there if credentials are created
             if project_repo.get("credential_tmp") and not project_repo.get(
                 "credentials_id"
             ):

@@ -11,7 +11,7 @@ pipeline {
     agent any
 
     stages {
-           {%- for config_data in config_data_list %}
+        {%- for config_data in config_data_list %}
         stage('SQA baseline criterion: {{ config_data.data_json.sqa_criteria |list |join(" & " ) }}') {
             when {
                 anyOf {
