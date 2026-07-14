@@ -732,11 +732,9 @@ async def add_pipeline_for_assessment(
                             "languages": gh_utils.get_languages(repo=gh_repo),
                             "topics": gh_utils.get_topics(repo=gh_repo),
                             "stargazers_count": gh_utils.get_stargazers(repo=gh_repo),
-                            "watchers_count": gh_utils.get_watchers(repo=gh_repo),
-                            "contributors_count": gh_utils.get_contributors(
-                                repo=gh_repo
-                            ),
-                            "forks_count": gh_utils.get_forks(repo=gh_repo),
+                            #"watchers_count": gh_utils.get_watchers(repo=gh_repo),
+                            #"contributors_count": gh_utils.get_contributors(repo=gh_repo),
+                            #"forks_count": gh_utils.get_forks(repo=gh_repo),
                         }
                     )
                 except SQAaaSAPIException as e:
