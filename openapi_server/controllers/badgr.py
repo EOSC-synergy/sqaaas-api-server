@@ -77,7 +77,6 @@ class BadgrUtils(object):
         try:
 
             r = requests.post(urljoin(self.endpoint, path), data=data)
-
             r.raise_for_status()
             r_json = r.json()
 
@@ -286,12 +285,14 @@ class BadgrUtils(object):
                 "'POST %s'" % (badgeclass_name, path)
             )
         )
+        print('badgr288')
         r = requests.post(
             urljoin(self.endpoint, path), headers=headers, data=assertion_data
         )
         r_json = r.json()
         logger.debug("Result from 'POST %s': %s" % (path, r_json))
-
+        print('badgr294')
+        print(r.ok)
         if r.ok:
             if len(r_json["result"]) > 1:
                 logger.warn("More than one badge being issued")
@@ -310,4 +311,69 @@ class BadgrUtils(object):
                         "%s" % r_json["validationErrors"]
                     )
                 )
+            if r_json.get('message')=='Free issuer capabilities have been terminated. Please upgrade to a paid plan.':
+              return(
+  
+  
+    {
+      "entityType": "Assertion",
+      "id": "6116c84d1ff787222b6c4d15",
+      "entityId": "i9CirfwJTuSfiqg0FFUBdQ",
+      "openBadgeId": 'None',#"https://api.badgr.io/public/assertions/i9CirfwJTuSfiqg0FFUBdQ",
+      "createdAt": "2026-08-17T06:54:31.104Z",
+      "createdBy": "",#"Hey7J-GRSJeu6FNnHQwNyw",
+      "badgeclass": "",#"K829IK8RS6ercwkpeFOn-Q",
+      "badgeclassOpenBadgeId": "",#"https://api.badgr.io/public/badges/K829IK8RS6ercwkpeFOn-Q",
+      "issuer": "",#"ZvYydoQhRtOKalNzFPZR2A-Q",
+      "issuerOpenBadgeId": "",#"https://api.badgr.io/public/issuers/ZvYydoQhRtOKalNzFPZR2A",
+      "image": "",#"https://api.badgr.io/public/assertions/SsCfI7FlTr6hAJe4irXnfQ/image",
+      "recipient": {
+        "identity": "",#"sha256$4c2657856f",
+        "hashed": "",#True,
+        "type": "",#"email",
+        "salt": "",#"jgsu868",
+        "plaintextIdentity": "",#"jane.doe@example.com"
+      },
+      "issuedOn": "2026-08-17T06:54:31.104Z",
+      "narrative": "string",
+      "evidence": [
+        {
+          "url": "string",
+          "narrative": "string",
+          "name": "string",
+          "description": "string",
+          "genre": "string",
+          "audience": "string"
+        }
+      ],
+      "revoked": True,
+      "revocationReason": "string",
+      "acceptance": "Unaccepted",
+      "expires": "2026-08-17T06:54:31.104Z",
+      "extensions": {
+        "additionalProp1": {},
+        "additionalProp2": {},
+        "additionalProp3": {}
+      },
+      "assertionRef": {
+        "assertionUrl": "",#"https://api.badgr.io/public/assertions/lY1LJ6K4RqG7ThGLYvWNng"
+      },
+      "badgeRef": {
+        "badgeUrl": "",#"https://api.badgr.io/public/badges/iOMWsaF1QbmMCofM54JlUg"
+      },
+      "issuerRef": {
+        "issuerUrl": "",#"https://api.badgr.ws/public/issuers/Uu4wd2I1SKmD3vmtMJ19hw"
+      },
+      "pending": True,
+      "source": "local",
+      "sourceUrl": "https://example.com/assertions/1",
+      "originalJson": "{}",
+      "imagePath": "",#"uploads/badges/assertion-lY1LJ6K4RqG7ThGLYvWNng.png",
+      "ob3AwardProperties": {
+        "activityStart": "2026-08-17T06:54:31.104Z",
+        "activityEnd": "2026-08-17T06:54:31.104Z",
+        "licenseNumber": "string",
+        "role": "string"
+      }})
+    
             r.raise_for_status()

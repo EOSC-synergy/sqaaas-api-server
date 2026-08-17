@@ -2434,6 +2434,7 @@ async def get_output_for_assessment(request: web.Request, pipeline_id) -> web.Re
             badge_data[badge_type]["data"] = {}
             if badgeclass_name:
                 badge_status = badge_category
+                
                 try:
                     badge_obj = await _issue_badge(
                         pipeline_id,
@@ -2837,12 +2838,15 @@ async def _issue_badge(
             metadata=metadata,
             **badge_args,
         )
+        print('default2841')
     except Exception as e:
         _reason = "Cannot issue a badge for pipeline <%s>: %s" % (pipeline_id, e)
         logger.error(_reason)
         raise SQAaaSAPIException(502, _reason)
     else:
+        print('default2846')
         logger.info("Badge successfully issued: %s" % badge_data["openBadgeId"])
+        print('default2847')
         return badge_data
 
 
